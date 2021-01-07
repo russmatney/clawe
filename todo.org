@@ -5,11 +5,17 @@
 CLOSED: [2021-01-06 Wed 21:39]
 * [X] use defcom to write hello-world command
 CLOSED: [2021-01-06 Wed 21:39]
-* [ ] pull awesome config over from dotfiles
-* [ ] write clawe install command
+* [X] pull awesome config over from dotfiles
+CLOSED: [2021-01-06 Wed 22:15]
+:LOGBOOK:
+CLOCK: [2021-01-06 Wed 21:48]--[2021-01-06 Wed 22:15] =>  0:27
+:END:
+* [X] write clawe install command
+CLOSED: [2021-01-06 Wed 22:15]
 * [ ] write clawe awm-cli and awm-cli-fennel command
 * [ ] add colorized edn pretty printer
 * [ ] wrap in nix to maintain lua versions/deps/etc
 * [ ] get reasonable widget development loop going
 * [ ] write workspaces widget
 * [ ] pull set-keybindings fully into a clawe command
+* [ ] minimize the symlinked awesome-config
