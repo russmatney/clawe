@@ -209,19 +209,8 @@
  (fn []
    (awful.screen.connect_for_each_screen
     (fn [s]
-      ;; Create an imagebox widget which will contains an icon indicating which layout we're using.
-      ;; We need one layoutbox per screen.
-      (set s.mylayoutbox
-           (awful.widget.layoutbox s))
-
-      ;; layoutbox cycling
-      ;; TODO move to bindings file
-      (s.mylayoutbox:buttons
-       (gears.table.join
-        (bindings.btn [] 1 (fn [] (awful.layout.inc 1)))
-        (bindings.btn [] 3 (fn [] (awful.layout.inc -1)))
-        (bindings.btn [] 4 (fn [] (awful.layout.inc 1)))
-        (bindings.btn [] 5 (fn [] (awful.layout.inc -1)))))
+      ;; remove if it exists already
+      (if s.mywibox (s.mywibox:remove))
 
       ;; Create a taglist widget
       (set s.mytaglist (_G.create_taglist s))
