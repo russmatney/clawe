@@ -18,3 +18,6 @@ CLOSED: [2021-01-06 Wed 22:36]
 * [ ] write clawe awm-cli-fnl command
 * [ ] add colorized edn pretty printer
 * [ ] wrap in nix to maintain lua versions/deps/etc
+* [ ] print awm-keybindings command
+* [ ] print workspaces (tags and clients)
+* [ ] integrate the awesome git-history from ~/dotfiles
