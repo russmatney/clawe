@@ -2,20 +2,15 @@
   (:require
    [ralphie.install :as install]
    [ralph.defcom :as defcom :refer [defcom]]
-   [ralphie.sh :as r.sh])
-  )
+   [ralphie.sh :as r.sh]
+   [clawe.awesome :as awm]))
 
-(defcom hello
+(defcom hello-cmd
   {:name    "hello"
    :handler (fn [_config _parsed]
               (println "Howdy!"))})
 
-;; *file*
-;; io/file
-;; .getParent
-;; (str "/" ~fname)
-
-(defcom install
+(defcom install-cmd
   {:name "install"
    :handler
    (fn [_config _parsed]
@@ -24,6 +19,14 @@
        (r.sh/expand "~/russmatney/clawe/awesome")
        ;; TODO use ~WDG_CONFIG~ or whatever that thing is
        (r.sh/expand "~/.config/awesome")))})
+
+(defcom awm-cli-cmd
+  {:name     "awm-cli"
+   ;; this doesn't do anything, but felt easier than documentation....
+   :validate (fn [arguments] (-> arguments first string?))
+   :handler
+   (fn [_config {:keys [arguments]}]
+     (awm/awm-cli (first arguments)))})
 
 (defn -main [& args]
   (apply defcom/run args))
