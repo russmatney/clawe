@@ -1,0 +1,20 @@
+#+TITLE: Clawe
+
+A Clojure-centric AwesomeWM configuration.
+
+- AwesomeWM provides the api and mental model for window management
+- Clojure provides a fantastic language, an interactive repl, etc etc
+  + Babashka makes it reasonable to develop in a clojure repl and have a result
+    as accessible as a bash script
+
+Clawe pulls these things together to provide a reasonable feedback loop while
+working on your development environment.
+
+This repo contains a full awesome configuration in the `awesome` directory. It
+is written almost entirely in Fennel, which is a clojure-y lisp that compiles to
+lua.
+
+This repo leans heavily on Ralphie for miscellanenous namespaces and utilities.
+I debated about writing this entirely inside of Ralphie, but instead I hope it's
+the first successful consumer - this should help whip it into shape so that
+other projects can easily benefit from it.
