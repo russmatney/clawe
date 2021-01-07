@@ -6,8 +6,9 @@
 (comment
   (repl/sync-libs!))
 
-
 (comment
+
+  (awm/reload-widgets)
 
   ;; reload widgets (re-runs connect_for_each_screen)
   (awm/awm-cli "require('bar'); init_screen();")

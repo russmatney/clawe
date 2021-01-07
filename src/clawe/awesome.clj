@@ -42,7 +42,7 @@ lain = require 'lain';")
   Adds a preamble that sets common variables and requires common modules."
   [lua-str]
   (->>
-    (str lua-preamble ";\n" lua-str)
+    (str lua-preamble "\n\n-- Passed command:\n" lua-str)
     ((fn [lua-str]
        (println "Running lua via awesome-client!:\n\n" lua-str)
        lua-str))
@@ -64,3 +64,31 @@ lain = require 'lain';")
   (println "hello")
   (awm-cli "print('hello')")
   (awm-cli "return view(lume.map(s.tags, function (t) return {name= t.name} end))"))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Reload Widgets
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(def widget-filenames
+  ;; TODO generate this from the awesome/widgets/* dir
+  #{"workspaces"
+    "org-pomodoro"
+    "focus"
+    "pomodoro"
+    "dirty-repos"})
+
+(defn hotswap-widget-modules []
+  (->> widget-filenames
+       (map (partial str "widgets."))
+       (map #(str "lume.hotswap('" % "');"))
+       (cons "lume.hotswap('bar');")
+       reverse ;; move 'bar' hotswap to last
+       (string/join "\n")
+       (awm-cli)))
+
+(defn init-screen []
+  (awm-cli "require('bar'); init_screen();"))
+
+(defn reload-widgets []
+  (hotswap-widget-modules)
+  (init-screen))
