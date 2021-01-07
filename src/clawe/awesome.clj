@@ -5,6 +5,10 @@
    [ralph.defcom :refer [defcom]]
    ))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Lua -> Clojure, awm-cli
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defn parse-output
   "Parses the output of awm-cli, with assumptions not worth baking into the root
   command."
@@ -68,6 +72,83 @@ lain = require 'lain';")
   (awm-cli "return view(lume.map(s.tags, function (t) return {name= t.name} end))"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Clojure -> Lua, awm-fn
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn ->snake-case [s]
+  (string/replace s "-" "_"))
+
+(defn ->lua-key [s]
+  (-> s
+      (string/replace "-" "_")
+      (string/replace "?" "")))
+
+(defn ->lua-arg
+  "Converts the passed arg to a string representing lua syntax.
+
+  Strings are wrapped in quotes, keywords are not. This is to allow passing
+  references to global vars, such as `lain.layout.centerwork`."
+  [arg]
+  (cond
+    (nil? arg)
+    "nil"
+
+    (boolean? arg)
+    (str arg)
+
+    (string? arg)
+    (str "\"" arg "\"")
+
+    (keyword? arg)
+    (apply str (rest (str arg)))
+
+    (int? arg)
+    arg
+
+    (map? arg)
+    (->> arg
+         (map (fn [[k v]]
+                (str "\n" (->lua-key (name k)) " = " (->lua-arg v))))
+         (string/join ", ")
+         (#(str "{" % "} \n")))
+
+    (coll? arg)
+    (->> arg
+         (map (fn [x]
+                (->lua-arg x)))
+         (string/join ",")
+         (#(str "{" % "} \n")))))
+
+(comment
+  (string? "hello")
+  (->lua-arg "hello")
+  (->lua-arg :lain.layout.centerwork)
+  (->lua-arg {:level 1 :status :status/done})
+  (->lua-arg {:fix-keyword 1})
+  ;; drop question marks
+  (->lua-arg {:clean? nil})
+  (->lua-arg {:clean? false})
+  (->lua-arg {:screen "s" :tag "yodo"}))
+
+(defn awm-fn [fn & args]
+  (str fn "("
+       (->> args
+            (map ->lua-arg)
+            (string/join ", ")
+            (apply str))
+       ")"))
+
+(comment
+  (awm-fn "awful.layout.set" :lain.layout.centerwork)
+  (= (awm-fn "awful.layout.set" :lain.layout.centerwork)
+     "awful.layout.set(lain.layout.centerwork)")
+  (let [args {:some-clojure "map"
+              :with         :global.keywords
+              :and          [{:nested  1
+                              :numbers 2}]}]
+    (println (awm-fn "my-fn" args))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Reload Widgets
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -94,6 +175,9 @@ lain = require 'lain';")
 (defn reload-widgets []
   (hotswap-widget-modules)
   (init-screen))
+
+(comment
+  (reload-widgets))
 
 (defcom reload-widgets-cmd
   {:name    "reload-widgets"
