@@ -1,7 +1,9 @@
 (ns clawe.awesome
   (:require
    [babashka.process :refer [$ check]]
-   [clojure.string :as string]))
+   [clojure.string :as string]
+   [ralph.defcom :refer [defcom]]
+   ))
 
 (defn parse-output
   "Parses the output of awm-cli, with assumptions not worth baking into the root
@@ -92,3 +94,7 @@ lain = require 'lain';")
 (defn reload-widgets []
   (hotswap-widget-modules)
   (init-screen))
+
+(defcom reload-widgets-cmd
+  {:name    "reload-widgets"
+   :handler (fn [_ _] (reload-widgets))})
