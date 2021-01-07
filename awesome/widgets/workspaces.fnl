@@ -1,5 +1,4 @@
 (local wibox (require "wibox"))
-(local spawn (require "awful.spawn"))
 (local tablex (require "pl.tablex"))
 (local awful (require "awful"))
 (local gears (require "gears"))
@@ -7,12 +6,7 @@
 
 (local icons (require "icons"))
 
-(local UPDATE_WORKSPACES
-       "bash -c \"clawe update-dirty-workspaces\"")
-
-(fn clawe-update-workspaces []
-  (spawn.easy_async UPDATE_WORKSPACES
-                    #(print "workspaces update requested")))
+(local clawe (require "clawe"))
 
 (fn row [item]
   (wibox.widget
@@ -47,23 +41,27 @@
          (set self.txt.markup str))
        1 {:align "center"
           :markup (.. "<span size=\"large\" font_weight=\"bold\" color=\"#536452\">"
-                      "Workspaces: </span>")
+                      "Dirty Workspaces: </span>")
           :widget wibox.widget.textbox}
        2 {:id "txt"
           :widget wibox.widget.textbox}
        3 icons.fa-timeicon}))
 
-(fn _G.update_workspaces_widget [workspaces]
-  "Expects a list of objs with a :name key."
-  (when workspaces
-    (: workspaces-widget.widget :set_count (tablex.size workspaces)))
+(local update-cb-fname "update_workspaces_widget")
 
-  (local rows {:layout wibox.layout.fixed.vertical})
+(tset
+ _G update-cb-fname
+ (fn [workspaces]
+   "Expects a list of objs with a :name key."
+   (when workspaces
+     (: workspaces-widget.widget :set_count (tablex.size workspaces)))
 
-  (each [_ item (ipairs workspaces)]
-    (table.insert rows (row item)))
+   (local rows {:layout wibox.layout.fixed.vertical})
 
-  (: popup :setup rows))
+   (each [_ item (ipairs workspaces)]
+     (table.insert rows (row item)))
+
+   (: popup :setup rows)))
 
 (fn worker []
   (: workspaces-widget.widget :connect_signal "mouse::enter"
@@ -79,10 +77,11 @@
 
   (: workspaces-widget.widget :buttons
      (awful.util.table.join
-      (awful.button [] 1 clawe-update-workspaces)))
+      ;; click to force update
+      (awful.button [] 1 (fn [] (clawe.update-workspaces update-cb-fname)))))
 
-  ;; init
-  (clawe-update-workspaces)
+  ;; called when module is created
+  (clawe.update-workspaces update-cb-fname)
 
   workspaces-widget.widget)
 
