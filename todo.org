@@ -12,6 +12,9 @@ CLOSED: [2021-01-06 Wed 22:15]
 * [X] write clawe awm-cli command
 CLOSED: [2021-01-06 Wed 22:36]
 * [ ] get reasonable widget development loop going
+:LOGBOOK:
+CLOCK: [2021-01-07 Thu 14:27]--[2021-01-07 Thu 15:02] =>  0:35
+:END:
 * [ ] write workspaces widget
 * [ ] pull set-keybindings fully into a clawe command
 * [ ] minimize the symlinked awesome-config
@@ -21,3 +24,4 @@ CLOSED: [2021-01-06 Wed 22:36]
 * [ ] print awm-keybindings command
 * [ ] print workspaces (tags and clients)
 * [ ] integrate the awesome git-history from ~/dotfiles
+* [ ] write clawe.restart that wraps and handles fennel strict errors before crashing

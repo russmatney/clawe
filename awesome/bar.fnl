@@ -5,6 +5,7 @@
 
 (local dirty-repos-widget (require "widgets.dirty-repos"))
 (local org-pomo-widget (require "widgets.org-pomodoro"))
+(local workspaces-widget (require "widgets.workspaces"))
 
 ;; (local pomodoro-widget (require "awesome-wm-widgets.pomodoroarc-widget.pomodoroarc"))
 (local batteryarc-widget (require"awesome-wm-widgets.batteryarc-widget.batteryarc"))
@@ -208,14 +209,6 @@
  (fn []
    (awful.screen.connect_for_each_screen
     (fn [s]
-      ;; set padding for top-status bar
-      (tset s :padding {
-                        :top 0
-                        ;; :top 100 ;; matches status bar height
-                        :bottom s.padding.bottom
-                        :left s.padding.left
-                        :right s.padding.right})
-
       ;; Create an imagebox widget which will contains an icon indicating which layout we're using.
       ;; We need one layoutbox per screen.
       (set s.mylayoutbox
@@ -252,6 +245,8 @@
            4 (dirty-repos-widget)
            5 separator
            6 (org-pomo-widget)
+           7 separator
+           8 (workspaces-widget)
            }
 
         ;; Right widgets
