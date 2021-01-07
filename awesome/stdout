@@ -1,0 +1,1519 @@
+/usr/bin/gnome-keyring-daemon
+/usr/bin/start-pulseaudio-x11
+909865
+/usr/lib/mate-polkit/polkit-mate-authentication-agent-1
+909862
+/usr/bin/xfce4-power-manager
+909871
+/usr/bin/system-config-printer-applet
+857976
+/usr/bin/xfsettingsd
+909886
+/usr/bin/nm-applet
+909881
+/usr/bin/light-locker
+909891
+/usr/bin/xcape
+909900
+/usr/bin/thunar
+909902
+/usr/bin/pa-applet
+909907
+/usr/bin/pamac-tray
+909912
+/usr/bin/blueman-applet
+909917
+/usr/bin/msm_notifier
+909922
+/usr/bin/dropbox
+910230
+/usr/bin/variety
+1074633
+/usr/bin/picom
+909937
+Caution: NOT using a test file (/home/russ/.config/awesome/rc.lua)
+Display: 2, Awesome PID: 1183349, Xephyr PID: 1183285
+/usr/bin/gnome-keyring-daemon
+1183362
+/usr/bin/start-pulseaudio-x11
+909865
+/usr/lib/mate-polkit/polkit-mate-authentication-agent-1
+909862
+/usr/bin/xfce4-power-manager
+909871
+/usr/bin/system-config-printer-applet
+857976
+/usr/bin/xfsettingsd
+909886
+/usr/bin/nm-applet
+909881
+/usr/bin/light-locker
+909891
+/usr/bin/xcape
+909900
+/usr/bin/thunar
+909902
+/usr/bin/pa-applet
+909907
+/usr/bin/pamac-tray
+909912
+/usr/bin/blueman-applet
+909917
+/usr/bin/msm_notifier
+909922
+/usr/bin/dropbox
+910230
+/usr/bin/variety
+1074633
+/usr/bin/picom
+909937
+Caution: NOT using a test file (/home/russ/.config/awesome/rc.lua)
+Display: 3, Awesome PID: 1184836, Xephyr PID: 1184793
+2020-07-25 16:08:46 W: awesome: luaA_dofunction:78: error while running function!
+stack traceback:
+	.config/awesome/cfg.fnl:41: in upvalue 'press'
+	/usr/share/awesome/lib/awful/key.lua:125: in function </usr/share/awesome/lib/awful/key.lua:125>
+error: .config/awesome/cfg.fnl:41: attempt to index a nil value (local 'journal_tag')
+2020-07-25 16:08:55 E: awesome: a_xcb_io_cb:402: X server connection broke (error 1)
+/usr/bin/gnome-keyring-daemon
+1183362
+/usr/bin/start-pulseaudio-x11
+909865
+/usr/lib/mate-polkit/polkit-mate-authentication-agent-1
+909862
+/usr/bin/xfce4-power-manager
+909871
+/usr/bin/system-config-printer-applet
+857976
+/usr/bin/xfsettingsd
+909886
+/usr/bin/nm-applet
+909881
+/usr/bin/light-locker
+909891
+/usr/bin/xcape
+909900
+/usr/bin/thunar
+909902
+/usr/bin/pa-applet
+909907
+/usr/bin/pamac-tray
+909912
+/usr/bin/blueman-applet
+909917
+/usr/bin/msm_notifier
+909922
+/usr/bin/dropbox
+910230
+/usr/bin/variety
+1074633
+/usr/bin/picom
+909937
+Caution: NOT using a test file (/home/russ/.config/awesome/rc.lua)
+Display: 1, Awesome PID: 1185908, Xephyr PID: 1185866
+called create or toggle scratchpad
+2020-07-25 16:09:29 W: awesome: luaA_dofunction:78: error while running function!
+stack traceback:
+	.config/awesome/cfg.fnl:42: in upvalue 'press'
+	/usr/share/awesome/lib/awful/key.lua:125: in function </usr/share/awesome/lib/awful/key.lua:125>
+error: .config/awesome/cfg.fnl:42: attempt to index a nil value (local 'journal_tag')
+error while running function!
+stack traceback:
+	[C]: in function 'error'
+	/usr/lib/lua/5.3/fennel.lua:616: in upvalue 'assertCompile'
+	/usr/lib/lua/5.3/fennel.lua:850: in upvalue 'symbolToExpression'
+	/usr/lib/lua/5.3/fennel.lua:1220: in function 'fennel.compile1'
+	/usr/lib/lua/5.3/fennel.lua:1183: in function 'fennel.compile1'
+	/usr/lib/lua/5.3/fennel.lua:1337: in upvalue 'compileTopTarget'
+	/usr/lib/lua/5.3/fennel.lua:1356: in local 'destructure1'
+	/usr/lib/lua/5.3/fennel.lua:1410: in upvalue 'destructure'
+	/usr/lib/lua/5.3/fennel.lua:1749: in local 'special'
+	/usr/lib/lua/5.3/fennel.lua:1155: in function 'fennel.compile1'
+	/usr/lib/lua/5.3/fennel.lua:1582: in local 'special'
+	/usr/lib/lua/5.3/fennel.lua:1155: in function 'fennel.compile1'
+	/usr/lib/lua/5.3/fennel.lua:1582: in local 'special'
+	/usr/lib/lua/5.3/fennel.lua:1155: in function 'fennel.compile1'
+	/usr/lib/lua/5.3/fennel.lua:2314: in function 'fennel.compileStream'
+	/usr/lib/lua/5.3/fennel.lua:2329: in function 'fennel.compileString'
+	/usr/lib/lua/5.3/fennel.lua:2437: in function 'fennel.eval'
+	(...tail calls...)
+	[C]: in function 'require'
+	/home/russ/.config/awesome/rc.lua:9: in main chunk
+error: Compile error in 'when-journal-tag' .config/awesome/cfg.fnl:66: unknown global in strict mode: when-journal-tag
+error while running function!
+stack traceback:
+	[C]: in function 'error'
+	/usr/lib/lua/5.3/fennel.lua:616: in upvalue 'assertCompile'
+	/usr/lib/lua/5.3/fennel.lua:850: in upvalue 'symbolToExpression'
+	/usr/lib/lua/5.3/fennel.lua:1220: in function 'fennel.compile1'
+	/usr/lib/lua/5.3/fennel.lua:1183: in function 'fennel.compile1'
+	/usr/lib/lua/5.3/fennel.lua:1337: in upvalue 'compileTopTarget'
+	/usr/lib/lua/5.3/fennel.lua:1356: in local 'destructure1'
+	/usr/lib/lua/5.3/fennel.lua:1410: in upvalue 'destructure'
+	/usr/lib/lua/5.3/fennel.lua:1749: in local 'special'
+	/usr/lib/lua/5.3/fennel.lua:1155: in function 'fennel.compile1'
+	/usr/lib/lua/5.3/fennel.lua:1582: in local 'special'
+	/usr/lib/lua/5.3/fennel.lua:1155: in function 'fennel.compile1'
+	/usr/lib/lua/5.3/fennel.lua:1582: in local 'special'
+	/usr/lib/lua/5.3/fennel.lua:1155: in function 'fennel.compile1'
+	/usr/lib/lua/5.3/fennel.lua:2314: in function 'fennel.compileStream'
+	/usr/lib/lua/5.3/fennel.lua:2329: in function 'fennel.compileString'
+	/usr/lib/lua/5.3/fennel.lua:2437: in function 'fennel.eval'
+	(...tail calls...)
+	[C]: in function 'require'
+	/home/russ/.config/awesome/rc.lua:9: in main chunk
+error: Compile error in 'when-journal-tag' .config/awesome/cfg.fnl:66: unknown global in strict mode: when-journal-tag
+/usr/bin/gnome-keyring-daemon
+/usr/bin/start-pulseaudio-x11
+909865
+/usr/lib/mate-polkit/polkit-mate-authentication-agent-1
+909862
+/usr/bin/xfce4-power-manager
+909871
+/usr/bin/system-config-printer-applet
+857976
+/usr/bin/xfsettingsd
+909886
+/usr/bin/nm-applet
+909881
+/usr/bin/light-locker
+909891
+/usr/bin/xcape
+909900
+/usr/bin/thunar
+909902
+/usr/bin/pa-applet
+909907
+/usr/bin/pamac-tray
+909912
+/usr/bin/blueman-applet
+909917
+/usr/bin/msm_notifier
+909922
+/usr/bin/dropbox
+910230
+/usr/bin/variety
+1074633
+/usr/bin/picom
+909937
+called create or toggle scratchpad
+nil
+emacsclient: could not get terminal name
+2020-07-25 16:22:01 W: awesome: a_glib_poll:438: Last main loop iteration took 0.177633 seconds! Increasing limit for this warning to that value.
+2020-07-25 16:22:57 E: awesome: a_xcb_io_cb:402: X server connection broke (error 1)
+/usr/bin/gnome-keyring-daemon
+/usr/bin/start-pulseaudio-x11
+909865
+/usr/lib/mate-polkit/polkit-mate-authentication-agent-1
+909862
+/usr/bin/xfce4-power-manager
+909871
+/usr/bin/system-config-printer-applet
+857976
+/usr/bin/xfsettingsd
+909886
+/usr/bin/nm-applet
+909881
+/usr/bin/light-locker
+909891
+/usr/bin/xcape
+909900
+/usr/bin/thunar
+909902
+/usr/bin/pa-applet
+909907
+/usr/bin/pamac-tray
+909912
+/usr/bin/blueman-applet
+909917
+/usr/bin/msm_notifier
+909922
+/usr/bin/dropbox
+910230
+/usr/bin/variety
+1074633
+/usr/bin/picom
+909937
+Caution: NOT using a test file (/home/russ/.config/awesome/rc.lua)
+Display: 1, Awesome PID: 1210881, Xephyr PID: 1210814
+called create or toggle scratchpad
+nil
+called create or toggle scratchpad
+tag: 0x55be12735a28
+called create or toggle scratchpad
+tag: 0x55be12735a28
+called create or toggle scratchpad
+tag: 0x55be12735a28
+called create or toggle scratchpad
+tag: 0x55be12735a28
+/usr/bin/gnome-keyring-daemon
+/usr/bin/start-pulseaudio-x11
+909865
+/usr/lib/mate-polkit/polkit-mate-authentication-agent-1
+909862
+/usr/bin/xfce4-power-manager
+909871
+/usr/bin/system-config-printer-applet
+857976
+/usr/bin/xfsettingsd
+909886
+/usr/bin/nm-applet
+909881
+/usr/bin/light-locker
+909891
+/usr/bin/xcape
+909900
+/usr/bin/thunar
+909902
+/usr/bin/pa-applet
+909907
+/usr/bin/pamac-tray
+909912
+/usr/bin/blueman-applet
+909917
+/usr/bin/msm_notifier
+909922
+/usr/bin/dropbox
+910230
+/usr/bin/variety
+1074633
+/usr/bin/picom
+909937
+called create or toggle scratchpad
+no journal tag, creating tag and client
+called create or toggle scratchpad
+found journal tag and NO clients - creating client
+called create or toggle scratchpad
+found journal tag and NO clients - creating client
+/usr/bin/gnome-keyring-daemon
+1215340
+/usr/bin/start-pulseaudio-x11
+909865
+/usr/lib/mate-polkit/polkit-mate-authentication-agent-1
+909862
+/usr/bin/xfce4-power-manager
+909871
+/usr/bin/system-config-printer-applet
+857976
+/usr/bin/xfsettingsd
+909886
+/usr/bin/nm-applet
+909881
+/usr/bin/light-locker
+909891
+/usr/bin/xcape
+909900
+/usr/bin/thunar
+909902
+/usr/bin/pa-applet
+909907
+/usr/bin/pamac-tray
+909912
+/usr/bin/blueman-applet
+909917
+/usr/bin/msm_notifier
+909922
+/usr/bin/dropbox
+910230
+/usr/bin/variety
+1074633
+/usr/bin/picom
+909937
+called create or toggle scratchpad
+no journal tag, creating tag and client
+called create or toggle scratchpad
+found journal tag and NO clients - creating client
+table: 0x5628738e7b60
+/usr/bin/gnome-keyring-daemon
+1215340
+/usr/bin/start-pulseaudio-x11
+909865
+/usr/lib/mate-polkit/polkit-mate-authentication-agent-1
+909862
+/usr/bin/xfce4-power-manager
+909871
+/usr/bin/system-config-printer-applet
+857976
+/usr/bin/xfsettingsd
+909886
+/usr/bin/nm-applet
+909881
+/usr/bin/light-locker
+909891
+/usr/bin/xcape
+909900
+/usr/bin/thunar
+909902
+/usr/bin/pa-applet
+909907
+/usr/bin/pamac-tray
+909912
+/usr/bin/blueman-applet
+909917
+/usr/bin/msm_notifier
+909922
+/usr/bin/dropbox
+910230
+/usr/bin/variety
+1074633
+/usr/bin/picom
+909937
+called create or toggle scratchpad
+no journal tag, creating tag and client
+called create or toggle scratchpad
+found journal tag and NO clients - creating client
+table: 0x560d3b0d3520
+called create or toggle scratchpad
+found journal tag and NO clients - creating client
+table: 0x560d3b1e7070
+/usr/bin/gnome-keyring-daemon
+/usr/bin/start-pulseaudio-x11
+909865
+/usr/lib/mate-polkit/polkit-mate-authentication-agent-1
+909862
+/usr/bin/xfce4-power-manager
+909871
+/usr/bin/system-config-printer-applet
+857976
+/usr/bin/xfsettingsd
+909886
+/usr/bin/nm-applet
+909881
+/usr/bin/light-locker
+909891
+/usr/bin/xcape
+909900
+/usr/bin/thunar
+909902
+/usr/bin/pa-applet
+909907
+/usr/bin/pamac-tray
+909912
+/usr/bin/blueman-applet
+909917
+/usr/bin/msm_notifier
+909922
+/usr/bin/dropbox
+910230
+/usr/bin/variety
+1074633
+/usr/bin/picom
+909937
+called create or toggle scratchpad
+no journal tag, creating tag and client
+called create or toggle scratchpad
+found journal tag and NO clients - creating client
+table: 0x563b453de110
+called create or toggle scratchpad
+found journal tag and NO clients - creating client
+table: 0x563b4549f8f0
+/usr/bin/gnome-keyring-daemon
+1223865
+/usr/bin/start-pulseaudio-x11
+909865
+/usr/lib/mate-polkit/polkit-mate-authentication-agent-1
+909862
+/usr/bin/xfce4-power-manager
+909871
+/usr/bin/system-config-printer-applet
+857976
+/usr/bin/xfsettingsd
+909886
+/usr/bin/nm-applet
+909881
+/usr/bin/light-locker
+909891
+/usr/bin/xcape
+909900
+/usr/bin/thunar
+909902
+/usr/bin/pa-applet
+909907
+/usr/bin/pamac-tray
+909912
+/usr/bin/blueman-applet
+909917
+/usr/bin/msm_notifier
+909922
+/usr/bin/dropbox
+910230
+/usr/bin/variety
+1074633
+/usr/bin/picom
+909937
+called create or toggle scratchpad
+no journal tag, creating tag and client
+called create or toggle scratchpad
+found journal tag and NO clients - creating client
+table: 0x56186d734ba0
+0
+/usr/bin/gnome-keyring-daemon
+/usr/bin/start-pulseaudio-x11
+909865
+/usr/lib/mate-polkit/polkit-mate-authentication-agent-1
+909862
+/usr/bin/xfce4-power-manager
+909871
+/usr/bin/system-config-printer-applet
+857976
+/usr/bin/xfsettingsd
+909886
+/usr/bin/nm-applet
+909881
+/usr/bin/light-locker
+909891
+/usr/bin/xcape
+909900
+/usr/bin/thunar
+909902
+/usr/bin/pa-applet
+909907
+/usr/bin/pamac-tray
+909912
+/usr/bin/blueman-applet
+909917
+/usr/bin/msm_notifier
+909922
+/usr/bin/dropbox
+910230
+/usr/bin/variety
+1074633
+/usr/bin/picom
+909937
+called create or toggle scratchpad
+no journal tag, creating tag and client
+2020-07-25 16:43:56 W: awesome: luaA_dofunction:78: error while running function!
+stack traceback:
+	[C]: in function 'string.match'
+	/usr/share/awesome/lib/awful/rules.lua:211: in function 'awful.rules.match'
+	/usr/share/awesome/lib/awful/rules.lua:250: in function 'awful.rules.matches'
+	/usr/share/awesome/lib/awful/rules.lua:262: in function 'awful.rules.matching_rules'
+	/usr/share/awesome/lib/awful/rules.lua:402: in field 'callback'
+	/usr/share/awesome/lib/awful/rules.lua:491: in function 'awful.rules.apply'
+error: /usr/share/awesome/lib/awful/rules.lua:211: bad argument #1 to 'match' (string expected, got table)
+/usr/bin/gnome-keyring-daemon
+1230763
+/usr/bin/start-pulseaudio-x11
+909865
+/usr/lib/mate-polkit/polkit-mate-authentication-agent-1
+909862
+/usr/bin/xfce4-power-manager
+909871
+/usr/bin/system-config-printer-applet
+857976
+/usr/bin/xfsettingsd
+909886
+/usr/bin/nm-applet
+909881
+/usr/bin/light-locker
+909891
+/usr/bin/xcape
+909900
+/usr/bin/thunar
+909902
+/usr/bin/pa-applet
+909907
+/usr/bin/pamac-tray
+909912
+/usr/bin/blueman-applet
+909917
+/usr/bin/msm_notifier
+909922
+/usr/bin/dropbox
+910230
+/usr/bin/variety
+1074633
+/usr/bin/picom
+909937
+called create or toggle scratchpad
+no journal tag, creating tag and client
+called create or toggle scratchpad
+found journal tag and NO clients - creating client
+table: 0x5584ae5424c0
+0
+/usr/bin/gnome-keyring-daemon
+/usr/bin/start-pulseaudio-x11
+909865
+/usr/lib/mate-polkit/polkit-mate-authentication-agent-1
+909862
+/usr/bin/xfce4-power-manager
+909871
+/usr/bin/system-config-printer-applet
+857976
+/usr/bin/xfsettingsd
+909886
+/usr/bin/nm-applet
+909881
+/usr/bin/light-locker
+909891
+/usr/bin/xcape
+909900
+/usr/bin/thunar
+909902
+/usr/bin/pa-applet
+909907
+/usr/bin/pamac-tray
+909912
+/usr/bin/blueman-applet
+909917
+/usr/bin/msm_notifier
+909922
+/usr/bin/dropbox
+910230
+/usr/bin/variety
+1074633
+/usr/bin/picom
+909937
+called create or toggle scratchpad
+no journal tag, creating tag and client
+called create or toggle scratchpad
+found journal tag and clients in that tag - toggling tag
+called create or toggle scratchpad
+found journal tag and clients in that tag - toggling tag
+called create or toggle scratchpad
+found journal tag and clients in that tag - toggling tag
+called create or toggle scratchpad
+found journal tag and clients in that tag - toggling tag
+called create or toggle scratchpad
+found journal tag and clients in that tag - toggling tag
+called create or toggle scratchpad
+found journal tag and clients in that tag - toggling tag
+called create or toggle scratchpad
+found journal tag and clients in that tag - toggling tag
+called create or toggle scratchpad
+found journal tag and clients in that tag - toggling tag
+called create or toggle scratchpad
+found journal tag and clients in that tag - toggling tag
+2020-07-25 16:47:15 W: awesome: luaA_dofunction:78: error while running function!
+stack traceback:
+	.config/awesome/cfg.fnl:105: in upvalue 'press'
+	/usr/share/awesome/lib/awful/key.lua:125: in function </usr/share/awesome/lib/awful/key.lua:125>
+error: .config/awesome/cfg.fnl:105: attempt to index a nil value (local 'current_tag')
+2020-07-25 16:47:34 W: awesome: luaA_dofunction:78: error while running function!
+stack traceback:
+	.config/awesome/cfg.fnl:105: in upvalue 'press'
+	/usr/share/awesome/lib/awful/key.lua:125: in function </usr/share/awesome/lib/awful/key.lua:125>
+error: .config/awesome/cfg.fnl:105: attempt to index a nil value (local 'current_tag')
+/usr/bin/gnome-keyring-daemon
+2020-07-25 16:48:30 E: awesome: awful.rules-rule specified tag = 'journal', but no such tag exists
+1234473
+/usr/bin/start-pulseaudio-x11
+909865
+/usr/lib/mate-polkit/polkit-mate-authentication-agent-1
+909862
+/usr/bin/xfce4-power-manager
+909871
+/usr/bin/system-config-printer-applet
+857976
+/usr/bin/xfsettingsd
+909886
+/usr/bin/nm-applet
+909881
+/usr/bin/light-locker
+909891
+/usr/bin/xcape
+909900
+/usr/bin/thunar
+909902
+/usr/bin/pa-applet
+909907
+/usr/bin/pamac-tray
+909912
+/usr/bin/blueman-applet
+909917
+/usr/bin/msm_notifier
+909922
+/usr/bin/dropbox
+910230
+/usr/bin/variety
+1074633
+/usr/bin/picom
+909937
+called create or toggle scratchpad
+no journal tag, creating tag and client
+called create or toggle scratchpad
+found journal tag and clients in that tag - toggling tag
+called create or toggle scratchpad
+found journal tag and clients in that tag - toggling tag
+called create or toggle scratchpad
+found journal tag and clients in that tag - toggling tag
+called create or toggle scratchpad
+found journal tag and clients in that tag - toggling tag
+called create or toggle scratchpad
+found journal tag and clients in that tag - toggling tag
+called create or toggle scratchpad
+found journal tag and clients in that tag - toggling tag
+called create or toggle scratchpad
+found journal tag and clients in that tag - toggling tag
+called create or toggle scratchpad
+found journal tag and clients in that tag - toggling tag
+called create or toggle scratchpad
+found journal tag and clients in that tag - toggling tag
+called create or toggle scratchpad
+found journal tag and clients in that tag - toggling tag
+called create or toggle scratchpad
+found journal tag and clients in that tag - toggling tag
+called create or toggle scratchpad
+found journal tag and clients in that tag - toggling tag
+called create or toggle scratchpad
+found journal tag and clients in that tag - toggling tag
+called create or toggle scratchpad
+found journal tag and clients in that tag - toggling tag
+called create or toggle scratchpad
+found journal tag and clients in that tag - toggling tag
+/usr/bin/gnome-keyring-daemon
+/usr/bin/start-pulseaudio-x11
+909865
+/usr/lib/mate-polkit/polkit-mate-authentication-agent-1
+909862
+/usr/bin/xfce4-power-manager
+909871
+/usr/bin/system-config-printer-applet
+857976
+/usr/bin/xfsettingsd
+909886
+/usr/bin/nm-applet
+909881
+/usr/bin/light-locker
+909891
+/usr/bin/xcape
+909900
+/usr/bin/thunar
+909902
+/usr/bin/pa-applet
+909907
+/usr/bin/pamac-tray
+909912
+/usr/bin/blueman-applet
+909917
+/usr/bin/msm_notifier
+909922
+/usr/bin/dropbox
+910230
+/usr/bin/variety
+1074633
+/usr/bin/picom
+909937
+/usr/bin/gnome-keyring-daemon
+1239338
+/usr/bin/start-pulseaudio-x11
+909865
+/usr/lib/mate-polkit/polkit-mate-authentication-agent-1
+909862
+/usr/bin/xfce4-power-manager
+909871
+/usr/bin/system-config-printer-applet
+857976
+/usr/bin/xfsettingsd
+909886
+/usr/bin/nm-applet
+909881
+/usr/bin/light-locker
+909891
+/usr/bin/xcape
+909900
+/usr/bin/thunar
+909902
+/usr/bin/pa-applet
+909907
+/usr/bin/pamac-tray
+909912
+/usr/bin/blueman-applet
+909917
+/usr/bin/msm_notifier
+909922
+/usr/bin/dropbox
+910230
+/usr/bin/variety
+1074633
+/usr/bin/picom
+909937
+called create or toggle scratchpad
+found journal tag and NO clients - creating client
+table: 0x55883b530da0
+0
+called create or toggle scratchpad
+found journal tag and clients in that tag - toggling tag
+called create or toggle scratchpad
+found journal tag and clients in that tag - toggling tag
+called create or toggle scratchpad
+found journal tag and clients in that tag - toggling tag
+called create or toggle scratchpad
+found journal tag and clients in that tag - toggling tag
+2020-07-25 16:52:10 E: awesome: a_xcb_io_cb:402: X server connection broke (error 1)
+/usr/bin/gnome-keyring-daemon
+/usr/bin/start-pulseaudio-x11
+909865
+/usr/lib/mate-polkit/polkit-mate-authentication-agent-1
+909862
+/usr/bin/xfce4-power-manager
+909871
+/usr/bin/system-config-printer-applet
+857976
+/usr/bin/xfsettingsd
+909886
+/usr/bin/nm-applet
+909881
+/usr/bin/light-locker
+909891
+/usr/bin/xcape
+909900
+/usr/bin/thunar
+909902
+/usr/bin/pa-applet
+909907
+/usr/bin/pamac-tray
+909912
+/usr/bin/blueman-applet
+909917
+/usr/bin/msm_notifier
+909922
+/usr/bin/dropbox
+910230
+/usr/bin/variety
+1074633
+/usr/bin/picom
+909937
+Caution: NOT using a test file (/home/russ/.config/awesome/rc.lua)
+Display: 1, Awesome PID: 1244286, Xephyr PID: 1244194
+called create or toggle scratchpad
+found journal tag and NO clients - creating client
+table: 0x5562575d8b60
+0
+2020-07-25 16:54:22 E: awesome: a_xcb_io_cb:402: X server connection broke (error 1)
+error while running function!
+stack traceback:
+	[C]: in function 'error'
+	/usr/lib/lua/5.3/fennel.lua:343: in upvalue 'parseError'
+	/usr/lib/lua/5.3/fennel.lua:398: in for iterator 'for iterator'
+	/usr/lib/lua/5.3/fennel.lua:2307: in function 'fennel.compileStream'
+	/usr/lib/lua/5.3/fennel.lua:2329: in function 'fennel.compileString'
+	/usr/lib/lua/5.3/fennel.lua:2437: in function 'fennel.eval'
+	(...tail calls...)
+	[C]: in function 'require'
+	/home/russ/.config/awesome/rc.lua:9: in main chunk
+error: Parse error in .config/awesome/cfg.fnl:75: expected whitespace before opening delimiter (
+error while running function!
+stack traceback:
+	[C]: in function 'error'
+	/usr/lib/lua/5.3/fennel.lua:343: in upvalue 'parseError'
+	/usr/lib/lua/5.3/fennel.lua:398: in for iterator 'for iterator'
+	/usr/lib/lua/5.3/fennel.lua:2307: in function 'fennel.compileStream'
+	/usr/lib/lua/5.3/fennel.lua:2329: in function 'fennel.compileString'
+	/usr/lib/lua/5.3/fennel.lua:2437: in function 'fennel.eval'
+	(...tail calls...)
+	[C]: in function 'require'
+	/home/russ/.config/awesome/rc.lua:9: in main chunk
+error: Parse error in .config/awesome/cfg.fnl:75: expected whitespace before opening delimiter (
+Caution: NOT using a test file (/home/russ/.config/awesome/rc.lua)
+Display: 1, Awesome PID: 1280610, Xephyr PID: 1280567
+/usr/bin/gnome-keyring-daemon
+/usr/bin/start-pulseaudio-x11
+909865
+/usr/lib/mate-polkit/polkit-mate-authentication-agent-1
+909862
+/usr/bin/xfce4-power-manager
+909871
+/usr/bin/system-config-printer-applet
+857976
+/usr/bin/xfsettingsd
+909886
+/usr/bin/nm-applet
+909881
+/usr/bin/light-locker
+909891
+/usr/bin/xcape
+909900
+/usr/bin/thunar
+909902
+/usr/bin/pa-applet
+909907
+/usr/bin/pamac-tray
+909912
+/usr/bin/blueman-applet
+909917
+/usr/bin/msm_notifier
+909922
+/usr/bin/dropbox
+910230
+/usr/bin/variety
+1074633
+/usr/bin/picom
+909937
+called create or toggle scratchpad
+found journal tag and NO clients - creating client
+table: 0x55f3967ef370
+0
+called create or toggle scratchpad
+found journal tag and clients in that tag - toggling tag
+2020-07-25 17:32:53 W: awesome: luaA_dofunction:78: error while running function!
+stack traceback:
+	.config/awesome/cfg.fnl:63: in upvalue 'press'
+	/usr/share/awesome/lib/awful/key.lua:125: in function </usr/share/awesome/lib/awful/key.lua:125>
+error: .config/awesome/cfg.fnl:63: attempt to call a nil value (method 'activate')
+called create or toggle scratchpad
+found journal tag and clients in that tag - toggling tag
+2020-07-25 17:33:04 W: awesome: luaA_dofunction:78: error while running function!
+stack traceback:
+	.config/awesome/cfg.fnl:63: in upvalue 'press'
+	/usr/share/awesome/lib/awful/key.lua:125: in function </usr/share/awesome/lib/awful/key.lua:125>
+error: .config/awesome/cfg.fnl:63: attempt to call a nil value (method 'activate')
+called create or toggle scratchpad
+found journal tag and clients in that tag - toggling tag
+2020-07-25 17:33:08 W: awesome: luaA_dofunction:78: error while running function!
+stack traceback:
+	.config/awesome/cfg.fnl:63: in upvalue 'press'
+	/usr/share/awesome/lib/awful/key.lua:125: in function </usr/share/awesome/lib/awful/key.lua:125>
+error: .config/awesome/cfg.fnl:63: attempt to call a nil value (method 'activate')
+Opening in existing browser session.
+[0725/173312.412773:ERROR:nacl_helper_linux.cc(308)] NaCl helper process running without a sandbox!
+Most likely you need to configure your SUID sandbox correctly
+/usr/bin/gnome-keyring-daemon
+/usr/bin/start-pulseaudio-x11
+909865
+/usr/lib/mate-polkit/polkit-mate-authentication-agent-1
+909862
+/usr/bin/xfce4-power-manager
+909871
+/usr/bin/system-config-printer-applet
+857976
+/usr/bin/xfsettingsd
+909886
+/usr/bin/nm-applet
+909881
+/usr/bin/light-locker
+909891
+/usr/bin/xcape
+909900
+/usr/bin/thunar
+909902
+/usr/bin/pa-applet
+909907
+/usr/bin/pamac-tray
+909912
+/usr/bin/blueman-applet
+909917
+/usr/bin/msm_notifier
+909922
+/usr/bin/dropbox
+910230
+/usr/bin/variety
+1074633
+/usr/bin/picom
+909937
+called create or toggle scratchpad
+found journal tag and clients in that tag - toggling tag
+window/client(journal): 0x55cef5f45e48
+called create or toggle scratchpad
+found journal tag and clients in that tag - toggling tag
+window/client(journal): 0x55cef5f45e48
+2020-07-25 17:36:04 W: awesome: luaA_dofunction:78: error while running function!
+stack traceback:
+	.config/awesome/cfg.fnl:65: in upvalue 'press'
+	/usr/share/awesome/lib/awful/key.lua:125: in function </usr/share/awesome/lib/awful/key.lua:125>
+error: .config/awesome/cfg.fnl:65: attempt to call a nil value (method 'activate')
+called create or toggle scratchpad
+found journal tag and clients in that tag - toggling tag
+window/client(journal): 0x55cef5f45e48
+called create or toggle scratchpad
+found journal tag and clients in that tag - toggling tag
+window/client(journal): 0x55cef5f45e48
+2020-07-25 17:36:06 W: awesome: luaA_dofunction:78: error while running function!
+stack traceback:
+	.config/awesome/cfg.fnl:65: in upvalue 'press'
+	/usr/share/awesome/lib/awful/key.lua:125: in function </usr/share/awesome/lib/awful/key.lua:125>
+error: .config/awesome/cfg.fnl:65: attempt to call a nil value (method 'activate')
+called create or toggle scratchpad
+found journal tag and clients in that tag - toggling tag
+window/client(journal): 0x55cef5f45e48
+called create or toggle scratchpad
+found journal tag and clients in that tag - toggling tag
+window/client(journal): 0x55cef5f45e48
+2020-07-25 17:36:08 W: awesome: luaA_dofunction:78: error while running function!
+stack traceback:
+	.config/awesome/cfg.fnl:65: in upvalue 'press'
+	/usr/share/awesome/lib/awful/key.lua:125: in function </usr/share/awesome/lib/awful/key.lua:125>
+error: .config/awesome/cfg.fnl:65: attempt to call a nil value (method 'activate')
+called create or toggle scratchpad
+found journal tag and clients in that tag - toggling tag
+window/client(journal): 0x55cef5f45e48
+called create or toggle scratchpad
+found journal tag and clients in that tag - toggling tag
+window/client(journal): 0x55cef5f45e48
+2020-07-25 17:36:10 W: awesome: luaA_dofunction:78: error while running function!
+stack traceback:
+	.config/awesome/cfg.fnl:65: in upvalue 'press'
+	/usr/share/awesome/lib/awful/key.lua:125: in function </usr/share/awesome/lib/awful/key.lua:125>
+error: .config/awesome/cfg.fnl:65: attempt to call a nil value (method 'activate')
+2020-07-25 17:39:00 W: awesome: a_glib_poll:438: Last main loop iteration took 0.180098 seconds! Increasing limit for this warning to that value.
+2020-07-25 17:39:28 E: awesome: a_xcb_io_cb:402: X server connection broke (error 1)
+error while running function!
+stack traceback:
+	[C]: in function 'error'
+	/usr/lib/lua/5.3/fennel.lua:343: in upvalue 'parseError'
+	/usr/lib/lua/5.3/fennel.lua:398: in for iterator 'for iterator'
+	/usr/lib/lua/5.3/fennel.lua:2307: in function 'fennel.compileStream'
+	/usr/lib/lua/5.3/fennel.lua:2329: in function 'fennel.compileString'
+	/usr/lib/lua/5.3/fennel.lua:2437: in function 'fennel.eval'
+	(...tail calls...)
+	[C]: in function 'require'
+	/home/russ/.config/awesome/rc.lua:9: in main chunk
+error: Parse error in .config/awesome/cfg.fnl:67: expected whitespace before opening delimiter [
+error while running function!
+stack traceback:
+	[C]: in function 'error'
+	/usr/lib/lua/5.3/fennel.lua:343: in upvalue 'parseError'
+	/usr/lib/lua/5.3/fennel.lua:398: in for iterator 'for iterator'
+	/usr/lib/lua/5.3/fennel.lua:2307: in function 'fennel.compileStream'
+	/usr/lib/lua/5.3/fennel.lua:2329: in function 'fennel.compileString'
+	/usr/lib/lua/5.3/fennel.lua:2437: in function 'fennel.eval'
+	(...tail calls...)
+	[C]: in function 'require'
+	/home/russ/.config/awesome/rc.lua:9: in main chunk
+error: Parse error in .config/awesome/cfg.fnl:67: expected whitespace before opening delimiter [
+Caution: NOT using a test file (/home/russ/.config/awesome/rc.lua)
+Display: 1, Awesome PID: 1291625, Xephyr PID: 1291573
+/usr/bin/gnome-keyring-daemon
+/usr/bin/start-pulseaudio-x11
+909865
+/usr/lib/mate-polkit/polkit-mate-authentication-agent-1
+909862
+/usr/bin/xfce4-power-manager
+909871
+/usr/bin/system-config-printer-applet
+857976
+/usr/bin/xfsettingsd
+909886
+/usr/bin/nm-applet
+909881
+/usr/bin/light-locker
+909891
+/usr/bin/xcape
+909900
+/usr/bin/thunar
+909902
+/usr/bin/pa-applet
+909907
+/usr/bin/pamac-tray
+909912
+/usr/bin/blueman-applet
+909917
+/usr/bin/msm_notifier
+909922
+/usr/bin/dropbox
+910230
+/usr/bin/variety
+1074633
+/usr/bin/picom
+909937
+called create or toggle scratchpad
+found journal tag and NO clients - creating client
+table: 0x564d002d1bb0
+0
+called create or toggle scratchpad
+found journal tag and clients in that tag - toggling tag
+journal client
+window/client(journal): 0x564d00461cb8
+journal client
+window/client(journal): 0x564d00461cb8
+2020-07-25 17:44:11 W: awesome: luaA_dofunction:78: error while running function!
+stack traceback:
+	.config/awesome/cfg.fnl:68: in upvalue 'press'
+	/usr/share/awesome/lib/awful/key.lua:125: in function </usr/share/awesome/lib/awful/key.lua:125>
+error: .config/awesome/cfg.fnl:68: attempt to call a nil value (method 'activate')
+called create or toggle scratchpad
+found journal tag and clients in that tag - toggling tag
+journal client
+window/client(journal): 0x564d00461cb8
+journal client
+window/client(journal): 0x564d00461cb8
+2020-07-25 17:44:18 W: awesome: luaA_dofunction:78: error while running function!
+stack traceback:
+	.config/awesome/cfg.fnl:68: in upvalue 'press'
+	/usr/share/awesome/lib/awful/key.lua:125: in function </usr/share/awesome/lib/awful/key.lua:125>
+error: .config/awesome/cfg.fnl:68: attempt to call a nil value (method 'activate')
+called create or toggle scratchpad
+found journal tag and clients in that tag - toggling tag
+journal client
+window/client(journal): 0x564d00461cb8
+journal client
+window/client(journal): 0x564d00461cb8
+2020-07-25 17:44:19 W: awesome: luaA_dofunction:78: error while running function!
+stack traceback:
+	.config/awesome/cfg.fnl:68: in upvalue 'press'
+	/usr/share/awesome/lib/awful/key.lua:125: in function </usr/share/awesome/lib/awful/key.lua:125>
+error: .config/awesome/cfg.fnl:68: attempt to call a nil value (method 'activate')
+called create or toggle scratchpad
+found journal tag and clients in that tag - toggling tag
+journal client
+window/client(journal): 0x564d00461cb8
+journal client
+window/client(journal): 0x564d00461cb8
+2020-07-25 17:44:20 W: awesome: luaA_dofunction:78: error while running function!
+stack traceback:
+	.config/awesome/cfg.fnl:68: in upvalue 'press'
+	/usr/share/awesome/lib/awful/key.lua:125: in function </usr/share/awesome/lib/awful/key.lua:125>
+error: .config/awesome/cfg.fnl:68: attempt to call a nil value (method 'activate')
+called create or toggle scratchpad
+found journal tag and clients in that tag - toggling tag
+journal client
+window/client(journal): 0x564d00461cb8
+journal client
+window/client(journal): 0x564d00461cb8
+2020-07-25 17:44:20 W: awesome: luaA_dofunction:78: error while running function!
+stack traceback:
+	.config/awesome/cfg.fnl:68: in upvalue 'press'
+	/usr/share/awesome/lib/awful/key.lua:125: in function </usr/share/awesome/lib/awful/key.lua:125>
+error: .config/awesome/cfg.fnl:68: attempt to call a nil value (method 'activate')
+called create or toggle scratchpad
+found journal tag and clients in that tag - toggling tag
+journal client
+window/client(journal): 0x564d00461cb8
+journal client
+window/client(journal): 0x564d00461cb8
+2020-07-25 17:44:21 W: awesome: luaA_dofunction:78: error while running function!
+stack traceback:
+	.config/awesome/cfg.fnl:68: in upvalue 'press'
+	/usr/share/awesome/lib/awful/key.lua:125: in function </usr/share/awesome/lib/awful/key.lua:125>
+error: .config/awesome/cfg.fnl:68: attempt to call a nil value (method 'activate')
+/usr/bin/gnome-keyring-daemon
+/usr/bin/start-pulseaudio-x11
+909865
+/usr/lib/mate-polkit/polkit-mate-authentication-agent-1
+909862
+/usr/bin/xfce4-power-manager
+909871
+/usr/bin/system-config-printer-applet
+857976
+/usr/bin/xfsettingsd
+909886
+/usr/bin/nm-applet
+909881
+/usr/bin/light-locker
+909891
+/usr/bin/xcape
+909900
+/usr/bin/thunar
+909902
+/usr/bin/pa-applet
+909907
+/usr/bin/pamac-tray
+909912
+/usr/bin/blueman-applet
+909917
+/usr/bin/msm_notifier
+909922
+/usr/bin/dropbox
+910230
+/usr/bin/variety
+1074633
+/usr/bin/picom
+909937
+called create or toggle scratchpad
+found journal tag and clients in that tag - toggling tag
+journal client
+window/client(journal): 0x55ee6478fcf8
+journal client
+window/client(journal): 0x55ee6478fcf8
+2020-07-25 17:52:03 W: awesome: luaA_dofunction:78: error while running function!
+stack traceback:
+	.config/awesome/cfg.fnl:68: in upvalue 'press'
+	/usr/share/awesome/lib/awful/key.lua:125: in function </usr/share/awesome/lib/awful/key.lua:125>
+error: .config/awesome/cfg.fnl:68: attempt to index a nil value (field 'activate')
+called create or toggle scratchpad
+found journal tag and clients in that tag - toggling tag
+journal client
+window/client(journal): 0x55ee6478fcf8
+journal client
+window/client(journal): 0x55ee6478fcf8
+2020-07-25 17:52:06 W: awesome: luaA_dofunction:78: error while running function!
+stack traceback:
+	.config/awesome/cfg.fnl:68: in upvalue 'press'
+	/usr/share/awesome/lib/awful/key.lua:125: in function </usr/share/awesome/lib/awful/key.lua:125>
+error: .config/awesome/cfg.fnl:68: attempt to index a nil value (field 'activate')
+/usr/bin/gnome-keyring-daemon
+1299527
+/usr/bin/start-pulseaudio-x11
+909865
+/usr/lib/mate-polkit/polkit-mate-authentication-agent-1
+909862
+/usr/bin/xfce4-power-manager
+909871
+/usr/bin/system-config-printer-applet
+857976
+/usr/bin/xfsettingsd
+909886
+/usr/bin/nm-applet
+909881
+/usr/bin/light-locker
+909891
+/usr/bin/xcape
+909900
+/usr/bin/thunar
+909902
+/usr/bin/pa-applet
+909907
+/usr/bin/pamac-tray
+909912
+/usr/bin/blueman-applet
+909917
+/usr/bin/msm_notifier
+909922
+/usr/bin/dropbox
+910230
+/usr/bin/variety
+1074633
+/usr/bin/picom
+909937
+called create or toggle scratchpad
+found journal tag and clients in that tag - toggling tag
+journal client
+window/client(journal): 0x55ea93db8de8
+journal client
+window/client(journal): 0x55ea93db8de8
+called create or toggle scratchpad
+found journal tag and clients in that tag - toggling tag
+journal client
+window/client(journal): 0x55ea93db8de8
+journal client
+window/client(journal): 0x55ea93db8de8
+called create or toggle scratchpad
+found journal tag and clients in that tag - toggling tag
+journal client
+window/client(journal): 0x55ea93db8de8
+journal client
+window/client(journal): 0x55ea93db8de8
+called create or toggle scratchpad
+found journal tag and clients in that tag - toggling tag
+journal client
+window/client(journal): 0x55ea93db8de8
+journal client
+window/client(journal): 0x55ea93db8de8
+called create or toggle scratchpad
+found journal tag and clients in that tag - toggling tag
+journal client
+window/client(journal): 0x55ea93db8de8
+journal client
+window/client(journal): 0x55ea93db8de8
+called create or toggle scratchpad
+found journal tag and clients in that tag - toggling tag
+journal client
+window/client(journal): 0x55ea93db8de8
+journal client
+window/client(journal): 0x55ea93db8de8
+2020-07-25 17:54:17 E: awesome: a_xcb_io_cb:402: X server connection broke (error 1)
+error while running function!
+stack traceback:
+	[C]: in function 'error'
+	/usr/lib/lua/5.3/fennel.lua:616: in upvalue 'assertCompile'
+	/usr/lib/lua/5.3/fennel.lua:850: in upvalue 'symbolToExpression'
+	/usr/lib/lua/5.3/fennel.lua:1220: in function 'fennel.compile1'
+	/usr/lib/lua/5.3/fennel.lua:1994: in local 'special'
+	/usr/lib/lua/5.3/fennel.lua:1155: in function 'fennel.compile1'
+	/usr/lib/lua/5.3/fennel.lua:1179: in function 'fennel.compile1'
+	/usr/lib/lua/5.3/fennel.lua:1582: in local 'special'
+	/usr/lib/lua/5.3/fennel.lua:1155: in function 'fennel.compile1'
+	/usr/lib/lua/5.3/fennel.lua:1190: in function 'fennel.compile1'
+	/usr/lib/lua/5.3/fennel.lua:1190: in function 'fennel.compile1'
+	/usr/lib/lua/5.3/fennel.lua:1337: in upvalue 'compileTopTarget'
+	/usr/lib/lua/5.3/fennel.lua:1356: in local 'destructure1'
+	/usr/lib/lua/5.3/fennel.lua:1410: in upvalue 'destructure'
+	/usr/lib/lua/5.3/fennel.lua:1716: in local 'special'
+	/usr/lib/lua/5.3/fennel.lua:1155: in function 'fennel.compile1'
+	/usr/lib/lua/5.3/fennel.lua:2314: in function 'fennel.compileStream'
+	/usr/lib/lua/5.3/fennel.lua:2329: in function 'fennel.compileString'
+	/usr/lib/lua/5.3/fennel.lua:2437: in function 'fennel.eval'
+	(...tail calls...)
+	[C]: in function 'require'
+	/home/russ/.config/awesome/rc.lua:9: in main chunk
+error: Compile error in 'mymainmenu' unknown:?: unknown global in strict mode: mymainmenu
+error while running function!
+stack traceback:
+	[C]: in function 'error'
+	/usr/lib/lua/5.3/fennel.lua:616: in upvalue 'assertCompile'
+	/usr/lib/lua/5.3/fennel.lua:850: in upvalue 'symbolToExpression'
+	/usr/lib/lua/5.3/fennel.lua:1220: in function 'fennel.compile1'
+	/usr/lib/lua/5.3/fennel.lua:1994: in local 'special'
+	/usr/lib/lua/5.3/fennel.lua:1155: in function 'fennel.compile1'
+	/usr/lib/lua/5.3/fennel.lua:1179: in function 'fennel.compile1'
+	/usr/lib/lua/5.3/fennel.lua:1582: in local 'special'
+	/usr/lib/lua/5.3/fennel.lua:1155: in function 'fennel.compile1'
+	/usr/lib/lua/5.3/fennel.lua:1190: in function 'fennel.compile1'
+	/usr/lib/lua/5.3/fennel.lua:1190: in function 'fennel.compile1'
+	/usr/lib/lua/5.3/fennel.lua:1337: in upvalue 'compileTopTarget'
+	/usr/lib/lua/5.3/fennel.lua:1356: in local 'destructure1'
+	/usr/lib/lua/5.3/fennel.lua:1410: in upvalue 'destructure'
+	/usr/lib/lua/5.3/fennel.lua:1716: in local 'special'
+	/usr/lib/lua/5.3/fennel.lua:1155: in function 'fennel.compile1'
+	/usr/lib/lua/5.3/fennel.lua:2314: in function 'fennel.compileStream'
+	/usr/lib/lua/5.3/fennel.lua:2329: in function 'fennel.compileString'
+	/usr/lib/lua/5.3/fennel.lua:2437: in function 'fennel.eval'
+	(...tail calls...)
+	[C]: in function 'require'
+	/home/russ/.config/awesome/rc.lua:9: in main chunk
+error: Compile error in 'mymainmenu' unknown:?: unknown global in strict mode: mymainmenu
+Caution: NOT using a test file (/home/russ/.config/awesome/rc.lua)
+Display: 1, Awesome PID: 1647235, Xephyr PID: 1647178
+2020-07-26 00:24:45 E: awesome: a_xcb_io_cb:402: X server connection broke (error 1)
+error while running function!
+stack traceback:
+	[C]: in function 'error'
+	/usr/lib/lua/5.3/fennel.lua:616: in upvalue 'assertCompile'
+	/usr/lib/lua/5.3/fennel.lua:850: in upvalue 'symbolToExpression'
+	/usr/lib/lua/5.3/fennel.lua:1220: in function 'fennel.compile1'
+	/usr/lib/lua/5.3/fennel.lua:1251: in local 'f'
+	/usr/lib/lua/5.3/fennel.lua:57: in upvalue 'map'
+	/usr/lib/lua/5.3/fennel.lua:1250: in function 'fennel.compile1'
+	/usr/lib/lua/5.3/fennel.lua:1251: in local 'f'
+	/usr/lib/lua/5.3/fennel.lua:57: in upvalue 'map'
+	/usr/lib/lua/5.3/fennel.lua:1250: in function 'fennel.compile1'
+	/usr/lib/lua/5.3/fennel.lua:1235: in function 'fennel.compile1'
+	/usr/lib/lua/5.3/fennel.lua:1768: in local 'special'
+	/usr/lib/lua/5.3/fennel.lua:1155: in function 'fennel.compile1'
+	/usr/lib/lua/5.3/fennel.lua:2314: in function 'fennel.compileStream'
+	/usr/lib/lua/5.3/fennel.lua:2329: in function 'fennel.compileString'
+	/usr/lib/lua/5.3/fennel.lua:2437: in function 'fennel.eval'
+	(...tail calls...)
+	[C]: in function 'require'
+	/home/russ/.config/awesome/rc.lua:9: in main chunk
+error: Compile error in 'beautiful.border_normal' .config/awesome/cfg.fnl:233: unknown global in strict mode: beautiful
+error while running function!
+stack traceback:
+	[C]: in function 'error'
+	/usr/lib/lua/5.3/fennel.lua:616: in upvalue 'assertCompile'
+	/usr/lib/lua/5.3/fennel.lua:850: in upvalue 'symbolToExpression'
+	/usr/lib/lua/5.3/fennel.lua:1220: in function 'fennel.compile1'
+	/usr/lib/lua/5.3/fennel.lua:1251: in local 'f'
+	/usr/lib/lua/5.3/fennel.lua:57: in upvalue 'map'
+	/usr/lib/lua/5.3/fennel.lua:1250: in function 'fennel.compile1'
+	/usr/lib/lua/5.3/fennel.lua:1251: in local 'f'
+	/usr/lib/lua/5.3/fennel.lua:57: in upvalue 'map'
+	/usr/lib/lua/5.3/fennel.lua:1250: in function 'fennel.compile1'
+	/usr/lib/lua/5.3/fennel.lua:1235: in function 'fennel.compile1'
+	/usr/lib/lua/5.3/fennel.lua:1768: in local 'special'
+	/usr/lib/lua/5.3/fennel.lua:1155: in function 'fennel.compile1'
+	/usr/lib/lua/5.3/fennel.lua:2314: in function 'fennel.compileStream'
+	/usr/lib/lua/5.3/fennel.lua:2329: in function 'fennel.compileString'
+	/usr/lib/lua/5.3/fennel.lua:2437: in function 'fennel.eval'
+	(...tail calls...)
+	[C]: in function 'require'
+	/home/russ/.config/awesome/rc.lua:9: in main chunk
+error: Compile error in 'beautiful.border_normal' .config/awesome/cfg.fnl:233: unknown global in strict mode: beautiful
+Caution: NOT using a test file (/home/russ/.config/awesome/rc.lua)
+Display: 1, Awesome PID: 1648359, Xephyr PID: 1648316
+2020-07-26 00:25:57 /usr/share/awesome/lib/awful/widget/keyboardlayout.lua:241: W: Failed to get xkb symbols name
+stack traceback:
+	/usr/share/awesome/lib/awful/widget/keyboardlayout.lua:288: in function </usr/share/awesome/lib/awful/widget/keyboardlayout.lua:288>
+2020-07-26 00:25:57 E: awesome: Failed to get list of keyboard groups
+2020-07-26 00:25:57 E: awesome: a_xcb_io_cb:402: X server connection broke (error 1)
+error while running function!
+stack traceback:
+	[C]: in function 'error'
+	/usr/lib/lua/5.3/fennel.lua:616: in upvalue 'assertCompile'
+	/usr/lib/lua/5.3/fennel.lua:850: in upvalue 'symbolToExpression'
+	/usr/lib/lua/5.3/fennel.lua:1220: in function '__fennel-bootstrap__.compile1'
+	/usr/lib/lua/5.3/fennel.lua:1251: in local 'f'
+	/usr/lib/lua/5.3/fennel.lua:57: in upvalue 'map'
+	/usr/lib/lua/5.3/fennel.lua:1250: in function '__fennel-bootstrap__.compile1'
+	/usr/lib/lua/5.3/fennel.lua:1251: in local 'f'
+	/usr/lib/lua/5.3/fennel.lua:57: in upvalue 'map'
+	/usr/lib/lua/5.3/fennel.lua:1250: in function '__fennel-bootstrap__.compile1'
+	/usr/lib/lua/5.3/fennel.lua:1235: in function '__fennel-bootstrap__.compile1'
+	/usr/lib/lua/5.3/fennel.lua:1768: in local 'special'
+	/usr/lib/lua/5.3/fennel.lua:1155: in function '__fennel-bootstrap__.compile1'
+	/usr/lib/lua/5.3/fennel.lua:2314: in function '__fennel-bootstrap__.compileStream'
+	/usr/lib/lua/5.3/fennel.lua:2329: in function '__fennel-bootstrap__.compileString'
+	/usr/lib/lua/5.3/fennel.lua:2437: in function '__fennel-bootstrap__.eval'
+	(...tail calls...)
+	[C]: in function 'require'
+	/home/russ/.config/awesome/rc.lua:9: in main chunk
+error: Compile error in 'clientkeys' .config/awesome/cfg.fnl:237: unknown global in strict mode: clientkeys
+error while running function!
+stack traceback:
+	[C]: in function 'error'
+	/usr/lib/lua/5.3/fennel.lua:616: in upvalue 'assertCompile'
+	/usr/lib/lua/5.3/fennel.lua:850: in upvalue 'symbolToExpression'
+	/usr/lib/lua/5.3/fennel.lua:1220: in function '__fennel-bootstrap__.compile1'
+	/usr/lib/lua/5.3/fennel.lua:1251: in local 'f'
+	/usr/lib/lua/5.3/fennel.lua:57: in upvalue 'map'
+	/usr/lib/lua/5.3/fennel.lua:1250: in function '__fennel-bootstrap__.compile1'
+	/usr/lib/lua/5.3/fennel.lua:1251: in local 'f'
+	/usr/lib/lua/5.3/fennel.lua:57: in upvalue 'map'
+	/usr/lib/lua/5.3/fennel.lua:1250: in function '__fennel-bootstrap__.compile1'
+	/usr/lib/lua/5.3/fennel.lua:1235: in function '__fennel-bootstrap__.compile1'
+	/usr/lib/lua/5.3/fennel.lua:1768: in local 'special'
+	/usr/lib/lua/5.3/fennel.lua:1155: in function '__fennel-bootstrap__.compile1'
+	/usr/lib/lua/5.3/fennel.lua:2314: in function '__fennel-bootstrap__.compileStream'
+	/usr/lib/lua/5.3/fennel.lua:2329: in function '__fennel-bootstrap__.compileString'
+	/usr/lib/lua/5.3/fennel.lua:2437: in function '__fennel-bootstrap__.eval'
+	(...tail calls...)
+	[C]: in function 'require'
+	/home/russ/.config/awesome/rc.lua:9: in main chunk
+error: Compile error in 'clientkeys' .config/awesome/cfg.fnl:237: unknown global in strict mode: clientkeys
+Caution: NOT using a test file (/home/russ/.config/awesome/rc.lua)
+Display: 1, Awesome PID: 1649275, Xephyr PID: 1649208
+2020-07-26 00:26:49 E: awesome: a_xcb_io_cb:402: X server connection broke (error 1)
+error while running function!
+stack traceback:
+	[C]: in function 'error'
+	/usr/lib/lua/5.3/fennel.lua:616: in upvalue 'assertCompile'
+	/usr/lib/lua/5.3/fennel.lua:850: in upvalue 'symbolToExpression'
+	/usr/lib/lua/5.3/fennel.lua:1220: in function '__fennel-bootstrap__.compile1'
+	/usr/lib/lua/5.3/fennel.lua:2077: in local 'special'
+	/usr/lib/lua/5.3/fennel.lua:1155: in function '__fennel-bootstrap__.compile1'
+	/usr/lib/lua/5.3/fennel.lua:1251: in local 'f'
+	/usr/lib/lua/5.3/fennel.lua:57: in upvalue 'map'
+	/usr/lib/lua/5.3/fennel.lua:1250: in function '__fennel-bootstrap__.compile1'
+	/usr/lib/lua/5.3/fennel.lua:1251: in local 'f'
+	/usr/lib/lua/5.3/fennel.lua:57: in upvalue 'map'
+	/usr/lib/lua/5.3/fennel.lua:1250: in function '__fennel-bootstrap__.compile1'
+	/usr/lib/lua/5.3/fennel.lua:1235: in function '__fennel-bootstrap__.compile1'
+	/usr/lib/lua/5.3/fennel.lua:1768: in local 'special'
+	/usr/lib/lua/5.3/fennel.lua:1155: in function '__fennel-bootstrap__.compile1'
+	/usr/lib/lua/5.3/fennel.lua:2314: in function '__fennel-bootstrap__.compileStream'
+	/usr/lib/lua/5.3/fennel.lua:2329: in function '__fennel-bootstrap__.compileString'
+	/usr/lib/lua/5.3/fennel.lua:2437: in function '__fennel-bootstrap__.eval'
+	(...tail calls...)
+	[C]: in function 'require'
+	/home/russ/.config/awesome/rc.lua:9: in main chunk
+error: Compile error in '.geometry.height' .config/awesome/cfg.fnl:277: unknown global in strict mode: .geometry.height
+error while running function!
+stack traceback:
+	[C]: in function 'error'
+	/usr/lib/lua/5.3/fennel.lua:616: in upvalue 'assertCompile'
+	/usr/lib/lua/5.3/fennel.lua:850: in upvalue 'symbolToExpression'
+	/usr/lib/lua/5.3/fennel.lua:1220: in function '__fennel-bootstrap__.compile1'
+	/usr/lib/lua/5.3/fennel.lua:2077: in local 'special'
+	/usr/lib/lua/5.3/fennel.lua:1155: in function '__fennel-bootstrap__.compile1'
+	/usr/lib/lua/5.3/fennel.lua:1251: in local 'f'
+	/usr/lib/lua/5.3/fennel.lua:57: in upvalue 'map'
+	/usr/lib/lua/5.3/fennel.lua:1250: in function '__fennel-bootstrap__.compile1'
+	/usr/lib/lua/5.3/fennel.lua:1251: in local 'f'
+	/usr/lib/lua/5.3/fennel.lua:57: in upvalue 'map'
+	/usr/lib/lua/5.3/fennel.lua:1250: in function '__fennel-bootstrap__.compile1'
+	/usr/lib/lua/5.3/fennel.lua:1235: in function '__fennel-bootstrap__.compile1'
+	/usr/lib/lua/5.3/fennel.lua:1768: in local 'special'
+	/usr/lib/lua/5.3/fennel.lua:1155: in function '__fennel-bootstrap__.compile1'
+	/usr/lib/lua/5.3/fennel.lua:2314: in function '__fennel-bootstrap__.compileStream'
+	/usr/lib/lua/5.3/fennel.lua:2329: in function '__fennel-bootstrap__.compileString'
+	/usr/lib/lua/5.3/fennel.lua:2437: in function '__fennel-bootstrap__.eval'
+	(...tail calls...)
+	[C]: in function 'require'
+	/home/russ/.config/awesome/rc.lua:9: in main chunk
+error: Compile error in '.geometry.height' .config/awesome/cfg.fnl:277: unknown global in strict mode: .geometry.height
+Caution: NOT using a test file (/home/russ/.config/awesome/rc.lua)
+Display: 1, Awesome PID: 1649897, Xephyr PID: 1649832
+2020-07-26 00:27:15 E: awesome: a_xcb_io_cb:402: X server connection broke (error 1)
+/usr/bin/gnome-keyring-daemon
+/usr/bin/start-pulseaudio-x11
+909865
+/usr/lib/mate-polkit/polkit-mate-authentication-agent-1
+909862
+/usr/bin/xfce4-power-manager
+909871
+/usr/bin/system-config-printer-applet
+857976
+/usr/bin/xfsettingsd
+909886
+/usr/bin/nm-applet
+909881
+/usr/bin/light-locker
+909891
+/usr/bin/xcape
+909900
+/usr/bin/thunar
+909902
+/usr/bin/pa-applet
+909907
+/usr/bin/pamac-tray
+909912
+/usr/bin/blueman-applet
+909917
+/usr/bin/msm_notifier
+909922
+/usr/bin/dropbox
+910230
+/usr/bin/variety
+1074633
+/usr/bin/picom
+909937
+Caution: NOT using a test file (/home/russ/.config/awesome/rc.lua)
+Display: 1, Awesome PID: 1652108, Xephyr PID: 1652043
+2020-07-26 00:29:43 E: awesome: a_xcb_io_cb:402: X server connection broke (error 1)
+/usr/bin/gnome-keyring-daemon
+1652121
+/usr/bin/start-pulseaudio-x11
+909865
+/usr/lib/mate-polkit/polkit-mate-authentication-agent-1
+909862
+/usr/bin/xfce4-power-manager
+909871
+/usr/bin/system-config-printer-applet
+857976
+/usr/bin/xfsettingsd
+909886
+/usr/bin/nm-applet
+909881
+/usr/bin/light-locker
+909891
+/usr/bin/xcape
+909900
+/usr/bin/thunar
+909902
+/usr/bin/pa-applet
+909907
+/usr/bin/pamac-tray
+909912
+/usr/bin/blueman-applet
+909917
+/usr/bin/msm_notifier
+909922
+/usr/bin/dropbox
+910230
+/usr/bin/variety
+1074633
+/usr/bin/picom
+909937
+Caution: NOT using a test file (/home/russ/.config/awesome/rc.lua)
+Display: 1, Awesome PID: 1652625, Xephyr PID: 1652561
+2020-07-26 00:30:17 /usr/share/awesome/lib/awful/widget/keyboardlayout.lua:241: W: Failed to get atom symbols name
+stack traceback:
+	/usr/share/awesome/lib/awful/widget/keyboardlayout.lua:288: in function </usr/share/awesome/lib/awful/widget/keyboardlayout.lua:288>
+2020-07-26 00:30:17 E: awesome: Failed to get list of keyboard groups
+2020-07-26 00:30:17 E: awesome: a_xcb_io_cb:402: X server connection broke (error 1)
+/usr/bin/gnome-keyring-daemon
+/usr/bin/start-pulseaudio-x11
+909865
+/usr/lib/mate-polkit/polkit-mate-authentication-agent-1
+909862
+/usr/bin/xfce4-power-manager
+909871
+/usr/bin/system-config-printer-applet
+857976
+/usr/bin/xfsettingsd
+909886
+/usr/bin/nm-applet
+909881
+/usr/bin/light-locker
+909891
+/usr/bin/xcape
+909900
+/usr/bin/thunar
+909902
+/usr/bin/pa-applet
+909907
+/usr/bin/pamac-tray
+909912
+/usr/bin/blueman-applet
+909917
+/usr/bin/msm_notifier
+909922
+/usr/bin/dropbox
+910230
+/usr/bin/variety
+1074633
+/usr/bin/picom
+909937
+Caution: NOT using a test file (/home/russ/.config/awesome/rc.lua)
+Display: 1, Awesome PID: 1659642, Xephyr PID: 1659607
+2020-07-26 00:39:05 E: awesome: a_xcb_io_cb:402: X server connection broke (error 1)
