@@ -9,6 +9,7 @@
    (let [workspaces [
                      {:name "wkspc"}
                      {:name "wkspc2"}
+                     {:name "wkspc3"}
                      ]]
      (awm/awm-cli
        (awm/awm-fn fname workspaces)))))

@@ -14,12 +14,12 @@
   (awm/reload-widgets)
 
   ;; reload widgets (re-runs connect_for_each_screen)
-  (awm/awm-cli "require('bar'); init_screen();")
+  (awm/awm-cli "require('bar'); return init_screen();")
 
   ;; hotswap modules
   (awm/awm-cli "lume.hotswap('theme');")
   (awm/awm-cli "lume.hotswap('bar');")
-  (awm/awm-cli "lume.hotswap('widgets.workspaces');")
+  (awm/awm-cli "return lume.hotswap('widgets.workspaces');")
 
   (awm/awm-cli "return view(screen);")
   (awm/awm-cli "return view(screen.count());")
