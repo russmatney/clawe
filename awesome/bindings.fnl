@@ -77,10 +77,17 @@
         ;; and write into ralphie-build-and-install
         (key [:mod] "u" (spawn-fn "ralphie-toggle-scratchpad journal"))
         (key [:mod] "y" (spawn-fn "ralphie-toggle-scratchpad yodo-app"))
-        (key [:mod] "r" (spawn-fn "ralphie-toggle-scratchpad notes"))
+        (key [:mod] "g" (spawn-fn "ralphie-toggle-scratchpad notes"))
         (key [:mod] "t" (spawn-fn "ralphie-toggle-scratchpad web"))
         (key [:mod] "a" (spawn-fn "ralphie-toggle-scratchpad slack"))
         (key [:mod] "s" (spawn-fn "ralphie-toggle-scratchpad spotify"))
+
+        ;; clawe keybindings
+        (key [:mod] "r"
+             (fn []
+               ;; WARN potential race case on widgets reloading
+               (awful.spawn "clawe rebuild-clawe" false)
+               (awful.spawn "clawe reload-widgets" false)))
 
         ;; TODO rename to 'open-workspace'
         (key [:mod] "d" (spawn-fn "ralphie-clean-up-workspaces"))
