@@ -222,7 +222,8 @@
       (s.mywibox:setup
        {:layout wibox.layout.align.horizontal
         1  {:layout wibox.layout.fixed.horizontal ;; Left widgets
-            1 s.mytaglist}
+            1 s.mytaglist
+            2 (workspaces-widget)}
 
         ;; Middle widget
         2 {:layout wibox.layout.fixed.horizontal
@@ -234,8 +235,6 @@
            4 (dirty-repos-widget)
            5 separator
            6 (org-pomo-widget)
-           7 separator
-           8 (workspaces-widget)
            }
 
         ;; Right widgets

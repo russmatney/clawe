@@ -6,7 +6,10 @@
 (defn update-workspaces
   ([] (update-workspaces "update_workspaces_widget"))
   ([fname]
-   (let [workspaces [{:name "wkspc"}]]
+   (let [workspaces [
+                     {:name "wkspc"}
+                     {:name "wkspc2"}
+                     ]]
      (awm/awm-cli
        (awm/awm-fn fname workspaces)))))
 
@@ -15,11 +18,12 @@
 
 
 (defcom update-workspaces-cmd
-  {:name    "update-workspaces"
+  {:name "update-workspaces"
+
    :one-line-desc
-   "Updates the workspaces widget to reflect the current workspaces state."
+   "updates the workspaces widget to reflect the current workspaces state."
    :description
-   ["Expects a function-name as an argument,
+   ["expects a function-name as an argument,
 which is called with a list of workspaces maps."]
    :handler (fn [_ parsed]
               (update-workspaces (-> parsed :arguments first)))})

@@ -29,3 +29,7 @@ CLOCK: [2021-01-07 Thu 15:54]--[2021-01-07 Thu 16:29] =>  0:35
 * [ ] print workspaces (tags and clients)
 * [ ] integrate the awesome git-history from ~/dotfiles
 * [ ] write clawe.restart that wraps and handles fennel strict errors before crashing
+
+* Ideas
+** reloading at defcom-call-time
+** defwidget - clojure dsl - reloads/hotswaps itself

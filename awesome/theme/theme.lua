@@ -11,6 +11,7 @@ theme = {}
 theme.font              = "Noto Sans Regular 12"
 theme.notification_font = "Noto Sans Bold 14"
 
+theme.bg_transparent   = "#00000000"
 theme.bg_normal   = "#141A1B"
 theme.bg_focus    = "#222B2E"
 theme.bg_urgent   = "#000000"

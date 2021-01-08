@@ -78,7 +78,7 @@
        [] 1 (fn []
               (spawn.easy_async UPDATE_REPOS #(print "repos update requested"))))))
 
-  (spawn.easy_async UPDATE_REPOS (fn [] (print "repos update requested")))
+  ;; (spawn.easy_async UPDATE_REPOS (fn [] (print "repos update requested")))
 
   repos-widget.widget)
 
