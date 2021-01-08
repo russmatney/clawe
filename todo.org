@@ -28,8 +28,18 @@ CLOCK: [2021-01-07 Thu 15:54]--[2021-01-07 Thu 16:29] =>  0:35
 * [ ] print awm-keybindings command
 * [ ] print workspaces (tags and clients)
 * [ ] integrate the awesome git-history from ~/dotfiles
+* [ ] develop ralphie install to support clawe in a portable way
+args for
+:uberscript-filename
+:target-bin
+:project-directory
+:notification-messages
+:target namespaces
 * [ ] write clawe.restart that wraps and handles fennel strict errors before crashing
-
+* [ ] keybindings updating as part of normal devloop
+instead of full awesome reboot
+* [ ] catch and surface awesome callback errors
+maybe via notifications/naughty
 * Ideas
 ** reloading at defcom-call-time
 ** defwidget - clojure dsl - reloads/hotswaps itself
@@ -45,3 +55,24 @@ CLOCK: [2021-01-07 Thu 15:54]--[2021-01-07 Thu 16:29] =>  0:35
     []
     (claw/set-workspace! code))
 #+end_src
+* Clawe Stream #1
+:LOGBOOK:
+CLOCK: [2021-01-08 Fri 12:59]--[2021-01-08 Fri 13:34] =>  0:35
+:END:
+
+** [X] intro to clawe
+CLOSED: [2021-01-08 Fri 13:06]
+** v1 workspaces list
+*** [X] current dev loop
+CLOSED: [2021-01-08 Fri 13:45]
+*** [X] build clawe uberscript
+CLOSED: [2021-01-08 Fri 14:39]
+*** [X] add keybinding for reloading widgets: mod+r (move notes/garden to mod+g)
+CLOSED: [2021-01-08 Fri 14:52]
+*** [X] getting a working list of awesome tags pushed into there
+CLOSED: [2021-01-08 Fri 14:53]
+*** dev loop for building the uberscript
+*** highlight/indicate the currently selected workspace
+*** add click support to toggle-this/last workspace
+*** push to workspaces when moving/deleting mod+n/p
+*** port workspace movement and selection commands

@@ -3,9 +3,10 @@
 *.log
 tmp/
 
-
 .cpcache
 .nrepl-port
 .clj-kondo/.cache
 
 **/.luacheckcache
+
+.clawe-script.clj
