@@ -38,3 +38,11 @@ chunks of ralphie will probably be pulled in over time.
 I debated about writing this entirely inside of Ralphie, but instead I hope it's
 the first successful consumer - this should help whip Ralphie/Ralph's namespaces
 into shape so that other projects can more easily consume them.
+
+* Install
+To install the uberscript for the first time:
+
+#+BEGIN_SRC shell
+# from clawe project root
+bb -cp $(clojure -Spath) -m clawe.core --uberscript clawe-script.clj
+#+END_SRC
