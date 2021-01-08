@@ -1,26 +1,39 @@
 (ns clawe.workspaces
   (:require
    [ralph.defcom :refer [defcom]]
-   [clawe.awesome :as awm]))
+   [ralphie.workspace :as r.workspace]
+   [clawe.awesome :as awm]
+   [ralphie.item :as item]))
+
+(defn active-workspaces
+  "Pulls workspaces to show in the workspaces-widget."
+  []
+  (->>
+    (r.workspace/all-workspaces)
+    (filter :awesome/tag)
+    (remove item/scratchpad?)
+    (map (fn [spc]
+           {;; consider flags for is-scratchpad/is-app/is-repo
+            :name          (item/awesome-name spc)
+            :awesome-index (item/awesome-index spc)}))))
 
 (defn update-workspaces
-  ([] (update-workspaces "update_workspaces_widget"))
+  ([] (update-workspaces nil))
   ([fname]
-   (let [workspaces [
-                     {:name "wkspc"}
-                     {:name "wkspc2"}
-                     {:name "wkspc3"}
-                     ]]
+   (let [fname (or fname "update_workspaces_widget")]
      (awm/awm-cli
-       (awm/awm-fn fname workspaces)))))
+       (awm/awm-fn fname (active-workspaces))))))
 
 (comment
+  (->>
+    (active-workspaces)
+    (map :awesome-index))
+  (awm/awm-fn "update_workspaces_widget" (active-workspaces))
+
   (update-workspaces))
 
-
 (defcom update-workspaces-cmd
-  {:name "update-workspaces"
-
+  {:name    "update-workspaces"
    :one-line-desc
    "updates the workspaces widget to reflect the current workspaces state."
    :description
