@@ -1,6 +1,5 @@
 #+TITLE: Todo
 
-
 * [X] add ralphie as dependency
 CLOSED: [2021-01-06 Wed 21:39]
 * [X] use defcom to write hello-world command
@@ -16,10 +15,12 @@ CLOSED: [2021-01-07 Thu 15:53]
 :LOGBOOK:
 CLOCK: [2021-01-07 Thu 14:27]--[2021-01-07 Thu 15:02] =>  0:35
 :END:
-* [ ] write workspaces widget
+* [X] initial workspaces widget
+CLOSED: [2021-01-08 Fri 15:54]
 :LOGBOOK:
 CLOCK: [2021-01-07 Thu 15:54]--[2021-01-07 Thu 16:29] =>  0:35
 :END:
+* [ ] nicer looking workspaces widget
 * [ ] pull set-keybindings fully into a clawe command
 * [ ] minimize the symlinked awesome-config
 * [ ] write clawe awm-cli-fnl command
@@ -40,6 +41,11 @@ args for
 instead of full awesome reboot
 * [ ] catch and surface awesome callback errors
 maybe via notifications/naughty
+* [ ] highlight/indicate the currently selected workspace
+* [ ] add click support to toggle-this/last workspace
+* [ ] push to workspaces when moving/deleting mod+n/p
+* [ ] port workspace movement and selection commands
+
 * Ideas
 ** reloading at defcom-call-time
 ** defwidget - clojure dsl - reloads/hotswaps itself
@@ -55,6 +61,7 @@ maybe via notifications/naughty
     []
     (claw/set-workspace! code))
 #+end_src
+
 * Clawe Stream #1
 :LOGBOOK:
 CLOCK: [2021-01-08 Fri 12:59]--[2021-01-08 Fri 13:34] =>  0:35
@@ -71,8 +78,5 @@ CLOSED: [2021-01-08 Fri 14:39]
 CLOSED: [2021-01-08 Fri 14:52]
 *** [X] getting a working list of awesome tags pushed into there
 CLOSED: [2021-01-08 Fri 14:53]
-*** dev loop for building the uberscript
-*** highlight/indicate the currently selected workspace
-*** add click support to toggle-this/last workspace
-*** push to workspaces when moving/deleting mod+n/p
-*** port workspace movement and selection commands
+*** [X] dev loop for building the uberscript
+CLOSED: [2021-01-08 Fri 15:54]
