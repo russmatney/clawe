@@ -9,4 +9,4 @@ tmp/
 
 **/.luacheckcache
 
-.clawe-script.clj
+clawe-script.clj

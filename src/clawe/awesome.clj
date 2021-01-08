@@ -2,8 +2,7 @@
   (:require
    [babashka.process :refer [$ check]]
    [clojure.string :as string]
-   [ralph.defcom :refer [defcom]]
-   ))
+   [ralph.defcom :refer [defcom]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Lua -> Clojure, awm-cli
@@ -68,7 +67,7 @@ lain = require 'lain';")
       "function (t) return {name= t.name} end))"))
 
   (println "hello")
-  (awm-cli "print('hello')")
+  (awm-cli "print('hello from clojure')")
   (awm-cli "return view(lume.map(s.tags, function (t) return {name= t.name} end))"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -128,7 +127,12 @@ lain = require 'lain';")
   ;; drop question marks
   (->lua-arg {:clean? nil})
   (->lua-arg {:clean? false})
-  (->lua-arg {:screen "s" :tag "yodo"}))
+  (->lua-arg {:screen "s" :tag "yodo"}
+             )
+  (->lua-arg {:org/name "my-name"})
+
+  *1
+  )
 
 (defn awm-fn [fn & args]
   (str fn "("
