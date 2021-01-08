@@ -33,3 +33,15 @@ CLOCK: [2021-01-07 Thu 15:54]--[2021-01-07 Thu 16:29] =>  0:35
 * Ideas
 ** reloading at defcom-call-time
 ** defwidget - clojure dsl - reloads/hotswaps itself
+** sample code
+
+#+begin_src clojure
+(defworkspace code
+    {:floating  true
+     :init-file "foo-blah"})
+
+(defbinding code-hotkey
+    {:key "mod u"}
+    []
+    (claw/set-workspace! code))
+#+end_src

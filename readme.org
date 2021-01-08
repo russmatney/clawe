@@ -1,20 +1,40 @@
 #+TITLE: Clawe
 
-A Clojure-centric AwesomeWM configuration.
+#+begin_quote Toy Story
+Buzz: This is an intergalactic emergency. I need to commandeer your vessel to Sector 12. Who's in charge here?
 
-- AwesomeWM provides the api and mental model for window management
-- Clojure provides a fantastic language, an interactive repl, etc etc
-  + Babashka makes it reasonable to develop in a clojure repl and have a result
+All Aliens: [pointing up]  The clawwwwwwwww[e]!
+
+Alien #1: The claw is our master.
+
+Alien #2: The claw chooses who will go and who will stay.
+
+Woody: This is ludicrous.
+#+end_quote
+
+Clawe (from CLojure-AWEsome) is a Clojure-centric AwesomeWM configuration.
+
+- [[https://awesomewm.org/][AwesomeWM]] provides the api and mental model for window management
+- [[https://clojure.org/][Clojure]] provides a fantastic language, an interactive repl, etc etc
+  + [[https://github.com/babashka/babashka][Babashka]] makes it reasonable to develop in a clojure repl and have a result
     as accessible as a bash script
 
 Clawe pulls these things together to provide a reasonable feedback loop while
 working on your development environment.
 
-This repo contains a full awesome configuration in the `awesome` directory. It
-is written almost entirely in Fennel, which is a clojure-y lisp that compiles to
+* AwesomeWM config
+This repo contains a full awesome configuration in the ~awesome/~ directory. It
+is written almost entirely in [[https://fennel-lang.org/][Fennel]], which is a clojure-y lisp that compiles to
 lua.
 
-This repo leans heavily on Ralphie for miscellanenous namespaces and utilities.
+* Ralphie as a major dependency
+Ralphie is a collection of utilities I've been building up to handle various
+WM/OS scripting needs - it provides a rofi and cli interface into all of its
+commands, and is a nice way of working with your machine via clojure/babashka.
+
+Clawe leans heavily on [[https://github.com/russmatney/ralphie][Ralphie]] for miscellanenous namespaces and utilities, and
+chunks of ralphie will probably be pulled in over time.
+
 I debated about writing this entirely inside of Ralphie, but instead I hope it's
-the first successful consumer - this should help whip it into shape so that
-other projects can easily benefit from it.
+the first successful consumer - this should help whip Ralphie/Ralph's namespaces
+into shape so that other projects can more easily consume them.
