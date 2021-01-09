@@ -24,12 +24,20 @@ CLOCK: [2021-01-07 Thu 15:54]--[2021-01-07 Thu 16:29] =>  0:35
 * [ ] pull set-keybindings fully into a clawe command
 * [ ] minimize the symlinked awesome-config
 * [ ] write clawe awm-cli-fnl command
+Writing fennel will be easier than writing lua
 * [ ] add colorized edn pretty printer
-* [ ] wrap in nix to maintain lua versions/deps/etc
-* [ ] print awm-keybindings command
+* [ ] add cli fallbacks/helpers (fzf,rofi,zsh-completion)
+* [ ] wrap in nix
+deps:
+- lua versions
+- lua libs
+- java version
+- clojure deps/libs
+- misc cli tools (none yet, but seems like it's coming)
+* [ ] print keybindings command
 * [ ] print workspaces (tags and clients)
 * [ ] integrate the awesome git-history from ~/dotfiles
-* [ ] develop ralphie install to support clawe in a portable way
+* [ ] develop ralphie install to support clawe/other clis in a portable way
 args for
 :uberscript-filename
 :target-bin
@@ -37,20 +45,24 @@ args for
 :project-directory
 :notification-messages
 :target namespaces
-* [ ] write clawe.restart that wraps and handles fennel strict errors before crashing
+* [ ] clawe restart that handles fennel errors before crashing
 * [ ] keybindings updating as part of normal devloop
 instead of full awesome reboot
 * [ ] catch and surface awesome callback errors
 maybe via notifications/naughty
-* [ ] highlight/indicate the currently selected workspace
-* [ ] add click support to toggle-this/last workspace
-* [ ] push to workspaces when moving/deleting mod+n/p
-* [ ] port workspace movement and selection commands
+* workspace features
+** [ ] highlight/indicate the currently selected workspace
+** [ ] add click support to toggle-this/last workspace
+** [ ] port workspace movement and selection commands from ralphie
+** [ ] indicate dirty or unpushed workspace
+* [ ] startup command
+- start variety
+- start workrave
 
 * Ideas
-** reloading at defcom-call-time
+** reloading clj-side at defcom-call-time
 ** defwidget - clojure dsl - reloads/hotswaps itself
-** sample code
+** potential code
 
 #+begin_src clojure
 (defworkspace code
@@ -60,14 +72,15 @@ maybe via notifications/naughty
 (defbinding code-hotkey
     {:key "mod u"}
     []
-    (claw/set-workspace! code))
+    (clawe/set-workspace! code))
+
+(defapp spotify)
 #+end_src
 
 * Clawe Stream #1
 :LOGBOOK:
 CLOCK: [2021-01-08 Fri 12:59]--[2021-01-08 Fri 13:34] =>  0:35
 :END:
-
 ** [X] intro to clawe
 CLOSED: [2021-01-08 Fri 13:06]
 ** v1 workspaces list
