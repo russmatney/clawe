@@ -33,6 +33,7 @@ CLOCK: [2021-01-07 Thu 15:54]--[2021-01-07 Thu 16:29] =>  0:35
 args for
 :uberscript-filename
 :target-bin
+:wrapper-bin
 :project-directory
 :notification-messages
 :target namespaces

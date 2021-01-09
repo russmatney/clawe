@@ -180,9 +180,6 @@ lain = require 'lain';")
   (hotswap-widget-modules)
   (init-screen))
 
-(comment
-  (reload-widgets))
-
 (defcom reload-widgets-cmd
   {:name    "reload-widgets"
    :handler (fn [_ _] (reload-widgets))})

@@ -16,6 +16,10 @@
    :handler (fn [_config _parsed]
               (println "Howdy"))})
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Install Awesome config
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defcom install-cmd
   {:name "install"
    :handler
@@ -26,6 +30,10 @@
        ;; TODO use ~WDG_CONFIG~ or whatever that thing is
        (r.sh/expand "~/.config/awesome")))})
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Build Clawe Uberscript
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defn build-uberscript []
   (r.notify/notify "Re-Building Clawe Uberscript")
   (let [cp (r.util/get-cp (r.sh/expand "~/russmatney/clawe"))]
@@ -35,25 +43,13 @@
       check)
     (r.notify/notify "Clawe Uberscript Rebuilt.")))
 
-;; (defn install-uberjar
-;;   "Writes and chmods a shell script directly to .local"
-;;   []
-;;   (spit "/home/russ/.local/bin/clawe"
-;;         (str "#!/bin/sh
-;; exec bb /home/russ/russmatney/clawe/clawe-script.clj $@"))
-;;   (r.sh/sh "chmod" "+x" "/home/russ/.local/bin/clawe-script"))
-
-(defn build-clawe-uberscript []
-  (build-uberscript)
-  ;; (install-uberjar)
-  ;; (r.install/symlink
-  ;;   (r.sh/expand "~/russmatney/clawe/clawe-script.clj")
-  ;;   "/home/russ/.local/bin/clawe-script")
-  )
-
 (defcom build-clawe
   {:name    "rebuild-clawe"
-   :handler (fn [_config _parsed] (build-clawe-uberscript))})
+   :handler (fn [_config _parsed] (build-uberscript))})
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; awm-cli wrapper
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defcom awm-cli-cmd
   {:name     "awm-cli"
@@ -62,6 +58,10 @@
    :handler
    (fn [_config {:keys [arguments]}]
      (awm/awm-cli (first arguments)))})
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; main
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn -main [& args]
   (apply defcom/run args))
