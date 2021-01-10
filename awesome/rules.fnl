@@ -99,6 +99,14 @@
                        :tag "workrave"
                        :new_tag "workrave"}}
 
+         {:rule_any {:class ["clover/twitch-chat"]
+                     :name ["Chat Box Widget"
+                            "clover/twitch-chat"]}
+          :properties {:width 600
+                       :height 1000
+                       :ontop true
+                       :sticky true}}
+
          {:rule {:class "firefox"}
           :properties {:tag "web"
                        :maximized false

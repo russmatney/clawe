@@ -58,6 +58,7 @@ maybe via notifications/naughty
 * [ ] startup command
 - start variety
 - start workrave
+* [ ] create workspace from open github repo in browser (or recent star)
 
 * Ideas
 ** reloading clj-side at defcom-call-time
