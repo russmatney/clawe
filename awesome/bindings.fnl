@@ -92,6 +92,7 @@
         ;; TODO rename to 'open-workspace'
         (key [:mod] "d" (spawn-fn "ralphie-clean-up-workspaces"))
         (key [:mod] "o" (spawn-fn "ralphie-create-workspace"))
+        (key [:mod] "w" (spawn-fn "ralphie list-dirty-workspaces"))
 
         ;; cycle layouts
         (key [:mod] "Tab"

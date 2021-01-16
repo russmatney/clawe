@@ -213,34 +213,41 @@ lain = require 'lain';")
               (check-for-errors))})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Reload Widgets
+;; Reload files
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def widget-filenames
-  ;; TODO generate this from the awesome/widgets/* dir
-  #{"workspaces"
-    "org-pomodoro"
-    "focus"
-    "pomodoro"
-    "dirty-repos"})
-
-(defn hotswap-widget-modules []
-  (->> widget-filenames
-       (map (partial str "widgets."))
+(defn hotswap-module-names [names]
+  (->> names
        (map #(str "lume.hotswap('" % "');"))
        (cons "lume.hotswap('bar');")
        reverse ;; move 'bar' hotswap to last
        (string/join "\n")
        (awm-cli)))
 
+(def widget-filenames
+  ;; TODO generate this from the awesome/widgets/* dir
+  (map (partial str "widgets.")
+       ["workspaces"
+        "org-pomodoro"
+        "focus"
+        "pomodoro"
+        "dirty-repos"]))
+
 (defn init-screen []
   (awm-cli "require('bar'); init_screen();"))
 
 (defn reload-widgets []
   (assert (= (check-for-errors) "No Errors."))
-  (hotswap-widget-modules)
+  (->> (concat widget-filenames)
+       (hotswap-module-names))
   (init-screen))
+
+(defn reload-keybindings []
+  (hotswap-module-names ["bindings"])
+  (awm-cli "require('bindings'); set_global_keys();"))
 
 (defcom reload-widgets-cmd
   {:name    "reload-widgets"
-   :handler (fn [_ _] (reload-widgets))})
+   :handler (fn [_ _]
+              (reload-keybindings)
+              (reload-widgets))})

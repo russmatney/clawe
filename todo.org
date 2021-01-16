@@ -20,6 +20,14 @@ CLOSED: [2021-01-08 Fri 15:54]
 :LOGBOOK:
 CLOCK: [2021-01-07 Thu 15:54]--[2021-01-07 Thu 16:29] =>  0:35
 :END:
+* [X] clawe restart that handles fennel errors before crashing
+CLOSED: [2021-01-15 Fri 19:40]
+* [X] keybindings updating as part of normal devloop
+CLOSED: [2021-01-15 Fri 19:40]
+:LOGBOOK:
+CLOCK: [2021-01-15 Fri 19:32]--[2021-01-15 Fri 19:40] =>  0:08
+:END:
+instead of full awesome reboot
 * [ ] nicer looking workspaces widget
 * [ ] pull set-keybindings fully into a clawe command
 * [ ] minimize the symlinked awesome-config
@@ -36,8 +44,9 @@ deps:
 - misc cli tools (none yet, but seems like it's coming)
 * [ ] print keybindings command
 * [ ] print workspaces (tags and clients)
-* [ ] integrate the awesome git-history from ~/dotfiles
-* [ ] develop ralphie install to support clawe/other clis in a portable way
+* [ ] integrate my old awesome git-history from ~/dotfiles?
+* [ ] achive luacheck zero in the awesome config
+* [ ] unit-test ralphie install to support clawe/vapor clis in a portable way
 args for
 :uberscript-filename
 :target-bin
@@ -45,9 +54,6 @@ args for
 :project-directory
 :notification-messages
 :target namespaces
-* [ ] clawe restart that handles fennel errors before crashing
-* [ ] keybindings updating as part of normal devloop
-instead of full awesome reboot
 * [ ] catch and surface awesome callback errors
 maybe via notifications/naughty
 * workspace features
@@ -56,10 +62,10 @@ maybe via notifications/naughty
 ** [ ] port workspace movement and selection commands from ralphie
 ** [ ] indicate dirty or unpushed workspace
 * [ ] startup command
-- start variety
+- set background
 - start workrave
 * [ ] create workspace from open github repo in browser (or recent star)
-
+* [ ] v2 check-for-errors: run luacheck over awesome config - .fnl and .lua files
 * Ideas
 ** reloading clj-side at defcom-call-time
 ** defwidget - clojure dsl - reloads/hotswaps itself
