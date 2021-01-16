@@ -30,8 +30,10 @@ CLOCK: [2021-01-15 Fri 19:32]--[2021-01-15 Fri 19:40] =>  0:08
 instead of full awesome reboot
 * [ ] nicer looking workspaces widget
 * workspace features
-** [ ] highlight/indicate the currently selected workspace
+** [X] highlight/indicate the currently selected workspace
+CLOSED: [2021-01-16 Sat 13:52]
 ** [ ] add click support to toggle-this/last workspace
+** [ ] add hover styling support
 ** [ ] port workspace movement and selection commands from ralphie
 ** [ ] indicate dirty or unpushed workspace
 * [ ] pull set-keybindings fully into a clawe command
