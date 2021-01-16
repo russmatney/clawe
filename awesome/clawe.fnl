@@ -8,9 +8,6 @@ which is called from the clojure side."
    (.. "bash -c \"clawe update-workspaces\"" " " (or cb-fname update-wsp-cb))
    (fn [_res]
      ;; no-op
-     nil)
-   ;; #(print (.. "workspaces update requested with cb-fname: "
-   ;;             (or cb-fname update-wsp-cb)))
-   ))
+     nil)))
 
 {: update-workspaces}
