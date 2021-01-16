@@ -35,14 +35,20 @@
          : scratchpad
          } workspace
 
-        cont (wibox.widget {:layout wibox.layout.fixed.horizontal})]
+        cont (wibox.widget {:layout wibox.layout.fixed.horizontal})
+        ]
 
     (set wid.text-color (text-color wid workspace))
     (set wid.icon-code (icon-code wid workspace))
-    (set wid.icon-color (icon-color wid workspace) )
+    (set wid.icon-color (icon-color wid workspace))
 
     (cont:set_children
-     [(icons.make-fa-icon {:code wid.icon-code :color wid.icon-color :size 36})
+     [(wibox.widget
+       {:widget wibox.container.margin
+        :margins 8
+        1 (icons.make-fa-icon {:code wid.icon-code
+                               :color wid.icon-color
+                               :size 48})})
       (wibox.widget
        {:align "left"
         :markup (.. "<span color=\"" wid.text-color "\">"
