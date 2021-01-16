@@ -64,4 +64,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn -main [& args]
-  (apply defcom/run args))
+  (println "clawe run start:" args)
+  (apply defcom/run args)
+  ;; TODO print time of command, any statistics metrics
+  (println "clawe run complete" args)
+  )
