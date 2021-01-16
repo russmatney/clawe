@@ -2,7 +2,9 @@
   (:require
    [babashka.process :refer [$ check]]
    [clojure.string :as string]
-   [ralph.defcom :refer [defcom]]))
+   [ralph.defcom :refer [defcom]]
+   [ralphie.sh :as sh]
+   [ralphie.notify :as notify]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Lua -> Clojure, awm-cli
@@ -153,6 +155,64 @@ lain = require 'lain';")
     (println (awm-fn "my-fn" args))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Assert Doctor
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn fennel-compile [abs-path]
+  (-> ^{:out :string}
+      ($ fennel --compile ~abs-path)
+      check))
+
+(defn expand-files [str]
+  (-> (sh/expand str)
+      (string/split #" ")))
+
+(defn ->compiler-error
+  "Returns nil if the passed absolute path fails any checks."
+  [abs-path]
+  (try
+    (cond
+      (re-seq #".fnl$" abs-path)
+      (fennel-compile abs-path))
+    nil
+    (catch Exception e e)))
+
+(defn check-for-errors
+  "Checks for syntax errors across your awesome config.
+  Intended to prevent restarts that would otherwise crash.
+
+  TODO maybe we just try to load the config here via `lua` or `fennel`
+  - possibly it could be impled to not re-run in run-init
+  (if it's already alive)"
+  []
+  (notify/notify "Checking AWM Config" "Syntax and Other BS")
+  (let [config-files (concat
+                       (expand-files "~/.config/awesome/*")
+                       (expand-files "~/.config/awesome/**/*"))
+        ct           (count config-files)
+        errant-files (->> config-files
+                          (map #(-> {:error (->compiler-error %)
+                                     :file  %}))
+                          (filter :error))]
+    (if (seq errant-files)
+      (->> errant-files
+           (map (fn [{:keys [file error]}]
+                  (notify/notify "Found issue:" error)
+                  (println (str file "\n" (str error) "\n\n")))))
+
+      (do
+        (notify/notify "Clean Awesome config!" (str "Checked " ct " files"))
+        "No Errors."))))
+
+(comment
+  (check-for-errors))
+
+(defcom doctor
+  {:name    "doctor"
+   :handler (fn [_ _]
+              (check-for-errors))})
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Reload Widgets
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -177,6 +237,7 @@ lain = require 'lain';")
   (awm-cli "require('bar'); init_screen();"))
 
 (defn reload-widgets []
+  (assert (= (check-for-errors) "No Errors."))
   (hotswap-widget-modules)
   (init-screen))
 
