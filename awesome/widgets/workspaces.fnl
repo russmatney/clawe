@@ -3,6 +3,8 @@
 (local icons (require "icons"))
 (local helpers (require "dashboard.helpers"))
 
+(local util (require "util"))
+
 (local clawe (require "clawe"))
 
 (local update-cb "update_workspaces_widget")
@@ -111,13 +113,29 @@
 (tset
  _G update-cb
  (fn [workspaces]
-   "Expects a list of objs with a :name key."
-   (: workspaces-list :set_children
+   "Expects a list of objs with a :name key.
+Sets all workspace indexes to match the passed :i."
+   (util.log_if_error
+    (fn []
+
+      ;; set local awesome tag on each wsp
       (-> workspaces
-          (lume.map (fn [wspc]
-                      (-> wspc
-                          make-workspace-widget
-                          (attach-callbacks wspc))))))))
+          (lume.each (fn [wsp]
+                       (let [tag (util.get_tag {:index wsp.awesome_index})]
+                         (tset wsp :tag tag)))))
+
+      ;; disabled for now - this index overwriting needs more thought
+      (-> workspaces
+          (lume.each (fn [wsp]
+                       (let [{:new_index i} wsp]
+                         (util.move_tag_to_index wsp.tag i)))))
+
+      (: workspaces-list :set_children
+         (-> workspaces
+             (lume.map (fn [wsp]
+                         (-> wsp
+                             make-workspace-widget
+                             (attach-callbacks wsp))))))))))
 
 (fn worker []
   ;; called when module is created

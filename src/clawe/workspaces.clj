@@ -29,7 +29,11 @@
            (assoc spc
                   :sort-key (str (if (:scratchpad spc) "a" "z") "-"
                                  (:awesome_index spc)))))
-    (sort-by :sort-key)))
+    ;; sort and map-indexed to set new_indexes
+    (sort-by :sort-key)
+    (map-indexed (fn [i wsp] (assoc wsp :new_index
+                                    ;; lua indexes start at 1
+                                    (+ i 1))))))
 
 (comment
   (->>
