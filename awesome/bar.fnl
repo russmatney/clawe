@@ -28,32 +28,41 @@
  (fn []
    (awful.screen.connect_for_each_screen
     (fn [s]
-      ;; remove if it exists already
-      (if s.mywibox (s.mywibox:remove))
+      (util.log_if_error
+       (fn []
+         ;; remove if it exists already
+         (if s.mywibox (s.mywibox:remove))
 
-      ;; Create the wibox
-      (set s.mywibox
-           (awful.wibar {:position "bottom" :screen s
-                         :bg beautiful.bg_transparent}))
+         ;; Create the wibox
+         (set s.mywibox
+              (awful.wibar
+               {:position "bottom"
+                :screen s
+                :height 80
+                :bg beautiful.bg_transparent}))
 
-      ;; Add widgets to the wibox
-      (s.mywibox:setup
-       {:layout wibox.layout.align.horizontal
-        1  {:layout wibox.layout.fixed.horizontal ;; Left widgets
-            1 (workspaces-widget)}
+         ;; Add widgets to the wibox
+         (s.mywibox:setup
+          {:layout wibox.layout.align.horizontal
+           1 {:layout wibox.layout.fixed.horizontal
+              1 (spotify-widget)
+              2 (when (util.is_vader) (batteryarc-widget))
+              3 separator
+              4 (dirty-repos-widget)
+              5 separator
+              6 (org-pomo-widget)}
 
-        ;; Middle widget
-        2 {:layout wibox.layout.fixed.horizontal
-           1 (spotify-widget)
-           2 (when (util.is-vader) (batteryarc-widget))
-           3 separator
-           4 (dirty-repos-widget)
-           5 separator
-           6 (org-pomo-widget)
-           }
+           2 {:layout wibox.container.place
+              :valign "center"
+              :halign "center"
+              1 (workspaces-widget)}
 
-        ;; Right widgets
-        3 {:layout wibox.layout.fixed.horizontal
-           1 separator
-           2 (wibox.widget.systray)
-           3 mytextclock}})))))
+
+           3 {:layout wibox.layout.fixed.horizontal
+              1 separator
+              2 (-> (wibox.widget.systray)
+                    ((fn [sys]
+                       (set sys.forced_height 50)
+                       sys)))
+              3 mytextclock}
+           })))))))
