@@ -11,13 +11,28 @@
   (->>
     (r.workspace/all-workspaces)
     (filter :awesome/tag)
-    (remove item/scratchpad?)
     (map (fn [spc]
            {;; consider flags for is-scratchpad/is-app/is-repo
             :name          (item/awesome-name spc)
-            :awesome-index (item/awesome-index spc)
-            :fa-icon-code  (when-let [code (:org.prop/fa-icon-code spc)]
-                             (str "\\u{" code "}"))}))))
+            :awesome_index (item/awesome-index spc)
+            :key           (-> spc :org.prop/key)
+            :fa_icon_code  (when-let [code (:org.prop/fa-icon-code spc)]
+                             (str "\\u{" code "}"))
+            :scratchpad    (item/scratchpad? spc)
+            :selected      (item/awesome-selected spc)
+            :empty         (item/awesome-empty spc)
+            }))
+    (map (fn [spc]
+           (assoc spc
+                  :sort-key (str (:scratchpad spc) "-" (:awesome_index spc)))))
+    (sort-by :sort-key)))
+
+(comment
+  (->>
+    (r.workspace/all-workspaces)
+    (filter :awesome/tag))
+
+  (active-workspaces))
 
 (defn update-workspaces
   ([] (update-workspaces nil))

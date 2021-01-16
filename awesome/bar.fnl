@@ -1,5 +1,6 @@
 (local wibox (require "wibox"))
 (local gears (require "gears"))
+(local beautiful (require "beautiful"))
 
 (local helpers (require "dashboard.helpers"))
 
@@ -216,7 +217,9 @@
       (set s.mytaglist (_G.create_taglist s))
 
       ;; Create the wibox
-      (set s.mywibox (awful.wibar {:position "bottom" :screen s}))
+      (set s.mywibox
+           (awful.wibar {:position "bottom" :screen s
+                         :bg beautiful.bg_transparent}))
 
       ;; Add widgets to the wibox
       (s.mywibox:setup
