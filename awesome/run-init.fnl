@@ -8,7 +8,6 @@
 
 ;; focus client after awesome.restart
 (require "awful.autofocus")
-(require "./helpers")
 (require "steamfix")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -156,10 +155,6 @@
    (print "init_theme")
    (_G.init_theme config)
 
-   ;; screen
-   (print "init screen and tags")
-   (_G.init_screen config)
-
    ;; bindings
    (print "init bindings")
    (_G.set_global_keys config)
@@ -167,8 +162,11 @@
 
    ;; tags, then restore state, then apply rules to all clients...?
    ;; calls into init_tags with built config
-
    (ralphie-init)
+
+   ;; bar and widgets
+   (print "init screen and tags")
+   (_G.init_bar config)
 
    ;; signals
    (print "init_signals")

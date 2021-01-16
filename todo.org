@@ -28,7 +28,8 @@ CLOSED: [2021-01-15 Fri 19:40]
 CLOCK: [2021-01-15 Fri 19:32]--[2021-01-15 Fri 19:40] =>  0:08
 :END:
 instead of full awesome reboot
-* [ ] nicer looking workspaces widget
+* [X] nicer looking workspaces widget
+CLOSED: [2021-01-16 Sat 16:39]
 * workspace features
 ** [X] highlight/indicate the currently selected workspace
 CLOSED: [2021-01-16 Sat 13:52]
@@ -36,9 +37,10 @@ CLOSED: [2021-01-16 Sat 13:52]
 CLOSED: [2021-01-16 Sat 15:15]
 ** [X] add hover styling support
 CLOSED: [2021-01-16 Sat 15:15]
-** [ ] port workspace movement and selection commands from ralphie
+** [X] port workspace movement and selection commands from ralphie
+CLOSED: [2021-01-16 Sat 16:39]
 ** [ ] indicate dirty or unpushed workspace
-* [ ] pull set-keybindings fully into a clawe command
+* [ ] pull set-keybindings fully into a clawe defcom command
 * [ ] minimize the symlinked awesome-config
 * [ ] write clawe awm-cli-fnl command
 Writing fennel will be easier than writing lua

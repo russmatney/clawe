@@ -14,8 +14,9 @@
   (awm/reload-widgets)
 
   ;; reload widgets (re-runs connect_for_each_screen)
-  (awm/awm-cli "require('bar'); return init_screen();")
+  (awm/awm-cli "require('bar'); return init_bar();")
 
+  (awm/awm-cli "lume.hotswap('clawe');")
   ;; hotswap modules
   (awm/awm-cli "lume.hotswap('theme');")
   (awm/awm-cli "lume.hotswap('bar');")
