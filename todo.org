@@ -32,8 +32,10 @@ instead of full awesome reboot
 * workspace features
 ** [X] highlight/indicate the currently selected workspace
 CLOSED: [2021-01-16 Sat 13:52]
-** [ ] add click support to toggle-this/last workspace
-** [ ] add hover styling support
+** [X] add click support to toggle-this/last workspace
+CLOSED: [2021-01-16 Sat 15:15]
+** [X] add hover styling support
+CLOSED: [2021-01-16 Sat 15:15]
 ** [ ] port workspace movement and selection commands from ralphie
 ** [ ] indicate dirty or unpushed workspace
 * [ ] pull set-keybindings fully into a clawe command

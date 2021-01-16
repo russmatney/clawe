@@ -1,8 +1,13 @@
 (local wibox (require "wibox"))
 (local lume (require "lume"))
 (local icons (require "icons"))
+(local helpers (require "dashboard.helpers"))
 
 (local clawe (require "clawe"))
+
+(local update-cb "update_workspaces_widget")
+(fn request-updated-workspaces []
+  (clawe.update-workspaces update-cb))
 
 (fn text-color [wid {: selected : empty}]
   (if
@@ -16,7 +21,7 @@
 
 (fn icon-color [wid {: selected : empty}]
   (if
-   wid.hover "#d28343" ;; orange
+   wid.hover "#B9E3B7"
    selected "#d28343" ;; orange
    empty "#1b448C"  ;; blue
    ;; "#1a3b4C44"
@@ -63,12 +68,12 @@
     wid))
 
 (fn attach-callbacks [wid workspace]
-  ;; (pp {:attaching callbacks})
   (wid:connect_signal
    "button::press"
    (fn []
      (pp workspace)
-     ;; select this one!
+     (helpers.tag_back_and_forth workspace.awesome_index)
+     (request-updated-workspaces)
      ))
 
   (wid:connect_signal
@@ -97,8 +102,6 @@
        1 {:layout wibox.container.margin
           1 workspaces-list}}))
 
-(local update-cb "update_workspaces_widget")
-
 (tset
  _G update-cb
  (fn [workspaces]
@@ -112,7 +115,7 @@
 
 (fn worker []
   ;; called when module is created
-  (clawe.update-workspaces update-cb)
+  (request-updated-workspaces)
 
   widget.widget)
 
