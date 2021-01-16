@@ -126,6 +126,18 @@
   (awful.spawn "ralphie init-tags"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; garbage collection
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(global
+ handle_garbage
+ (fn []
+   (print "Collecting garbage")
+   (print (collectgarbage "count"))
+   (collectgarbage)
+   (print (collectgarbage "count"))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; init
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
