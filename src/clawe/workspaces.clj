@@ -2,8 +2,11 @@
   (:require
    [ralph.defcom :refer [defcom]]
    [ralphie.workspace :as r.workspace]
+   [ralphie.rofi :as rofi]
    [clawe.awesome :as awm]
-   [ralphie.item :as item]))
+   [ralphie.awesome :as r.awm]
+   [ralphie.item :as item]
+   [ralphie.notify :as notify]))
 
 (defn active-workspaces
   "Pulls workspaces to show in the workspaces-widget."
@@ -24,7 +27,8 @@
             }))
     (map (fn [spc]
            (assoc spc
-                  :sort-key (str (:scratchpad spc) "-" (:awesome_index spc)))))
+                  :sort-key (str (if (:scratchpad spc) "a" "z") "-"
+                                 (:awesome_index spc)))))
     (sort-by :sort-key)))
 
 (comment
@@ -34,11 +38,12 @@
 
   (active-workspaces))
 
-(defn update-workspaces
-  ([] (update-workspaces nil))
+(defn update-workspaces-widget
+  ([] (update-workspaces-widget nil))
   ([fname]
    (let [fname (or fname "update_workspaces_widget")]
      (awm/awm-cli
+       {:quiet? true}
        (awm/awm-fn fname (active-workspaces))))))
 
 (comment
@@ -47,7 +52,7 @@
     (map :awesome-index))
   (awm/awm-fn "update_workspaces_widget" (active-workspaces))
 
-  (update-workspaces))
+  (update-workspaces-widget))
 
 (defcom update-workspaces-cmd
   {:name    "update-workspaces"
@@ -57,6 +62,158 @@
    ["expects a function-name as an argument,
 which is called with a list of workspaces maps."]
    :handler (fn [_ parsed]
-              (update-workspaces (-> parsed :arguments first)))})
+              (update-workspaces-widget (-> parsed :arguments first)))})
 
-nil
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Swapping Workspaces
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn drag-workspace
+  "Drags the current awesome workspace in the given direction"
+  [dir]
+  (let [up?   (= dir "up")
+        down? (= dir "down")]
+    (if (or up? down?)
+      (do
+        (awm/awm-cli
+          {:quiet? true}
+          (str
+            "tags = awful.screen.focused().tags; "
+            "current_index = s.selected_tag.index; "
+            "new_index = current_index " (cond up? "+ 1" down? "- 1" ) "; "
+            "new_tag = tags[new_index]; "
+            "if new_tag then s.selected_tag:swap(new_tag) end; "
+            ))
+        (update-workspaces-widget))
+      (notify/notify "drag-workspace called without 'up' or 'down'!"))))
+
+(comment
+  (println "hi")
+  (drag-workspace "up"))
+
+(defn drag-workspace-index-handler
+  ([] (drag-workspace-index-handler nil nil))
+  ([_config {:keys [arguments]}]
+   (let [[dir & _rest] arguments]
+     (drag-workspace dir))))
+
+(defcom drag-workspace-index-cmd
+  {:name          "drag-workspace-index"
+   ;; TODO *keys-pressed* as a dynamic var/macro or partially applied key in your keybinding
+   ;; TODO support keybindings right here
+   :keybinding    "ctrl-shift-p"
+   :one-line-desc "Drags a workspace up or down an index."
+   :description   ["Intended to feel like dragging a workspace in a direction."]
+   :handler       drag-workspace-index-handler})
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; New create workspace
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn select-workspace
+  "Opens a list of workspaces in rofi."
+  []
+  (rofi/rofi
+    {:msg "New Workspace Name?"}
+    (->>
+      (r.workspace/all-workspaces)
+      (map :org/name)
+      seq)))
+
+(defn open-workspace-handler
+  [_ {:keys [arguments]}]
+  (if-let [tag-name (some-> arguments first)]
+    (do
+      (notify/notify (str "Found workspace, creating: " tag-name))
+      (r.awm/create-tag! tag-name))
+
+    ;; no tag, get from rofi
+    (some-> (select-workspace)
+            ((fn [w-name]
+               (when (not (r.awm/tag-for-name w-name))
+                 (r.awm/create-tag! w-name))
+               w-name))
+            r.awm/focus-tag!
+            ((fn [name]
+               (notify/notify (str "Created new workspace: " name))))))
+  (update-workspaces-widget))
+
+(defcom open-workspace
+  {:name          "open-workspace"
+   :one-line-desc "Opens a new workspace via rofi."
+   :description   []
+   :handler       open-workspace-handler})
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; consolidate workspaces
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn consolidate-workspaces []
+  (->>
+    (r.workspace/all-workspaces)
+    (filter :awesome/tag)
+    (filter (comp #(> % 0) count :clients :awesome/tag))
+    (sort-by (comp :index :awesome/tag))
+    (map-indexed
+      (fn [new-index {:keys [:awesome/tag]}]
+        (let [new-index            (+ 1 new-index) ;; b/c lua 1-based
+              {:keys [name index]} tag]
+          (if (== index new-index)
+            (prn "nothing to do")
+            (do
+              (prn "swapping tags" {:name      name
+                                    :idx       index
+                                    :new-index new-index})
+              (awm/awm-cli
+                (str "local tag = awful.tag.find_by_name(nil, \"" name "\");"
+                     "local tags = awful.screen.focused().tags;"
+                     "local tag2 = tags[" new-index "];"
+                     "tag:swap(tag2);")))))))))
+
+(comment
+  (consolidate-workspaces))
+
+(defn consolidate-workspaces-handler
+  ([] (consolidate-workspaces-handler nil nil))
+  ([_config _parsed]
+   (consolidate-workspaces)
+   (update-workspaces-widget)))
+
+(defcom consolidate-workspaces-cmd
+  {:name          "consolidate-workspaces"
+   :one-line-desc "Groups active workspaces closer together"
+   :description   ["Moves active workspaces to the front of the list."]
+   :handler       consolidate-workspaces-handler})
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; clean up workspaces
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn clean-up-workspaces
+  "Closes workspaces with 0 clients."
+  []
+  (->>
+    (r.workspace/all-workspaces)
+    (filter :awesome/tag)
+    (filter (comp #(= % 0) count :clients :awesome/tag))
+    (map
+      (fn [it]
+        (let [name (item/awesome-name it)]
+          (when name
+            (r.awm/delete-tag! name)))))))
+
+(comment
+  (clean-up-workspaces))
+
+(defn clean-up-workspaces-handler
+  ([] (clean-up-workspaces-handler nil nil))
+  ([_config _parsed]
+   (clean-up-workspaces)
+   (update-workspaces-widget)))
+
+(defcom clean-up-workspaces-cmd
+  {:name          "clean-up-workspaces"
+   :one-line-desc "Closes workspaces that have no active clients"
+   :description   []
+   :handler       clean-up-workspaces-handler})

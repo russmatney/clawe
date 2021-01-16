@@ -47,18 +47,20 @@ lain = require 'lain';")
 (defn awm-cli
   "Expects `lua-str`, a literal string of lua.
   Adds a preamble that sets common variables and requires common modules."
-  [lua-str]
-  (->>
-    (str lua-preamble "\n\n-- Passed command:\n" lua-str)
-    ((fn [lua-str]
-       (println "Running lua via awesome-client!:\n\n" lua-str)
-       lua-str))
-    ((fn [lua-str]
-       ^{:out :string}
-       ($ awesome-client ~lua-str)))
-    check
-    :out
-    parse-output))
+  ([lua-str] (awm-cli nil lua-str))
+  ([{:keys [quiet?]} lua-str]
+   (->>
+     (str lua-preamble "\n\n-- Passed command:\n" lua-str)
+     ((fn [lua-str]
+        (when-not quiet?
+          (println "Running lua via awesome-client!:\n\n" lua-str))
+        lua-str))
+     ((fn [lua-str]
+        ^{:out :string}
+        ($ awesome-client ~lua-str)))
+     check
+     :out
+     parse-output)))
 
 (comment
   (awm-cli "return 'hi';")
@@ -233,14 +235,14 @@ lain = require 'lain';")
         "pomodoro"
         "dirty-repos"]))
 
-(defn init-screen []
-  (awm-cli "require('bar'); init_screen();"))
+(defn rebuild-bar []
+  (awm-cli "require('bar'); init_bar();"))
 
 (defn reload-widgets []
   (assert (= (check-for-errors) "No Errors."))
   (->> (concat widget-filenames)
        (hotswap-module-names))
-  (init-screen))
+  (rebuild-bar))
 
 (defn reload-keybindings []
   (hotswap-module-names ["bindings"])

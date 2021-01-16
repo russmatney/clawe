@@ -3,6 +3,7 @@
 
 (local fun (require "fun"))
 (local tablex (require :pl.tablex))
+(local clawe (require "clawe"))
 
 ;; (local dashboard (require :dashboard.dashboard))
 (local helpers (require :dashboard.helpers))
@@ -90,8 +91,8 @@
                (awful.spawn "clawe reload-widgets" false)))
 
         ;; TODO rename to 'open-workspace'
-        (key [:mod] "d" (spawn-fn "ralphie-clean-up-workspaces"))
-        (key [:mod] "o" (spawn-fn "ralphie-create-workspace"))
+        (key [:mod] "d" (spawn-fn "clawe clean-up-workspaces"))
+        (key [:mod] "o" (spawn-fn "clawe open-workspace"))
         (key [:mod] "w" (spawn-fn "ralphie list-dirty-workspaces"))
 
         ;; cycle layouts
@@ -116,7 +117,8 @@
                                   tag-count
                                   next-idx)
                      next-tag (. scr.tags next-idx)]
-                 (next-tag:view_only))))
+                 (next-tag:view_only)
+                 (clawe.update-workspaces))))
         (key [:mod] "p"
              (fn []
                (let [scr (awful.screen.focused)
@@ -128,10 +130,11 @@
                                   1
                                   next-idx)
                      next-tag (. scr.tags next-idx)]
-                 (next-tag:view_only))))
+                 (next-tag:view_only)
+                 (clawe.update-workspaces))))
 
-        (key [:mod :shift] "n" (spawn-fn "ralphie-swap-workspace-index down"))
-        (key [:mod :shift] "p" (spawn-fn "ralphie-swap-workspace-index up"))
+        (key [:mod :shift] "n" (spawn-fn "clawe drag-workspace-index down"))
+        (key [:mod :shift] "p" (spawn-fn "clawe drag-workspace-index up"))
 
         ;; terminal
         (key [:mod] "Return"
