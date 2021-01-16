@@ -29,6 +29,11 @@ CLOCK: [2021-01-15 Fri 19:32]--[2021-01-15 Fri 19:40] =>  0:08
 :END:
 instead of full awesome reboot
 * [ ] nicer looking workspaces widget
+* workspace features
+** [ ] highlight/indicate the currently selected workspace
+** [ ] add click support to toggle-this/last workspace
+** [ ] port workspace movement and selection commands from ralphie
+** [ ] indicate dirty or unpushed workspace
 * [ ] pull set-keybindings fully into a clawe command
 * [ ] minimize the symlinked awesome-config
 * [ ] write clawe awm-cli-fnl command
@@ -54,13 +59,8 @@ args for
 :project-directory
 :notification-messages
 :target namespaces
-* [ ] catch and surface awesome callback errors
+* [ ] catch and surface awm-cli callback errors
 maybe via notifications/naughty
-* workspace features
-** [ ] highlight/indicate the currently selected workspace
-** [ ] add click support to toggle-this/last workspace
-** [ ] port workspace movement and selection commands from ralphie
-** [ ] indicate dirty or unpushed workspace
 * [ ] startup command
 - set background
 - start workrave

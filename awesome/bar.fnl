@@ -227,8 +227,6 @@
 
         ;; Middle widget
         2 {:layout wibox.layout.fixed.horizontal
-           :expand "none"
-           ;; 1 (pomodoro-widget)
            1 (spotify-widget)
            2 (when (is-vader) (batteryarc-widget))
            3 separator

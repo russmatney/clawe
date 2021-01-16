@@ -6,7 +6,7 @@
 (fn make-icon [{: color : code : font : size}]
   (wibox.widget
    {:font (.. font " " size)
-    :markup (.. " <span color='" color "'>" code "</span> ")
+    :markup (.. "<span color='" color "'>" code "</span>")
     :align :center
     :valign :center
     :widget wibox.widget.textbox}))

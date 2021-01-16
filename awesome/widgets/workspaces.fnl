@@ -2,27 +2,25 @@
 (local awful (require "awful"))
 (local beautiful (require "beautiful"))
 (local lume (require "lume"))
-;; (local icons (require "icons"))
+(local icons (require "icons"))
 
 (local clawe (require "clawe"))
 
 (fn make-workspace-widget [workspace]
-  (pp "workspace-test-blah")
-  (pp workspace)
+  (pp {:bt beautiful.bg_transparent})
+  (pp {:icon workspace.fa_icon_code})
   (wibox.widget
    {:bg beautiful.bg_transparent
     :widget wibox.container.background
-    1 {:layout wibox.container.margin
-       :margins 8
-       1 {:layout wibox.layout.fixed.horizontal
-          ;; TODO specify icon?
-          :margins 16
-          1 {:align "left"
-             :text (.. "i: " workspace.awesome_index)
-             :widget wibox.widget.textbox}
-          2 {:align "left"
-             :text workspace.name
-             :widget wibox.widget.textbox}}}}))
+    1 {:layout wibox.layout.fixed.horizontal
+       1 (icons.make-fa-icon {:code (or workspace.fa_icon_code "\u{f09b}")
+                              :color "#587D8D" :size 36})
+       2 {:align "left"
+          :text (.. workspace.awesome_index ": ")
+          :widget wibox.widget.textbox}
+       3 {:align "left"
+          :text workspace.name
+          :widget wibox.widget.textbox}}}))
 
 ;; (wibox.widget
 ;;  {:layout wibox.layout.fixed.horizontal
@@ -48,8 +46,6 @@
       {:bg beautiful.bg_transparent
        :widget wibox.container.background
        1 {:layout wibox.container.margin
-          :id "cont"
-          :margins 8
           1 workspaces-list}}))
 
 (local update-cb "update_workspaces_widget")

@@ -15,7 +15,9 @@
     (map (fn [spc]
            {;; consider flags for is-scratchpad/is-app/is-repo
             :name          (item/awesome-name spc)
-            :awesome-index (item/awesome-index spc)}))))
+            :awesome-index (item/awesome-index spc)
+            :fa-icon-code  (when-let [code (:org.prop/fa-icon-code spc)]
+                             (str "\\u{" code "}"))}))))
 
 (defn update-workspaces
   ([] (update-workspaces nil))
