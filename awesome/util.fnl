@@ -22,14 +22,16 @@
 (fn is_vader []
   (= (hostname) "vader"))
 
-(fn get_tag [name]
-  (awful.tag.find_by_name nil name))
+(fn get_tag [{: name : index}]
+  (if
+   name (awful.tag.find_by_name nil name)
+   index (-> (awful.screen.focused)
+             (. :tags)
+             (. index))))
 
-(fn move_tag_to_index [tag i]
-  (when (not (= tag.index i))
-    (let [tags (-> (awful.screen.focused)
-                   (. :tags))]
-      (tag:swap (. tags i)))))
+(fn move_tag_to_index [awm-tag i]
+  (when (not (= awm-tag.index i))
+    (tag:swap (get_tag {:index i}))))
 
 (fn try [f catch-f]
   (let [(status exception) (pcall f)]
