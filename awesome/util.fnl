@@ -31,7 +31,7 @@
 
 (fn move_tag_to_index [awm-tag i]
   (when (not (= awm-tag.index i))
-    (tag:swap (get_tag {:index i}))))
+    (awm-tag:swap (get_tag {:index i}))))
 
 (fn try [f catch-f]
   (let [(status exception) (pcall f)]
