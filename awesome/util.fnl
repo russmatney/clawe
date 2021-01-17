@@ -1,4 +1,5 @@
 (local awful (require "awful"))
+(local lume (require "lume"))
 
 (local
  send_string_to_client
@@ -38,14 +39,10 @@
     (if (not status)
         (catch-f exception))))
 
-(fn merge [x _y]
-  ;; TODO impl
-  x)
-
 (fn log_if_error [f opts]
   (try f
        (fn [e]
-         (pp (merge {:tripped :error-logger} opts))
+         (pp (lume.merge {:tripped :error-logger} opts))
          (print e))))
 
 {: send_string_to_client
@@ -53,6 +50,5 @@
  : is_vader
  : get_tag
  : move_tag_to_index
- : merge
  : log_if_error
  : try}
