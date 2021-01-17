@@ -44,6 +44,7 @@ CLOSED: [2021-01-16 Sat 16:39]
 CLOSED: [2021-01-16 Sat 19:49]
 maybe via notifications/naughty
 * [ ] achive luacheck zero in the awesome config
+* [ ] workspace hover popup to show awesome index, key, name, etc
 * [ ] v2 check-for-errors: run luacheck over awesome config - .fnl and .lua files
 * [ ] workspaces: indicate dirty or unpushed workspace
 * [ ] pull set-keybindings fully into a clawe defcom command
