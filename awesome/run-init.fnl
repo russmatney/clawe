@@ -181,6 +181,7 @@
    (print "init_spawns")
    (_G.init_spawns config)
 
+   (print "------------------Awesome Init Complete---------")
    ))
 
 ;; (awful.spawn "ralphie awesome-init")
