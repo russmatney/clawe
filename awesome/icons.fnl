@@ -3,13 +3,21 @@
 
 ;; https://www.reddit.com/r/awesomewm/comments/kq79jn/awesomewm_icons_made_easy/
 
-(fn make-icon [{: color : code : font : size}]
-  (wibox.widget
-   {:font (.. font " " size)
-    :markup (.. "<span color='" color "'>" code "</span>")
-    :align :center
-    :valign :center
-    :widget wibox.widget.textbox}))
+(fn make-icon [{: color : code : font : size : margins}]
+  (let [icon-widget
+        (wibox.widget
+         {:font (.. font " " size)
+          :markup (.. "<span color='" color "'>" code "</span>")
+          :align :center
+          :valign :center
+          :widget wibox.widget.textbox})]
+    (if margins
+        (wibox.widget
+         {:widget wibox.container.margin
+          :left margins
+          :right margins
+          1 icon-widget})
+        icon-widget)))
 
 (local fa-icon-opts
        {:size 12
