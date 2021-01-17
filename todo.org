@@ -30,7 +30,8 @@ CLOCK: [2021-01-15 Fri 19:32]--[2021-01-15 Fri 19:40] =>  0:08
 instead of full awesome reboot
 * [X] nicer looking workspaces widget
 CLOSED: [2021-01-16 Sat 16:39]
-* workspace features
+* [X] workspace features
+CLOSED: [2021-01-16 Sat 19:48]
 ** [X] highlight/indicate the currently selected workspace
 CLOSED: [2021-01-16 Sat 13:52]
 ** [X] add click support to toggle-this/last workspace
@@ -39,7 +40,12 @@ CLOSED: [2021-01-16 Sat 15:15]
 CLOSED: [2021-01-16 Sat 15:15]
 ** [X] port workspace movement and selection commands from ralphie
 CLOSED: [2021-01-16 Sat 16:39]
-** [ ] indicate dirty or unpushed workspace
+* [X] catch and surface awm-cli callback errors
+CLOSED: [2021-01-16 Sat 19:49]
+maybe via notifications/naughty
+* [ ] achive luacheck zero in the awesome config
+* [ ] v2 check-for-errors: run luacheck over awesome config - .fnl and .lua files
+* [ ] workspaces: indicate dirty or unpushed workspace
 * [ ] pull set-keybindings fully into a clawe defcom command
 * [ ] minimize the symlinked awesome-config
 * [ ] write clawe awm-cli-fnl command
@@ -56,7 +62,6 @@ deps:
 * [ ] print keybindings command
 * [ ] print workspaces (tags and clients)
 * [ ] integrate my old awesome git-history from ~/dotfiles?
-* [ ] achive luacheck zero in the awesome config
 * [ ] unit-test ralphie install to support clawe/vapor clis in a portable way
 args for
 :uberscript-filename
@@ -65,13 +70,10 @@ args for
 :project-directory
 :notification-messages
 :target namespaces
-* [ ] catch and surface awm-cli callback errors
-maybe via notifications/naughty
 * [ ] startup command
 - set background
 - start workrave
 * [ ] create workspace from open github repo in browser (or recent star)
-* [ ] v2 check-for-errors: run luacheck over awesome config - .fnl and .lua files
 * Ideas
 ** reloading clj-side at defcom-call-time
 ** defwidget - clojure dsl - reloads/hotswaps itself
