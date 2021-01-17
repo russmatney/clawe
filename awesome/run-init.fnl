@@ -132,9 +132,14 @@
  handle_garbage
  (fn []
    (print "Collecting garbage")
-   (print (collectgarbage "count"))
+   (local before (collectgarbage "count"))
    (collectgarbage)
-   (print (collectgarbage "count"))))
+   (local after (collectgarbage "count"))
+   (print before)
+   (print after)
+   ;; call again until the diff is < 100
+   (if (> (- before after) 100)
+       (handle_garbage))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; init

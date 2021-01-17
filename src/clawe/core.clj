@@ -60,6 +60,10 @@
      (let [res (awm/awm-cli (first arguments))]
        (println res)))})
 
+(defcom collect-garbage
+  {:name    "awm-collect-garbage"
+   :handler (fn [_ _] (awm/awm-cli "handle_garbage();"))})
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; main
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
