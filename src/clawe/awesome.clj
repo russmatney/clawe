@@ -244,7 +244,7 @@ lain = require 'lain';")
 
 (defn reload-misc []
   (hotswap-module-names
-    ["clawe" "util"]))
+    ["clawe" "util" "icons"]))
 
 (defn reload-widgets []
   (assert (= (check-for-errors) "No Errors."))
