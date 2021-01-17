@@ -193,7 +193,9 @@
                      keyed-tag (. scr.tags it)
                      current-tag scr.selected_tag]
                  (if keyed-tag
-                     (helpers.tag_back_and_forth keyed-tag.index)
+                     (do
+                       (helpers.tag_back_and_forth keyed-tag.index)
+                       (clawe.update-workspaces))
                      (let []
                        ;; create tag
                        ;; TODO fetch name  from config for index
@@ -206,7 +208,8 @@
              (fn []
                (let [scr (awful.screen.focused)
                      scr-tag (. scr.tags it)]
-                 (when scr-tag (awful.tag.viewtoggle scr-tag)))))
+                 (when scr-tag (awful.tag.viewtoggle scr-tag)))
+               (clawe.update-workspaces)))
 
         ;; move current focus to tag (workspace)
         (key [:mod :shift] (.. "#" (+ 9 it))
@@ -214,7 +217,8 @@
                (when _G.client.focus
                  (let [scr-tag (. _G.client.focus.screen.tags it)]
                    (when scr-tag
-                     (_G.client.focus:move_to_tag scr-tag))))))
+                     (_G.client.focus:move_to_tag scr-tag)
+                     (clawe.update-workspaces))))))
 
         ;; add/remove focused client on tag
         (key [:mod :shift :ctrl] (.. "#" (+ 9 it))
@@ -222,7 +226,8 @@
                (when _G.client.focus
                  (let [scr-tag (. _G.client.focus.screen.tags it)]
                    (when scr-tag
-                     (_G.client.focus:toggle_tag scr-tag)))))))))
+                     (_G.client.focus:toggle_tag scr-tag)
+                     (clawe.update-workspaces)))))))))
 
 (global
  set_global_keys
