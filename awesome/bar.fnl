@@ -31,38 +31,49 @@
       (util.log_if_error
        (fn []
          ;; remove if it exists already
-         (if s.mywibox (s.mywibox:remove))
+         (if s.top-bar (s.top-bar:remove))
+         (if s.bottom-bar (s.bottom-bar:remove))
 
          ;; Create the wibox
-         (set s.mywibox
+         (set s.top-bar
               (awful.wibar
-               {:position "bottom"
+               {:position "top"
                 :screen s
-                :height 80
+                :height 50
                 :bg beautiful.bg_transparent}))
 
          ;; Add widgets to the wibox
-         (s.mywibox:setup
+         (s.top-bar:setup
           {:layout wibox.layout.align.horizontal
            1 {:layout wibox.layout.fixed.horizontal
-              1 (spotify-widget)
-              2 (when (util.is_vader) (batteryarc-widget))
-              3 separator
-              4 (dirty-repos-widget)
-              5 separator
-              6 (org-pomo-widget)}
-
-           2 {:layout wibox.container.place
-              :valign "center"
-              :halign "center"
-              1 (workspaces-widget)}
-
-
-           3 {:layout wibox.layout.fixed.horizontal
-              1 separator
+              1 mytextclock
               2 (-> (wibox.widget.systray)
                     ((fn [sys]
                        (set sys.forced_height 50)
                        sys)))
-              3 mytextclock}
-           })))))))
+              3 separator
+              4 (spotify-widget)
+              5 (when (util.is_vader) (batteryarc-widget))
+              6 separator
+              7 (dirty-repos-widget)
+              8 separator
+              9 (org-pomo-widget)}})
+
+
+         ;; Create the wibox
+         (set s.bottom-bar
+              (awful.wibar
+               {:position "bottom"
+                :screen s
+                :height 100
+                :bg beautiful.bg_transparent}))
+
+         ;; Add widgets to the wibox
+         (s.bottom-bar:setup
+          {:layout wibox.layout.align.horizontal
+           1 nil
+           2 {:layout wibox.container.place
+              :valign "center"
+              :halign "center"
+              1 (workspaces-widget)}
+           3 nil})))))))
