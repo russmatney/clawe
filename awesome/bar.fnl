@@ -3,7 +3,7 @@
 
 (local dirty-repos-widget (require "widgets.dirty-repos"))
 (local org-pomo-widget (require "widgets.org-pomodoro"))
-(local workspaces-widget (require "widgets.workspaces"))
+(local workspaces (require "widgets.workspaces"))
 
 ;; (local pomodoro-widget (require "awesome-wm-widgets.pomodoroarc-widget.pomodoroarc"))
 (local batteryarc-widget (require"awesome-wm-widgets.batteryarc-widget.batteryarc"))
@@ -39,19 +39,24 @@
               (awful.wibar
                {:position "top"
                 :screen s
-                :height 50
+                :height (if (util.is_vader) 30 50)
                 :bg beautiful.bg_transparent}))
 
          ;; Add widgets to the wibox
          (s.top-bar:setup
-          {:layout wibox.layout.align.horizontal
+          {:layout wibox.layout.flex.horizontal
            1 {:layout wibox.layout.fixed.horizontal
               1 mytextclock
               2 (-> (wibox.widget.systray)
                     ((fn [sys]
                        (set sys.forced_height 50)
                        sys)))
-              3 separator
+              3 separator}
+           2 {:layout wibox.container.place
+              :valign "center"
+              :halign "center"
+              1 workspaces.current-name}
+           3 {:layout wibox.layout.fixed.horizontal
               4 (spotify-widget)
               5 (when (util.is_vader) (batteryarc-widget))
               6 separator
@@ -65,7 +70,7 @@
               (awful.wibar
                {:position "bottom"
                 :screen s
-                :height 100
+                :height (if (util.is_vader) 70 100)
                 :bg beautiful.bg_transparent}))
 
          ;; Add widgets to the wibox
@@ -75,5 +80,5 @@
            2 {:layout wibox.container.place
               :valign "center"
               :halign "center"
-              1 (workspaces-widget)}
+              1 (workspaces.list)}
            3 nil})))))))

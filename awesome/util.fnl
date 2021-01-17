@@ -23,12 +23,16 @@
 (fn is_vader []
   (= (hostname) "vader"))
 
-(fn get_tag [{: name : index}]
+(fn get_tag [{: name : index : selected}]
   (if
    name (awful.tag.find_by_name nil name)
    index (-> (awful.screen.focused)
              (. :tags)
-             (. index))))
+             (. index))
+   selected
+   (-> (awful.screen.focused)
+       (. :selected_tag))
+   ))
 
 (fn move_tag_to_index [awm-tag i]
   (when (not (= awm-tag.index i))
@@ -42,7 +46,7 @@
 (fn log_if_error [f opts]
   (try f
        (fn [e]
-         (pp (lume.merge {:tripped :error-logger} opts))
+         ;; (pp (lume.merge {:tripped :error-logger} opts))
          (print e))))
 
 {: send_string_to_client

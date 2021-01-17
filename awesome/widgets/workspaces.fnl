@@ -20,9 +20,10 @@
 (fn icon-code [_wid {: fa_icon_code}]
   (or fa_icon_code "\u{f09b}"))
 
-(fn icon-color [wid {: selected : empty}]
+(fn icon-color [wid {: selected : empty : tag}]
   (if
    wid.hover "#B9E3B7"
+   tag.selected "#d28343"
    selected "#d28343" ;; orange
    empty "#1b448C"  ;; blue
    ;; "#1a3b4C44"
@@ -30,7 +31,7 @@
    ))
 
 (fn make-wid-children [wid workspace]
-  (let [{: awesome_index : key : name : scratchpad} workspace
+  (let [{: _awesome_index : _key : name : scratchpad} workspace
         cont (wibox.widget {:layout wibox.layout.fixed.horizontal})]
 
     (set wid.text-color (text-color wid workspace))
@@ -38,13 +39,12 @@
     (set wid.icon-color (icon-color wid workspace))
 
     (cont:set_children
-     [
-      (wibox.widget
+     [(wibox.widget
        {:widget wibox.layout.align.vertical
         1 (icons.make-fa-icon {:margins 8
                                :code wid.icon-code
                                :color wid.icon-color
-                               :size 64})
+                               :size (if (util.is_vader) 48 64)})
         ;; 2 (wibox.widget
         ;;    {:align "center"
         ;;     :markup (.. "<span color=\"" wid.text-color "\">"
@@ -92,6 +92,7 @@
                     (wid:set_children
                      (make-wid-children wid workspace))))
 
+
   ;; must return wid!
   wid)
 
@@ -105,6 +106,16 @@
        1 {:layout wibox.container.margin
           1 workspaces-list}}))
 
+(local current-workspace-name
+       (wibox.widget
+        {:align "center"
+         :widget wibox.widget.textbox}))
+
+(fn set-current-workspace-name [wsp]
+  (set current-workspace-name.markup
+       (.. "<span size=\"large\" color=\"" "#edfedf" "\">"
+           wsp.name "</span>")))
+
 (tset
  _G update-cb
  (fn [workspaces]
@@ -112,12 +123,15 @@
 Sets all workspace indexes to match the passed :i."
    (util.log_if_error
     (fn []
-
       ;; set local awesome tag on each wsp
       (-> workspaces
           (lume.each (fn [wsp]
-                       (let [tag (util.get_tag {:index wsp.awesome_index})]
-                         (tset wsp :tag tag)))))
+                       (let [tag (util.get_tag
+                                  {:index wsp.awesome_index})]
+                         (tset wsp :tag tag)
+
+                         (when tag.selected
+                           (set-current-workspace-name wsp))))))
 
       ;; disabled for now - this index overwriting needs more thought
       (-> workspaces
@@ -133,9 +147,19 @@ Sets all workspace indexes to match the passed :i."
                              (attach-callbacks wsp))))))))))
 
 (fn worker []
-  ;; called when module is created
-  (request-updated-workspaces)
+  (let [cb (fn [_tag]
+             (request-updated-workspaces))]
+    ;; called when module is created
+    (request-updated-workspaces)
 
-  widget.widget)
+    ;; TODO figure out how to disconnect signals properly
+    ;; otherwise it doesn't seem like this running multiple times is too bad
+    (tag.connect_signal "property::selected" cb)
 
-(setmetatable widget {:__call (fn [_ ...] (worker ...))})
+    widget.widget))
+
+(local list-widget
+       (setmetatable widget {:__call (fn [_ ...] (worker ...))}))
+
+{:list list-widget
+ :current-name current-workspace-name}
