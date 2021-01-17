@@ -90,8 +90,7 @@
                (awful.spawn "clawe rebuild-clawe" false)
                (awful.spawn "clawe reload-widgets" false)))
 
-        ;; TODO rename to 'open-workspace'
-        (key [:mod] "d" (spawn-fn "clawe clean-up-workspaces"))
+        (key [:mod] "d" (spawn-fn "clawe clean-workspaces"))
         (key [:mod] "o" (spawn-fn "clawe open-workspace"))
         (key [:mod] "w" (spawn-fn "ralphie list-dirty-workspaces"))
 

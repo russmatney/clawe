@@ -194,30 +194,37 @@ which is called with a list of workspaces maps."]
 ;; clean up workspaces
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn clean-up-workspaces
+(defn clean-workspaces
   "Closes workspaces with 0 clients."
   []
+  (notify/notify "Cleaning up workspaces")
   (->>
     (r.workspace/all-workspaces)
     (filter :awesome/tag)
-    (filter (comp zero? count :clients :awesome/tag))
+    (filter (comp :empty :awesome/tag))
     (map
       (fn [it]
-        (let [name (item/awesome-name it)]
-          (when name
-            (r.awm/delete-tag! name)))))))
+        (when-let [name (item/awesome-name it)]
+          (try
+            (r.awm/delete-tag! name)
+            (notify/notify "Deleted Tag" name)
+            (catch Exception e e
+                   (notify/notify "Error deleting tag" e))))))
+    doall))
 
 (comment
-  (clean-up-workspaces))
+  (clean-workspaces))
 
-(defn clean-up-workspaces-handler
-  ([] (clean-up-workspaces-handler nil nil))
+(defn clean-workspaces-handler
+  ([] (clean-workspaces-handler nil nil))
   ([_config _parsed]
-   (clean-up-workspaces)
+   (notify/notify "Cleaning up workspaces - 1")
+   (clean-workspaces)
    (update-workspaces-widget)))
 
-(defcom clean-up-workspaces-cmd
-  {:name          "clean-up-workspaces"
+(defcom clean-workspaces-cmd
+  {:name          "clean-workspaces"
    :one-line-desc "Closes workspaces that have no active clients"
-   :description   []
-   :handler       clean-up-workspaces-handler})
+   :handler       clean-workspaces-handler})
+
+(comment)
