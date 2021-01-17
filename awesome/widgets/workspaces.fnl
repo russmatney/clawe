@@ -4,7 +4,6 @@
 (local helpers (require "dashboard.helpers"))
 
 (local util (require "util"))
-
 (local clawe (require "clawe"))
 
 (local update-cb "update_workspaces_widget")
@@ -31,34 +30,30 @@
    ))
 
 (fn make-wid-children [wid workspace]
-  (let [{: awesome_index
-         : key
-         : name
-         : scratchpad
-         } workspace
-
-        cont (wibox.widget {:layout wibox.layout.fixed.horizontal})
-        ]
+  (let [{: awesome_index : key : name : scratchpad} workspace
+        cont (wibox.widget {:layout wibox.layout.fixed.horizontal})]
 
     (set wid.text-color (text-color wid workspace))
     (set wid.icon-code (icon-code wid workspace))
     (set wid.icon-color (icon-color wid workspace))
 
     (cont:set_children
-     [(wibox.widget
-       {:widget wibox.container.margin
-        :margins 8
-        1 (icons.make-fa-icon {:code wid.icon-code
-                               :color wid.icon-color
-                               :size 48})})
+     [
       (wibox.widget
-       {:align "left"
-        :markup (.. "<span color=\"" wid.text-color "\">"
-                    (if (and scratchpad key)
-                        key
-                        (.. awesome_index ": "))
-                    "</span>")
-        :widget wibox.widget.textbox})
+       {:widget wibox.layout.align.vertical
+        1 (icons.make-fa-icon {:margins 8
+                               :code wid.icon-code
+                               :color wid.icon-color
+                               :size 64})
+        ;; 2 (wibox.widget
+        ;;    {:align "center"
+        ;;     :markup (.. "<span color=\"" wid.text-color "\">"
+        ;;                 (if (and scratchpad key)
+        ;;                     key
+        ;;                     (.. awesome_index ": "))
+        ;;                 "</span>")
+        ;;     :widget wibox.widget.textbox})
+        })
       (when (not scratchpad)
         (wibox.widget
          {:align "left"
