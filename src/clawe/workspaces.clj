@@ -200,7 +200,7 @@ which is called with a list of workspaces maps."]
   (->>
     (r.workspace/all-workspaces)
     (filter :awesome/tag)
-    (filter (comp #(= % 0) count :clients :awesome/tag))
+    (filter (comp zero? count :clients :awesome/tag))
     (map
       (fn [it]
         (let [name (item/awesome-name it)]

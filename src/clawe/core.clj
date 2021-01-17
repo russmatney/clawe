@@ -57,7 +57,8 @@
    :validate (fn [arguments] (-> arguments first string?))
    :handler
    (fn [_config {:keys [arguments]}]
-     (awm/awm-cli (first arguments)))})
+     (let [res (awm/awm-cli (first arguments))]
+       (println res)))})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; main

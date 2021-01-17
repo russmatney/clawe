@@ -42,7 +42,9 @@ lume = require('lume');
 view = require('fennelview');
 inspect = require 'inspect';
 s = awful.screen.focused();
-lain = require 'lain';")
+lain = require 'lain';
+util = require 'util';
+")
 
 (defn awm-cli
   "Expects `lua-str`, a literal string of lua.
@@ -268,3 +270,5 @@ lain = require 'lain';")
               (reload-misc)
               (println "\treloading widgets!")
               (reload-widgets))})
+
+(comment)
