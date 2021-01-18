@@ -1,6 +1,6 @@
 (ns clawe.awesome
   (:require
-   [babashka.process :refer [$ check]]
+   [babashka.process :as process :refer [$ check]]
    [clojure.string :as string]
    [ralph.defcom :refer [defcom]]
    [ralphie.sh :as sh]
@@ -162,6 +162,22 @@ util = require 'util';
 ;; Assert Doctor
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn fennel-check [abs-path]
+  (let [dir (sh/expand "~/.config/awesome")
+        res (->
+              (process/process ["fennel" "--compile" abs-path] {:dir dir})
+              (process/process ["luacheck" "-"] {:dir dir})
+              ;; :out
+              ;; slurp
+              )
+        res @res]
+    (when-not (zero? (:exit res))
+      (throw (Exception. (str "Fennel-check failed for path: " abs-path))))))
+
+(comment
+  (fennel-check (sh/expand "~/.config/awesome/run-init.fnl"))
+  )
+
 (defn fennel-compile [abs-path]
   (-> ^{:out :string}
       ($ fennel --compile ~abs-path)
@@ -177,7 +193,14 @@ util = require 'util';
   (try
     (cond
       (re-seq #".fnl$" abs-path)
-      (fennel-compile abs-path))
+      (do
+        (fennel-compile abs-path)
+        ;; TODO add luacheck to awm runtime's path
+        ;; (fennel-check abs-path)
+        ))
+
+    ;; TODO handle regular luacheck for .lua files
+
     nil
     (catch Exception e e)))
 

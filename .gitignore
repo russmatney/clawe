@@ -7,6 +7,7 @@ tmp/
 .nrepl-port
 .clj-kondo/.cache
 
-**/.luacheckcache
+awesome/**/.luacheckcache
+awesome/.luacheckcache
 
 clawe-script.clj
