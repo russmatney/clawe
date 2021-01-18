@@ -1,6 +1,7 @@
 (ns clawe.core
   (:require
    [clawe.workspaces]
+   [clawe.workrave]
    [babashka.process :refer [$ check]]
 
    [ralphie.install :as r.install]

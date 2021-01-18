@@ -21,13 +21,10 @@
           :widget wibox.widget.textbox}}))
 
 (fn _G.update_org_clock_widget [str]
-  (pp "hi")
   (when str
-    (pp str)
     (let [str
           ;; removes surrounding quotes in emacs output
           (string.sub str 2 (- (string.len str) 2))]
-      (pp str)
       (: org-clock-widget.widget :set_label str))))
 
 (fn worker []

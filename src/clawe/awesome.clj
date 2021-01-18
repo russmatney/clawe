@@ -235,6 +235,7 @@ util = require 'util';
          ["workspaces"
           "org-pomodoro"
           "org-clock"
+          "workrave"
           "focus"
           "pomodoro"
           "dirty-repos"])

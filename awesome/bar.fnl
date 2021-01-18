@@ -5,6 +5,7 @@
 (local org-pomo-widget (require "widgets.org-pomodoro"))
 (local org-clock-widget (require "widgets.org-clock"))
 (local workspaces (require "widgets.workspaces"))
+(local workrave (require "widgets.workrave"))
 
 ;; (local pomodoro-widget (require "awesome-wm-widgets.pomodoroarc-widget.pomodoroarc"))
 (local batteryarc-widget (require"awesome-wm-widgets.batteryarc-widget.batteryarc"))
@@ -52,7 +53,8 @@
                     ((fn [sys]
                        (set sys.forced_height 50)
                        sys)))
-              3 separator}
+              3 separator
+              4 (workrave)}
            2 {:layout wibox.container.place
               :valign "center"
               :halign "center"
