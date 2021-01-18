@@ -31,7 +31,7 @@
    ))
 
 (fn make-wid-children [wid workspace]
-  (let [{: _awesome_index : _key : name : scratchpad} workspace
+  (let [{: awesome_index : _key : name : scratchpad} workspace
         cont (wibox.widget {:layout wibox.layout.fixed.horizontal})]
 
     (set wid.text-color (text-color wid workspace))
@@ -44,21 +44,13 @@
         1 (icons.make-fa-icon {:margins 8
                                :code wid.icon-code
                                :color wid.icon-color
-                               :size (if (util.is_vader) 48 64)})
-        ;; 2 (wibox.widget
-        ;;    {:align "center"
-        ;;     :markup (.. "<span color=\"" wid.text-color "\">"
-        ;;                 (if (and scratchpad key)
-        ;;                     key
-        ;;                     (.. awesome_index ": "))
-        ;;                 "</span>")
-        ;;     :widget wibox.widget.textbox})
-        })
+                               :size (if (util.is_vader) 48 64)})})
       (when (not scratchpad)
         (wibox.widget
          {:align "left"
           :markup (.. "<span color=\"" wid.text-color "\">"
-                      (if scratchpad "" name) "</span>")
+                      (if scratchpad ""
+                          (.. name " (" awesome_index ")")) "</span>")
           :widget wibox.widget.textbox}))])
 
     ;; return container widget as list of children
