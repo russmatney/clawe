@@ -234,6 +234,7 @@ util = require 'util';
     (map (partial str "widgets.")
          ["workspaces"
           "org-pomodoro"
+          "org-clock"
           "focus"
           "pomodoro"
           "dirty-repos"])
