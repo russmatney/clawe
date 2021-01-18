@@ -1,4 +1,4 @@
-function table.indexof(t, needle)
+function indexof_table(t, needle)
   for k, v in pairs(t) do
     if v == needle then
       return k

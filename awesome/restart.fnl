@@ -24,7 +24,7 @@
       (table.insert tags-to-restore
                     [i
                      t.name
-                     (table.indexof layouts t.layout)
+                     (_G.indexof_table layouts t.layout)
                      t.column_count
                      t.master_width_factor
                      t.master_count
@@ -33,7 +33,7 @@
     (when (posix.stat tags-state-file)
       (os.remove tags-state-file))
 
-    (table.save tags-to-restore tags-state-file)
+    (_G.save_table tags-to-restore tags-state-file)
 
     (local clients (_G.client.get))
     (local clients-to-restore [])
@@ -48,7 +48,7 @@
     (when (posix.stat clients-state-file)
       (os.remove clients-state-file))
 
-    (table.save clients-to-restore clients-state-file)))
+    (_G.save_table clients-to-restore clients-state-file)))
 
 (fn mod.save_state_and_restart []
   (mod.save_state)
@@ -56,7 +56,7 @@
 
 (fn mod.restore_state []
   (when (posix.stat tags-state-file)
-    (local tags-to-restore (table.load tags-state-file))
+    (local tags-to-restore (_G.load_table tags-state-file))
     (local s (awful.screen.focused))
     (each [_ p (ipairs tags-to-restore)]
       (let [[_ name layout ncol mwfact nmaster selected] p
@@ -80,7 +80,7 @@
 
   (when (posix.stat clients-state-file)
     (local s (awful.screen.focused))
-    (local clients-to-restore (table.load clients-state-file))
+    (local clients-to-restore (_G.load_table clients-state-file))
     (each [_ p (ipairs clients-to-restore)]
       (let [[_ window name tag] p]
         (var c nil)

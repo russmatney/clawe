@@ -33,7 +33,7 @@ do
 	end
 
 	--// The Save Function
-	function table.save(  tbl,filename )
+	function save_table(  tbl,filename )
 		local charS,charE = "   ","\n"
 		local file,err = io.open( filename, "wb" )
 		if err then return err end
@@ -107,9 +107,9 @@ do
 	end
 
 	--// The Load Function
-	function table.load( sfile )
+	function load_table( sfile )
 		local ftables,err = loadfile( sfile )
-		if err then return _,err end
+		if err then return nil,err end
 		local tables = ftables()
 		for idx = 1,#tables do
 			local tolinki = {}

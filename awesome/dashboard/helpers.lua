@@ -8,7 +8,6 @@ local beautiful = require("beautiful")
 local xresources = require("beautiful.xresources")
 local dpi = xresources.apply_dpi
 local wibox = require("wibox")
-local naughty = require("naughty")
 
 local helpers = {}
 
@@ -141,16 +140,16 @@ function helpers.add_hover_cursor(w, hover_cursor)
     local original_cursor = "left_ptr"
 
     w:connect_signal("mouse::enter", function ()
-        local w = _G.mouse.current_wibox
-        if w then
-            w.cursor = hover_cursor
+        local wid = _G.mouse.current_wibox
+        if wid then
+            wid.cursor = hover_cursor
         end
     end)
 
     w:connect_signal("mouse::leave", function ()
-        local w = _G.mouse.current_wibox
-        if w then
-            w.cursor = original_cursor
+        local wid = _G.mouse.current_wibox
+        if wid then
+            wid.cursor = original_cursor
         end
     end)
 end
@@ -249,7 +248,7 @@ function helpers.volume_control(step)
     if step == 0 then
         cmd = "pactl set-sink-mute @DEFAULT_SINK@ toggle"
     else
-        sign = step > 0 and "+" or ""
+        local sign = step > 0 and "+" or ""
         cmd = "pactl set-sink-mute @DEFAULT_SINK@ 0 && pactl set-sink-volume @DEFAULT_SINK@ "..sign..tostring(step).."%"
     end
     awful.spawn.with_shell(cmd)
@@ -276,6 +275,7 @@ function helpers.find_clients(match, first_only)
     end
 
     if first_only then
+        -- luacheck: ignore 512
         for c in awful.client.iterate(matcher) do
             return c
         end
@@ -308,6 +308,7 @@ function helpers.run_or_raise(match, move, spawn_cmd, spawn_args)
 
     -- Find and raise
     local found = false
+    -- luacheck: ignore 512
     for c in awful.client.iterate(matcher) do
         found = true
         c.minimized = false

@@ -139,7 +139,7 @@
    (print after)
    ;; call again until the diff is < 100
    (if (> (- before after) 100)
-       (handle_garbage))))
+       (_G.handle_garbage))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; init

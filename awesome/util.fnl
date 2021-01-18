@@ -1,5 +1,4 @@
 (local awful (require "awful"))
-(local lume (require "lume"))
 
 (local
  send_string_to_client
@@ -43,7 +42,7 @@
     (if (not status)
         (catch-f exception))))
 
-(fn log_if_error [f opts]
+(fn log_if_error [f _opts]
   (try f
        (fn [e]
          ;; (pp (lume.merge {:tripped :error-logger} opts))

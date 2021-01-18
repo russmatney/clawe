@@ -1,9 +1,8 @@
 (local wibox (require "wibox"))
 (local beautiful (require "beautiful"))
 
-(local dirty-repos-widget (require "widgets.dirty-repos"))
-(local org-pomo-widget (require "widgets.org-pomodoro"))
-(local org-clock-widget (require "widgets.org-clock"))
+(local dirty-repos (require "widgets.dirty-repos"))
+(local org-clock (require "widgets.org-clock"))
 (local workspaces (require "widgets.workspaces"))
 (local workrave (require "widgets.workrave"))
 
@@ -58,12 +57,12 @@
            2 {:layout wibox.container.place
               :valign "center"
               :halign "center"
-              1 (org-clock-widget)}
+              1 (org-clock)}
            3 {:layout wibox.layout.fixed.horizontal
               1 (spotify-widget)
               2 (when (util.is_vader) (batteryarc-widget))
               3 separator
-              4 (dirty-repos-widget)}})
+              4 (dirty-repos)}})
 
          ;; Create the wibox
          (set s.bottom-bar

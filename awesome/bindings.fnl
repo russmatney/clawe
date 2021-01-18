@@ -186,8 +186,7 @@
         (key [:mod] (.. "#" (+ 9 it))
              (fn []
                (let [scr (awful.screen.focused)
-                     keyed-tag (. scr.tags it)
-                     current-tag scr.selected_tag]
+                     keyed-tag (. scr.tags it)]
                  (if keyed-tag
                      (do
                        (helpers.tag_back_and_forth keyed-tag.index)
@@ -233,17 +232,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Client Keybindings
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(fn is-emacs [c] (= c.class "Emacs"))
-
-;; too slow
-(fn emacs-move [dir]
-  ;; (print "attempting to move")
-  ;; (print dir)
-  (let [cmd
-        (.. "emacsclient -e '(evil-window-" dir " 1)'")]
-    ;; (print cmd)
-    (awful.spawn cmd)))
 
 (fn focus-move [dir centerwork-dir centerwork-dir2]
   ;; TODO should move floating windows if floating

@@ -4,20 +4,13 @@ local awful = require("awful")
 local gears = require("gears")
 local wibox = require("wibox")
 local beautiful = require("beautiful")
-local naughty = require("naughty")
 
 local helpers = require("./dashboard/helpers")
-local xresources = require("beautiful.xresources")
-local dpi = xresources.apply_dpi
-
-local keygrabber = require("awful.keygrabber")
 
 -- load settings
--- local xrdb = beautiful.xresources.get_current_theme()
--- Make dpi function global
-dpi = beautiful.xresources.apply_dpi
--- Make xresources colors global
-x = {
+
+local dpi = beautiful.xresources.apply_dpi
+local x = {
     --           xrdb variable
     background = "#000000",
     foreground = "#000000",
@@ -43,12 +36,8 @@ x = {
 local box_radius = beautiful.dashboard_box_border_radius or dpi(12)
 local box_gap = dpi(6)
 
--- Get screen geometry
-local screen_width = awful.screen.focused().geometry.width
-local screen_height = awful.screen.focused().geometry.height
-
 -- Create the widget
-dashboard = wibox({visible = false, ontop = true, type = "dock", screen = screen.primary})
+local dashboard = wibox({visible = false, ontop = true, type = "dock", screen = screen.primary})
 awful.placement.maximize(dashboard)
 
 dashboard.bg = beautiful.dashboard_bg or beautiful.exit_screen_bg or beautiful.wibar_bg or "#111111"
@@ -72,17 +61,15 @@ end
 dashboard:buttons(gears.table.join(
     -- Middle click - Hide dashboard
     awful.button({ }, 2, function ()
-        dashboard_hide()
+        _G.dashboard_hide()
     end)
 ))
-
 
 local dashboard_grabber
 function dashboard_hide()
     awful.keygrabber.stop(dashboard_grabber)
     set_visibility(false)
 end
-
 
 local original_cursor = "left_ptr"
 function dashboard_show()
@@ -97,7 +84,7 @@ function dashboard_show()
         if event == "release" then return end
         -- Press Escape or q or F1 to hide it
         if key == 'Escape' or key == 'q' or key == 'F1' then
-            dashboard_hide()
+            _G.dashboard_hide()
         end
     end)
     set_visibility(true)
@@ -224,35 +211,23 @@ local disk = wibox.widget {
 local disk_box = create_boxed_widget(disk, dpi(150), dpi(150), x.background)
 
 disk_box:connect_signal("mouse::enter", function ()
-    disk_icon.visible = false
+    _G.disk_icon.visible = false
     disk_hover_text.visible = true
 end)
 disk_box:connect_signal("mouse::leave", function ()
-    disk_icon.visible = true
+    _G.disk_icon.visible = true
     disk_hover_text.visible = false
 end)
 
 
 -- File system bookmarks
-local function create_bookmark(name, path, color, hover_color)
+local function create_bookmark(name, _path, color, hover_color)
     local bookmark = wibox.widget.textbox()
     -- bookmark.font = "sans bold 16"
     -- bookmark.text = wibox.widget.textbox(name:sub(1,1):upper()..name:sub(2))
     bookmark.markup = helpers.colorize_text(name, color)
     bookmark.align = "center"
     bookmark.valign = "center"
-
-    -- Buttons
-    bookmark:buttons(gears.table.join(
-        awful.button({ }, 1, function ()
-            awful.spawn.with_shell(user.file_manager.." "..path)
-            dashboard_hide()
-        end),
-        awful.button({ }, 3, function ()
-            awful.spawn.with_shell(user.terminal.." -e 'ranger' "..path)
-            dashboard_hide()
-        end)
-    ))
 
     -- Hover effect
     bookmark:connect_signal("mouse::enter", function ()
@@ -350,9 +325,9 @@ local uptime_box = create_boxed_widget(uptime, dpi(300), dpi(80), x.background)
 
 uptime_box:buttons(gears.table.join(
     awful.button({ }, 1, function ()
-        exit_screen_show()
+        _G.exit_screen_show()
         gears.timer.delayed_call(function()
-            dashboard_hide()
+            _G.dashboard_hide()
         end)
     end)
 ))
@@ -402,4 +377,4 @@ dashboard:setup {
 }
 
 
-return {dashboard_show = dashboard_show}
+return {dashboard_show = _G.dashboard_show}

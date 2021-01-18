@@ -43,7 +43,11 @@ CLOSED: [2021-01-16 Sat 16:39]
 * [X] catch and surface awm-cli callback errors
 CLOSED: [2021-01-16 Sat 19:49]
 maybe via notifications/naughty
-* [ ] achive luacheck zero in the awesome config
+* [X] achive luacheck zero in the awesome config
+CLOSED: [2021-01-18 Mon 18:34] SCHEDULED: <2021-01-19 Tue>
+:LOGBOOK:
+CLOCK: [2021-01-18 Mon 18:09]--[2021-01-18 Mon 18:34] =>  0:25
+:END:
 * [ ] workspace hover popup to show awesome index, key, name, etc
 * [ ] v2 check-for-errors: run luacheck over awesome config - .fnl and .lua files
 * [ ] workspaces: indicate dirty or unpushed workspace

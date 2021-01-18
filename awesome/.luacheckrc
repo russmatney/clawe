@@ -32,12 +32,7 @@ read_globals = {
     "window",
     "table.unpack",
     "math.atan2",
-    "package",
-}
-
-new_globals = {
-  "love", "pp", "fennel", "lume", "u", "ppi",
-  "layouts",
+    "package"
 }
 
 -- screen may not be read-only, because newer luacheck versions complain about
@@ -46,14 +41,23 @@ new_globals = {
 --   local tags = mouse.screen.tags
 --   tags[7].index = 4
 -- client may not be read-only due to client.focus.
+
 globals = {
-    "screen",
+    "client",
+    "fennel",
+    "layouts",
+    "love",
+    "lume",
     "mouse",
+    "pp",
+    "ppi",
     "root",
-    "client"
+    "screen",
+    "u"
 }
+
+new_globals = globals
+stds.fennel = {globals = globals}
 
 -- Enable cache (uses .luacheckcache relative to this rc file).
 cache = true
-
-stds.fennel = {globals ={"fennel", "pp", "lume", "self", "u"}}
