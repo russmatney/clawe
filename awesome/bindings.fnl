@@ -80,6 +80,7 @@
         (key [:mod] "y" (spawn-fn "ralphie-toggle-scratchpad yodo-app"))
         (key [:mod] "g" (spawn-fn "ralphie-toggle-scratchpad notes"))
         (key [:mod] "t" (spawn-fn "ralphie-toggle-scratchpad web"))
+        ;; (key [:mod] "b" (spawn-fn "ralphie-toggle-scratchpad chrome"))
         (key [:mod] "a" (spawn-fn "ralphie-toggle-scratchpad slack"))
         (key [:mod] "s" (spawn-fn "ralphie-toggle-scratchpad spotify"))
 
@@ -92,7 +93,7 @@
 
         (key [:mod] "d" (spawn-fn "clawe clean-workspaces"))
         (key [:mod] "o" (spawn-fn "clawe open-workspace"))
-        (key [:mod] "w" (spawn-fn "ralphie list-dirty-workspaces"))
+        (key [:mod] "w" (spawn-fn "clawe rofi"))
 
         ;; cycle layouts
         (key [:mod] "Tab"
@@ -144,11 +145,7 @@
                  (awful.spawn str))))
 
         ;; emacs
-        (key [:mod :shift] "Return" (spawn-fn "ralphie open-emacs"))
-
-        ;; browser
-        ;; (key [:mod :shift] "b" (spawn-fn "google-chrome-stable"))
-        (key [:mod :shift] "b" (spawn-fn "firefox"))
+        (key [:mod :shift] "Return" (spawn-fn "ralphie-open-emacs"))
 
         ;; launcher (rofi)
         (key [:mod] "space" (spawn-fn "/usr/bin/rofi -show drun -modi drun"))

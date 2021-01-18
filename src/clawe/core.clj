@@ -8,6 +8,7 @@
    [ralphie.util :as r.util]
    [ralphie.notify :as r.notify]
    [ralphie.sh :as r.sh]
+   [ralphie.rofi :as r.rofi]
 
    [ralph.defcom :as defcom :refer [defcom]]
    [clawe.awesome :as awm]))
@@ -16,6 +17,16 @@
   {:name    "hello"
    :handler (fn [_config _parsed]
               (println "Howdy"))})
+
+(defcom rofi-cmd
+  {:name "rofi"
+   :handler
+   (fn [config parsed]
+     (when-let [cmd (some->> (defcom/list-commands)
+                             (map :name)
+                             (r.rofi/rofi {:require-match? true
+                                           :msg            "Clawe commands"}))]
+       (defcom/call-handler cmd config parsed)))})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Install Awesome config
