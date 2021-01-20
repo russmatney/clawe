@@ -20,15 +20,18 @@
 (fn icon-code [_wid {: fa_icon_code}]
   (or fa_icon_code "\u{f09b}"))
 
+;; "#ac3232" ;; darker red
 (fn icon-color [wid {: selected : empty : tag}]
   (if
+   tag.urgent "#d95763" ;; softer red
    wid.hover "#B9E3B7"
    tag.selected "#d28343"
    selected "#d28343" ;; orange
    empty "#1b448C"  ;; blue
    ;; "#1a3b4C44"
    "#587D8D" ;; bluegreen
-   ))
+   )
+  )
 
 (fn make-wid-children [wid workspace]
   (let [{: awesome_index : _key : name : scratchpad} workspace
@@ -147,6 +150,7 @@ Sets all workspace indexes to match the passed :i."
     ;; TODO figure out how to disconnect signals properly
     ;; otherwise it doesn't seem like this running multiple times is too bad
     (tag.connect_signal "property::selected" cb)
+    (tag.connect_signal "property::urgent" cb)
 
     widget.widget))
 
