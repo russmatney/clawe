@@ -8,18 +8,6 @@
 ;; Rules
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; prevent matching clients from stealing focus
-;; not sure why this isn't handled by the rules...
-;; (awful.ewmh.add_activate_filter
-;;  (fn [c ctx _hints]
-;;    ;; (print (.. ctx " activation filter requested"))
-;;    ;; (print c.class)
-;;    ;; (print c.name)
-;;    ;; (pp hints)
-;;    (when (or (= ctx "rules")
-;;              (= ctx "ewmh"))
-;;      (if (= c.class "love") false))))
-
 ;; Rules to apply to new clients (through the "manage" signal).
 (local global_rules
        (gears.table.join
@@ -31,51 +19,23 @@
            :raise true
            :keys bindings.clientkeys
            :buttons bindings.clientbuttons
-           :size_hints_honor false ;; Remove gaps between terminals
            :screen awful.screen.preferred
-           :callback awful.client.setslave
            :placement (+ awful.placement.no_overlap
                          awful.placement.no_offscreen)}}
 
-         ;; {:rule {}
-         ;;  :callback
-         ;;  (fn [c]
-         ;;    (print "\n\nnew client!")
-         ;;    (pp c)
-         ;;    (print c.class)
-         ;;    (print c.name)
-         ;;    )}
-
          ;; Floating clients.
          {:rule_any
-          {:instance ["DTA" "copyq"]
+          {:instance ["DTA" "copyq" "pinentry"]
            :class ["Arandr" "MessageWin" "Sxiv" "Wpa_gui"
-                   "pinentry" "veromix" "xtightvncviewer"]
-           :role ["pop-up"]} ;; e.g. Google Chrome's (detached) Developer Tools.
+                   "Blueman-manager" "Gpick" "Kruler"
+                   "Tor Browser" "veromix" "xtightvncviewer"]
+           :name ["Event Tester"]
+           :role ["pop-up" "AlarmWindow" "ConfigManager"]}
           :properties {:floating true}}
 
          ;; Add titlebars to normal clients and dialogs
          {:rule_any {:type ["normal" "dialog"]}
           :properties {:titlebars_enabled true}}
-
-         ;; handle status bar
-         {:rule_any {:name ["yodo/app"]}
-          :properties {:tag "yodo-app"
-                       :titlebars_enabled true}}
-
-         ;; handle status bar
-         {:rule_any {:name ["yodo/bar"]}
-          :properties {:titlebars_enabled false
-                       :floating true
-                       :sticky true
-                       :focusable false
-                       :maximized_horizontal true
-                       :height 100
-                       :x 0
-                       :y 0}
-          :callback (fn [c]
-                      ;; remove from any tags
-                      (c:tags {}))}
 
          ;; handle org protocol/emacs popups
          {:rule_any {:name ["org-capture-frame" "doom-capture"]}
@@ -115,10 +75,26 @@
          ;; youtube fix
          {:rule {:instance "plugin-container"}
           :properties {:floating true}}
-         {:rule {:instance "_NET_WM_STATE_FULLSCREEN"}
-          :properties {:floating true}}
          {:rule {:instance "exe"}
           :properties {:floating true}}
+
+         ;; fullscreen fix?
+         {:rule_any {:instance ["_NET_WM_STATE_FULLSCREEN"]}
+          :callback (fn [c]
+                      (print "fullscreen client!")
+                      (pp c)
+                      (set c.fullscreen false)
+                      (set c.maximized false)
+                      (set c.maximized_vertical false)
+                      (set c.maximized_horizontal false)
+                      (-> c
+                          (tset :floating true)
+                          ((+ awful.placement.scale
+                              awful.placement.centered)
+                           {:honor_padding true
+                            :honor_workarea true
+                            :to_percent 0.9}))
+                      )}
 
          {:rule {:name "notes"}
           :properties {:tag "notes"}}
@@ -145,7 +121,8 @@
                        :first_tag "slack"
                        :switch_to_tags true}}]))
 
-(set
- _G.init_rules
- (fn []
-   (set awful.rules.rules global_rules)))
+(fn init_rules []
+  ;; TODO be nice to update changed rules, not _all_
+  (set awful.rules.rules global_rules))
+
+{: init_rules}
