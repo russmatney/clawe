@@ -9,5 +9,7 @@ tmp/
 
 awesome/**/.luacheckcache
 awesome/.luacheckcache
+.luacheckcache
+awesome/stdout
 
 clawe-script.clj
