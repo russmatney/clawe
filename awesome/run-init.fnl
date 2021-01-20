@@ -5,6 +5,7 @@
 (local view (require :fennelview))
 (local inspect (require :inspect))
 (local lain (require "lain"))
+(local util (require "util"))
 
 ;; focus client after awesome.restart
 (require "awful.autofocus")
@@ -23,7 +24,7 @@
          ;; awful.layout.suit.fair
          ;; awful.layout.suit.magnifier
          ;; awful.layout.suit.spiral
-         ;; awful.layout.suit.spiral.dwindle
+         awful.layout.suit.spiral.dwindle
          lain.layout.centerwork
          ;; lain.layout.centerwork.horizontal
          ])
@@ -32,7 +33,7 @@
 ;; Theming
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(fn _G.init_theme []
+(fn init_theme []
   ;; init theme
   (-> (require "gears.filesystem")
       (. :get_configuration_dir)
@@ -46,13 +47,13 @@
   (set beautiful.notification_font "Noto Sans Bold 14")
   (set beautiful.notification_max_height 100)
   ;; TODO if hostname algo/vader, use 30/10
-  ;; (set beautiful.useless_gap 30)
-  (set beautiful.useless_gap 10))
+  (if (util.is_vader)
+      (set beautiful.useless_gap 10)
+      (set beautiful.useless_gap 20)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; External (Ralphie?) Functions
+;; External Functions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 
 (global
  reapply_rules
@@ -76,7 +77,6 @@
           :geometry geo})
      (c:geometry geo))))
 
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Tags init
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -85,10 +85,10 @@
 (require :errors)
 (require :bar)
 (require :remote)
-(require :rules)
-(require :signals)
-(require :titlebars)
-(require :spawns)
+(local rules (require :rules))
+(local signals (require :signals))
+(local titlebars (require :titlebars))
+(local spawns (require :spawns))
 
 (fn clear_urgent_clients []
   (each [_ cl (pairs (_G.client.get))]
@@ -98,9 +98,6 @@
  init_tags
  (fn [config]
    (when (and config (. config :tag_names))
-     (print "found tag_names in config")
-     (pp config.tag_names)
-
      (let [tag-names (and config config.tag_names)]
        (each [_ tag-name (pairs tag-names)]
          (let [existing-tag (-> _G.mouse.screen.tags
@@ -119,10 +116,6 @@
    (clear_urgent_clients)
 
    ))
-
-
-(fn ralphie-init []
-  (awful.spawn "ralphie init-tags"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; garbage collection
@@ -158,16 +151,15 @@
 
    ;; theme
    (print "init_theme")
-   (_G.init_theme config)
+   (init_theme config)
 
    ;; bindings
    (print "init bindings")
    (_G.set_global_keys config)
    (_G.init_root_buttons config)
 
-   ;; tags, then restore state, then apply rules to all clients...?
    ;; calls into init_tags with built config
-   (ralphie-init)
+   (print "init ralphie-tags")
 
    ;; bar and widgets
    (print "init screen and tags")
@@ -175,19 +167,21 @@
 
    ;; signals
    (print "init_signals")
-   (_G.init_manage_signal config)
-   (_G.init_request_titlebars config)
-   (_G.init_focus_signals config)
-   (_G.init_arrange_signal config)
+   (signals.init_manage_signal config)
+   (signals.init_focus_signals config)
+   (titlebars.init_request_titlebars config)
 
-   (_G.init_rules config)
+   (print "init_rules")
+   (rules.init_rules config)
 
    ;; spawns
    (print "init_spawns")
-   (_G.init_spawns config)
+   (spawns.init_spawns config)
+
+   ;; TODO should this be an async spawn?
+   (awful.spawn "ralphie init-tags")
 
    (print "------------------Awesome Init Complete---------")
    ))
 
-;; (awful.spawn "ralphie awesome-init")
 (_G.init)
