@@ -1,4 +1,5 @@
 (local wibox (require "wibox"))
+(local gears (require "gears"))
 (local beautiful (require "beautiful"))
 
 (local dirty-repos (require "widgets.dirty-repos"))
@@ -14,6 +15,23 @@
 (local util (require "util"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Wallpaper handling
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; this is in here b/c it is called in awful.screen.connect_for_each_screen
+(global
+ set_wallpaper
+ (fn [s]
+   (pp "setting wallpaper")
+   (let [s (or s (_G.mouse.screen))
+         wp-path beautiful.wallpaper]
+     (gears.wallpaper.maximized wp-path s true))))
+
+;; Re-set wallpaper when a screen's geometry changes (e.g. different resolution)
+(screen.connect_signal "property::geometry" (fn [s] (_G.set_wallpaper s)))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; WIBAR
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -24,11 +42,14 @@
 (local separator (wibox.widget.textbox
                   (.. "<span color=\"" blue "\"> | </span>")))
 
+
 (global
  init_bar
  (fn []
    (awful.screen.connect_for_each_screen
     (fn [s]
+      (_G.set_wallpaper s)
+
       (util.log_if_error
        (fn []
          ;; remove if it exists already
