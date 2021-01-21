@@ -125,11 +125,20 @@
  handle_garbage
  (fn []
    (print "Collecting garbage")
+   (collectgarbage "collect")
    (local before (collectgarbage "count"))
+   (local objs-alive (collectgarbage "count"))
    (collectgarbage)
    (local after (collectgarbage "count"))
    (print before)
    (print after)
+
+   (print "objects alive:")
+   (each [name obj (pairs {: button : client
+                           : drawable : drawin
+                           : key : screen : tag})]
+     (print name (obj.instances)))
+
    ;; call again until the diff is < 100
    (if (> (- before after) 100)
        (_G.handle_garbage))))
