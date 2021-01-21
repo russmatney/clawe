@@ -125,9 +125,7 @@
  handle_garbage
  (fn []
    (print "Collecting garbage")
-   (collectgarbage "collect")
    (local before (collectgarbage "count"))
-   (local objs-alive (collectgarbage "count"))
    (collectgarbage)
    (local after (collectgarbage "count"))
    (print before)

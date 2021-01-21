@@ -66,13 +66,19 @@
     wid))
 
 (fn attach-callbacks [wid workspace]
-  (wid:connect_signal
-   "button::press"
-   (fn []
-     (pp workspace)
-     (helpers.tag_back_and_forth workspace.awesome_index)
-     (request-updated-workspaces)
-     ))
+  (wid:buttons
+   (awful.util.table.join
+    (awful.button
+     {} 1 ;; left click
+     (fn []
+       (helpers.tag_back_and_forth workspace.awesome_index)
+       (request-updated-workspaces)))
+    (awful.button
+     {} 3 ;; right click
+     (fn []
+       (pp workspace)
+       (awful.tag.viewtoggle workspace.tag)
+       (request-updated-workspaces)))))
 
   (wid:connect_signal
    "mouse::enter" (fn []
