@@ -34,8 +34,9 @@
    ))
 
 (fn move_tag_to_index [awm-tag i]
+  ;; maybe just tag:set-index
   (when (not (= awm-tag.index i))
-    (awm-tag:swap (get_tag {:index i}))))
+    (awm-tag:set_index i)))
 
 (fn try [f catch-f]
   (let [(status exception) (pcall f)]

@@ -1,4 +1,5 @@
 (local wibox (require "wibox"))
+(local awful (require "awful"))
 (local lume (require "lume"))
 (local icons (require "icons"))
 (local helpers (require "dashboard.helpers"))
@@ -124,21 +125,54 @@
 Sets all workspace indexes to match the passed :i."
    (util.log_if_error
     (fn []
+      (pp "before")
+      (->
+       (awful.screen.focused)
+       (. :selected_tags)
+       (lume.each (fn [tag]
+                    (pp {:name tag.name
+                         :index tag.index}))))
+
       ;; set local awesome tag on each wsp
       (-> workspaces
           (lume.each (fn [wsp]
                        (let [tag (util.get_tag
                                   {:index wsp.awesome_index})]
                          (tset wsp :tag tag)
+                         (pp {:attaching-tag true
+                              :name tag.name
+                              :index tag.index})
 
                          (when tag.selected
                            (set-current-workspace-name wsp))))))
 
-      ;; disabled for now - this index overwriting needs more thought
       (-> workspaces
           (lume.each (fn [wsp]
                        (let [{:new_index i} wsp]
                          (util.move_tag_to_index wsp.tag i)))))
+
+      (let [selected_tags
+            (-> (awful.screen.focused)
+                (. :selected_tags))
+            sorted
+            (lume.sort selected_tags :index)]
+        (-> sorted
+            (lume.each (fn [tag]
+                         (pp {:sorted true
+                              :name tag.name
+                              :index tag.index}))))
+        (tset (awful.screen.focused)
+              :selected_tags
+              sorted))
+
+
+      (pp "after")
+      (->
+       (awful.screen.focused)
+       (. :selected_tags)
+       (lume.each (fn [tag]
+                    (pp {:name tag.name
+                         :index tag.index}))))
 
       (: workspaces-list :set_children
          (-> workspaces
