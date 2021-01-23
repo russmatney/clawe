@@ -38,21 +38,22 @@
 
 (set exp.btn btn)
 
-(local spawn-fn-cache {})
+(local spawn-fn-cache {:spawn-fn-cache "me"})
 
 (fn spawn-fn
   [cmd]
   "Prevents re-firing of the same command until the previous has completed."
   (fn []
     (if (. spawn-fn-cache cmd)
-        (pp "dropping call, fn not yet complete")
+        (do
+          (pp "dropping call, fn not yet complete")
+          (pp spawn-fn-cache))
         (do
           (tset spawn-fn-cache cmd true)
           (awful.spawn.easy_async
            cmd
            (fn [stdout stderr _exitreason _exitcode]
              (tset spawn-fn-cache cmd false)
-             (pp spawn-fn-cache)
              (when (and stdout (> (# stdout) 0)) (print stdout))
              (when (and stdout (> (# stdout) 0)) (print stderr))))))))
 

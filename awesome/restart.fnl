@@ -48,7 +48,7 @@
 
         (var t (awful.tag.find_by_name s name))
         (when (not t)
-          (pp {:creating_cached_tag name})
+          ;; (pp {:creating_cached_tag name})
           (awful.tag.add name {:screen s})
           (set t (awful.tag.find_by_name s name)))
 

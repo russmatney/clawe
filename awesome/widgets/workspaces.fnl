@@ -91,25 +91,15 @@
   ;; must return wid!
   wid)
 
-(local widget [])
+(local list-widget [])
 
 (var workspaces-list (wibox.layout.fixed.horizontal))
 
-(set widget.widget
+(set list-widget.widget
      (wibox.widget
       {:widget wibox.container.background
        1 {:layout wibox.container.margin
           1 workspaces-list}}))
-
-(local current-workspace-name
-       (wibox.widget
-        {:align "center"
-         :widget wibox.widget.textbox}))
-
-(fn set-current-workspace-name [wsp]
-  (set current-workspace-name.markup
-       (.. "<span size=\"large\" color=\"" "#edfedf" "\">"
-           wsp.name "</span>")))
 
 (tset
  _G update-cb
@@ -123,10 +113,7 @@ Sets all workspace indexes to match the passed :i."
           (lume.each (fn [wsp]
                        (let [tag (util.get_tag
                                   {:index wsp.awesome_index})]
-                         (tset wsp :tag tag)
-
-                         (when tag.selected
-                           (set-current-workspace-name wsp))))))
+                         (tset wsp :tag tag)))))
 
       ;; disabled for now - this index overwriting needs more thought
       (-> workspaces
@@ -141,7 +128,7 @@ Sets all workspace indexes to match the passed :i."
                              make-workspace-widget
                              (attach-callbacks wsp))))))))))
 
-(fn worker []
+(fn list-worker []
   (let [cb (fn [_tag]
              (request-updated-workspaces))]
     ;; called when module is created
@@ -152,10 +139,6 @@ Sets all workspace indexes to match the passed :i."
     (tag.connect_signal "property::selected" cb)
     (tag.connect_signal "property::urgent" cb)
 
-    widget.widget))
+    list-widget.widget))
 
-(local list-widget
-       (setmetatable widget {:__call (fn [_ ...] (worker ...))}))
-
-{:list list-widget
- :current-name current-workspace-name}
+(setmetatable list-widget {:__call (fn [_ ...] (list-worker ...))})

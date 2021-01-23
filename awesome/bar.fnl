@@ -41,7 +41,6 @@
 (local separator (wibox.widget.textbox
                   (.. "<span color=\"" blue "\"> | </span>")))
 
-
 (global
  init_bar
  (fn []
@@ -99,5 +98,5 @@
            2 {:layout wibox.container.place
               :valign "center"
               :halign "center"
-              1 (workspaces.list)}
+              1 (workspaces)}
            3 nil})))))))
