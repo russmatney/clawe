@@ -5,6 +5,7 @@
 (local dirty-repos (require "widgets.dirty-repos"))
 (local org-clock (require "widgets.org-clock"))
 (local workspaces (require "widgets.workspaces"))
+(local workspace-meta (require "widgets.workspace-meta"))
 (local workrave (require "widgets.workrave"))
 
 ;; (local pomodoro-widget (require "awesome-wm-widgets.pomodoroarc-widget.pomodoroarc"))
@@ -76,8 +77,12 @@
            2 {:layout wibox.container.place
               :valign "center"
               :halign "center"
-              1 (org-clock)}
-           3 {:layout wibox.layout.fixed.horizontal
+              1 (workspace-meta)}
+           3 {:layout wibox.container.place
+              :valign "center"
+              :halign "center"
+              2 (org-clock)}
+           4 {:layout wibox.layout.fixed.horizontal
               1 (spotify-widget)
               2 (when (util.is_vader) (batteryarc-widget))
               3 separator

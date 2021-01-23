@@ -256,11 +256,10 @@ util = require 'util';
   (concat
     (map (partial str "widgets.")
          ["workspaces"
-          "org-pomodoro"
+          "workspace-meta"
           "org-clock"
           "workrave"
           "focus"
-          "pomodoro"
           "dirty-repos"])
     ["bar"]))
 
