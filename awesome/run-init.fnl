@@ -1,6 +1,7 @@
 ;; named `run-init` rather than `init` to prevent accidental lua module loading
 
 (local awful (require "awful"))
+(local naughty (require "naughty"))
 (local beautiful (require "beautiful"))
 (local view (require :fennelview))
 (local inspect (require :inspect))
@@ -24,7 +25,7 @@
          ;; awful.layout.suit.fair
          ;; awful.layout.suit.magnifier
          ;; awful.layout.suit.spiral
-         awful.layout.suit.spiral.dwindle
+         ;; awful.layout.suit.spiral.dwindle
          lain.layout.centerwork
          ;; lain.layout.centerwork.horizontal
          ])
@@ -46,7 +47,6 @@
   (set beautiful.font "Noto Sans Regular 10")
   (set beautiful.notification_font "Noto Sans Bold 14")
   (set beautiful.notification_max_height 100)
-  ;; TODO if hostname algo/vader, use 30/10
   (if (util.is_vader)
       (set beautiful.useless_gap 10)
       (set beautiful.useless_gap 20)))
@@ -132,6 +132,10 @@
    (local after (collectgarbage "count"))
    (print before)
    (print after)
+   (local count-diff (- before after))
+   (naughty.notify {:title "Collected Garbage"
+                    :text (.. "Count: " count-diff)})
+
 
    (print "objects alive:")
    (each [name obj (pairs {: button : client
@@ -140,8 +144,10 @@
      (print name (obj.instances)))
 
    ;; call again until the diff is < 100
-   (if (> (- before after) 100)
-       (_G.handle_garbage))))
+   (if (> count-diff 100)
+       (_G.handle_garbage)
+       (naughty.notify {:title "Remaining Garbage"
+                        :text (.. "Count: " after)}))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; init
