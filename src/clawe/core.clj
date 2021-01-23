@@ -81,8 +81,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn -main [& args]
-  (println "clawe run start:" args)
-  (apply defcom/run args)
-  ;; TODO print time of command, any statistics metrics
-  (println "clawe run complete" args)
-  )
+  (println "[CLAWE] start" args)
+  (let [start-time (System/currentTimeMillis)
+        res        (apply defcom/run args)
+        dt         (- (System/currentTimeMillis) start-time)]
+    (println "[CLAWE] complete" args "in" dt "ms")
+    res))

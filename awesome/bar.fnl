@@ -22,7 +22,6 @@
 (global
  set_wallpaper
  (fn [s]
-   (pp "setting wallpaper")
    (let [s (or s (_G.mouse.screen))
          wp-path beautiful.wallpaper]
      (gears.wallpaper.maximized wp-path s true))))
