@@ -1,6 +1,7 @@
 ;; named `run-init` rather than `init` to prevent accidental lua module loading
 
 (local awful (require "awful"))
+(local gears (require "gears"))
 (local naughty (require "naughty"))
 (local beautiful (require "beautiful"))
 (local view (require :fennelview))
@@ -125,13 +126,10 @@
  handle_garbage
  (fn []
    (print "Collecting garbage")
-   (collectgarbage "collect")
    (local before (collectgarbage "count"))
-   (local objs-alive (collectgarbage "count"))
    (collectgarbage)
    (local after (collectgarbage "count"))
-   (print before)
-   (print after)
+   (print (.. "before: " before " after: " after))
    (local count-diff (- before after))
    (naughty.notify {:title "Collected Garbage"
                     :text (.. "Count: " count-diff)})
@@ -148,6 +146,12 @@
        (_G.handle_garbage)
        (naughty.notify {:title "Remaining Garbage"
                         :text (.. "Count: " after)}))))
+
+;; garbage timer
+(gears.timer
+ {:timeout 300
+  :autostart true
+  :callback _G.handle_garbage})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; init
