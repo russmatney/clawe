@@ -38,10 +38,23 @@
 
 (set exp.btn btn)
 
+(local spawn-fn-cache {})
+
 (fn spawn-fn
   [cmd]
+  "Prevents re-firing of the same command until the previous has completed."
   (fn []
-    (awful.spawn cmd false)))
+    (if (. spawn-fn-cache cmd)
+        (pp "dropping call, fn not yet complete")
+        (do
+          (tset spawn-fn-cache cmd true)
+          (awful.spawn.easy_async
+           cmd
+           (fn [stdout stderr _exitreason _exitcode]
+             (tset spawn-fn-cache cmd false)
+             (pp spawn-fn-cache)
+             (when (and stdout (> (# stdout) 0)) (print stdout))
+             (when (and stdout (> (# stdout) 0)) (print stderr))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Global keybindings
