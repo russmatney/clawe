@@ -56,19 +56,19 @@
 ;; External Functions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(global
- reapply_rules
+(set
+ _G.reapply_rules
  (fn []
    (each [c (awful.client.iterate (fn [_] true))]
      (awful.rules.apply c))))
 
-(global
- set_layout
+(set
+ _G.set_layout
  (fn [layout]
    (awful.layout.set layout)))
 
-(global
- set_geometry
+(set
+ _G.set_geometry
  (fn [window-id geo]
    ;; should only call once, presuming unique window-ids
    (each [c (awful.client.iterate (fn [c] (= c.window window-id)))]
@@ -78,8 +78,50 @@
           :geometry geo})
      (c:geometry geo))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; garbage collection
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(set
+ _G.log_garbage
+ (fn []
+   (pp {:garbage :log
+        :count (collectgarbage "count")
+        :button (button.instances)
+        :client (client.instances)
+        :drawable (drawable.instances)
+        :drawin (drawin.instances)
+        :key (key.instances)
+        :screen (screen.instances)
+        :tag (tag.instances)})))
+
+(set
+ _G.handle_garbage
+ (fn []
+   (local before (collectgarbage "count"))
+   (collectgarbage)
+   (local after (collectgarbage "count"))
+   ;; (print (.. "before: " before " after: " after))
+   (local count-diff (- before after))
+   (naughty.notify {:title "Collected Garbage"
+                    :text (.. "Count: " count-diff)})
+
+   ;; call again until the diff is < 100
+   (if (> count-diff 100)
+       (_G.handle_garbage)
+       (do
+         (_G.log_garbage)
+         (naughty.notify {:title "Remaining Garbage"
+                          :text (.. "Count: " after)})))))
+
+;; garbage timer
+(gears.timer
+ {:timeout 300
+  :autostart true
+  :callback _G.handle_garbage})
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Tags init
+;; init deps
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (local restart-helper (require "./restart"))
@@ -90,68 +132,6 @@
 (local signals (require :signals))
 (local titlebars (require :titlebars))
 (local spawns (require :spawns))
-
-(fn clear_urgent_clients []
-  (each [_ cl (pairs (_G.client.get))]
-    (set cl.urgent false)))
-
-(global
- init_tags
- (fn [config]
-   (when (and config (. config :tag_names))
-     (let [tag-names (and config config.tag_names)]
-       (each [_ tag-name (pairs tag-names)]
-         (let [existing-tag (-> _G.mouse.screen.tags
-                                (awful.tag.find_by_name tag-name))]
-           (if existing-tag
-               (print (..  "Tag " tag-name " exists"))
-               (do
-                 (print (..  "Creating tag " tag-name))
-                 (awful.tag.add tag-name {:layout (. layouts 1)})))))))
-
-   (restart-helper.restore_state)
-
-   ;; reapply rules to all clients
-   (_G.reapply_rules)
-
-   (clear_urgent_clients)
-
-   ))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; garbage collection
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(global
- handle_garbage
- (fn []
-   (print "Collecting garbage")
-   (local before (collectgarbage "count"))
-   (collectgarbage)
-   (local after (collectgarbage "count"))
-   (print (.. "before: " before " after: " after))
-   (local count-diff (- before after))
-   (naughty.notify {:title "Collected Garbage"
-                    :text (.. "Count: " count-diff)})
-
-
-   (print "objects alive:")
-   (each [name obj (pairs {: button : client
-                           : drawable : drawin
-                           : key : screen : tag})]
-     (print name (obj.instances)))
-
-   ;; call again until the diff is < 100
-   (if (> count-diff 100)
-       (_G.handle_garbage)
-       (naughty.notify {:title "Remaining Garbage"
-                        :text (.. "Count: " after)}))))
-
-;; garbage timer
-(gears.timer
- {:timeout 300
-  :autostart true
-  :callback _G.handle_garbage})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; init
@@ -177,11 +157,8 @@
    (_G.set_global_keys config)
    (_G.init_root_buttons config)
 
-   ;; calls into init_tags with built config
-   (print "init ralphie-tags")
-
    ;; bar and widgets
-   (print "init screen and tags")
+   (print "init bars and widgets")
    (_G.init_bar config)
 
    ;; signals
@@ -193,14 +170,14 @@
    (print "init_rules")
    (rules.init_rules config)
 
+   (print "init_tags/restore_state")
+   (restart-helper.restore_state)
+   (_G.reapply_rules)
+
    ;; spawns
    (print "init_spawns")
    (spawns.init_spawns config)
 
-   ;; TODO should this be an async spawn?
-   (awful.spawn "ralphie init-tags")
-
-   (print "------------------Awesome Init Complete---------")
-   ))
+   (print "------------------Awesome Init Complete---------")))
 
 (_G.init)

@@ -96,30 +96,30 @@
                             :to_percent 0.9}))
                       )}
 
+         ;; TODO support this for _all_ workspaces
          {:rule {:name "notes"}
           :properties {:tag "notes"}}
          {:rule {:name "journal"}
           :properties {:tag "journal"}}
+         {:rule {:name "clawe"}
+          :properties {:tag "clawe"}}
          {:rule {:name "ralphie"}
           :properties {:tag "ralphie"}}
          {:rule {:name "org-crud"}
           :properties {:tag "org-crud"}}
-         ;; TODO support arbitrary name <> tag for repos
 
          {:rule_any {:class ["Spotify" "spotify" "Pavucontrol" "pavucontrol"]
                      :name ["Spotify" "spotify" "Pavucontrol" "pavucontrol"]}
           :properties {:tag "spotify"
-                       ;; TODO fix restart to not create duplicate workspaces
-                       ;; :new_tag "spotify"
-                       :switch_to_tags true
+                       ;; :switch_to_tags true
                        :first_tag "spotify"}}
 
          {:rule_any {:class ["Slack" "slack" "Discord" "discord"]
                      :name ["Slack" "slack" "Discord" "discord"]}
           :properties {:tag "slack"
-                       ;; :new_tag "slack"
                        :first_tag "slack"
-                       :switch_to_tags true}}]))
+                       ;; :switch_to_tags true
+                       }}]))
 
 (fn init_rules []
   ;; TODO be nice to update changed rules, not _all_

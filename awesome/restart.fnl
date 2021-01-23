@@ -10,7 +10,6 @@
 ;; It'd probably be better to match on tag names.
 
 (local tags-state-file (.. (awful.util.get_cache_dir) "/tags-state"))
-(local clients-state-file (.. (awful.util.get_cache_dir) "/clients-state"))
 
 (local mod [])
 
@@ -33,22 +32,7 @@
     (when (posix.stat tags-state-file)
       (os.remove tags-state-file))
 
-    (_G.save_table tags-to-restore tags-state-file)
-
-    (local clients (_G.client.get))
-    (local clients-to-restore [])
-
-    (each [i c (ipairs clients)]
-      (var ftag nil)
-      (when c.first_tag
-        (set ftag c.first_tag.name))
-      (table.insert clients-to-restore
-                    [i c.window c.name ftag]))
-
-    (when (posix.stat clients-state-file)
-      (os.remove clients-state-file))
-
-    (_G.save_table clients-to-restore clients-state-file)))
+    (_G.save_table tags-to-restore tags-state-file)))
 
 (fn mod.save_state_and_restart []
   (mod.save_state)
@@ -76,25 +60,7 @@
               (set t.master_count nmaster)
               (when (and selected (= t.selected false))
                 (awful.tag.viewtoggle t)))
-            (pp {:missed_tag_cache_for name})))))
-
-  (when (posix.stat clients-state-file)
-    (local s (awful.screen.focused))
-    (local clients-to-restore (_G.load_table clients-state-file))
-    (each [_ p (ipairs clients-to-restore)]
-      (let [[_ window name tag] p]
-        (var c nil)
-
-        (each [_ cl (pairs (_G.client.get))]
-          (when (= cl.window window)
-            (set c cl)))
-
-        (if c
-            (when tag
-              (local t (awful.tag.find_by_name s tag))
-              (when t
-                (: c :tags [t])))
-            (pp {:missed_cached_client name}))))))
+            (pp {:missed_tag_cache_for name}))))))
 
 mod
 

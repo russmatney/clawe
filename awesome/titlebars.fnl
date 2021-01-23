@@ -12,8 +12,8 @@
   (_G.client.connect_signal
    "request::titlebars"
    (fn [c]
-     (pp "titlebar requested")
-     (pp c)
+     ;; (pp "titlebar requested")
+     ;; (pp c)
      (let [buttons (bindings.titlebarbuttons c)
            titlebar (awful.titlebar c {:size 30})]
 
