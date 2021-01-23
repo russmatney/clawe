@@ -13,7 +13,7 @@
        :set_label
        (fn [self new-value]
          (set self.txt.markup
-              (.. "<span size=\"large\" font_weight=\"bold\" color=\"#efaefb\">"
+              (.. "<span size=\"xx-large\" font_weight=\"bold\" color=\"#efaefb\">"
                   new-value "</span>")))
        1 {:align "center"
           :widget wibox.widget.textbox}
