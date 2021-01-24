@@ -37,6 +37,10 @@
          {:rule_any {:type ["normal" "dialog"]}
           :properties {:titlebars_enabled true}}
 
+         {:rule_any {:class ["Rofi" "rofi"]}
+          :properties {:floating true
+                       :titlebars_enabled false}}
+
          ;; handle org protocol/emacs popups
          {:rule_any {:name ["org-capture-frame" "doom-capture"]}
           :properties {
