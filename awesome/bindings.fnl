@@ -57,6 +57,11 @@
              (when (and stdout (> (# stdout) 0)) (print stdout))
              (when (and stdout (> (# stdout) 0)) (print stderr))))))))
 
+(fn spawn-sync
+  [cmd]
+  (fn []
+    (awful.spawn cmd false)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Global keybindings
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -86,6 +91,7 @@
         ;; TODO move all these bindings into ralphie itself
         ;; ralphie rofi
         (key [:mod] "x" (spawn-fn "ralphie rofi"))
+        (key [:mod] "i" (spawn-fn "ralphie-emacs-cli '(org-clock-menu)'"))
 
         ;; scratchpads
         ;; TODO should pull the letter from workspaces.org
@@ -107,7 +113,7 @@
 
         (key [:mod] "d" (spawn-fn "clawe clean-workspaces"))
         (key [:mod] "o" (spawn-fn "clawe open-workspace"))
-        (key [:mod] "w" (spawn-fn "clawe rofi"))
+        (key [:mod] "w" (spawn-fn "clawe dwim"))
 
         ;; cycle layouts
         (key [:mod] "Tab"
