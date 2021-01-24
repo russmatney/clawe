@@ -42,7 +42,10 @@
 
 (fn spawn-fn
   [cmd]
-  "Prevents re-firing of the same command until the previous has completed."
+  "Prevents re-firing of the same command until the previous has completed.
+
+Returns a function expected to be attached to a keybinding.
+"
   (fn []
     (if (. spawn-fn-cache cmd)
         (do
@@ -53,14 +56,16 @@
           (awful.spawn.easy_async
            cmd
            (fn [stdout stderr _exitreason _exitcode]
-             (tset spawn-fn-cache cmd false)
+             (tset spawn-fn-cache cmd nil)
              (when (and stdout (> (# stdout) 0)) (print stdout))
-             (when (and stdout (> (# stdout) 0)) (print stderr))))))))
+             (when (and stdout (> (# stdout) 0)) (print stderr))))
 
-(fn spawn-sync
-  [cmd]
-  (fn []
-    (awful.spawn cmd false)))
+          (gears.timer
+           {:timeout 5
+            :callback (fn []
+                        (pp "Callback took longer than 5s, clearing.")
+                        (tset spawn-fn-cache cmd nil)
+                        (pp spawn-fn-cache))})))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Global keybindings
