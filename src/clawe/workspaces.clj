@@ -27,7 +27,7 @@
             }))
     (map (fn [spc]
            (assoc spc
-                  :sort-key (str (if (:scratchpad spc) "a" "z") "-"
+                  :sort-key (str (if (:scratchpad spc) "z" "a") "-"
                                  (:awesome_index spc)))))
     ;; sort and map-indexed to set new_indexes
     (sort-by :sort-key)
