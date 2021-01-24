@@ -101,6 +101,7 @@
        1 {:layout wibox.container.margin
           1 workspaces-list}}))
 
+;; TODO create higher level namespace for this behavior/event
 (tset
  _G update-cb
  (fn [workspaces]
@@ -111,11 +112,16 @@ Sets all workspace indexes to match the passed :i."
       ;; set local awesome tag on each wsp
       (-> workspaces
           (lume.each (fn [wsp]
-                       (let [tag (util.get_tag
-                                  {:index wsp.awesome_index})]
-                         (tset wsp :tag tag)))))
+                       (let [tag (util.get_tag {:name wsp.name})]
+                         (when tag (tset wsp :tag tag))))))
 
-      ;; disabled for now - this index overwriting needs more thought
+      ;; delete all but one empty workspace
+      (-> workspaces
+          (lume.filter (fn [wsp] wsp.empty))
+          (#(lume.slice $ 2 (# $)))
+          (lume.each (fn [{: tag}] (tag:delete))))
+
+      ;; sets the order according to what was passed in
       (-> workspaces
           (lume.each (fn [wsp]
                        (let [{:new_index i} wsp]
