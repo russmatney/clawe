@@ -168,7 +168,7 @@
         (key [:mod :shift] "Return" (spawn-fn "ralphie-open-emacs"))
 
         ;; launcher (rofi)
-        (key [:mod] "space" (spawn-fn "/usr/bin/rofi -show drun -modi drun"))
+        (key [:mod] "space" (spawn-fn "/usr/bin/rofi -show combi"))
 
         ;; finder (thunar)
         (key [:mod] "e" (spawn-fn "/usr/bin/thunar"))
