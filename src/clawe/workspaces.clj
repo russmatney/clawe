@@ -3,37 +3,51 @@
    [ralph.defcom :refer [defcom]]
    [ralphie.workspace :as r.workspace]
    [ralphie.rofi :as rofi]
+   [clawe.defs :as defs]
    [clawe.awesome :as awm]
    [ralphie.awesome :as r.awm]
    [ralphie.item :as item]
    [ralphie.notify :as notify]))
 
+(defn all-workspaces []
+  (->>
+    (concat
+      (r.workspace/all-workspaces)
+      (defs/list-workspaces))
+    (group-by (some-fn item/awesome-name :workspace/name))
+    (remove (comp nil? first))
+    (map second)
+    (map #(apply merge %))))
+
+(comment
+  (all-workspaces)
+  )
+
 (defn active-workspaces
   "Pulls workspaces to show in the workspaces-widget."
   []
-  (->>
-    (r.workspace/all-workspaces)
-    (filter :awesome/tag)
-    (map (fn [spc]
-           {;; consider flags for is-scratchpad/is-app/is-repo
-            :name          (item/awesome-name spc)
-            :awesome_index (item/awesome-index spc)
-            :key           (-> spc :org.prop/key)
-            :fa_icon_code  (when-let [code (:org.prop/fa-icon-code spc)]
-                             (str "\\u{" code "}"))
-            :scratchpad    (item/scratchpad? spc)
-            :selected      (item/awesome-selected spc)
-            :empty         (item/awesome-empty spc)
-            }))
-    (map (fn [spc]
-           (assoc spc
-                  :sort-key (str (if (:scratchpad spc) "z" "a") "-"
-                                 (:awesome_index spc)))))
-    ;; sort and map-indexed to set new_indexes
-    (sort-by :sort-key)
-    (map-indexed (fn [i wsp] (assoc wsp :new_index
-                                    ;; lua indexes start at 1
-                                    (+ i 1))))))
+  (->> (all-workspaces)
+       (filter :awesome/tag)
+       (map (fn [spc]
+              {;; consider flags for is-scratchpad/is-app/is-repo
+               :name          (item/awesome-name spc)
+               :awesome_index (item/awesome-index spc)
+               :key           (-> spc :org.prop/key)
+               :fa_icon_code  (when-let [code (:org.prop/fa-icon-code spc)]
+                                (str "\\u{" code "}"))
+               :scratchpad    (item/scratchpad? spc)
+               :selected      (item/awesome-selected spc)
+               :empty         (item/awesome-empty spc)
+               }))
+       (map (fn [spc]
+              (assoc spc
+                     :sort-key (str (if (:scratchpad spc) "z" "a") "-"
+                                    (:awesome_index spc)))))
+       ;; sort and map-indexed to set new_indexes
+       (sort-by :sort-key)
+       (map-indexed (fn [i wsp] (assoc wsp :new_index
+                                       ;; lua indexes start at 1
+                                       (+ i 1))))))
 
 (comment
   (->>
