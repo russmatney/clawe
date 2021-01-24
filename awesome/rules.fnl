@@ -39,6 +39,7 @@
 
          {:rule_any {:class ["Rofi" "rofi"]}
           :properties {:floating true
+                       :placement awful.placement.centered
                        :titlebars_enabled false}}
 
          ;; handle org protocol/emacs popups
