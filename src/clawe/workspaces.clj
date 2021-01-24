@@ -135,43 +135,6 @@ which is called with a list of workspaces maps."]
    :description   ["Intended to feel like dragging a workspace in a direction."]
    :handler       drag-workspace-index-handler})
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; New create workspace
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn select-workspace
-  "Opens a list of workspaces in rofi."
-  []
-  (rofi/rofi
-    {:msg "New Workspace Name?"}
-    (->>
-      (r.workspace/all-workspaces)
-      (map :org/name)
-      seq)))
-
-(defn open-workspace-handler
-  [_ {:keys [arguments]}]
-  (if-let [tag-name (some-> arguments first)]
-    (do
-      (notify/notify (str "Found workspace, creating: " tag-name))
-      (r.awm/create-tag! tag-name))
-
-    ;; no tag, get from rofi
-    (some-> (select-workspace)
-            ((fn [w-name]
-               (when (not (r.awm/tag-for-name w-name))
-                 (r.awm/create-tag! w-name))
-               w-name))
-            r.awm/focus-tag!
-            ((fn [name]
-               (notify/notify (str "Created new workspace: " name))))))
-  (update-workspaces-widget))
-
-(defcom open-workspace
-  {:name          "open-workspace"
-   :one-line-desc "Opens a new workspace via rofi."
-   :description   []
-   :handler       open-workspace-handler})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; consolidate workspaces
@@ -252,3 +215,45 @@ which is called with a list of workspaces maps."]
    :handler       clean-workspaces-handler})
 
 (comment)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; New create workspace
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn select-workspace
+  "Opens a list of workspaces in rofi."
+  []
+  (rofi/rofi
+    {:msg "New Workspace Name?"}
+    (->>
+      (r.workspace/all-workspaces)
+      (map :org/name)
+      seq)))
+
+(defn open-workspace-handler
+  [_ {:keys [arguments]}]
+  ;; First, delete empty workspaces
+  (clean-workspaces)
+
+  ;; Then select and create a new one
+  (if-let [tag-name (some-> arguments first)]
+    (do
+      (notify/notify (str "Workspace name passed, creating: " tag-name))
+      (r.awm/create-tag! tag-name))
+
+    ;; no tag, get from rofi
+    (some-> (select-workspace)
+            ((fn [w-name]
+               (when (not (r.awm/tag-for-name w-name))
+                 (r.awm/create-tag! w-name))
+               w-name))
+            r.awm/focus-tag!
+            ((fn [name]
+               (notify/notify (str "Created new workspace: " name))))))
+  (update-workspaces-widget))
+
+(defcom open-workspace
+  {:name          "open-workspace"
+   :one-line-desc "Opens a new workspace via rofi."
+   :description   []
+   :handler       open-workspace-handler})
