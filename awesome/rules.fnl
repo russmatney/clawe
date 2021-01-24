@@ -40,7 +40,9 @@
          {:rule_any {:class ["Rofi" "rofi"]}
           :properties {:floating true
                        :placement awful.placement.centered
-                       :titlebars_enabled false}}
+                       :titlebars_enabled false
+                       :ontop true
+                       :above true}}
 
          ;; handle org protocol/emacs popups
          {:rule_any {:name ["org-capture-frame" "doom-capture"]}
