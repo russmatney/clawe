@@ -38,7 +38,8 @@
                :scratchpad    (item/scratchpad? spc)
                :selected      (item/awesome-selected spc)
                :empty         (item/awesome-empty spc)
-               }))
+               :color         (:workspace/color spc)
+               :title_pango   (:workspace/title-pango spc)}))
        (map (fn [spc]
               (assoc spc
                      :sort-key (str (if (:scratchpad spc) "z" "a") "-"

@@ -34,7 +34,7 @@
        opts#)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Slack, Spotify
+;; AwesomeWM Data Helpers
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn awm-workspace-rules
@@ -52,6 +52,10 @@
      {:rule_any   {:class all :name all}
       :properties {:tag name :first_tag name}})))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Slack, Spotify
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defworkspace spotify
   {:workspace/start        "spotify"
    :workspace/title        "Spotify"
@@ -63,7 +67,7 @@
    :workspace/key          "s"
    :workspace/fa-icon-code "f1bc"
 
-   :workspace/title-pango  "<xx-large>Spotify</xx-large>"
+   :workspace/title-pango  "<span>Spotify</span>"
    :workspace/title-hiccup [:h1 "Spotify"]
    :workspace/on-create    (fn [_wsp]
                              (println "Created spotify workspace")
@@ -81,7 +85,10 @@
 
 (defworkspace clawe
   {:awesome/rules          (awm-workspace-rules "clawe")
-   :workspace/title-pango  "<xx-large>THE CLAWE</xx-large>"
+   :workspace/color "#0000ff"
+   :workspace/title-pango  "<span>THE CLAWWEE</span>"
+   ;; TODO figure out why we can't pass in plain pango like this
+   ;; :workspace/title-pango  "<span size=\"large\">THE CLAWE</span>"
    :workspace/title-hiccup [:h1 "The Cl-(awe)"]
    :workspace/on-create    (fn [_wsp]
                              (println "Created clawe workspace")

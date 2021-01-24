@@ -10,18 +10,18 @@
 (fn request-updated-workspaces []
   (clawe.update-workspaces update-cb))
 
-(fn text-color [wid {: selected : empty}]
+(fn text-color [wid {: selected : empty : color}]
   (if
    wid.hover "#ffffeeff"
    selected "#eeeeeeff"
    empty "#adadad99"
-   "#bbbbbbdd"))
+   (or color "#bbbbbbdd")))
 
 (fn icon-code [_wid {: fa_icon_code}]
   (or fa_icon_code "\u{f09b}"))
 
 ;; "#ac3232" ;; darker red
-(fn icon-color [wid {: selected : empty : tag}]
+(fn icon-color [wid {: selected : empty : tag : color}]
   (if
    tag.urgent "#d95763" ;; softer red
    wid.hover "#B9E3B7"
@@ -29,12 +29,10 @@
    selected "#d28343" ;; orange
    empty "#1b448C"  ;; blue
    ;; "#1a3b4C44"
-   "#587D8D" ;; bluegreen
-   )
-  )
+   (or color "#587D8D"))) ;; bluegreen
 
 (fn make-wid-children [wid workspace]
-  (let [{: new_index : _key : name : scratchpad} workspace
+  (let [{: new_index : _key : name : scratchpad : title_pango} workspace
         cont (wibox.widget {:layout wibox.layout.fixed.horizontal})]
 
     (set wid.text-color (text-color wid workspace))
@@ -48,13 +46,14 @@
                                :code wid.icon-code
                                :color wid.icon-color
                                :size (if (util.is_vader) 48 64)})})
-      (when (not scratchpad)
-        (wibox.widget
-         {:align "left"
-          :markup (.. "<span color=\"" wid.text-color "\">"
-                      (if scratchpad ""
-                          (.. name " (" new_index ")")) "</span>")
-          :widget wibox.widget.textbox}))])
+      (wibox.widget
+       {:align "left"
+        :markup (.. "<span color=\"" wid.text-color "\">"
+                    (if
+                     title_pango title_pango
+                     scratchpad ""
+                     (.. name " (" new_index ")")) "</span>")
+        :widget wibox.widget.textbox})])
 
     ;; return container widget as list of children
     [cont]))
