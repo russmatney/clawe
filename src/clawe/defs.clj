@@ -59,6 +59,7 @@
 (defworkspace spotify
   {:workspace/start        "spotify"
    :workspace/title        "Spotify"
+   :workspace/color        "#38b98a"
    :workspace/directory    "/home/russ/"
    :workspace/pinned-apps  "spotify"
    :workspace/exec         "spotify"
@@ -85,7 +86,7 @@
 
 (defworkspace clawe
   {:awesome/rules          (awm-workspace-rules "clawe")
-   :workspace/color "#0000ff"
+   :workspace/color "#88aadd"
    :workspace/title-pango  "<span>THE CLAWWEE</span>"
    ;; TODO figure out why we can't pass in plain pango like this
    ;; :workspace/title-pango  "<span size=\"large\">THE CLAWE</span>"

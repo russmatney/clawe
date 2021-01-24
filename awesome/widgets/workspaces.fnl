@@ -32,8 +32,9 @@
    (or color "#587D8D"))) ;; bluegreen
 
 (fn make-wid-children [wid workspace]
-  (let [{: new_index : _key : name : scratchpad : title_pango} workspace
-        cont (wibox.widget {:layout wibox.layout.fixed.horizontal})]
+  (let [{: new_index : _key : name : _scratchpad : title_pango} workspace
+        cont (wibox.widget
+              {:layout wibox.layout.fixed.horizontal})]
 
     (set wid.text-color (text-color wid workspace))
     (set wid.icon-code (icon-code wid workspace))
@@ -46,14 +47,21 @@
                                :code wid.icon-code
                                :color wid.icon-color
                                :size (if (util.is_vader) 48 64)})})
-      (wibox.widget
-       {:align "left"
-        :markup (.. "<span color=\"" wid.text-color "\">"
-                    (if
-                     title_pango title_pango
-                     scratchpad ""
-                     (.. name " (" new_index ")")) "</span>")
-        :widget wibox.widget.textbox})])
+
+      (when (or title_pango
+                name
+                ;; (not scratchpad)
+                )
+        (wibox.widget
+         {:widget wibox.container.margin
+          :left 6
+          :right 12
+          1 {:align "left"
+             :markup (.. "<span size=\"xx-large\" color=\"" wid.text-color "\">"
+                         (if
+                          title_pango title_pango
+                          (.. name " (" new_index ")")) "</span>")
+             :widget wibox.widget.textbox}}))])
 
     ;; return container widget as list of children
     [cont]))
@@ -97,7 +105,9 @@
 (set list-widget.widget
      (wibox.widget
       {:widget wibox.container.background
+       :bg "#274244c9"
        1 {:layout wibox.container.margin
+          :margins 10
           1 workspaces-list}}))
 
 ;; TODO create higher level namespace for this behavior/event
