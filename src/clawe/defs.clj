@@ -1,10 +1,13 @@
 (ns clawe.defs
-
   (:require [ralphie.notify :as notify]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; registry
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; TODO write a ralph.lib called reggie for abstracting this pattern?
+;; or just document and unit test it? feels like defcom without
+;; the focus on the handler.
 
 (defonce workspace-registry* (atom {}))
 
@@ -88,12 +91,12 @@
   spotify)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Clawe
+;; Ralphie, Clawe, and other repo-based workspaces
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defworkspace clawe
   {:awesome/rules          (awm-workspace-rules "clawe")
-   :workspace/color "#88aadd"
+   :workspace/color        "#88aadd"
    :workspace/title-pango  "<span>THE CLAWWEE</span>"
    ;; TODO figure out why we can't pass in plain pango like this
    ;; :workspace/title-pango  "<span size=\"large\">THE CLAWE</span>"
@@ -106,3 +109,12 @@
 
 (comment
   clawe)
+
+(defworkspace ralphie
+  {:awesome/rules         (awm-workspace-rules "ralphie")
+   :workspace/color       "#aa88ee"
+   :workspace/title-pango "<span>The Ralphinator</span>"
+   :workspace/on-create   (fn [_wsp]
+                            (notify/notify "Welcome to Ralphie"
+                                           "Don't Wreck it~")
+                            )})

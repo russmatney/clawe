@@ -14,6 +14,10 @@
   (let [wsp (r.workspace/current-workspace)]
     (merge wsp (defs/get-workspace wsp))))
 
+(comment
+  (current-workspace)
+  )
+
 (defn all-workspaces []
   (->>
     (concat
