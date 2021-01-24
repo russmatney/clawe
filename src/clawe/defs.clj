@@ -13,6 +13,13 @@
 (defn list-workspaces []
   (vals @workspace-registry*))
 
+(defn get-workspace [wsp]
+  (let [name (or (:org/name wsp)
+                 (:awesome/tag-name wsp))]
+    (some->> (vals @workspace-registry*)
+             (filter (comp #{name} :workspace/name))
+             first)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; defworkspace
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

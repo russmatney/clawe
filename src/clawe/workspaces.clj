@@ -7,7 +7,12 @@
    [clawe.awesome :as awm]
    [ralphie.awesome :as r.awm]
    [ralphie.item :as item]
-   [ralphie.notify :as notify]))
+   [ralphie.notify :as notify]
+   ))
+
+(defn current-workspace []
+  (let [wsp (r.workspace/current-workspace)]
+    (merge wsp (defs/get-workspace wsp))))
 
 (defn all-workspaces []
   (->>
