@@ -45,7 +45,7 @@
   (set beautiful.icon_theme "Papirus-Dark")
   (set beautiful.bg_normal "#141A1B")
   (set beautiful.bg_focus "#222B2E")
-  (set beautiful.font "Noto Sans Regular 10")
+  (set beautiful.font "Noto Sans Regular 12")
   (set beautiful.notification_font "Noto Sans Bold 14")
   (set beautiful.notification_max_height 100)
   (if (util.is_vader)

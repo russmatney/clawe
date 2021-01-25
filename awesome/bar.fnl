@@ -36,7 +36,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Create a textclock widget
-(local mytextclock (wibox.widget.textclock "%H:%M "))
+(local mytextclock (wibox.widget.textclock
+                    "<span font=\"Noto Sans Regular 12\">%H:%M</span>"))
 
 (local blue "#9EBABA")
 (local separator (wibox.widget.textbox
@@ -67,13 +68,7 @@
          (s.top-bar:setup
           {:layout wibox.layout.flex.horizontal
            1 {:layout wibox.layout.fixed.horizontal
-              1 mytextclock
-              2 (-> (wibox.widget.systray)
-                    ((fn [sys]
-                       (set sys.forced_height 50)
-                       sys)))
-              3 separator
-              4 (workrave)}
+              1 (wibox.widget.systray)}
            2 {:layout wibox.container.place
               :valign "center"
               :halign "center"
@@ -81,8 +76,15 @@
            3 {:layout wibox.container.place
               :valign "center"
               :halign "center"
+              1 {:layout wibox.layout.fixed.horizontal
+                 1 mytextclock
+                 2 separator
+                 3 (workrave)}}
+           4 {:layout wibox.container.place
+              :valign "center"
+              :halign "center"
               2 (org-clock)}
-           4 {:layout wibox.layout.fixed.horizontal
+           5 {:layout wibox.layout.fixed.horizontal
               1 (spotify-widget)
               2 (when (util.is_vader) (batteryarc-widget))
               3 separator
