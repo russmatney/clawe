@@ -143,7 +143,7 @@
    :workspace/initial-file "/home/russ/.doom.d/init.el"
    :workspace/scratchpad   true
    :workspace/key          "e"
-   :workspace/fa-icon-code "f1bc"
+   :workspace/fa-icon-code "f1d1"
 
    :workspace/title-pango  "<span>Emax</span>"
    :workspace/title-hiccup [:h1 "Emacs"]

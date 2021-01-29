@@ -1,5 +1,6 @@
 (local wibox (require "wibox"))
 (local lume (require "lume"))
+(local awful (require "awful"))
 
 (local workspace-meta-widget [])
 

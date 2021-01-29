@@ -42,7 +42,9 @@
                :name          (item/awesome-name spc)
                :awesome_index (item/awesome-index spc)
                :key           (-> spc :org.prop/key)
-               :fa_icon_code  (when-let [code (:org.prop/fa-icon-code spc)]
+               :fa_icon_code  (when-let [code (or
+                                                (:workspace/fa-icon-code spc)
+                                                (:org.prop/fa-icon-code spc))]
                                 (str "\\u{" code "}"))
                :scratchpad    (item/scratchpad? spc)
                :selected      (item/awesome-selected spc)
