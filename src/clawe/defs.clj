@@ -28,6 +28,19 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defmacro defworkspace
+  "
+  Mixes data into the `clawe/db`.
+
+  Supplies configuration workspace-related tooling
+  - Awesome/Other WM Layout Rules/Configs
+  - WM-level icons
+  - Color Themes
+  - App related details
+  - Keybindings
+
+  Workspace-related depenecies in general.
+
+  "
   [workspace-symbol opts]
   (let [the-symbol (symbol workspace-symbol)]
     `(let [ns#           ~(str *ns*)
@@ -118,3 +131,23 @@
                             (notify/notify "Welcome to Ralphie"
                                            "Don't Wreck it~")
                             )})
+
+(defworkspace emacs
+  {:awesome/rules          (awm-workspace-rules "emacs")
+   :workspace/start        "emacs"
+   :workspace/title        "Emacs"
+   :workspace/color        "#38b98a"
+   :workspace/directory    "/home/russ/.doom.d"
+   :workspace/pinned-apps  "emacs"
+   :workspace/exec         "emacs"
+   :workspace/initial-file "/home/russ/.doom.d/init.el"
+   :workspace/scratchpad   true
+   :workspace/key          "e"
+   :workspace/fa-icon-code "f1bc"
+
+   :workspace/title-pango  "<span>Emax</span>"
+   :workspace/title-hiccup [:h1 "Emacs"]
+   :workspace/on-create    (fn [_wsp]
+                             (println "Created emacs workspace")
+                             (notify/notify (str "Created emacs workspace...")
+                                            "for all your emacsy needs."))})
