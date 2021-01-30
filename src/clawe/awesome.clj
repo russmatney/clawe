@@ -102,7 +102,10 @@ util = require 'util';
     (str arg)
 
     (string? arg)
-    (str "\"" arg "\"")
+    (str "\""
+         ;; TODO escape this string
+         (string/replace arg "\"" "\\\"")
+         "\"")
 
     (keyword? arg)
     (apply str (rest (str arg)))

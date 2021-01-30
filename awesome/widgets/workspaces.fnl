@@ -33,7 +33,6 @@
 
 (var show-scratchpad-names false)
 (fn _G.toggle_show_scratchpad_names [val]
-  (pp "toggle-show")
   (set show-scratchpad-names
        (if (= val nil)
            (not show-scratchpad-names) val)))
