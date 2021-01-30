@@ -31,8 +31,15 @@
    ;; "#1a3b4C44"
    (or color "#587D8D"))) ;; bluegreen
 
+(var show-scratchpad-names false)
+(fn _G.toggle_show_scratchpad_names [val]
+  (pp "toggle-show")
+  (set show-scratchpad-names
+       (if (= val nil)
+           (not show-scratchpad-names) val)))
+
 (fn make-wid-children [wid workspace]
-  (let [{: new_index : _key : name : _scratchpad : title_pango} workspace
+  (let [{: new_index : _key : name : scratchpad : title_pango} workspace
         cont (wibox.widget
               {:layout wibox.layout.fixed.horizontal})]
 
@@ -48,10 +55,9 @@
                                :color wid.icon-color
                                :size (if (util.is_vader) 48 64)})})
 
-      (when (or title_pango
-                name
-                ;; (not scratchpad)
-                )
+      (when (and (or title_pango name)
+                 (or (not scratchpad)
+                     (and scratchpad show-scratchpad-names)))
         (wibox.widget
          {:widget wibox.container.margin
           :left 6
