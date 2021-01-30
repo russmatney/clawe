@@ -50,7 +50,13 @@ Returns a function expected to be attached to a keybinding.
     (if (. spawn-fn-cache cmd)
         (do
           (pp "dropping call, fn not yet complete")
-          (pp spawn-fn-cache))
+          (pp spawn-fn-cache)
+          (gears.timer
+           {:timeout 5
+            :callback (fn []
+                        (pp "Callback took longer than 5s, clearing.")
+                        (tset spawn-fn-cache cmd nil)
+                        (pp spawn-fn-cache))}) )
         (do
           (tset spawn-fn-cache cmd true)
           (awful.spawn.easy_async
@@ -58,14 +64,7 @@ Returns a function expected to be attached to a keybinding.
            (fn [stdout stderr _exitreason _exitcode]
              (tset spawn-fn-cache cmd nil)
              (when (and stdout (> (# stdout) 0)) (print stdout))
-             (when (and stdout (> (# stdout) 0)) (print stderr))))
-
-          (gears.timer
-           {:timeout 5
-            :callback (fn []
-                        (pp "Callback took longer than 5s, clearing.")
-                        (tset spawn-fn-cache cmd nil)
-                        (pp spawn-fn-cache))})))))
+             (when (and stdout (> (# stdout) 0)) (print stderr))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Global keybindings
