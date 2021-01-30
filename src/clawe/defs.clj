@@ -151,7 +151,6 @@
 (defworkspace org
   {:awesome/rules          (awm-workspace-rules "org")
    :workspace/title        "Org"
-   :workspace/directory    "/home/russ/.emacs.d"
    ;; TODO point to org manual by default (org-info)
    :workspace/initial-file "/home/russ/.emacs.d/init.el"
    ;; TODO org icon

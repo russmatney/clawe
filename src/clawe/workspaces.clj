@@ -21,9 +21,11 @@
 (defn workspace-name [wsp]
   (or (:workspace/name wsp) (:org/name wsp) (:awesome/name wsp)))
 
+(defn workspace-repo [wsp]
+  (or (:workspace/directory wsp) (:org.prop/directory wsp)))
+
 (defn apply-git-status [wsp]
-  (let [dir (or (:workspace/directory wsp)
-                (:org.prop/directory wsp))]
+  (let [dir (workspace-repo wsp)]
     (if (r.git/repo? dir)
       (merge wsp (r.git/status dir))
       wsp)))
@@ -36,8 +38,7 @@
     (group-by workspace-name)
     (remove (comp nil? first))
     (map second)
-    (map #(apply merge %))
-    (map apply-git-status)))
+    (map #(apply merge %))))
 
 (comment
   (all-workspaces)
@@ -62,6 +63,7 @@
   []
   (->> (all-workspaces)
        (filter :awesome/tag)
+       (map apply-git-status)
        (map (fn [spc]
               {;; consider flags for is-scratchpad/is-app/is-repo
                :name          (item/awesome-name spc)
@@ -275,13 +277,14 @@ which is called with a list of workspaces maps."]
 (defn wsp->rofi-label [{:as   wsp
                         :keys [git/dirty? git/needs-push? git/needs-pull?]}]
   (let [default-name "noname"
-        name         (or (workspace-name wsp) default-name)]
+        name         (or (workspace-name wsp) default-name)
+        repo         (workspace-repo wsp)]
     (when (= name default-name)
       (println "wsp without name" wsp))
 
-    (or name default-name)
     (str
-      "<span>" name " </span> "
+      "<span>" (or name default-name) " </span> "
+      (when repo (str "<span color='gray' size='small'>" repo "</span> "))
       (when dirty? (str "<span color='#88aadd' size='small'>" "#dirty" "</span> "))
       (when needs-push? (str "<span color='#aa88ee' size='small'>" "#needs-push" "</span> "))
       (when needs-pull? (str "<span color='#38b98a' size='small'>" "#needs-pull" "</span> ")))))
@@ -294,6 +297,7 @@ which is called with a list of workspaces maps."]
     {:msg "New Workspace Name?"}
     (->>
       (all-workspaces)
+      (map apply-git-status)
       (sort-by (comp not (some-fn :git/dirty? :git/needs-push? :git/needs-pull?)))
       ;; TODO create :rofi/label multimethod
       (map #(assoc % :rofi/label (wsp->rofi-label %)))
