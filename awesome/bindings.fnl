@@ -100,6 +100,7 @@ Returns a function expected to be attached to a keybinding.
         ;; scratchpads
         ;; TODO should pull the letter from workspaces.org
         ;; and write into ralphie-build-and-install
+        (key [:mod] "z" (spawn-fn "ralphie-toggle-scratchpad zoom"))
         (key [:mod] "u" (spawn-fn "ralphie-toggle-scratchpad journal"))
         (key [:mod] "y" (spawn-fn "ralphie-toggle-scratchpad yodo-app"))
         (key [:mod] "g" (spawn-fn "ralphie-toggle-scratchpad notes"))

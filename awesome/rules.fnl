@@ -103,6 +103,8 @@
                             :to_percent 0.9}))
                       )}
 
+         {:rule {:name "Zoom"}
+          :properties {:tag "zoom"}}
          ;; TODO support this for _all_ workspaces
          {:rule {:name "notes"}
           :properties {:tag "notes"}}

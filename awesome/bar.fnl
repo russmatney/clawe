@@ -37,7 +37,7 @@
 
 ;; Create a textclock widget
 (local mytextclock (wibox.widget.textclock
-                    "<span font=\"Noto Sans Regular 12\">%H:%M</span>"))
+                    "<span font=\"Noto Sans Regular 12\">%m/%d %H:%M</span>"))
 
 (local blue "#9EBABA")
 (local separator (wibox.widget.textbox
