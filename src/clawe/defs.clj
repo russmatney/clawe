@@ -1,5 +1,6 @@
 (ns clawe.defs
-  (:require [ralphie.notify :as notify]))
+  (:require [ralphie.notify :as notify]
+            [ralphie.emacs :as r.emacs]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; registry
@@ -80,8 +81,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defworkspace spotify
-  {:workspace/start        "spotify"
-   :workspace/title        "Spotify"
+  {:workspace/title        "Spotify"
    :workspace/color        "#38b98a"
    :workspace/directory    "/home/russ/"
    :workspace/pinned-apps  "spotify"
@@ -110,7 +110,7 @@
 (defworkspace clawe
   {:awesome/rules          (awm-workspace-rules "clawe")
    :workspace/color        "#88aadd"
-   :workspace/title-pango  "<span>THE CLAWWEE</span>"
+   :workspace/title-pango  "<span>THE CLAWWEEEEEEEEE</span>"
    ;; TODO figure out why we can't pass in plain pango like this
    ;; :workspace/title-pango  "<span size=\"large\">THE CLAWE</span>"
    :workspace/title-hiccup [:h1 "The Cl-(awe)"]
@@ -134,12 +134,8 @@
 
 (defworkspace emacs
   {:awesome/rules          (awm-workspace-rules "emacs")
-   :workspace/start        "emacs"
    :workspace/title        "Emacs"
-   :workspace/color        "#38b98a"
    :workspace/directory    "/home/russ/.doom.d"
-   :workspace/pinned-apps  "emacs"
-   :workspace/exec         "emacs"
    :workspace/initial-file "/home/russ/.doom.d/init.el"
    :workspace/scratchpad   true
    :workspace/key          "e"
@@ -151,3 +147,29 @@
                              (println "Created emacs workspace")
                              (notify/notify (str "Created emacs workspace...")
                                             "for all your emacsy needs."))})
+
+(defworkspace org
+  {:awesome/rules          (awm-workspace-rules "org")
+   :workspace/title        "Org"
+   :workspace/directory    "/home/russ/.emacs.d"
+   ;; TODO point to org manual by default (org-info)
+   :workspace/initial-file "/home/russ/.emacs.d/init.el"
+   ;; TODO org icon
+   :workspace/fa-icon-code "f1d1"
+
+   :workspace/title-pango  "<span>ORG</span>"
+   :workspace/title-hiccup [:h1 "Org"]
+   :workspace/on-create    (fn [_wsp]
+                             (println "Created org workspace")
+                             (notify/notify (str "Created org workspace...")
+                                            "time to RTFM"))
+
+   :workspace/actions
+   [{:defcom/handler
+     (fn [_ _]
+       ;; Ex: open emacs, run command
+       ;; TODO refactor r.emacs/open to support this
+       (r.emacs/open {:eval-sexp "(org-info)"})
+       )}]
+
+   })

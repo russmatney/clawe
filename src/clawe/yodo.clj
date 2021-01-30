@@ -11,9 +11,11 @@
    :description   ["Updates the org-clock widget."]
    :handler
    (fn [_ _]
-     (let [clock-string
-           (-> (r.emacs/emacs-cli "(russ/current-clock-string)")
-               string/trim-newline
-               read-string)]
+     (let [clock-string (-> (r.emacs/emacs-cli "(russ/current-clock-string)")
+                            string/trim-newline
+                            read-string
+                            str)
+           clock-string
+           (if (empty? clock-string) "Clock in to something!" clock-string)]
        (awm/awm-cli
-         (awm/awm-fn "update_org_clock_widget" (str clock-string)))))})
+         (awm/awm-fn "update_org_clock_widget" clock-string))))})
