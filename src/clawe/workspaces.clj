@@ -18,14 +18,14 @@
   (current-workspace)
   )
 
+(defn workspace-name [wsp]
+  (or (:workspace/name wsp) (:org/name wsp) (:awesome/name wsp)))
+
 (defn apply-git-status [wsp]
   (let [dir (or (:workspace/directory wsp)
                 (:org.prop/directory wsp))]
     (if (r.git/repo? dir)
-      (assoc wsp
-             :git/dirty? (r.git/dirty? dir)
-             :git/needs-push? (r.git/needs-push? dir)
-             :git/needs-pull? (r.git/needs-pull? dir))
+      (merge wsp (r.git/status dir))
       wsp)))
 
 (defn all-workspaces []
@@ -33,7 +33,7 @@
     (concat
       (r.workspace/all-workspaces)
       (defs/list-workspaces))
-    (group-by (some-fn item/awesome-name :workspace/name :org.prop/name))
+    (group-by workspace-name)
     (remove (comp nil? first))
     (map second)
     (map #(apply merge %))
@@ -42,6 +42,20 @@
 (comment
   (all-workspaces)
   )
+
+(defn for-name [name]
+  (some->>
+    (all-workspaces)
+    (filter (comp #{name} workspace-name))
+    first))
+
+(comment
+  (for-name "ralphie")
+  )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Active workspaces
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn active-workspaces
   "Pulls workspaces to show in the workspaces-widget."
@@ -236,43 +250,88 @@ which is called with a list of workspaces maps."]
 ;; New create workspace
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn create-workspace
+  "Creates a new tag, focuses it, and run the workspace's on-create hook."
+  [wsp]
+  (let [name (workspace-name wsp)]
+
+    ;; create tag if none is found
+    (when (not (r.awm/tag-for-name name))
+      (r.awm/create-tag! name))
+
+    ;; focus the tag
+    (r.awm/focus-tag! name)
+
+    ;; run on-create hook
+    (when-let [f (:workspace/on-create wsp)]
+      (f wsp))
+
+    ;; notify
+    (notify/notify (str "Created new workspace: " name))
+
+    ;; return the workspace
+    wsp))
+
+(defn wsp->rofi-label [{:as   wsp
+                        :keys [git/dirty? git/needs-push? git/needs-pull?]}]
+  (let [default-name "noname"
+        name         (or (workspace-name wsp) default-name)]
+    (when (= name default-name)
+      (println "wsp without name" wsp))
+
+    (or name default-name)
+    (str
+      "<span>" name " </span> "
+      (when dirty? (str "<span color='#88aadd' size='small'>" "#dirty" "</span> "))
+      (when needs-push? (str "<span color='#aa88ee' size='small'>" "#needs-push" "</span> "))
+      (when needs-pull? (str "<span color='#38b98a' size='small'>" "#needs-pull" "</span> ")))))
+
 (defn select-workspace
-  "Opens a list of workspaces in rofi."
+  "Opens a list of workspaces in rofi.
+  Returns the selected workspace."
   []
   (rofi/rofi
     {:msg "New Workspace Name?"}
     (->>
-      (r.workspace/all-workspaces)
-      (map :org/name)
+      (all-workspaces)
+      (sort-by (comp not (some-fn :git/dirty? :git/needs-push? :git/needs-pull?)))
+      ;; TODO create :rofi/label multimethod
+      (map #(assoc % :rofi/label (wsp->rofi-label %)))
       seq)))
 
-(defn open-workspace-handler
-  [_ {:keys [arguments]}]
-  ;; First, delete empty workspaces
-  (clean-workspaces)
+(comment
+  (select-workspace))
 
-  ;; Then select and create a new one
-  (if-let [tag-name (some-> arguments first)]
-    (do
-      (notify/notify (str "Workspace name passed, creating: " tag-name))
-      (r.awm/create-tag! tag-name))
+(defn open-workspace
+  ([] (open-workspace nil))
+  ([name]
+   ;; First, delete empty workspaces
+   (clean-workspaces)
 
-    ;; no tag, get from rofi
-    (some-> (select-workspace)
-            ((fn [w-name]
-               (when (not (r.awm/tag-for-name w-name))
-                 (r.awm/create-tag! w-name))
-               w-name))
-            r.awm/focus-tag!
-            ((fn [name]
-               (notify/notify (str "Created new workspace: " name))))))
-  (update-workspaces-widget))
+   ;; Then select and create a new one
+   (if name
+     (do
+       (notify/notify (str "Workspace name passed, creating: " name))
+       (-> name
+           for-name
+           create-workspace))
 
-(defcom open-workspace
+     ;; no tag, get from rofi
+     (some-> (select-workspace)
+             ((fn [wsp]
+                (create-workspace wsp)))))
+
+   (update-workspaces-widget)))
+
+(comment
+  (open-workspace))
+
+(defcom open-workspace-cmd
   {:name          "open-workspace"
    :one-line-desc "Opens a new workspace via rofi."
    :description   []
-   :handler       open-workspace-handler})
+   :handler       (fn [_ parsed]
+                    (open-workspace (some-> parsed :arguments first)))})
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
