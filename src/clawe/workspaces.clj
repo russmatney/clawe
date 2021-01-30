@@ -259,3 +259,18 @@ which is called with a list of workspaces maps."]
    :one-line-desc "Opens a new workspace via rofi."
    :description   []
    :handler       open-workspace-handler})
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; toggle workspace names
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defcom toggle-scratchpad-names
+  {:name    "toggle-scratchpad-names"
+   :handler (fn [_ _]
+              (awm/awm-cli "_G.toggle_show_scratchpad_names();")
+              (update-workspaces-widget))})
+
+(comment
+  (toggle-scratchpad-names nil nil)
+  )
