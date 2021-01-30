@@ -8,7 +8,8 @@
    [ralphie.awesome :as r.awm]
    [ralphie.git :as r.git]
    [ralphie.item :as item]
-   [ralphie.notify :as notify]))
+   [ralphie.notify :as notify]
+   [ralphie.scratchpad :as r.scratchpad]))
 
 (defn current-workspace []
   (let [wsp (r.workspace/current-workspace)]
@@ -271,8 +272,26 @@ which is called with a list of workspaces maps."]
     ;; notify
     (notify/notify (str "Created new workspace: " name))
 
+    ;; create first client if it's not already there
+    ;; NOTE might want this to be opt-in/out
+    (when (or
+            ;; was empty
+            (:awesome/empty? wsp)
+            (item/awesome-empty wsp)
+            ;; or had no tag
+            (not (:awesome/tag wsp))
+            (not (r.awm/tag-for-name name)) )
+      (r.scratchpad/create-client wsp))
+
     ;; return the workspace
     wsp))
+
+(comment
+  (->
+    "ralphie"
+    (for-name)
+    (create-workspace)))
+
 
 (defn wsp->rofi-label [{:as   wsp
                         :keys [git/dirty? git/needs-push? git/needs-pull?]}]
