@@ -176,13 +176,11 @@ which is called with a list of workspaces maps."]
 (defn consolidate-workspaces []
   (->>
     (r.workspace/all-workspaces)
-    (filter :awesome/tag)
-    (filter (comp #(> % 0) count :clients :awesome/tag))
-    (sort-by (comp :index :awesome/tag))
+    (remove :awesome/empty)
+    (sort-by :awesome/index)
     (map-indexed
-      (fn [new-index {:keys [:awesome/tag]}]
-        (let [new-index            (+ 1 new-index) ;; b/c lua 1-based
-              {:keys [name index]} tag]
+      (fn [new-index {:keys [awesome/name awesome/index]}]
+        (let [new-index (+ 1 new-index)] ;; b/c lua 1-based
           (if (== index new-index)
             (prn "nothing to do")
             (do
@@ -220,8 +218,7 @@ which is called with a list of workspaces maps."]
   (notify/notify "Cleaning up workspaces")
   (->>
     (r.workspace/all-workspaces)
-    (filter :awesome/tag)
-    (filter (comp :empty :awesome/tag))
+    (filter :awesome/empty)
     (map
       (fn [it]
         (when-let [name (item/awesome-name it)]
@@ -276,11 +273,9 @@ which is called with a list of workspaces maps."]
     ;; NOTE might want this to be opt-in/out
     (when (or
             ;; was empty
-            (:awesome/empty? wsp)
-            (item/awesome-empty wsp)
+            (:awesome/empty wsp)
             ;; or had no tag
-            (not (:awesome/tag wsp))
-            (not (r.awm/tag-for-name name)) )
+            (not (:awesome/tag wsp)))
       (r.scratchpad/create-client wsp))
 
     ;; return the workspace
