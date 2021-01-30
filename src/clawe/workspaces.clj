@@ -6,9 +6,9 @@
    [clawe.defs :as defs]
    [clawe.awesome :as awm]
    [ralphie.awesome :as r.awm]
+   [ralphie.git :as r.git]
    [ralphie.item :as item]
-   [ralphie.notify :as notify]
-   ))
+   [ralphie.notify :as notify]))
 
 (defn current-workspace []
   (let [wsp (r.workspace/current-workspace)]
@@ -18,15 +18,26 @@
   (current-workspace)
   )
 
+(defn apply-git-status [wsp]
+  (let [dir (or (:workspace/directory wsp)
+                (:org.prop/directory wsp))]
+    (if (r.git/repo? dir)
+      (assoc wsp
+             :git/dirty? (r.git/dirty? dir)
+             :git/needs-push? (r.git/needs-push? dir)
+             :git/needs-pull? (r.git/needs-pull? dir))
+      wsp)))
+
 (defn all-workspaces []
   (->>
     (concat
       (r.workspace/all-workspaces)
       (defs/list-workspaces))
-    (group-by (some-fn item/awesome-name :workspace/name))
+    (group-by (some-fn item/awesome-name :workspace/name :org.prop/name))
     (remove (comp nil? first))
     (map second)
-    (map #(apply merge %))))
+    (map #(apply merge %))
+    (map apply-git-status)))
 
 (comment
   (all-workspaces)
@@ -49,6 +60,9 @@
                :scratchpad    (item/scratchpad? spc)
                :selected      (item/awesome-selected spc)
                :empty         (item/awesome-empty spc)
+               :dirty         (:git/dirty? spc)
+               :needs_pull    (:git/needs-pull? spc)
+               :needs_push    (:git/needs-push? spc)
                :color         (:workspace/color spc)
                :title_pango   (:workspace/title-pango spc)}))
        (map (fn [spc]
