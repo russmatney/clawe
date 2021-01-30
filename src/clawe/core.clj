@@ -2,6 +2,7 @@
   (:require
    [clawe.workspaces :as workspaces]
    [clawe.workrave]
+   [clawe.yodo]
    [babashka.process :refer [$ check]]
 
    [ralphie.install :as r.install]
@@ -12,8 +13,7 @@
    [ralphie.scratchpad :as r.scratchpad]
 
    [ralph.defcom :as defcom :refer [defcom]]
-   [clawe.awesome :as awm]
-   [ralphie.notify :as notify]))
+   [clawe.awesome :as awm]))
 
 (defcom hello-cmd
   {:name    "hello"
@@ -40,16 +40,16 @@
            :rofi/on-select (fn [_]
                              ;; TODO detect if workspace client is already open
                              ;; wrap these nil-punning actions-list api
-                             (notify/notify "Creating client for workspace")
+                             (r.notify/notify "Creating client for workspace")
                              (r.scratchpad/create-client (workspaces/current-workspace)))}
           {:rofi/label     "Suggest more things here! <small> but don't get distracted </small>"
            ;; TODO fix this arity thing
-           :rofi/on-select (fn [_] (notify/notify
+           :rofi/on-select (fn [_] (r.notify/notify
                                      "A quick doctor checkup?"
                                      "Or the time of day?"))}
 
           {:rofi/label     "Some Label"
-           :rofi/on-select (fn [_] (notify/notify "Some Action"))}]
+           :rofi/on-select (fn [_] (r.notify/notify "Some Action"))}]
          (->>
            (defcom/list-commands)
            (map (partial r.rofi/defcom->rofi parsed))))
