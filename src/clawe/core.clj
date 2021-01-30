@@ -13,7 +13,8 @@
    [ralphie.scratchpad :as r.scratchpad]
 
    [ralph.defcom :as defcom :refer [defcom]]
-   [clawe.awesome :as awm]))
+   [clawe.awesome :as awm]
+   [ralphie.git :as r.git]))
 
 (defcom hello-cmd
   {:name    "hello"
@@ -30,37 +31,46 @@
                                            :msg            "Clawe commands"}))]
        (defcom/call-handler cmd config parsed)))})
 
+(defn dwim []
+  (let [wsp (workspaces/current-workspace)]
+
+    ;; Notify with git status
+    (when (r.git/repo? (workspaces/workspace-repo wsp))
+      (r.notify/notify (str "Git Status: " (workspaces/workspace-repo wsp))
+                       (->>
+                         (r.git/status (workspaces/workspace-repo wsp))
+                         (filter second)
+                         (map first)
+                         seq)))
+
+    (some->>
+      (concat
+        [{:rofi/label     "Create Workspace Client"
+          :rofi/on-select (fn [_]
+                            ;; TODO detect if workspace client is already open
+                            ;; wrap these nil-punning actions-list api
+                            (r.notify/notify "Creating client for workspace")
+                            (r.scratchpad/create-client wsp))}
+         {:rofi/label     "Suggest more things here! <small> but don't get distracted </small>"
+          :rofi/on-select (fn [_] (r.notify/notify "A quick doctor checkup?"
+                                                   "Or the time of day?"))}
+
+         (when (r.git/repo? (workspaces/workspace-repo wsp))
+           {:rofi/label     "Fetch repo upstream"
+            :rofi/on-select (fn [_]
+                              (r.notify/notify "Fetching upstream for workspace")
+                              ;; TODO support fetching via ssh-agent
+                              (r.git/fetch (workspaces/workspace-repo wsp)))})]
+        (->>
+          (defcom/list-commands)
+          (map (partial r.rofi/defcom->rofi nil))))
+      (r.rofi/rofi {:require-match? true
+                    :msg            "Clawe commands"}))))
+
 (defcom dwim-cmd
   {:name "dwim"
    :handler
-   (fn [_config parsed]
-     (some->>
-       (concat
-         [{:rofi/label     "Create Workspace Client"
-           :rofi/on-select (fn [_]
-                             ;; TODO detect if workspace client is already open
-                             ;; wrap these nil-punning actions-list api
-                             (r.notify/notify "Creating client for workspace")
-                             (r.scratchpad/create-client (workspaces/current-workspace)))}
-          {:rofi/label     "Suggest more things here! <small> but don't get distracted </small>"
-           ;; TODO fix this arity thing
-           :rofi/on-select (fn [_] (r.notify/notify
-                                     "A quick doctor checkup?"
-                                     "Or the time of day?"))}
-
-          {:rofi/label     "Some Label"
-           :rofi/on-select (fn [_] (r.notify/notify "Some Action"))}]
-         (->>
-           (defcom/list-commands)
-           (map (partial r.rofi/defcom->rofi parsed))))
-       (r.rofi/rofi {:require-match? true
-                     :msg            "Clawe commands"})
-       ))})
-
-(comment
-  ;; TODO fill in missing arities for defcom functions
-  ;; and clean up this 2 arg bullshit (config/parsed/ugh)
-  (dwim-cmd nil nil))
+   (fn [_config _parsed] (dwim))})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Install Awesome config
