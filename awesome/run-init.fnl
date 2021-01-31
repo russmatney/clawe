@@ -103,8 +103,8 @@
    (local after (collectgarbage "count"))
    ;; (print (.. "before: " before " after: " after))
    (local count-diff (- before after))
-   (naughty.notify {:title "Collected Garbage"
-                    :text (.. "Count: " count-diff)})
+   ;; (naughty.notify {:title "Collected Garbage"
+   ;;                  :text (.. "Count: " count-diff)})
 
    ;; call again until the diff is < 100
    (if (> count-diff 100)
