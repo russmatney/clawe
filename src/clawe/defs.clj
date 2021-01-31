@@ -1,6 +1,7 @@
 (ns clawe.defs
   (:require [ralphie.notify :as notify]
-            [ralphie.emacs :as r.emacs]))
+            [ralphie.emacs :as r.emacs]
+            [babashka.process :refer [$ check]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; registry
@@ -26,7 +27,7 @@
            first))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; consumers, public api
+;; workspaces
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn list-workspaces []
@@ -38,10 +39,6 @@
            (fn [w]
              (-> w :clawe/name #{name})))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; clawe-def
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 (defmacro defworkspace
   "Merges data into the defs registry*."
   [workspace-symbol x]
@@ -49,6 +46,37 @@
         the-symbol (symbol workspace-symbol)]
     `(let [ns#           ~(str *ns*)
            name#         ~(name workspace-symbol)
+           registry-key# (keyword ns# name#)
+           x#            (assoc ~x
+                                :clawe/name name#
+                                :clawe.registry/key registry-key#
+                                :clawe/type ~type
+                                :ns ns#)]
+
+       (def ~the-symbol x#)
+       (add-x x#)
+       ;; returns the created command map
+       x#)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; apps
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn list-apps []
+  (list-xs :clawe/app))
+
+(defn get-app [name]
+  (get-x :clawe/app
+         (fn [a]
+           (-> a :clawe/name #{name}))))
+
+(defmacro defapp
+  "Merges data into the defs registry*."
+  [app-symbol x]
+  (let [type       :clawe/app
+        the-symbol (symbol app-symbol)]
+    `(let [ns#           ~(str *ns*)
+           name#         ~(name app-symbol)
            registry-key# (keyword ns# name#)
            x#            (assoc ~x
                                 :clawe/name name#
@@ -84,16 +112,21 @@
 ;; Slack, Spotify
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defapp spotify-app
+  {:defcom/handler (fn [_ _] (-> ($ spotify) check))
+   :defcom/name    "start-spotify-client"})
+
 (defworkspace spotify
   {:workspace/title        "Spotify"
    :workspace/color        "#38b98a"
    :workspace/directory    "/home/russ/"
-   :workspace/pinned-apps  "spotify"
    :workspace/exec         "spotify"
    :workspace/initial-file "/home/russ/.config/spicetify/config.ini"
    :workspace/scratchpad   true
    :workspace/key          "s"
    :workspace/fa-icon-code "f1bc"
+
+   :workspace/apps [spotify-app]
 
    :workspace/title-pango  "<span>Spotify</span>"
    :workspace/title-hiccup [:h1 "Spotify"]
@@ -117,23 +150,21 @@
    ;; :workspace/title-pango  "<span>THE CLAWWEEEEEEEEE</span>"
    :workspace/title-pango  "<span size=\"large\">THE CLAWE</span>"
    :workspace/title-hiccup [:h1 "The Cl-(awe)"]
+   :git/check-status?      true
    :workspace/on-create    (fn [_wsp]
                              (println "Created clawe workspace")
                              (notify/notify
                                (str "Created clawe workspace...")
                                "hope you're not too deep in the rabbit hole"))})
 
-(comment
-  clawe)
-
 (defworkspace ralphie
   {:awesome/rules         (awm-workspace-rules "ralphie")
    :workspace/color       "#aa88ee"
    :workspace/title-pango "<span>The Ralphinator</span>"
+   :git/check-status?     true
    :workspace/on-create   (fn [_wsp]
                             (notify/notify "Welcome to Ralphie"
-                                           "Don't Wreck it~")
-                            )})
+                                           "Don't Wreck it~"))})
 
 (defworkspace emacs
   {:awesome/rules          (awm-workspace-rules "emacs")
@@ -143,6 +174,7 @@
    :workspace/scratchpad   true
    :workspace/key          "e"
    :workspace/fa-icon-code "f1d1"
+   :git/check-status?      true
 
    :workspace/title-pango  "<span>Emax</span>"
    :workspace/title-hiccup [:h1 "Emacs"]
@@ -150,6 +182,11 @@
                              (println "Created emacs workspace")
                              (notify/notify (str "Created emacs workspace...")
                                             "for all your emacsy needs."))})
+
+(defapp org-manual
+  {:defcom/handler (fn [_app _]
+                     (r.emacs/open {:eval-sexp "(org-info)"}))
+   :defcom/name    "open-org-manual"})
 
 (defworkspace org
   {:awesome/rules          (awm-workspace-rules "org")
@@ -165,6 +202,7 @@
                              (println "Created org workspace")
                              (notify/notify (str "Created org workspace...")
                                             "time to RTFM"))
+   :workspace/apps         [org-manual]
 
    :workspace/actions
    [{:defcom/handler

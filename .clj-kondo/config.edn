@@ -3,4 +3,5 @@
  :lint-as
  {ralph.defcom/defcom     clojure.core/def
   clawe.defs/defworkspace clojure.core/def
+  clawe.defs/defapp       clojure.core/def
   }}
