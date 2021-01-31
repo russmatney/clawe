@@ -102,12 +102,13 @@ Returns a function expected to be attached to a keybinding.
         ;; and write into ralphie-build-and-install
         (key [:mod] "z" (spawn-fn "ralphie-toggle-scratchpad zoom"))
         (key [:mod] "u" (spawn-fn "ralphie-toggle-scratchpad journal"))
-        (key [:mod] "y" (spawn-fn "ralphie-toggle-scratchpad yodo-app"))
+        (key [:mod] "y" (spawn-fn "ralphie-toggle-scratchpad yodo"))
         (key [:mod] "g" (spawn-fn "ralphie-toggle-scratchpad notes"))
         (key [:mod] "t" (spawn-fn "ralphie-toggle-scratchpad web"))
         ;; (key [:mod] "b" (spawn-fn "ralphie-toggle-scratchpad chrome"))
         (key [:mod] "a" (spawn-fn "ralphie-toggle-scratchpad slack"))
         (key [:mod] "s" (spawn-fn "ralphie-toggle-scratchpad spotify"))
+        (key [:mod] "e" (spawn-fn "ralphie-toggle-scratchpad chess"))
 
         ;; clawe keybindings
         (key [:mod] "r"
@@ -174,9 +175,6 @@ Returns a function expected to be attached to a keybinding.
 
         ;; launcher (rofi)
         (key [:mod] "space" (spawn-fn "/usr/bin/rofi -show combi"))
-
-        ;; finder (thunar)
-        (key [:mod] "e" (spawn-fn "/usr/bin/thunar"))
 
         ;; screenshots
         (key [:mod :shift] "s" (spawn-fn "ralphie screenshot full"))

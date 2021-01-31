@@ -20,10 +20,14 @@
   )
 
 (defn workspace-name [wsp]
-  (or (:workspace/name wsp) (:org/name wsp) (:awesome/name wsp)))
+  (or (:clawe/name wsp)
+      (:workspace/name wsp)
+      (:org/name wsp)
+      (:awesome/name wsp)))
 
 (defn workspace-repo [wsp]
-  (or (:workspace/directory wsp) (:org.prop/directory wsp)))
+  (or (:workspace/directory wsp)
+      (:org.prop/directory wsp)))
 
 (defn apply-git-status [wsp]
   (let [dir (workspace-repo wsp)]

@@ -6,56 +6,60 @@
 ;; registry
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; TODO write a ralph.lib called reggie for abstracting this pattern?
-;; or just document and unit test it? feels like defcom without
-;; the focus on the handler.
+(def base-registry {:clawe/workspace {}})
 
-(defonce workspace-registry* (atom {}))
+(defonce registry* (atom base-registry))
 
-(defn clear-workspace-registry [] (reset! workspace-registry* {}))
+(defn clear-registry [] (reset! registry* base-registry))
 
-(defn list-workspaces []
-  (vals @workspace-registry*))
+(defn add-x [x]
+  (swap! registry* assoc-in
+         [(:clawe/type x) (:clawe.registry/key x)] x))
 
-(defn get-workspace [wsp]
-  (let [name (or (:org/name wsp)
-                 (:awesome/tag-name wsp))]
-    (some->> (vals @workspace-registry*)
-             (filter (comp #{name} :workspace/name))
-             first)))
+(defn list-xs [type]
+  (vals (get @registry* type)))
+
+(defn get-x [type pred]
+  (some->> (get @registry* type)
+           vals
+           (filter pred)
+           first))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; defworkspace
+;; consumers, public api
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn list-workspaces []
+  (list-xs :clawe/workspace))
+
+(defn get-workspace [wsp]
+  (get-x :clawe/workspace
+         (let [name (or (:org/name wsp) (:awesome/tag-name wsp))]
+           (fn [w]
+             (-> w :clawe/name #{name})))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; clawe-def
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defmacro defworkspace
-  "
-  Mixes data into the `clawe/db`.
-
-  Supplies configuration workspace-related tooling
-  - Awesome/Other WM Layout Rules/Configs
-  - WM-level icons
-  - Color Themes
-  - App related details
-  - Keybindings
-
-  Workspace-related depenecies in general.
-
-  "
-  [workspace-symbol opts]
-  (let [the-symbol (symbol workspace-symbol)]
+  "Merges data into the defs registry*."
+  [workspace-symbol x]
+  (let [type       :clawe/workspace
+        the-symbol (symbol workspace-symbol)]
     `(let [ns#           ~(str *ns*)
            name#         ~(name workspace-symbol)
            registry-key# (keyword ns# name#)
-           opts#         (assoc ~opts
-                                :workspace/name name#
-                                :workspace/registry-key registry-key#
+           x#            (assoc ~x
+                                :clawe/name name#
+                                :clawe.registry/key registry-key#
+                                :clawe/type ~type
                                 :ns ns#)]
 
-       (def ~the-symbol opts#)
-       (swap! workspace-registry* assoc registry-key# opts#)
+       (def ~the-symbol x#)
+       (add-x x#)
        ;; returns the created command map
-       opts#)))
+       x#)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; AwesomeWM Data Helpers
@@ -110,9 +114,8 @@
 (defworkspace clawe
   {:awesome/rules          (awm-workspace-rules "clawe")
    :workspace/color        "#88aadd"
-   :workspace/title-pango  "<span>THE CLAWWEEEEEEEEE</span>"
-   ;; TODO figure out why we can't pass in plain pango like this
-   ;; :workspace/title-pango  "<span size=\"large\">THE CLAWE</span>"
+   ;; :workspace/title-pango  "<span>THE CLAWWEEEEEEEEE</span>"
+   :workspace/title-pango  "<span size=\"large\">THE CLAWE</span>"
    :workspace/title-hiccup [:h1 "The Cl-(awe)"]
    :workspace/on-create    (fn [_wsp]
                              (println "Created clawe workspace")
