@@ -45,7 +45,7 @@
 
 (global
  init_bar
- (fn []
+ (fn [bar]
    (awful.screen.connect_for_each_screen
     (fn [s]
       (_G.set_wallpaper s)
@@ -59,10 +59,13 @@
          ;; Create the wibox
          (set s.top-bar
               (awful.wibar
-               {:position "top"
-                :screen s
-                :height (if (util.is_vader) 30 50)
-                :bg beautiful.bg_transparent}))
+               (or
+                (and bar
+                     (. bar :top_bar))
+                {:position "top"
+                 :screen s
+                 :height (if (util.is_vader) 30 50)
+                 :bg beautiful.bg_transparent})))
 
          ;; Add widgets to the wibox
          (s.top-bar:setup

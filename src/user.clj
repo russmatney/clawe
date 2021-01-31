@@ -9,9 +9,8 @@
 
 (comment
 
-  ;; refresh workspaces widget
   (workspaces/update-workspaces)
-  (awm/reload-widgets)
+  (awm/reload)
 
   ;; reload widgets (re-runs connect_for_each_screen)
   (awm/awm-cli "require('bar'); return init_bar();")

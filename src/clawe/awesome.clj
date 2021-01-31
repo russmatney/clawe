@@ -210,9 +210,9 @@ util = require 'util';
   (fennel-check (sh/expand "~/.config/awesome/run-init.fnl"))
   )
 
-(defn fennel-compile [abs-path]
+(defn fennel-compile [{:keys [path]}]
   (-> ^{:out :string}
-      ($ fennel --compile ~abs-path)
+      ($ fennel --compile ~path)
       check))
 
 (defn expand-files [str]
@@ -226,7 +226,7 @@ util = require 'util';
     (cond
       (re-seq #".fnl$" abs-path)
       (do
-        (fennel-compile abs-path)
+        (fennel-compile {:path abs-path})
         ;; TODO add luacheck to awm runtime's path
         ;; (fennel-check abs-path)
         ))
@@ -272,8 +272,11 @@ util = require 'util';
               (check-for-errors))})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Reload files
+;; Reloading files
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Generic
 
 (defn hotswap-module-names [names]
   (->> names
@@ -282,6 +285,14 @@ util = require 'util';
        ;; reverse ;; move 'bar' hotswap to last
        (string/join "\n")
        (awm-cli {:quiet? true})))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Bar and Widgets
+
+(defn rebuild-bar []
+  (awm-cli
+    {:quiet? true}
+    "require('bar'); init_bar();"))
 
 (def widget-filenames
   ;; TODO generate this from the awesome/widgets/* dir
@@ -295,20 +306,14 @@ util = require 'util';
           "dirty-repos"])
     ["bar"]))
 
-(defn rebuild-bar []
-  (awm-cli
-    {:quiet? true}
-    "require('bar'); init_bar();"))
-
-(defn reload-misc []
-  (hotswap-module-names
-    ["clawe" "util" "icons"]))
-
-(defn reload-widgets []
+(defn reload-bar-and-widgets []
   (assert (= (check-for-errors) "No Errors."))
   (->> (concat widget-filenames)
        (hotswap-module-names))
   (rebuild-bar))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; keybindings
 
 (defn reload-keybindings []
   (hotswap-module-names ["bindings"])
@@ -316,8 +321,43 @@ util = require 'util';
     {:quiet? true}
     "require('bindings'); set_global_keys();"))
 
-(defcom reload-widgets-cmd
-  {:name    "reload-widgets"
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; misc
+
+(defn reload-misc []
+  (hotswap-module-names
+    ["clawe" "util" "icons"]))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Clawe bar
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+(defn build-top-bar []
+  '{:position "top"
+    :screen   s
+    :height   (if (util.is_vader) 30 50)
+    :bg       beautiful.bg_transparent})
+
+(comment
+  (->lua-arg (build-top-bar)))
+
+
+(defn rebuild-bar-2 []
+  (awm-cli
+    {:quiet? true}
+    (str "require('bar'); "
+         (awm-fn "init_bar"
+                 {:top-bar (build-top-bar)}
+                 )))
+  )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Reload Command
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defcom reload-cmd
+  {:name    "reload"
    :handler (fn [_ _]
               ;; write fancy logger with time-since-exec-start
               (println "\treloading keybindings")
@@ -325,6 +365,6 @@ util = require 'util';
               (println "\treloading misc")
               (reload-misc)
               (println "\treloading widgets!")
-              (reload-widgets))})
+              (reload-bar-and-widgets))})
 
 (comment)

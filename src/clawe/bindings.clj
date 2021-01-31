@@ -49,7 +49,7 @@
 ;;         (fn []
 ;;           ;; WARN potential race case on widgets reloading
 ;;           (awful.spawn "clawe rebuild-clawe" false)
-;;           (awful.spawn "clawe reload-widgets" false)))
+;;           (awful.spawn "clawe reload" false)))
 
 ;;    (key [:mod] "d" (spawn-fn "clawe clean-workspaces"))
 ;;    (key [:mod] "o" (spawn-fn "clawe open-workspace"))
