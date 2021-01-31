@@ -17,13 +17,13 @@
    [ralphie.git :as r.git]))
 
 (defcom hello-cmd
-  {:name    "hello"
-   :handler (fn [_config _parsed]
-              (println "Howdy"))})
+  {:defcom/name    "hello"
+   :defcom/handler (fn [_config _parsed]
+                     (println "Howdy"))})
 
 (defcom rofi-cmd
-  {:name "rofi"
-   :handler
+  {:defcom/name "rofi"
+   :defcom/handler
    (fn [config parsed]
      (when-let [cmd (some->> (defcom/list-commands)
                              (map :name)
@@ -68,17 +68,16 @@
                     :msg            "Clawe commands"}))))
 
 (defcom dwim-cmd
-  {:name "dwim"
-   :handler
-   (fn [_config _parsed] (dwim))})
+  {:defcom/name    "dwim"
+   :defcom/handler (fn [_config _parsed] (dwim))})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Install Awesome config
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defcom install-cmd
-  {:name "install"
-   :handler
+  {:defcom/name "install"
+   :defcom/handler
    (fn [_config _parsed]
      (println "Symlinking repo/awesome to your ~/.config/awesome")
      (r.install/symlink
@@ -100,25 +99,25 @@
     (r.notify/notify "Clawe Uberscript Rebuilt.")))
 
 (defcom build-clawe
-  {:name    "rebuild-clawe"
-   :handler (fn [_config _parsed] (build-uberscript))})
+  {:defcom/name    "rebuild-clawe"
+   :defcom/handler (fn [_config _parsed] (build-uberscript))})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; awm-cli wrapper
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defcom awm-cli-cmd
-  {:name     "awm-cli"
+  {:defcom/name "awm-cli"
    ;; this doesn't do anything, but felt easier than documentation....
-   :validate (fn [arguments] (-> arguments first string?))
-   :handler
+   :validate    (fn [arguments] (-> arguments first string?))
+   :defcom/handler
    (fn [_config {:keys [arguments]}]
      (let [res (awm/awm-cli (first arguments))]
        (println res)))})
 
 (defcom collect-garbage
-  {:name    "awm-collect-garbage"
-   :handler (fn [_ _] (awm/awm-cli "handle_garbage();"))})
+  {:defcom/name    "awm-collect-garbage"
+   :defcom/handler (fn [_ _] (awm/awm-cli "handle_garbage();"))})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; main

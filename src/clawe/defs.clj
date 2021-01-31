@@ -137,9 +137,6 @@
    :awesome/rules
    (awm-workspace-rules "spotify"  "spotify" "Pavucontrol" "pavucontrol")})
 
-(comment
-  spotify)
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Ralphie, Clawe, and other repo-based workspaces
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -148,6 +145,7 @@
   {:awesome/rules          (awm-workspace-rules "clawe")
    :workspace/color        "#88aadd"
    ;; :workspace/title-pango  "<span>THE CLAWWEEEEEEEEE</span>"
+   :workspace/title        "clawe"
    :workspace/title-pango  "<span size=\"large\">THE CLAWE</span>"
    :workspace/title-hiccup [:h1 "The Cl-(awe)"]
    :git/check-status?      true
@@ -160,6 +158,7 @@
 (defworkspace ralphie
   {:awesome/rules         (awm-workspace-rules "ralphie")
    :workspace/color       "#aa88ee"
+   :workspace/title       "ralphie"
    :workspace/title-pango "<span>The Ralphinator</span>"
    :git/check-status?     true
    :workspace/on-create   (fn [_wsp]
@@ -213,3 +212,5 @@
        )}]
 
    })
+
+(comment)
