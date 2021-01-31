@@ -41,6 +41,7 @@
           :properties {:floating true
                        :placement awful.placement.centered
                        :titlebars_enabled false
+                       :sticky true
                        :ontop true
                        :above true}}
 
@@ -100,8 +101,7 @@
                               awful.placement.centered)
                            {:honor_padding true
                             :honor_workarea true
-                            :to_percent 0.9}))
-                      )}
+                            :to_percent 0.9})))}
 
          {:rule {:name "Zoom"}
           :properties {:tag "zoom"}}
@@ -114,6 +114,8 @@
           :properties {:tag "clawe"}}
          {:rule {:name "ralphie"}
           :properties {:tag "ralphie"}}
+         {:rule {:name "dotfiles"}
+          :properties {:tag "dotfiles"}}
          {:rule {:name "org-crud"}
           :properties {:tag "org-crud"}}
 

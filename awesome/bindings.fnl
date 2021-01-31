@@ -1,5 +1,6 @@
 (local gears (require "gears"))
 (local awful (require "awful"))
+(local naughty (require "naughty"))
 
 (local fun (require "fun"))
 (local tablex (require :pl.tablex))
@@ -51,6 +52,8 @@ Returns a function expected to be attached to a keybinding.
         (do
           (pp "dropping call, fn not yet complete")
           (pp spawn-fn-cache)
+          (naughty.notify {:title "Dropping binding call"
+                           :text cmd})
           (gears.timer
            {:timeout 5
             :callback (fn []
