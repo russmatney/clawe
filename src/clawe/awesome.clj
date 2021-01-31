@@ -162,6 +162,35 @@ util = require 'util';
     (println (awm-fn "my-fn" args))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Awesome-fnl
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn awm-fnl
+  "Compiles and runs the passed string of fennel.
+  See comment below for usage.
+  "
+  [fnl]
+  (awm-cli
+    (str
+      "local fennel = require('fennel'); "
+      "local compiled_lua = fennel.compileString('" fnl "'); "
+      "local run = fennel.loadCode(compiled_lua); "
+      "run(); ")))
+
+(comment
+  (awm-fnl '[(println "hello-world!")])
+  (awm-fnl '[;; create a function
+             (fn hi [] (print "hello-from-fennel"))
+
+             ;; call that function
+             (hi)])
+
+
+  (awm-fnl '[])
+  )
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Assert Doctor
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
