@@ -29,11 +29,18 @@
   (or (:workspace/directory wsp)
       (:org.prop/directory wsp)))
 
-(defn apply-git-status [wsp]
-  (let [dir (workspace-repo wsp)]
-    (if (r.git/repo? dir)
-      (merge wsp (r.git/status dir))
-      wsp)))
+(defn apply-git-status
+  "Performs a git-status check and updates the passed workspace.
+
+  Workspaces need to opt-in via :git/check-status?, and should
+  specify a repo with a .git directory via :workspace/directory."
+  [wsp]
+  (if (:git/check-status? wsp)
+    (let [dir (workspace-repo wsp)]
+      (if (r.git/repo? dir)
+        (merge wsp (r.git/status dir))
+        wsp))
+    wsp))
 
 (defn all-workspaces []
   (->>
