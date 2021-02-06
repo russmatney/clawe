@@ -39,24 +39,65 @@
            (fn [w]
              (-> w :clawe/name #{name})))))
 
-(defmacro defworkspace
-  "Merges data into the defs registry*."
-  [workspace-symbol x]
-  (let [type       :clawe/workspace
-        the-symbol (symbol workspace-symbol)]
-    `(let [ns#           ~(str *ns*)
-           name#         ~(name workspace-symbol)
-           registry-key# (keyword ns# name#)
-           x#            (assoc ~x
-                                :clawe/name name#
-                                :clawe.registry/key registry-key#
-                                :clawe/type ~type
-                                :ns ns#)]
+(defn- defworkspace*
+  ([title] (defworkspace* title {}))
+  ([title x & _fns]
+   (let [x    (update x :workspace/title (fn [t] (or t (-> title
+                                                           symbol
+                                                           name))))
+         type :clawe/workspace
+         ;; fns  (into [] fns)
+         ]
+     `(let [ns#           ~(str *ns*)
+            name#         ~(-> title symbol name)
+            registry-key# (keyword ns# name#)
+            x#
+            (->
+              ~x
+              ;; (reduce
+              ;;   (fn [x f]
+              ;;     (println "x" x)
+              ;;     (println "f" f)
+              ;;     (f x))
+              ;;   ~x
+              ;;   ~fns)
+              (assoc :clawe/name name#
+                     :clawe.registry/key registry-key#
+                     :clawe/type ~type
+                     :ns ns#))]
 
-       (def ~the-symbol x#)
-       (add-x x#)
-       ;; returns the created command map
-       x#)))
+        (def ~title x#)
+        (add-x x#)
+        ;; returns the created command map
+        x#))))
+
+
+(defmacro defworkspace [title & args]
+  (apply defworkspace* title args))
+
+(comment
+  (println "hi")
+  (defworkspace simpleton {:some/other :data})
+
+  (defworkspace my-simple-with-fn {:funfun/data :data}
+    ;; identity
+    ;; ;; ((fn [x]
+    ;; ;;    (println "yooooo")
+    ;; ;;    (assoc x :somesecret/fun :data)))
+    ;; identity
+    )
+
+  (reduce
+    (fn [x f]
+      (println "x" x)
+      (println "f" f)
+      (f x))
+    {:funfun/data     :data,
+     :workspace/title "my-simple-with-fn"}
+    [identity identity
+     (fn [x] (println "wooo!") x)])
+
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; apps
@@ -108,6 +149,13 @@
      {:rule_any   {:class all :name all}
       :properties {:tag name :first_tag name}})))
 
+
+;; (defworkspace example
+;;   {:workspace/title "example"}
+;;   (fn [x]
+;;     (println x)
+;;     (-> x (assoc :awesome/rules (-> x :workspace/title awm-workspace-rules)))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Slack, Spotify
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -137,6 +185,10 @@
    :awesome/rules
    (awm-workspace-rules "spotify"  "spotify" "Pavucontrol" "pavucontrol")})
 
+(comment
+  spotify
+  )
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Ralphie, Clawe, and other repo-based workspaces
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -165,7 +217,12 @@
                             (notify/notify "Welcome to Ralphie"
                                            "Don't Wreck it~"))})
 
+(defworkspace clomacs
+  {:awesome/rules   (awm-workspace-rules "clomacs")
+   :workspace/title "clomacs"})
+
 (defworkspace emacs
+  ;; My .doom.d config, where i fix 'emacs'
   {:awesome/rules          (awm-workspace-rules "emacs")
    :workspace/title        "Emacs"
    :workspace/directory    "/home/russ/.doom.d"
@@ -181,6 +238,15 @@
                              (println "Created emacs workspace")
                              (notify/notify (str "Created emacs workspace...")
                                             "for all your emacsy needs."))})
+
+(defworkspace doom-emacs
+  {:awesome/rules          (awm-workspace-rules "doom-emacs")
+   :workspace/title        "Doom Emacs"
+   :workspace/color        "#aaee88"
+   :workspace/directory    "/home/russ/.emacs.d"
+   :workspace/initial-file "/home/russ/.emacs.d/docs/index.org"
+   :workspace/fa-icon-code "f1d1"
+   :workspace/title-pango  "<span>Doom Emacs</span>"})
 
 (defapp org-manual
   {:defcom/handler (fn [_app _]

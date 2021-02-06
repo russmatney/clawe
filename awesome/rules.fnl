@@ -125,6 +125,9 @@
                        ;; :switch_to_tags true
                        :first_tag "spotify"}}
 
+         {:rule_any {:name ["Slack | mini panel"]}
+          :properties {:placement awful.placement.bottom_right}}
+
          {:rule_any {:class ["Slack" "slack" "Discord" "discord"]
                      :name ["Slack" "slack" "Discord" "discord"]}
           :properties {:tag "slack"
