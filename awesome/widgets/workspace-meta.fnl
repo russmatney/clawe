@@ -28,12 +28,18 @@
           (and tags (-> tags
                         (lume.map (fn [t] (.. t.name " / ")))
                         table.concat
-                        (string.sub 1 -4))))]
+                        (string.sub 1 -4))))
+
+         app-str (and client client.focus client.focus.instance)
+         name (.. (or name "")
+                  (or (and app-str  (.. " - " app-str))
+                      ""))]
      (when name
        (: workspace-meta-widget.widget :set_label name)))))
 
 (fn worker []
   (tag.connect_signal "property::selected" update-widget)
+  (client.connect_signal "focus" update-widget)
   (update-widget tag)
 
   workspace-meta-widget.widget)

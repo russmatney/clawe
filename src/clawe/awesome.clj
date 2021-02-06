@@ -169,15 +169,21 @@ util = require 'util';
   "Compiles and runs the passed string of fennel.
   See comment below for usage.
   "
-  [fnl]
-  (awm-cli
-    (str
-      "local fennel = require('fennel'); "
-      "local compiled_lua = fennel.compileString('" fnl "'); "
-      "local run = fennel.loadCode(compiled_lua); "
-      "run(); ")))
+  ([fnl] (awm-fnl {} fnl))
+  ([opts fnl]
+   (let [lua-str (str
+                   "local fennel = require('fennel'); "
+                   "local compiled_lua = fennel.compileString('" fnl "'); "
+                   "local run = fennel.loadCode(compiled_lua); "
+                   "return run(); ") ]
+     (awm-cli opts lua-str))))
 
 (comment
+  (awm-fnl '(do
+              (print "hello-world!")
+              (print "goodbye"))
+           )
+
   (awm-fnl '[(println "hello-world!")])
   (awm-fnl '[;; create a function
              (fn hi [] (print "hello-from-fennel"))
@@ -185,8 +191,13 @@ util = require 'util';
              ;; call that function
              (hi)])
 
+  ;; TODO not sure why this fails to parse
+  (awm-fnl
+    {:quiet? false}
+    '(view {:name     client.focus.name
+            :instance client.focus.instance
+            }))
 
-  (awm-fnl '[])
   )
 
 
