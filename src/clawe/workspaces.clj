@@ -376,3 +376,14 @@ which is called with a list of workspaces maps."]
 (comment
   (toggle-scratchpad-names nil nil)
   )
+
+(defcom toggle-current-workspace-name
+  {:defcom/name    "toggle-current-workspace-name"
+   :defcom/handler (fn [_ _]
+                     ;; TODO where to store this for future update-workspaces-widgets
+                     ;; some kind of local storage?
+                     (update-workspaces-widget))})
+
+(comment
+  (toggle-current-workspace-name nil nil)
+  )
