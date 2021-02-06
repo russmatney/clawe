@@ -3,6 +3,7 @@
    [clawe.workspaces :as workspaces]
    [clawe.workrave]
    [clawe.yodo]
+   [clawe.awesome :as awm]
    [babashka.process :refer [$ check]]
 
    [ralphie.install :as r.install]
@@ -13,7 +14,6 @@
    [ralphie.scratchpad :as r.scratchpad]
 
    [ralph.defcom :as defcom :refer [defcom]]
-   [clawe.awesome :as awm]
    [ralphie.git :as r.git]))
 
 (defcom hello-cmd

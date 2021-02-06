@@ -379,3 +379,15 @@ util = require 'util';
               (reload-bar-and-widgets))})
 
 (comment)
+
+(defn tile-all-clients-handler
+  ([] (tile-all-clients-handler nil nil))
+  ([_config _parsed]
+   (awm-fnl '(let [s (awful.screen.focused)]
+               (lume.each s.clients
+                          (fn [c]
+                            (set c.floating false)))))))
+
+(defcom tile-all-clients-cmd
+  {:defcom/name    "tile-all-clients"
+   :defcom/handler tile-all-clients-handler})
