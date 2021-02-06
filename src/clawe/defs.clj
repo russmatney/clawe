@@ -217,6 +217,11 @@
                             (notify/notify "Welcome to Ralphie"
                                            "Don't Wreck it~"))})
 
+(defworkspace dotfiles
+  {:awesome/rules   (awm-workspace-rules "dotfiles")
+   :workspace/title "dotfiles"
+   :git/check-status?      true})
+
 (defworkspace clomacs
   {:awesome/rules   (awm-workspace-rules "clomacs")
    :workspace/title "clomacs"})
