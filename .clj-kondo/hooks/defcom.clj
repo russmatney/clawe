@@ -21,4 +21,8 @@
                                (apply str missing-keys))
                  :type    :defcom/missing
                  :row     row
-                 :col     col})))))))
+                 :col     col})))))
+
+    {:node (api/list-node (list* (api/token-node 'def)
+                                 (-> node :children second)
+                                 (-> node :children rest rest)))}))

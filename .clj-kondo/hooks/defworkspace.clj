@@ -1,6 +1,5 @@
 (ns hooks.defworkspace
-  (:require [clj-kondo.hooks-api :as api])
-  )
+  (:require [clj-kondo.hooks-api :as api]))
 
 (def required-keys [:workspace/title])
 
@@ -21,4 +20,8 @@
                                (apply str missing-keys))
                  :type    :clawe/missing
                  :row     row
-                 :col     col})))))))
+                 :col     col})))))
+
+    {:node (api/list-node (list* (api/token-node 'def)
+                                 (-> node :children second)
+                                 (-> node :children rest rest)))}))
