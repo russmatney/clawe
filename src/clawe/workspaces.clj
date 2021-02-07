@@ -298,9 +298,9 @@ which is called with a list of workspaces maps."]
     (for-name)
     (create-workspace)))
 
-
-(defn wsp->rofi-label [{:as   wsp
-                        :keys [git/dirty? git/needs-push? git/needs-pull?]}]
+(defn wsp->repo-and-status-label
+  [{:as   wsp
+    :keys [git/dirty? git/needs-push? git/needs-pull?]}]
   (let [default-name "noname"
         name         (or (workspace-name wsp) default-name)
         repo         (workspace-repo wsp)]
@@ -325,7 +325,7 @@ which is called with a list of workspaces maps."]
       (map apply-git-status)
       (sort-by (comp not (some-fn :git/dirty? :git/needs-push? :git/needs-pull?)))
       ;; TODO create :rofi/label multimethod
-      (map #(assoc % :rofi/label (wsp->rofi-label %)))
+      (map #(assoc % :rofi/label (wsp->repo-and-status-label %)))
       seq)))
 
 (comment
