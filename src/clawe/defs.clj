@@ -226,6 +226,11 @@
   {:awesome/rules   (awm-workspace-rules "clomacs")
    :workspace/title "clomacs"})
 
+(defworkspace org-roam-server
+  {:awesome/rules   (awm-workspace-rules "org-roam-server")
+   :workspace/title "org-roam-server"
+   :git/repo "org-roam/org-roam-server"})
+
 (defworkspace emacs
   ;; My .doom.d config, where i fix 'emacs'
   {:awesome/rules          (awm-workspace-rules "emacs")
