@@ -277,10 +277,9 @@ util = require 'util';
 (comment
   (check-for-errors))
 
-(defcom doctor
-  {:name    "doctor"
-   :handler (fn [_ _]
-              (check-for-errors))})
+(defcom awesome-doctor
+  {:defcom/name    "awesome-doctor"
+   :defcom/handler (fn [_ _] (check-for-errors))})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Reloading files

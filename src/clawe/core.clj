@@ -3,6 +3,7 @@
    [clawe.workspaces :as workspaces]
    [clawe.workrave]
    [clawe.yodo]
+   [clawe.doctor]
    [clawe.awesome :as awm]
    [babashka.process :refer [$ check]]
 
@@ -14,7 +15,10 @@
    [ralphie.scratchpad :as r.scratchpad]
 
    [ralph.defcom :as defcom :refer [defcom]]
-   [ralphie.git :as r.git]))
+   [ralphie.git :as r.git]
+   [ralphie.workspace :as workspace]
+
+   [wing.core :as wing]))
 
 (defcom hello-cmd
   {:defcom/name    "hello"
@@ -31,6 +35,47 @@
                                            :msg            "Clawe commands"}))]
        (defcom/call-handler cmd config parsed)))})
 
+(defn dwim-commands
+  ([] (dwim-commands nil))
+  ([{:keys [wsp]}]
+   (let [wsp (or wsp (workspace/current-workspace))]
+     (->>
+       (concat
+         [{:rofi/label     "Create Workspace Client"
+           :rofi/on-select (fn [_]
+                             ;; TODO detect if workspace client is already open
+                             ;; wrap these nil-punning actions-list api
+                             (r.notify/notify "Creating client for workspace")
+                             (r.scratchpad/create-client wsp))}
+          {:rofi/label     "Suggest more things here! <small> but don't get distracted </small>"
+           :rofi/on-select (fn [_] (r.notify/notify "A quick doctor checkup?"
+                                                    "Or the time of day?"))}
+
+          (when (r.git/repo? (workspaces/workspace-repo wsp))
+            {:rofi/label     "Fetch repo upstream"
+             :rofi/on-select (fn [_]
+                               (r.notify/notify "Fetching upstream for workspace")
+                               ;; TODO support fetching via ssh-agent
+                               (r.git/fetch (workspaces/workspace-repo wsp)))})]
+         (->>
+           (defcom/list-commands)
+           (map (partial r.rofi/defcom->rofi nil))))))))
+
+(comment
+  (->>
+    (dwim-commands)
+    (group-by :defcom/name)
+    (filter (comp #(> % 1) count second))
+    (map (comp first second))
+    )
+
+  (->>
+    (dwim-commands)
+    (filter :defcom/name)
+    (filter (comp #(re-seq #"doctor" %) :defcom/name))
+    )
+  )
+
 (defn dwim []
   (let [wsp (workspaces/current-workspace)]
 
@@ -43,29 +88,9 @@
                          (map first)
                          seq)))
 
-    (some->>
-      (concat
-        [{:rofi/label     "Create Workspace Client"
-          :rofi/on-select (fn [_]
-                            ;; TODO detect if workspace client is already open
-                            ;; wrap these nil-punning actions-list api
-                            (r.notify/notify "Creating client for workspace")
-                            (r.scratchpad/create-client wsp))}
-         {:rofi/label     "Suggest more things here! <small> but don't get distracted </small>"
-          :rofi/on-select (fn [_] (r.notify/notify "A quick doctor checkup?"
-                                                   "Or the time of day?"))}
-
-         (when (r.git/repo? (workspaces/workspace-repo wsp))
-           {:rofi/label     "Fetch repo upstream"
-            :rofi/on-select (fn [_]
-                              (r.notify/notify "Fetching upstream for workspace")
-                              ;; TODO support fetching via ssh-agent
-                              (r.git/fetch (workspaces/workspace-repo wsp)))})]
-        (->>
-          (defcom/list-commands)
-          (map (partial r.rofi/defcom->rofi nil))))
-      (r.rofi/rofi {:require-match? true
-                    :msg            "Clawe commands"}))))
+    (->> (dwim-commands {:wsp wsp})
+         (r.rofi/rofi {:require-match? true
+                       :msg            "Clawe commands"}))))
 
 (defcom dwim-cmd
   {:defcom/name    "dwim"
