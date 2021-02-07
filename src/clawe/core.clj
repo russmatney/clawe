@@ -16,9 +16,7 @@
 
    [ralph.defcom :as defcom :refer [defcom]]
    [ralphie.git :as r.git]
-   [ralphie.workspace :as workspace]
-
-   [wing.core :as wing]))
+   [ralphie.workspace :as workspace]))
 
 (defcom hello-cmd
   {:defcom/name    "hello"
