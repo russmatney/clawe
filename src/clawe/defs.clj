@@ -1,7 +1,9 @@
 (ns clawe.defs
-  (:require [ralphie.notify :as notify]
-            [ralphie.emacs :as r.emacs]
-            [babashka.process :refer [$ check]]))
+  (:require
+   [ralphie.notify :as notify]
+   [ralphie.emacs :as r.emacs]
+   [babashka.process :refer [$ check]]
+   ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; registry
@@ -12,6 +14,8 @@
 (defonce registry* (atom base-registry))
 
 (defn clear-registry [] (reset! registry* base-registry))
+(comment
+  (clear-registry))
 
 (defn add-x [x]
   (swap! registry* assoc-in
@@ -40,64 +44,30 @@
              (-> w :clawe/name #{name})))))
 
 (defn- defworkspace*
-  ([title] (defworkspace* title {}))
-  ([title x & _fns]
-   (let [x    (update x :workspace/title (fn [t] (or t (-> title
-                                                           symbol
-                                                           name))))
-         type :clawe/workspace
-         ;; fns  (into [] fns)
-         ]
-     `(let [ns#           ~(str *ns*)
-            name#         ~(-> title symbol name)
-            registry-key# (keyword ns# name#)
-            x#
-            (->
-              ~x
-              ;; (reduce
-              ;;   (fn [x f]
-              ;;     (println "x" x)
-              ;;     (println "f" f)
-              ;;     (f x))
-              ;;   ~x
-              ;;   ~fns)
-              (assoc :clawe/name name#
-                     :clawe.registry/key registry-key#
-                     :clawe/type ~type
-                     :ns ns#))]
-
-        (def ~title x#)
-        (add-x x#)
-        ;; returns the created command map
-        x#))))
-
+  ;; TODO refactor into fns-or-xs that get run w/ the obj so far, or
+  ;; just merge into that object
+  ;; try to keep them decoupled
+  ([n] (defworkspace* n {}))
+  ([n x & fns]
+   (let [x (update x :workspace/title (fn [t] (or t (-> n name))))
+         x (assoc x :clawe/name (-> n name)
+                  :clawe.registry/key (keyword (str *ns*) (-> n name))
+                  :clawe/type :clawe/workspace
+                  :ns (str *ns*))
+         x (reduce (fn [x f] ((eval f) x)) x fns)]
+     `(do
+        (def ~n ~x)
+        (add-x ~x)
+        ~x))))
 
 (defmacro defworkspace [title & args]
   (apply defworkspace* title args))
 
 (comment
-  (println "hi")
   (defworkspace simpleton {:some/other :data})
-
   (defworkspace my-simple-with-fn {:funfun/data :data}
-    ;; identity
-    ;; ;; ((fn [x]
-    ;; ;;    (println "yooooo")
-    ;; ;;    (assoc x :somesecret/fun :data)))
-    ;; identity
-    )
-
-  (reduce
-    (fn [x f]
-      (println "x" x)
-      (println "f" f)
-      (f x))
-    {:funfun/data     :data,
-     :workspace/title "my-simple-with-fn"}
-    [identity identity
-     (fn [x] (println "wooo!") x)])
-
-  )
+    #(assoc % :somesecret/fun :data)
+    identity))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; apps
@@ -149,16 +119,14 @@
      {:rule_any   {:class all :name all}
       :properties {:tag name :first_tag name}})))
 
+(defworkspace example
+  {:workspace/title "example"}
+  #(assoc % :awesome/rules (-> % :workspace/title awm-workspace-rules))
+  )
 
-;; (defworkspace example
-;;   {:workspace/title "example"}
-;;   (fn [x]
-;;     (println x)
-;;     (-> x (assoc :awesome/rules (-> x :workspace/title awm-workspace-rules)))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Slack, Spotify
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 
 (defapp spotify-app
   {:defcom/handler (fn [_ _] (-> ($ spotify) check))
