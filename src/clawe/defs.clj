@@ -46,46 +46,52 @@
   (cons nil (list 2))
   )
 
-(defn- initial-x [n]
-  {:workspace/title    (name n)
-   :clawe/name         (-> n name)
-   :clawe.registry/key (keyword (str *ns*) (-> n name))
-   :clawe/type         :clawe/workspace
+(defn- eval-xorf
+  "x is the current map of data for the thing being def-ed.
+
+  xorf is either a map to be merged into x,
+  or a function to be called with x (to update it).
+
+  Returns the merged/updated x.
+
+  The `seq?` `list?` may need to expand/get smarter at some point.
+  For now it seems to work for both anonymous and named functions."
+  [x xorf]
+  (cond
+    (map? xorf)     (merge x xorf)
+    (or
+      (seq? xorf)
+      (list? xorf)) ((eval xorf) x)
+    :else             (do (println "unexpected xorf type!")
+                          (println "type" (type xorf))
+                          x)))
+
+(defn- initial-thing [type thing-sym]
+  {:clawe/name         (-> thing-sym name)
+   :clawe/type         type
+   :clawe.registry/key (keyword (str *ns*) (-> thing-sym name))
    :ns                 (str *ns*)})
 
-(defn- eval-xorf [x x-or-f]
-  (println "x" x)
-  (println "xorf" x-or-f)
-  (println "type" (type x-or-f))
-  (cond
-    (map? x-or-f)     (merge x x-or-f)
-    (or
-      (seq? x-or-f)
-      (list? x-or-f)) ((eval x-or-f) x)
-    :else             (do
-                        (println "unhandled type!")
-                        x)) )
-
-(defn- defworkspace*
+(defn- defthing
   ;; TODO refactor into fns-or-xs that get run w/ the obj so far, or
   ;; just merge into that object
   ;; try to keep them decoupled
   ;;
   ;; TODO partition xorfs on runtime/macro-time eval
   ;; maybe with a :clawe.eval/runtime keyword
-  ([n] (defworkspace* n {}))
-  ([n & xorfs]
+  ([thing-type thing-sym] (defthing thing-type thing-sym {}))
+  ([thing-type thing-sym & xorfs]
    (let [x (->> (concat
-                  [(initial-x n)]
+                  [(initial-thing thing-type thing-sym)]
                   xorfs)
                 (reduce eval-xorf))]
      `(do
-        (def ~n ~x)
+        (def ~thing-sym ~x)
         (add-x ~x)
         ~x))))
 
 (defmacro defworkspace [title & args]
-  (apply defworkspace* title args))
+  (apply defthing :clawe/workspace title args))
 
 (comment
   (defworkspace simpleton {:some/other :data})
@@ -109,6 +115,7 @@
 ;; apps
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; TODO move these helpers into defapp/defthing
 (defn list-apps []
   (list-xs :clawe/app))
 
@@ -117,24 +124,28 @@
          (fn [a]
            (-> a :clawe/name #{name}))))
 
-(defmacro defapp
-  "Merges data into the defs registry*."
-  [app-symbol x]
-  (let [type       :clawe/app
-        the-symbol (symbol app-symbol)]
-    `(let [ns#           ~(str *ns*)
-           name#         ~(name app-symbol)
-           registry-key# (keyword ns# name#)
-           x#            (assoc ~x
-                                :clawe/name name#
-                                :clawe.registry/key registry-key#
-                                :clawe/type ~type
-                                :ns ns#)]
+(defmacro defapp [title & args]
+  (apply defthing :clawe/app title args))
 
-       (def ~the-symbol x#)
-       (add-x x#)
-       ;; returns the created command map
-       x#)))
+
+;; (defmacro defapp
+;;   "Merges data into the defs registry*."
+;;   [app-symbol x]
+;;   (let [type       :clawe/app
+;;         the-symbol (symbol app-symbol)]
+;;     `(let [ns#           ~(str *ns*)
+;;            name#         ~(name app-symbol)
+;;            registry-key# (keyword ns# name#)
+;;            x#            (assoc ~x
+;;                                 :clawe/name name#
+;;                                 :clawe.registry/key registry-key#
+;;                                 :clawe/type ~type
+;;                                 :ns ns#)]
+
+;;        (def ~the-symbol x#)
+;;        (add-x x#)
+;;        ;; returns the created command map
+;;        x#)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; AwesomeWM Data Helpers
