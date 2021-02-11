@@ -2,8 +2,7 @@
   (:require
    [ralphie.notify :as notify]
    [ralphie.emacs :as r.emacs]
-   [babashka.process :refer [$ check]]
-   ))
+   [babashka.process :refer [$ check]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; registry
@@ -43,18 +42,43 @@
            (fn [w]
              (-> w :clawe/name #{name})))))
 
+(comment
+  (cons nil (list 2))
+  )
+
+(defn- initial-x [n]
+  {:workspace/title    (name n)
+   :clawe/name         (-> n name)
+   :clawe.registry/key (keyword (str *ns*) (-> n name))
+   :clawe/type         :clawe/workspace
+   :ns                 (str *ns*)})
+
+(defn- eval-xorf [x x-or-f]
+  (println "x" x)
+  (println "xorf" x-or-f)
+  (println "type" (type x-or-f))
+  (cond
+    (map? x-or-f)     (merge x x-or-f)
+    (or
+      (seq? x-or-f)
+      (list? x-or-f)) ((eval x-or-f) x)
+    :else             (do
+                        (println "unhandled type!")
+                        x)) )
+
 (defn- defworkspace*
   ;; TODO refactor into fns-or-xs that get run w/ the obj so far, or
   ;; just merge into that object
   ;; try to keep them decoupled
+  ;;
+  ;; TODO partition xorfs on runtime/macro-time eval
+  ;; maybe with a :clawe.eval/runtime keyword
   ([n] (defworkspace* n {}))
-  ([n x & fns]
-   (let [x (update x :workspace/title (fn [t] (or t (-> n name))))
-         x (assoc x :clawe/name (-> n name)
-                  :clawe.registry/key (keyword (str *ns*) (-> n name))
-                  :clawe/type :clawe/workspace
-                  :ns (str *ns*))
-         x (reduce (fn [x f] ((eval f) x)) x fns)]
+  ([n & xorfs]
+   (let [x (->> (concat
+                  [(initial-x n)]
+                  xorfs)
+                (reduce eval-xorf))]
      `(do
         (def ~n ~x)
         (add-x ~x)
@@ -65,9 +89,21 @@
 
 (comment
   (defworkspace simpleton {:some/other :data})
-  (defworkspace my-simple-with-fn {:funfun/data :data}
+
+  (defworkspace my-simple-with-fns
+    {:just/a-map :data}
+    #(assoc % :some-fn/fn :data) identity)
+
+  (defworkspace my-simple-fn-then-x
+    (fn [x] (assoc x :somesecret/fun :data))
+    {:funfun/data :data})
+
+  (println "break\t\t\tbreak")
+  (defworkspace my-simple-anon-fn-then-x
     #(assoc % :somesecret/fun :data)
-    identity))
+    #(assoc % :somesecret/fun :data)
+    {:funfun/data :data})
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; apps
@@ -256,5 +292,3 @@
        )}]
 
    })
-
-(comment)
