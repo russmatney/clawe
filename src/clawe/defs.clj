@@ -8,7 +8,8 @@
 ;; registry
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def base-registry {:clawe/workspace {}})
+(def base-registry {::workspaces {}
+                    ::apps {}})
 
 (defonce registry* (atom base-registry))
 
@@ -18,7 +19,7 @@
 
 (defn add-x [x]
   (swap! registry* assoc-in
-         [(:clawe/type x) (:clawe.registry/key x)] x))
+         [(::type x) (::registry-key x)] x))
 
 (defn list-xs [type]
   (vals (get @registry* type)))
@@ -29,22 +30,27 @@
            (filter pred)
            first))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; workspaces
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 (defn list-workspaces []
-  (list-xs :clawe/workspace))
+  (list-xs ::workspaces))
 
 (defn get-workspace [wsp]
-  (get-x :clawe/workspace
+  (get-x ::workspaces
          (let [name (or (:org/name wsp) (:awesome/tag-name wsp))]
            (fn [w]
-             (-> w :clawe/name #{name})))))
+             (-> w ::name #{name})))))
 
-(comment
-  (cons nil (list 2))
-  )
+(defn list-apps []
+  (list-xs ::apps))
+
+(defn get-app [name]
+  (get-x ::apps
+         (fn [a]
+           (-> a ::name #{name}))))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; defthing macro
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn- eval-xorf
   "x is the current map of data for the thing being def-ed.
@@ -57,19 +63,47 @@
   The `seq?` `list?` may need to expand/get smarter at some point.
   For now it seems to work for both anonymous and named functions."
   [x xorf]
-  (cond
-    (map? xorf)     (merge x xorf)
-    (or
-      (seq? xorf)
-      (list? xorf)) ((eval xorf) x)
-    :else             (do (println "unexpected xorf type!")
+  (let [merge-x (fn [x v]
+                  (cond
+                    (map? v) (merge x v)
+                    (string? v)
+                    (update x ::doc (fn [doc-str]
+                                      (str doc-str
+                                           (when doc-str "\n")
+                                           v)))
+
+                    :else x))]
+    (cond
+      (map? xorf)     (merge-x x xorf)
+      (or
+        (seq? xorf)
+        (list? xorf)) (merge-x x ((eval xorf) x))
+      (symbol? xorf)  (merge-x x ((eval xorf) x))
+      (string? xorf)  (merge-x x xorf)
+      :else           (do (println "unexpected xorf type!")
                           (println "type" (type xorf))
-                          x)))
+                          (println "xorf" xorf)
+                          x))))
+
+(comment
+  (assert (= {:yo :yo}
+             (reduce eval-xorf [{} 'println '#(assoc % :yo :yo) 'println])))
+  (assert (= {:meee :bee}
+             (eval-xorf {} '#(assoc % :meee :bee))))
+
+  (assert (= {::doc "my\ndocs"
+              :and  :keys}
+             (reduce eval-xorf [{} '"my" '{:and :keys} "docs"])))
+
+  ;; TODO apis like...
+  (defn two-arg-fn [x y] {:x x :y y})
+  (reduce eval-xorf [{} '(partial (two-arg-fn "my-x"))])
+  )
 
 (defn- initial-thing [type thing-sym]
-  {:clawe/name         (-> thing-sym name)
-   :clawe/type         type
-   :clawe.registry/key (keyword (str *ns*) (-> thing-sym name))
+  {::name         (-> thing-sym name)
+   ::type         type
+   ::registry-key (keyword (str *ns*) (-> thing-sym name))
    :ns                 (str *ns*)})
 
 (defn- defthing
@@ -90,10 +124,20 @@
         (add-x ~x)
         ~x))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; defthing consumers
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defmacro defworkspace [title & args]
-  (apply defthing :clawe/workspace title args))
+  (apply defthing ::workspaces title args))
+
+(defmacro defapp [title & args]
+  (apply defthing ::app title args))
 
 (comment
+  ;; TODO convert to test suite?
+  ;; all of these should work
+
   (defworkspace simpleton {:some/other :data})
 
   (defworkspace my-simple-with-fns
@@ -107,48 +151,13 @@
   (println "break\t\t\tbreak")
   (defworkspace my-simple-anon-fn-then-x
     #(assoc % :somesecret/fun :data)
+    "With a doc string"
     #(assoc % :somesecret/fun :data)
-    {:funfun/data :data})
-  )
+    "or two"
+    {:funfun/data :data}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; apps
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; TODO move these helpers into defapp/defthing
-(defn list-apps []
-  (list-xs :clawe/app))
-
-(defn get-app [name]
-  (get-x :clawe/app
-         (fn [a]
-           (-> a :clawe/name #{name}))))
-
-(defmacro defapp [title & args]
-  (apply defthing :clawe/app title args))
-
-
-;; (defmacro defapp
-;;   "Merges data into the defs registry*."
-;;   [app-symbol x]
-;;   (let [type       :clawe/app
-;;         the-symbol (symbol app-symbol)]
-;;     `(let [ns#           ~(str *ns*)
-;;            name#         ~(name app-symbol)
-;;            registry-key# (keyword ns# name#)
-;;            x#            (assoc ~x
-;;                                 :clawe/name name#
-;;                                 :clawe.registry/key registry-key#
-;;                                 :clawe/type ~type
-;;                                 :ns ns#)]
-
-;;        (def ~the-symbol x#)
-;;        (add-x x#)
-;;        ;; returns the created command map
-;;        x#)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; AwesomeWM Data Helpers
+;; Misc workspace builder helpers
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn awm-workspace-rules
@@ -166,10 +175,43 @@
      {:rule_any   {:class all :name all}
       :properties {:tag name :first_tag name}})))
 
-(defworkspace example
-  {:workspace/title "example"}
-  #(assoc % :awesome/rules (-> % :workspace/title awm-workspace-rules))
+(defn awesome-rules [& args]
+  (let [{::keys [name] :as thing} (last args)
+        args                      (butlast args)
+        ]
+    (assoc thing :awesome/rules (apply awm-workspace-rules name args))))
+
+(comment
+  (awesome-rules {::name "my-thing-name"})
+  (awesome-rules "onemore" {::name "my-thing-name"})
+  (awesome-rules "more" "andmore" {::name "my-thing-name"})
   )
+
+(defn workspace-title
+  "Sets the workspace title using the ::name (defaults to the def-ed symbol)."
+  [{::keys [name]}]
+  {:workspace/title name})
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; usage examples
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(comment
+  (defworkspace my-workspace
+    workspace-title
+    awesome-rules
+    )
+
+  (eval workspace-title)
+
+  my-workspace
+
+  ;; TODO get defthing to obey the threading rules
+  (defworkspace fancy-example
+    workspace-title
+    (awesome-rules "extra-match-phrase")
+    ))
+
 
 
 ;; Slack, Spotify
@@ -180,8 +222,10 @@
    :defcom/name    "start-spotify-client"})
 
 (defworkspace spotify
-  {:workspace/title        "Spotify"
-   :workspace/color        "#38b98a"
+  workspace-title
+  {:awesome/rules
+   (awm-workspace-rules "spotify"  "spotify" "Pavucontrol" "pavucontrol")}
+  {:workspace/color        "#38b98a"
    :workspace/directory    "/home/russ/"
    :workspace/exec         "spotify"
    :workspace/initial-file "/home/russ/.config/spicetify/config.ini"
@@ -196,9 +240,7 @@
    :workspace/on-create    (fn [_wsp]
                              (println "Created spotify workspace")
                              (notify/notify (str "Created spotify workspace...")
-                                            "for all your spotifyy needs."))
-   :awesome/rules
-   (awm-workspace-rules "spotify"  "spotify" "Pavucontrol" "pavucontrol")})
+                                            "for all your spotifyy needs."))})
 
 (comment
   spotify
@@ -209,10 +251,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defworkspace clawe
-  {:awesome/rules          (awm-workspace-rules "clawe")
-   :workspace/color        "#88aadd"
+  workspace-title
+  awesome-rules
+  {:workspace/color        "#88aadd"
    ;; :workspace/title-pango  "<span>THE CLAWWEEEEEEEEE</span>"
-   :workspace/title        "clawe"
    :workspace/title-pango  "<span size=\"large\">THE CLAWE</span>"
    :workspace/title-hiccup [:h1 "The Cl-(awe)"]
    :git/check-status?      true
@@ -223,9 +265,9 @@
                                "hope you're not too deep in the rabbit hole"))})
 
 (defworkspace ralphie
-  {:awesome/rules         (awm-workspace-rules "ralphie")
-   :workspace/color       "#aa88ee"
-   :workspace/title       "ralphie"
+  workspace-title
+  awesome-rules
+  {:workspace/color       "#aa88ee"
    :workspace/title-pango "<span>The Ralphinator</span>"
    :git/check-status?     true
    :workspace/on-create   (fn [_wsp]
@@ -233,24 +275,27 @@
                                            "Don't Wreck it~"))})
 
 (defworkspace dotfiles
-  {:awesome/rules   (awm-workspace-rules "dotfiles")
-   :workspace/title "dotfiles"
-   :git/check-status?      true})
+  awesome-rules
+  workspace-title
+  {:git/check-status? true})
 
 (defworkspace clomacs
-  {:awesome/rules   (awm-workspace-rules "clomacs")
-   :workspace/title "clomacs"})
+  awesome-rules
+  workspace-title
+  {:git/repo "clojure-emacs/clomacs"}
+  )
 
 (defworkspace org-roam-server
-  {:awesome/rules   (awm-workspace-rules "org-roam-server")
-   :workspace/title "org-roam-server"
-   :git/repo "org-roam/org-roam-server"})
+  awesome-rules
+  workspace-title
+  {:git/repo "org-roam/org-roam-server"})
 
 (defworkspace emacs
+  ;; TODO support strings as doc-builders
   ;; My .doom.d config, where i fix 'emacs'
-  {:awesome/rules          (awm-workspace-rules "emacs")
-   :workspace/title        "Emacs"
-   :workspace/directory    "/home/russ/.doom.d"
+  awesome-rules
+  workspace-title
+  {:workspace/directory    "/home/russ/.doom.d"
    :workspace/initial-file "/home/russ/.doom.d/init.el"
    :workspace/scratchpad   true
    :workspace/key          "e"
@@ -265,8 +310,8 @@
                                             "for all your emacsy needs."))})
 
 (defworkspace doom-emacs
-  {:awesome/rules          (awm-workspace-rules "doom-emacs")
-   :workspace/title        "Doom Emacs"
+  awesome-rules
+  {:workspace/title        "Doom Emacs" ;; just sets the workspace title
    :workspace/color        "#aaee88"
    :workspace/directory    "/home/russ/.emacs.d"
    :workspace/initial-file "/home/russ/.emacs.d/docs/index.org"
@@ -279,9 +324,9 @@
    :defcom/name    "open-org-manual"})
 
 (defworkspace org
-  {:awesome/rules          (awm-workspace-rules "org")
-   :workspace/title        "Org"
-   ;; TODO point to org manual by default (org-info)
+  awesome-rules
+  workspace-title
+  {;; TODO point to org manual by default (org-info)
    :workspace/initial-file "/home/russ/.emacs.d/init.el"
    ;; TODO org icon
    :workspace/fa-icon-code "f1d1"
@@ -305,6 +350,16 @@
    })
 
 (defworkspace org-crud
-  {:awesome/rules   (awm-workspace-rules "org-crud")
-   :workspace/title "org-crud"
-   :git/repo "russmatney/org-crud"})
+  awesome-rules
+  workspace-title
+  {:git/repo "russmatney/org-crud"})
+
+(defworkspace treemacs
+  awesome-rules
+  workspace-title
+  {:git/repo "Alexander-Miller/treemacs"})
+
+(defworkspace git-summary
+  awesome-rules
+  workspace-title
+  {:git/repo "MirkoLedda/git-summary"})

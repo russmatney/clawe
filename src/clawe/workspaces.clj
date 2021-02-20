@@ -20,10 +20,14 @@
   )
 
 (defn workspace-name [wsp]
-  (or (:clawe/name wsp)
-      (:workspace/name wsp)
-      (:org/name wsp)
-      (:awesome/name wsp)))
+  (or
+    (:workspace/title wsp)
+    ;; DEPRECATED key (use :clawe.defs/name or :workspace/title)
+    (:clawe/name wsp)
+    (:clawe.defs/name wsp)
+    (:workspace/name wsp)
+    (:org/name wsp)
+    (:awesome/name wsp)))
 
 (defn workspace-repo [wsp]
   (or (:workspace/directory wsp)
