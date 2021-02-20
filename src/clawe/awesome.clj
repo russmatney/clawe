@@ -363,21 +363,8 @@ util = require 'util';
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Reload Command
+;; Tile all clients
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defcom reload-cmd
-  {:name    "reload"
-   :handler (fn [_ _]
-              ;; write fancy logger with time-since-exec-start
-              (println "\treloading keybindings")
-              (reload-keybindings)
-              (println "\treloading misc")
-              (reload-misc)
-              (println "\treloading widgets!")
-              (reload-bar-and-widgets))})
-
-(comment)
 
 (defn tile-all-clients-handler
   ([] (tile-all-clients-handler nil nil))

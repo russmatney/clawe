@@ -4,6 +4,9 @@
 
 (local bindings (require :bindings))
 
+(local workspace-rules (require :workspace-rules))
+(local workspace-rules-magic (require :workspace-rules-magic))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Rules
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -11,6 +14,8 @@
 ;; Rules to apply to new clients (through the "manage" signal).
 (local global_rules
        (gears.table.join
+        workspace-rules-magic.all
+        workspace-rules.all
         [{:rule {}
           :properties
           {:border_width beautiful.border_width
@@ -103,21 +108,6 @@
                             :honor_workarea true
                             :to_percent 0.9})))}
 
-         {:rule {:name "Zoom"}
-          :properties {:tag "zoom"}}
-         ;; TODO support this for _all_ workspaces
-         {:rule {:name "notes"}
-          :properties {:tag "notes"}}
-         {:rule {:name "journal"}
-          :properties {:tag "journal"}}
-         {:rule {:name "clawe"}
-          :properties {:tag "clawe"}}
-         {:rule {:name "ralphie"}
-          :properties {:tag "ralphie"}}
-         {:rule {:name "dotfiles"}
-          :properties {:tag "dotfiles"}}
-         {:rule {:name "org-crud"}
-          :properties {:tag "org-crud"}}
 
          {:rule_any {:class ["Spotify" "spotify" "Pavucontrol" "pavucontrol"]
                      :name ["Spotify" "spotify" "Pavucontrol" "pavucontrol"]}

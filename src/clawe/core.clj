@@ -5,6 +5,8 @@
    [clawe.yodo]
    [clawe.doctor]
    [clawe.awesome :as awm]
+   [clawe.awesome.restart]
+   [clawe.awesome.rules]
    [babashka.process :refer [$ check]]
 
    [ralphie.install :as r.install]
