@@ -303,3 +303,8 @@
        )}]
 
    })
+
+(defworkspace org-crud
+  {:awesome/rules   (awm-workspace-rules "org-crud")
+   :workspace/title "org-crud"
+   :git/repo "russmatney/org-crud"})
