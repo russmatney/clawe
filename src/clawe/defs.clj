@@ -2,7 +2,10 @@
   (:require
    [ralphie.notify :as notify]
    [ralphie.emacs :as r.emacs]
-   [babashka.process :refer [$ check]]))
+   [babashka.process :refer [$ check]]
+   [ralphie.git :as r.git]
+   [ralphie.fs :as fs]
+   [clojure.string :as string]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; registry
@@ -38,7 +41,7 @@
 
 (defn get-workspace [wsp]
   (get-x :clawe/workspace
-         (let [name (or (:org/name wsp) (:awesome/tag-name wsp))]
+         (let [name (or (:org/name wsp) (:awesome/tag-name wsp) wsp)]
            (fn [w]
              (-> w :clawe/name #{name})))))
 
@@ -62,9 +65,9 @@
     (or
       (seq? xorf)
       (list? xorf)) ((eval xorf) x)
-    :else             (do (println "unexpected xorf type!")
-                          (println "type" (type xorf))
-                          x)))
+    :else           (do (println "unexpected xorf type!")
+                        (println "type" (type xorf))
+                        x)))
 
 (defn- initial-thing [type thing-sym]
   {:clawe/name         (-> thing-sym name)
@@ -90,8 +93,18 @@
         (add-x ~x)
         ~x))))
 
-(defmacro defworkspace [title & args]
-  (apply defthing :clawe/workspace title args))
+(defmacro defworkspace
+  ;; [& args]
+  ;; (let [title (when-let [t (some->> args first)]
+  ;;               (cond (symbol? t) t
+  ;;                     (map? t)    (:workspace/title t)))]
+  ;;   (apply defthing :clawe/workspace title (rest args)))
+  [title & args]
+  (apply defthing :clawe/workspace title args)
+  )
+
+(defn make-workspace [title & args]
+  (eval (apply defthing :clawe/workspace title args)))
 
 (comment
   (defworkspace simpleton {:some/other :data})
@@ -308,3 +321,62 @@
   {:awesome/rules   (awm-workspace-rules "org-crud")
    :workspace/title "org-crud"
    :git/repo "russmatney/org-crud"})
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; add local git repo workspaces
+
+(defn path->git-repo-workspace
+  "NOTE does not check if the path is actually for a git repo.
+  just parses the string based on '/'"
+  [path]
+  (let [[& parts] (-> path
+                      (string/replace "/./" "/")
+                      (string/replace "/.git" "")
+                      (string/split #"/"))
+        repo-name (last parts)
+        owner (last (butlast parts))]
+    {:repo/name repo-name
+     :repo/path path
+     :repo/owner owner
+     :repo/namespace owner
+     :awesome/rules (awm-workspace-rules (str owner "/" repo-name))
+     :workspace/title (str owner "/" repo-name)
+     :git/repo path}))
+
+(comment
+  (path->git-repo-workspace "/home/russ/russmatney/yodo/.git")
+  (path->git-repo-workspace "/home/russ/./dotfiles/.git")
+  (path->git-repo-workspace "/home/russ/.zsh/.git"))
+
+(defn mix-local-repos []
+  (->>
+    ;; NOTE may require memoization and threading a cache-burst
+    ;; through to r.get/local-repos if this is too slow
+    (r.git/local-repos)
+    (map path->git-repo-workspace)
+    (map #(make-workspace (:workspace/title %) %))
+    doall))
+
+(comment
+  (mix-local-repos)
+
+  (->>
+    (list-workspaces)
+    (keep :workspace/title)
+    )
+
+  (get-workspace "russmatney/yodo")
+  (get-workspace "dotfiles")
+  )
+
+
+(defn get-local-repos
+  ;; TODO read and optionally burst a cache here
+  ;; same as open project-file via projectile - cmd-p, cmd-shift-p
+  ;; cmd-o, cmd-shift-o
+  []
+  ;; WIP
+  ;; not sure this makes sense, as bb is restarting the program every time
+  ;; i suppose it'd help if it was called multiple times in one run
+  ;; but we definitely aren't client<>server yet, so state has to be written to disk
+  (memoize (fn [] (r.git/local-repos))))
