@@ -127,13 +127,13 @@
   (update-workspaces-widget))
 
 (defcom update-workspaces-cmd
-  {:name    "update-workspaces"
+  {:defcom/name    "update-workspaces"
    :one-line-desc
    "updates the workspaces widget to reflect the current workspaces state."
    :description
    ["expects a function-name as an argument,
 which is called with a list of workspaces maps."]
-   :handler (fn [_ parsed]
+   :defcom/handler (fn [_ parsed]
               (update-workspaces-widget (-> parsed :arguments first)))})
 
 
@@ -171,13 +171,13 @@ which is called with a list of workspaces maps."]
      (drag-workspace dir))))
 
 (defcom drag-workspace-index-cmd
-  {:name          "drag-workspace-index"
+  {:defcom/name          "drag-workspace-index"
    ;; TODO *keys-pressed* as a dynamic var/macro or partially applied key in your keybinding
    ;; TODO support keybindings right here
    :keybinding    "ctrl-shift-p"
    :one-line-desc "Drags a workspace up or down an index."
    :description   ["Intended to feel like dragging a workspace in a direction."]
-   :handler       drag-workspace-index-handler})
+   :defcom/handler       drag-workspace-index-handler})
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -214,10 +214,10 @@ which is called with a list of workspaces maps."]
    (update-workspaces-widget)))
 
 (defcom consolidate-workspaces-cmd
-  {:name          "consolidate-workspaces"
+  {:defcom/name          "consolidate-workspaces"
    :one-line-desc "Groups active workspaces closer together"
    :description   ["Moves active workspaces to the front of the list."]
-   :handler       consolidate-workspaces-handler})
+   :defcom/handler       consolidate-workspaces-handler})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; clean up workspaces
@@ -251,9 +251,9 @@ which is called with a list of workspaces maps."]
    (update-workspaces-widget)))
 
 (defcom clean-workspaces-cmd
-  {:name          "clean-workspaces"
+  {:defcom/name          "clean-workspaces"
    :one-line-desc "Closes workspaces that have no active clients"
-   :handler       clean-workspaces-handler})
+   :defcom/handler       clean-workspaces-handler})
 
 (comment)
 
@@ -356,10 +356,9 @@ which is called with a list of workspaces maps."]
   (open-workspace))
 
 (defcom open-workspace-cmd
-  {:name          "open-workspace"
+  {:defcom/name          "open-workspace"
    :one-line-desc "Opens a new workspace via rofi."
-   :description   []
-   :handler       (fn [_ parsed]
+   :defcom/handler       (fn [_ parsed]
                     (open-workspace (some-> parsed :arguments first)))})
 
 
@@ -368,8 +367,8 @@ which is called with a list of workspaces maps."]
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defcom toggle-scratchpad-names
-  {:name    "toggle-scratchpad-names"
-   :handler (fn [_ _]
+  {:defcom/name    "toggle-scratchpad-names"
+   :defcom/handler (fn [_ _]
               (awm/awm-cli "_G.toggle_show_scratchpad_names();")
               (update-workspaces-widget))})
 
