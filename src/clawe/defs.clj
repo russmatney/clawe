@@ -192,6 +192,12 @@
   [{::keys [name]}]
   {:workspace/title name})
 
+(defn local-repo [repo-path]
+  {:git/repo repo-path
+   :workspace/directory (str "/home/russ/" repo-path)
+   ;; TODO auto-discover readmes
+   :workspace/initial-file (str "/home/russ/" repo-path "/readme.org")})
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; usage examples
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -253,6 +259,7 @@
 (defworkspace clawe
   workspace-title
   awesome-rules
+  (fn [_] (local-repo "russmatney/clawe"))
   {:workspace/color        "#88aadd"
    ;; :workspace/title-pango  "<span>THE CLAWWEEEEEEEEE</span>"
    :workspace/title-pango  "<span size=\"large\">THE CLAWE</span>"
@@ -267,6 +274,7 @@
 (defworkspace ralphie
   workspace-title
   awesome-rules
+  (fn [_] (local-repo "russmatney/ralphie"))
   {:workspace/color       "#aa88ee"
    :workspace/title-pango "<span>The Ralphinator</span>"
    :git/check-status?     true
@@ -277,18 +285,23 @@
 (defworkspace dotfiles
   awesome-rules
   workspace-title
+  (fn [_] (local-repo "russmatney/dotfiles"))
   {:git/check-status? true})
 
 (defworkspace clomacs
   awesome-rules
   workspace-title
-  {:git/repo "clojure-emacs/clomacs"}
-  )
+  (fn [_] (local-repo "clojure-emacs/clomacs")))
 
 (defworkspace org-roam-server
   awesome-rules
   workspace-title
-  {:git/repo "org-roam/org-roam-server"})
+  (fn [_] (local-repo "org-roam/org-roam-server")))
+
+(defworkspace org-roam
+  awesome-rules
+  workspace-title
+  (fn [_] (local-repo "org-roam/org-roam")))
 
 (defworkspace emacs
   ;; TODO support strings as doc-builders
@@ -344,22 +357,19 @@
      (fn [_ _]
        ;; Ex: open emacs, run command
        ;; TODO refactor r.emacs/open to support this
-       (r.emacs/open {:eval-sexp "(org-info)"})
-       )}]
-
-   })
+       (r.emacs/open {:eval-sexp "(org-info)"}))}]})
 
 (defworkspace org-crud
   awesome-rules
   workspace-title
-  {:git/repo "russmatney/org-crud"})
+  (fn [_] (local-repo "russmatney/org-crud")))
 
 (defworkspace treemacs
   awesome-rules
   workspace-title
-  {:git/repo "Alexander-Miller/treemacs"})
+  (fn [_] (local-repo "Alexander-Miller/treemacs")))
 
 (defworkspace git-summary
   awesome-rules
   workspace-title
-  {:git/repo "MirkoLedda/git-summary"})
+  (fn [_] (local-repo  "MirkoLedda/git-summary")))

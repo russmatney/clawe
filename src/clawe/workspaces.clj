@@ -47,17 +47,27 @@
     wsp))
 
 (defn all-workspaces []
-  (->>
-    (concat
-      (r.workspace/all-workspaces)
-      (defs/list-workspaces))
-    (group-by workspace-name)
-    (remove (comp nil? first))
-    (map second)
-    (map #(apply merge %))))
+  (let [awm-all-tags (r.awm/all-tags)]
+    (->>
+      (concat
+        (r.workspace/all-workspaces)
+        (->> (defs/list-workspaces)
+             (map (fn [wsp]
+                    (merge (r.awm/workspace-for-name
+                             (workspace-name wsp)
+                             awm-all-tags)
+                           wsp)))))
+      (group-by workspace-name)
+      (remove (comp nil? first))
+      (map second)
+      (map #(apply merge %)))))
 
 (comment
-  (all-workspaces)
+  (->>
+    (all-workspaces)
+    (filter (comp #{"org-roam"} workspace-name))
+    )
+
   )
 
 (defn for-name [name]
@@ -110,9 +120,15 @@
 (comment
   (->>
     (r.workspace/all-workspaces)
-    (filter :awesome/tag))
+    (filter :awesome/tag)
+    (map workspace-name))
 
-  (active-workspaces))
+  (->>
+    (active-workspaces)
+    (map :name)
+    )
+
+  )
 
 (defn update-workspaces-widget
   ([] (update-workspaces-widget nil))
@@ -298,9 +314,11 @@ which is called with a list of workspaces maps."]
 
 (comment
   (->
-    "ralphie"
+    "org-roam"
     (for-name)
-    (create-workspace)))
+    ;; (create-workspace)
+    ))
+
 
 (defn wsp->repo-and-status-label
   [{:as   wsp
