@@ -1,3 +1,4 @@
+(local awful (require "awful"))
 (local wibox (require "wibox"))
 (local lume (require "lume"))
 (local icons (require "icons"))
@@ -80,10 +81,17 @@
 (fn attach-callbacks [wid workspace]
   (wid:connect_signal
    "button::press"
-   (fn []
+   (fn [_ _ _ button]
      (pp workspace)
-     (helpers.tag_back_and_forth workspace.awesome_index)
-     (request-updated-workspaces)
+     (if
+      (= 1 button)
+      (do
+        (helpers.tag_back_and_forth workspace.awesome_index)
+        (request-updated-workspaces))
+      (= 3 button)
+      (do
+        (awful.tag.viewtoggle workspace.tag))
+      )
      ))
 
   (wid:connect_signal
