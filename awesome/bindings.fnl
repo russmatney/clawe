@@ -195,6 +195,8 @@ Returns a function expected to be attached to a keybinding.
         (key [] "XF86AudioMute" (spawn-fn "pactl set-sink-mute @DEFAULT_SINK@ toggle"))
         (key [] "XF86AudioRaiseVolume" (spawn-fn "pactl set-sink-volume @DEFAULT_SINK@ +5%"))
         (key [] "XF86AudioLowerVolume" (spawn-fn "pactl set-sink-volume @DEFAULT_SINK@ -5%"))
+        (key [:mod] "XF86AudioRaiseVolume" (spawn-fn "ralphie spotify-volume up"))
+        (key [:mod] "XF86AudioLowerVolume" (spawn-fn "ralphie spotify-volume down"))
         ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
