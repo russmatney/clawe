@@ -404,7 +404,26 @@ Returns a function expected to be attached to a keybinding.
                   (tset _G.client :focus c)
                   (c:raise)))
       (btn [:mod] 1 awful.mouse.client.move)
-      (btn [:mod] 3 awful.mouse.client.resize)))
+      (btn [:mod] 2 (fn [c]
+                      ;; (naughty.notify
+                      ;;  {:title (.. "Pulling "
+                      ;;              (or c.name "client")
+                      ;;              " above and ontop")})
+                      ;; (tset _G.client :focus c)
+                      ;; not sure why this doesn't adjust the client props
+                      ;; (tset _G.client.focus :ontop true)
+                      ;; (tset _G.client.focus :above true)
+                      ))
+      (btn [:mod] 3 awful.mouse.client.resize)
+      ;; (btn [:mod] 4 (fn [c]
+      ;;                 (ppi c)
+      ;;                 (naughty.notify {:title "Btn 4 clicked"
+      ;;                                  :text c.name})))
+      ;; (btn [:mod] 5 (fn [c]
+      ;;                 (ppi c)
+      ;;                 (naughty.notify {:title "Btn 5 clicked"
+      ;;                                  :text c.name})))
+      ))
 
 (global
  init_root_buttons
