@@ -357,7 +357,7 @@ which is called with a list of workspaces maps."]
   ([] (open-workspace nil))
   ([name]
    ;; First, delete empty workspaces
-   (clean-workspaces)
+   ;; (clean-workspaces)
 
    ;; Then select and create a new one
    (if name
