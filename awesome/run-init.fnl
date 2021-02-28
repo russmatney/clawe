@@ -111,8 +111,9 @@
        (_G.handle_garbage)
        (do
          (_G.log_garbage)
-         (naughty.notify {:title "Remaining Garbage"
-                          :text (.. "Count: " after)})))))
+         ;; (naughty.notify {:title "Remaining Garbage"
+         ;;                  :text (.. "Count: " after)})
+         ))))
 
 ;; garbage timer
 (gears.timer
