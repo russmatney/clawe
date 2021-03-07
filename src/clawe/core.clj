@@ -17,8 +17,7 @@
    [ralphie.scratchpad :as r.scratchpad]
 
    [ralph.defcom :as defcom :refer [defcom]]
-   [ralphie.git :as r.git]
-   [ralphie.workspace :as workspace]))
+   [ralphie.git :as r.git]))
 
 (defcom hello-cmd
   {:defcom/name    "hello"
@@ -38,7 +37,7 @@
 (defn dwim-commands
   ([] (dwim-commands nil))
   ([{:keys [wsp]}]
-   (let [wsp (or wsp (workspace/current-workspace))]
+   (let [wsp (or wsp (workspaces/current-workspace))]
      (->>
        (concat
          [{:rofi/label     "Create Workspace Client"

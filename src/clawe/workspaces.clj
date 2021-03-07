@@ -1,23 +1,20 @@
 (ns clawe.workspaces
   (:require
    [ralph.defcom :refer [defcom]]
-   [ralphie.workspace :as r.workspace]
    [ralphie.rofi :as rofi]
    [clawe.defs :as defs]
    [clawe.awesome :as awm]
+   [clawe.scratchpad :as scratchpad]
    [ralphie.awesome :as r.awm]
    [ralphie.git :as r.git]
    [ralphie.item :as item]
-   [ralphie.notify :as notify]
-   [ralphie.scratchpad :as r.scratchpad]))
+   [ralphie.notify :as notify]))
 
 (defn current-workspace []
-  (let [wsp (r.workspace/current-workspace)]
-    (merge wsp (defs/get-workspace wsp))))
+  (defs/get-workspace (r.awm/current-tag-name)))
 
 (comment
-  (current-workspace)
-  )
+  (current-workspace))
 
 (defn workspace-name [wsp]
   (or
@@ -49,14 +46,12 @@
 (defn all-workspaces []
   (let [awm-all-tags (r.awm/all-tags)]
     (->>
-      (concat
-        (r.workspace/all-workspaces)
-        (->> (defs/list-workspaces)
-             (map (fn [wsp]
-                    (merge (r.awm/workspace-for-name
-                             (workspace-name wsp)
-                             awm-all-tags)
-                           wsp)))))
+      (defs/list-workspaces)
+      (map (fn [wsp]
+             (merge (r.awm/workspace-for-name
+                      (workspace-name wsp)
+                      awm-all-tags)
+                    wsp)))
       (group-by workspace-name)
       (remove (comp nil? first))
       (map second)
@@ -65,10 +60,13 @@
 (comment
   (->>
     (all-workspaces)
-    (filter (comp #{"org-roam"} workspace-name))
+    count
+    ;; (filter (comp #{"org-roam"} workspace-name))
     )
 
-  )
+  (->>
+    (all-workspaces)
+    (filter :workspace/scratchpad)))
 
 (defn for-name [name]
   (some->>
@@ -77,8 +75,7 @@
     first))
 
 (comment
-  (for-name "ralphie")
-  )
+  (for-name "ralphie"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Active workspaces
@@ -92,16 +89,14 @@
        (map apply-git-status)
        (map (fn [spc]
               {;; consider flags for is-scratchpad/is-app/is-repo
-               :name          (item/awesome-name spc)
-               :awesome_index (item/awesome-index spc)
-               :key           (-> spc :org.prop/key)
-               :fa_icon_code  (when-let [code (or
-                                                (:workspace/fa-icon-code spc)
-                                                (:org.prop/fa-icon-code spc))]
+               :name          (:awesome/name spc)
+               :awesome_index (:awesome/index spc)
+               :key           (:workspace/key spc)
+               :fa_icon_code  (when-let [code (:workspace/fa-icon-code spc)]
                                 (str "\\u{" code "}"))
-               :scratchpad    (item/scratchpad? spc)
-               :selected      (item/awesome-selected spc)
-               :empty         (item/awesome-empty spc)
+               :scratchpad    (:workspace/scratchpad spc)
+               :selected      (:awesome/selected spc)
+               :empty         (:awesome/empty spc)
                :dirty         (:git/dirty? spc)
                :needs_pull    (:git/needs-pull? spc)
                :needs_push    (:git/needs-push? spc)
@@ -119,16 +114,9 @@
 
 (comment
   (->>
-    (r.workspace/all-workspaces)
+    (all-workspaces)
     (filter :awesome/tag)
-    (map workspace-name))
-
-  (->>
-    (active-workspaces)
-    (map :name)
-    )
-
-  )
+    (map workspace-name)))
 
 (defn update-workspaces-widget
   ([] (update-workspaces-widget nil))
@@ -206,7 +194,7 @@ which is called with a list of workspaces maps."]
 
 (defn consolidate-workspaces []
   (->>
-    (r.workspace/all-workspaces)
+    (all-workspaces)
     (remove :awesome/empty)
     (sort-by :awesome/index)
     (map-indexed
@@ -248,7 +236,7 @@ which is called with a list of workspaces maps."]
   []
   (notify/notify "Cleaning up workspaces")
   (->>
-    (r.workspace/all-workspaces)
+    (all-workspaces)
     (filter :awesome/empty)
     (map
       (fn [it]
@@ -307,7 +295,7 @@ which is called with a list of workspaces maps."]
             (:awesome/empty wsp)
             ;; or had no tag
             (not (:awesome/tag wsp)))
-      (r.scratchpad/create-client wsp))
+      (scratchpad/create-client wsp))
 
     ;; return the workspace
     wsp))

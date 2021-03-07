@@ -1,6 +1,5 @@
 (ns clawe.defs
   (:require
-   [ralphie.notify :as notify]
    [ralphie.emacs :as r.emacs]
    [babashka.process :refer [$ check]]))
 
@@ -14,6 +13,7 @@
 (defonce registry* (atom base-registry))
 
 (defn clear-registry [] (reset! registry* base-registry))
+
 (comment
   (clear-registry))
 
@@ -35,7 +35,7 @@
 
 (defn get-workspace [wsp]
   (get-x ::workspaces
-         (let [name (or (:org/name wsp) (:awesome/tag-name wsp))]
+         (let [name (or (:org/name wsp) (:awesome/tag-name wsp) wsp)]
            (fn [w]
              (-> w ::name #{name})))))
 
@@ -218,14 +218,17 @@
     (awesome-rules "extra-match-phrase")
     ))
 
-
-
-;; Slack, Spotify
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; App defs
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defapp spotify-app
   {:defcom/handler (fn [_ _] (-> ($ spotify) check))
    :defcom/name    "start-spotify-client"})
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Slack, Spotify, Web, other app-workspaces
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defworkspace spotify
   workspace-title
@@ -237,23 +240,109 @@
    :workspace/initial-file "/home/russ/.config/spicetify/config.ini"
    :workspace/scratchpad   true
    :workspace/key          "s"
-   :workspace/fa-icon-code "f1bc"
+   :workspace/fa-icon-code "f1bc"})
 
-   :workspace/apps [spotify-app]
+(defworkspace slack
+  workspace-title
+  {:awesome/rules
+   (awm-workspace-rules "slack" "discord")}
+  {:workspace/color        "#38b98a"
+   :workspace/directory    "/home/russ/"
+   :workspace/exec         "slack"
+   :workspace/scratchpad   true
+   :workspace/key          "a"
+   :workspace/fa-icon-code "f198"})
 
-   :workspace/title-pango  "<span>Spotify</span>"
-   :workspace/title-hiccup [:h1 "Spotify"]
-   :workspace/on-create    (fn [_wsp]
-                             (println "Created spotify workspace")
-                             (notify/notify (str "Created spotify workspace...")
-                                            "for all your spotifyy needs."))})
+(defworkspace web
+  workspace-title
+  {:awesome/rules
+   ;; TODO get other awm names from rules
+   (awm-workspace-rules "firefox" "Firefox" "chrome")}
+  {:workspace/color        "#38b98a"
+   :workspace/directory    "/home/russ/"
+   :workspace/exec         "/usr/bin/gtk-launch firefox.desktop"
+   :workspace/scratchpad   true
+   :workspace/key          "t"
+   :workspace/fa-icon-code "f269"})
 
-(comment
-  spotify
-  )
+(defworkspace obs
+  workspace-title
+  {:workspace/fa-icon-code "f130"
+   :workspace/directory    "/home/russ/russmatney/obs-recordings"})
+
+(defworkspace pixels
+  workspace-title
+  {:workspace/fa-icon-code "f03e"
+   :workspace/directory    "/home/russ/Dropbox/pixels"
+   :workspace/initial-file "/home/russ/Dropbox/pixels/readme.org"})
+
+(defworkspace tiles
+  workspace-title
+  {:workspace/fa-icon-code "f03e"
+   :workspace/directory    "/home/russ/Dropbox/tiles"
+   :workspace/initial-file "/home/russ/Dropbox/tiles/readme.org"})
+
+(defworkspace steam
+  awesome-rules
+  workspace-title)
+
+(defworkspace audacity
+  awesome-rules
+  workspace-title)
+
+(defworkspace lichess
+  awesome-rules
+  workspace-title
+  {:workspace/exec "/usr/bin/gtk-launch firefox.desktop http://lichess.org"})
+
+(defworkspace zoom
+  awesome-rules
+  workspace-title
+  {:workspace/scratchpad true
+   :workspace/key        "z"})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Ralphie, Clawe, and other repo-based workspaces
+;; Org, mind-gardening, blogging, writing workspaces
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defworkspace journal
+  workspace-title
+  awesome-rules
+  {:workspace/directory    "/home/russ/Dropbox/todo"
+   :workspace/initial-file "/home/russ/Dropbox/todo/journal.org"
+   :workspace/fa-icon-code "f044"
+   :workspace/key          "u"
+   :workspace/scratchpad   true})
+
+(defworkspace garden
+  workspace-title
+  awesome-rules
+  {:workspace/directory "/home/russ/Dropbox/todo/garden"
+   :workspace/initial-file "/home/russ/Dropbox/todo/garden/readme.org"
+   :workspace/fa-icon-code "f18c"
+   :workspace/key          "g"
+   :workspace/scratchpad   true})
+
+(defworkspace blog
+  workspace-title
+  awesome-rules
+  {:workspace/directory    "/home/russ/russmatney/blog-gatsby"
+   :workspace/initial-file "/home/russ/russmatney/blog-gatsby/readme.org"})
+
+(defworkspace writing
+  workspace-title
+  awesome-rules
+  {:workspace/directory    "/home/russ/Dropbox/Writing"
+   :workspace/initial-file "/home/russ/Dropbox/Writing/readme.org"})
+
+(defworkspace ink
+  workspace-title
+  awesome-rules
+  {:workspace/directory    "/home/russ/Dropbox/todo/ink"
+   :workspace/initial-file "/home/russ/Dropbox/todo/ink/readme.md"})
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Ralphie, Clawe, Dotfiles, Emacs config
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defworkspace clawe
@@ -264,12 +353,7 @@
    ;; :workspace/title-pango  "<span>THE CLAWWEEEEEEEEE</span>"
    :workspace/title-pango  "<span size=\"large\">THE CLAWE</span>"
    :workspace/title-hiccup [:h1 "The Cl-(awe)"]
-   :git/check-status?      true
-   :workspace/on-create    (fn [_wsp]
-                             (println "Created clawe workspace")
-                             (notify/notify
-                               (str "Created clawe workspace...")
-                               "hope you're not too deep in the rabbit hole"))})
+   :git/check-status?      true})
 
 (defworkspace ralphie
   workspace-title
@@ -277,10 +361,7 @@
   (fn [_] (local-repo "russmatney/ralphie"))
   {:workspace/color       "#aa88ee"
    :workspace/title-pango "<span>The Ralphinator</span>"
-   :git/check-status?     true
-   :workspace/on-create   (fn [_wsp]
-                            (notify/notify "Welcome to Ralphie"
-                                           "Don't Wreck it~"))})
+   :git/check-status?     true})
 
 (defworkspace dotfiles
   awesome-rules
@@ -288,81 +369,162 @@
   (fn [_] (local-repo "russmatney/dotfiles"))
   {:git/check-status? true})
 
-(defworkspace clomacs
-  awesome-rules
-  workspace-title
-  (fn [_] (local-repo "clojure-emacs/clomacs")))
-
-(defworkspace org-roam-server
-  awesome-rules
-  workspace-title
-  (fn [_] (local-repo "org-roam/org-roam-server")))
-
-(defworkspace org-roam
-  awesome-rules
-  workspace-title
-  (fn [_] (local-repo "org-roam/org-roam")))
-
 (defworkspace emacs
-  ;; TODO support strings as doc-builders
-  ;; My .doom.d config, where i fix 'emacs'
   awesome-rules
   workspace-title
   {:workspace/directory    "/home/russ/.doom.d"
    :workspace/initial-file "/home/russ/.doom.d/init.el"
-   :workspace/scratchpad   true
-   :workspace/key          "e"
    :workspace/fa-icon-code "f1d1"
    :git/check-status?      true
+   :workspace/title-pango  "<span>Emax</span>"})
 
-   :workspace/title-pango  "<span>Emax</span>"
-   :workspace/title-hiccup [:h1 "Emacs"]
-   :workspace/on-create    (fn [_wsp]
-                             (println "Created emacs workspace")
-                             (notify/notify (str "Created emacs workspace...")
-                                            "for all your emacsy needs."))})
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Vapor, game repos, lovejs tools
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defworkspace doom-emacs
-  awesome-rules
-  {:workspace/title        "Doom Emacs" ;; just sets the workspace title
-   :workspace/color        "#aaee88"
-   :workspace/directory    "/home/russ/.emacs.d"
-   :workspace/initial-file "/home/russ/.emacs.d/docs/index.org"
-   :workspace/fa-icon-code "f1d1"
-   :workspace/title-pango  "<span>Doom Emacs</span>"})
-
-(defapp org-manual
-  {:defcom/handler (fn [_app _]
-                     (r.emacs/open {:eval-sexp "(org-info)"}))
-   :defcom/name    "open-org-manual"})
-
-(defworkspace org
+(defworkspace vapor
   awesome-rules
   workspace-title
-  {;; TODO point to org manual by default (org-info)
-   :workspace/initial-file "/home/russ/.emacs.d/init.el"
-   ;; TODO org icon
-   :workspace/fa-icon-code "f1d1"
+  (fn [_] (local-repo "russmatney/vapor")))
 
-   :workspace/title-pango  "<span>ORG</span>"
-   :workspace/title-hiccup [:h1 "Org"]
-   :workspace/on-create    (fn [_wsp]
-                             (println "Created org workspace")
-                             (notify/notify (str "Created org workspace...")
-                                            "time to RTFM"))
-   :workspace/apps         [org-manual]
+(defworkspace platformer
+  awesome-rules
+  workspace-title
+  (fn [_] (local-repo "russmatney/platformer")))
 
-   :workspace/actions
-   [{:defcom/handler
-     (fn [_ _]
-       ;; Ex: open emacs, run command
-       ;; TODO refactor r.emacs/open to support this
-       (r.emacs/open {:eval-sexp "(org-info)"}))}]})
+(defworkspace beatemup
+  awesome-rules
+  workspace-title
+  (fn [_] (local-repo "russmatney/beatemup")))
+
+(defworkspace lovejs
+  awesome-rules
+  workspace-title
+  (fn [_] (local-repo "Davidobot/love.js")))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; misc ~/russmatney/ repos
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defworkspace scratch
+  awesome-rules
+  workspace-title
+  (fn [_] (local-repo "russmatney/scratch")))
+
+(defworkspace yodo-dev
+  awesome-rules
+  workspace-title
+  (fn [_] (local-repo "russmatney/yodo-two")))
+
+(defworkspace yodo-app
+  awesome-rules
+  workspace-title
+  {:workspace/exec "/usr/bin/gtk-launch google-chrome.desktop http://localhost:5600"})
 
 (defworkspace org-crud
   awesome-rules
   workspace-title
   (fn [_] (local-repo "russmatney/org-crud")))
+
+(defworkspace ink-mode
+  awesome-rules
+  workspace-title
+  (fn [_] (local-repo "russmatney/ink-mode")))
+
+(defworkspace advent
+  awesome-rules
+  workspace-title
+  (fn [_] (local-repo "russmatney/advent-of-code-2020")))
+
+(defworkspace chess
+  awesome-rules
+  workspace-title
+  (fn [_] (local-repo "russmatney/chess")))
+
+(defworkspace nix-pills
+  awesome-rules
+  workspace-title
+  (fn [_] (local-repo "russmatney/nix-pills")))
+
+(defworkspace spotty
+  awesome-rules
+  workspace-title
+  (fn [_] (local-repo "russmatney/spotty")))
+
+(defworkspace clover
+  awesome-rules
+  workspace-title
+  (fn [_] (local-repo "russmatney/clover")))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Teknql repos
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defworkspace wing
+  awesome-rules
+  workspace-title
+  (fn [_] (local-repo "teknql/wing")))
+
+(defworkspace systemic
+  awesome-rules
+  workspace-title
+  (fn [_] (local-repo "teknql/systemic")))
+
+(defworkspace plasma
+  awesome-rules
+  workspace-title
+  (fn [_] (local-repo "teknql/plasma")))
+
+(defworkspace statik
+  awesome-rules
+  workspace-title
+  (fn [_] (local-repo "teknql/statik")))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Borkdude repos
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defworkspace sci
+  awesome-rules
+  workspace-title
+  (fn [_] (local-repo "borkdude/sci")))
+
+(defworkspace carve
+  awesome-rules
+  workspace-title
+  (fn [_] (local-repo "borkdude/carve")))
+
+(defworkspace clj-kondo
+  awesome-rules
+  workspace-title
+  (fn [_] (local-repo "borkdude/clj-kondo")))
+
+(defworkspace babashka
+  awesome-rules
+  workspace-title
+  (fn [_] (local-repo "borkdude/babashka")))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Urbint repos
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defworkspace grid
+  awesome-rules
+  workspace-title
+  (fn [_] (local-repo "urbint/grid")))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Emacs repos
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defworkspace doom-emacs
+  workspace-title
+  awesome-rules
+  {:workspace/color        "#aaee88"
+   :workspace/directory    "/home/russ/.emacs.d"
+   :workspace/initial-file "/home/russ/.emacs.d/docs/index.org"
+   :workspace/fa-icon-code "f1d1"
+   :workspace/title-pango  "<span>Doom Emacs</span>"})
 
 (defworkspace treemacs
   awesome-rules
@@ -373,3 +535,36 @@
   awesome-rules
   workspace-title
   (fn [_] (local-repo  "MirkoLedda/git-summary")))
+
+(defworkspace clomacs
+  awesome-rules
+  workspace-title
+  (fn [_] (local-repo "clojure-emacs/clomacs")))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Org roam
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defworkspace org-roam
+  awesome-rules
+  workspace-title
+  (fn [_] (local-repo "org-roam/org-roam")))
+
+(defworkspace org-roam-server
+  awesome-rules
+  workspace-title
+  (fn [_] (local-repo "org-roam/org-roam-server")))
+
+(defworkspace md-roam
+  awesome-rules
+  workspace-title
+  (fn [_] (local-repo "nobiot/md-roam")))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Lua Repos
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defworkspace awesomewm
+  awesome-rules
+  workspace-title
+  (fn [_] (local-repo "awesomeWM/awesome")))
