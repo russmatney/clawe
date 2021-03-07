@@ -4,4 +4,12 @@
          org.clojure/tools.reader {:mvn/version "1.3.4"}
          clj-http/clj-http        {:mvn/version "3.11.0"}
 
-         russmatney/ralphie {:local/root "../ralphie"}}}
+         russmatney/ralphie {:local/root "../ralphie"}
+
+         borkdude/carve
+         {:git/url "https://github.com/borkdude/carve"
+          :sha     "e9e2b1fbdd337b989c65a1983a1b3f72e310c970"}}
+ :aliases
+ {:carve {:jvm-opts  ["-XX:-OmitStackTraceInFastThrow"]
+          :main-opts ["-m" "carve.main"]}
+  }}

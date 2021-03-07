@@ -1,10 +1,13 @@
 (ns clawe.workspaces
   (:require
-   [ralph.defcom :refer [defcom]]
-   [ralphie.rofi :as rofi]
    [clawe.defs :as defs]
    [clawe.awesome :as awm]
    [clawe.scratchpad :as scratchpad]
+   [clawe.workspaces.create :as wsp.create]
+
+   [ralph.defcom :refer [defcom]]
+
+   [ralphie.rofi :as rofi]
    [ralphie.awesome :as r.awm]
    [ralphie.git :as r.git]
    [ralphie.item :as item]
@@ -16,6 +19,8 @@
 (comment
   (current-workspace))
 
+;; TODO move to getters ns (or something like that?)
+;; or just decide to use the right keys
 (defn workspace-name [wsp]
   (or
     (:workspace/title wsp)
@@ -295,7 +300,7 @@ which is called with a list of workspaces maps."]
             (:awesome/empty wsp)
             ;; or had no tag
             (not (:awesome/tag wsp)))
-      (scratchpad/create-client wsp))
+      (wsp.create/create-client wsp))
 
     ;; return the workspace
     wsp))
@@ -395,4 +400,25 @@ which is called with a list of workspaces maps."]
 
 (comment
   (toggle-current-workspace-name nil nil)
+  )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Toggle scratchpad handler
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn toggle-scratchpad-handler
+  ([] (toggle-scratchpad-handler nil nil))
+  ([_config parsed]
+   (let [wsp
+         (if-let [arg (some-> parsed :arguments first)]
+           (for-name arg)
+           (current-workspace))]
+     (scratchpad/toggle-scratchpad wsp))))
+
+(defcom toggle-scratchpad-cmd
+  {:defcom/name    "toggle-scratchpad"
+   :defcom/handler toggle-scratchpad-handler})
+
+(comment
+  (toggle-scratchpad-handler)
   )

@@ -1,20 +1,16 @@
 (ns clawe.core
   (:require
    [clawe.workspaces :as workspaces]
+   [clawe.workspaces.create :as wsp.create]
    [clawe.workrave]
    [clawe.yodo]
    [clawe.doctor]
+   [clawe.install]
    [clawe.awesome :as awm]
    [clawe.awesome.restart]
    [clawe.awesome.rules]
-   [babashka.process :refer [$ check]]
-
-   [ralphie.install :as r.install]
-   [ralphie.util :as r.util]
    [ralphie.notify :as r.notify]
-   [ralphie.sh :as r.sh]
    [ralphie.rofi :as r.rofi]
-   [ralphie.scratchpad :as r.scratchpad]
 
    [ralph.defcom :as defcom :refer [defcom]]
    [ralphie.git :as r.git]))
@@ -45,7 +41,7 @@
                              ;; TODO detect if workspace client is already open
                              ;; wrap these nil-punning actions-list api
                              (r.notify/notify "Creating client for workspace")
-                             (r.scratchpad/create-client wsp))}
+                             (wsp.create/create-client wsp))}
           {:rofi/label     "Suggest more things here! <small> but don't get distracted </small>"
            :rofi/on-select (fn [_] (r.notify/notify "A quick doctor checkup?"
                                                     "Or the time of day?"))}
@@ -94,37 +90,6 @@
 (defcom dwim-cmd
   {:defcom/name    "dwim"
    :defcom/handler (fn [_config _parsed] (dwim))})
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Install Awesome config
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defcom install-cmd
-  {:defcom/name "install"
-   :defcom/handler
-   (fn [_config _parsed]
-     (println "Symlinking repo/awesome to your ~/.config/awesome")
-     (r.install/symlink
-       (r.sh/expand "~/russmatney/clawe/awesome")
-       ;; TODO use ~WDG_CONFIG~ or whatever that thing is
-       (r.sh/expand "~/.config/awesome")))})
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Build Clawe Uberscript
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn build-uberscript []
-  (r.notify/notify "Re-Building Clawe Uberscript")
-  (let [cp (r.util/get-cp (r.sh/expand "~/russmatney/clawe"))]
-    (->
-      ^{:dir (r.sh/expand "~/russmatney/clawe")}
-      ($ bb -cp ~cp -m clawe.core --uberscript clawe-script.clj)
-      check)
-    (r.notify/notify "Clawe Uberscript Rebuilt.")))
-
-(defcom build-clawe
-  {:defcom/name    "rebuild-clawe"
-   :defcom/handler (fn [_config _parsed] (build-uberscript))})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; awm-cli wrapper
