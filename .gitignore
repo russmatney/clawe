@@ -13,3 +13,5 @@ awesome/.luacheckcache
 awesome/stdout
 
 clawe-script.clj
+src/clawe/temp.clj
+uberscripts/*

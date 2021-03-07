@@ -5,7 +5,7 @@
 {:rule {:name "ink"} :properties {:tag "ink"}}
 {:rule {:name "chess"} :properties {:tag "chess"}}
 {:rule {:name "lovejs"} :properties {:tag "lovejs"}}
-{:rule_any {:class ["firefox" "Firefox" "chrome"] :name ["firefox" "Firefox" "chrome"]} :properties {:tag "firefox" :first_tag "firefox"}}
+{:rule_any {:class ["web" "firefox" "Firefox" "chrome"] :name ["web" "firefox" "Firefox" "chrome"]} :properties {:tag "web" :first_tag "web"}}
 {:rule {:name "lichess"} :properties {:tag "lichess"}}
 {:rule {:name "yodo-dev"} :properties {:tag "yodo-dev"}}
 {:rule {:name "ralphie"} :properties {:tag "ralphie"}}

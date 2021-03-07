@@ -138,10 +138,10 @@ Sets all workspace indexes to match the passed :i."
                          (when tag (tset wsp :tag tag))))))
 
       ;; delete all but one empty workspace
-      (-> workspaces
-          (lume.filter (fn [wsp] wsp.empty))
-          (#(lume.slice $ 2 (# $)))
-          (lume.each (fn [{: tag}] (tag:delete))))
+      ;; (-> workspaces
+      ;;     (lume.filter (fn [wsp] wsp.empty))
+      ;;     (#(lume.slice $ 2 (# $)))
+      ;;     (lume.each (fn [{: tag}] (tag:delete))))
 
       ;; sets the order according to what was passed in
       (-> workspaces

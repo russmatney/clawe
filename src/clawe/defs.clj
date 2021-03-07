@@ -257,7 +257,7 @@
   workspace-title
   {:awesome/rules
    ;; TODO get other awm names from rules
-   (awm-workspace-rules "firefox" "Firefox" "chrome")}
+   (awm-workspace-rules "web" "firefox" "Firefox" "chrome")}
   {:workspace/color        "#38b98a"
    :workspace/directory    "/home/russ/"
    :workspace/exec         "/usr/bin/gtk-launch firefox.desktop"

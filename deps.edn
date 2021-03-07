@@ -8,7 +8,7 @@
 
          borkdude/carve
          {:git/url "https://github.com/borkdude/carve"
-          :sha     "e9e2b1fbdd337b989c65a1983a1b3f72e310c970"}}
+          :sha     "a3a5b941d4327127e36541bf7322b15b33260386"}}
  :aliases
  {:carve {:jvm-opts  ["-XX:-OmitStackTraceInFastThrow"]
           :main-opts ["-m" "carve.main"]}
