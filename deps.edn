@@ -11,5 +11,4 @@
           :sha     "a3a5b941d4327127e36541bf7322b15b33260386"}}
  :aliases
  {:carve {:jvm-opts  ["-XX:-OmitStackTraceInFastThrow"]
-          :main-opts ["-m" "carve.main"]}
-  }}
+          :main-opts ["-m" "carve.main"]}}}

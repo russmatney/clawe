@@ -9,18 +9,17 @@
 (defn create-client
   "Creates clients for a given workspace"
   [wsp]
-  (let [exec      (some wsp [:workspace/exec])
-        init-file (some wsp [:workspace/initial-file])
-        first-client
-        (or (:org.prop/first-client wsp)
-            (cond
-              exec      :create/exec
-              init-file :create/emacs
-              :else     (do
-                          (notify/notify
-                            "Could not determine first client for wsp" wsp)
-                          :create/none)))]
+  (let [exec         (some wsp [:workspace/exec])
+        init-file    (some wsp [:workspace/initial-file])
+        first-client (cond
+                       exec      :create/exec
+                       init-file :create/emacs
+                       :else     (do
+                                   (notify/notify
+                                     "Could not determine first client for wsp" wsp)
+                                   :create/none))]
     (println first-client init-file)
+    (notify/notify first-client init-file)
 
     (case first-client
       :create/emacs (emacs/open wsp)
@@ -37,7 +36,6 @@
                      "Try setting :initial-file or :exec"))))
 
 (comment
-  (create-client "journal")
-  (create-client "org-crud")
-  (create-client "yodo-app")
-  (create-client "web"))
+  (create-client
+    {:workspace/initial-file "/home/russ/Dropbox/todo/projects.org"
+     :workspace/title "my-wsp"}))

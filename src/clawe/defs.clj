@@ -323,6 +323,13 @@
    :workspace/key          "g"
    :workspace/scratchpad   true})
 
+(defworkspace todo
+  workspace-title
+  awesome-rules
+  {:workspace/directory "/home/russ/Dropbox/todo"
+   :workspace/initial-file "/home/russ/Dropbox/todo/projects.org"
+   :workspace/fa-icon-code "f044"})
+
 (defworkspace blog
   workspace-title
   awesome-rules
@@ -542,7 +549,7 @@
   (fn [_] (local-repo "clojure-emacs/clomacs")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Org roam
+;; Org roam dev
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defworkspace org-roam

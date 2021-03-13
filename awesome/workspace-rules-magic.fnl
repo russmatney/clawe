@@ -40,6 +40,7 @@
 {:rule {:name "systemic"} :properties {:tag "systemic"}}
 {:rule {:name "ink-mode"} :properties {:tag "ink-mode"}}
 {:rule {:name "awesomewm"} :properties {:tag "awesomewm"}}
+{:rule {:name "todo"} :properties {:tag "todo"}}
 {:rule {:name "dotfiles"} :properties {:tag "dotfiles"}}
 {:rule {:name "steam"} :properties {:tag "steam"}}
 {:rule {:name "carve"} :properties {:tag "carve"}}

@@ -349,10 +349,7 @@ which is called with a list of workspaces maps."]
 (defn open-workspace
   ([] (open-workspace nil))
   ([name]
-   ;; First, delete empty workspaces
-   ;; (clean-workspaces)
-
-   ;; Then select and create a new one
+   ;; select and create
    (if name
      (do
        (notify/notify (str "Workspace name passed, creating: " name))
@@ -360,10 +357,10 @@ which is called with a list of workspaces maps."]
            for-name
            create-workspace))
 
-     ;; no tag, get from rofi
-     (some-> (select-workspace)
-             ((fn [wsp]
-                (create-workspace wsp)))))
+     ;; no name passed, get from rofi
+     (some->
+       (select-workspace)
+       create-workspace))
 
    (update-workspaces-widget)))
 
