@@ -26,7 +26,7 @@
         file-contents
         (str "{:all [" wsp-rules "]}")]
 
-    (spit "/home/russ/.config/awesome/workspace-rules-magic.fnl" file-contents)))
+    (spit "/home/russ/.config/awesome/workspace-rules.fnl" file-contents)))
 
 (comment
   (write-awesome-rules))

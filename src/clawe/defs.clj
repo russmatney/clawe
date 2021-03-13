@@ -296,7 +296,7 @@
   {:workspace/exec "/usr/bin/gtk-launch firefox.desktop http://lichess.org"})
 
 (defworkspace zoom
-  awesome-rules
+  {:awesome/rules (awm-workspace-rules "zoom" "Zoom")}
   workspace-title
   {:workspace/scratchpad true
    :workspace/key        "z"})

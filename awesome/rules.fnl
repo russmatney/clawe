@@ -5,7 +5,6 @@
 (local bindings (require :bindings))
 
 (local workspace-rules (require :workspace-rules))
-(local workspace-rules-magic (require :workspace-rules-magic))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Rules
@@ -14,7 +13,6 @@
 ;; Rules to apply to new clients (through the "manage" signal).
 (local global_rules
        (gears.table.join
-        workspace-rules-magic.all
         workspace-rules.all
         [{:rule {}
           :properties
