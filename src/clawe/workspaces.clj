@@ -103,7 +103,8 @@
        (map (fn [spc]
               (assoc spc
                      :sort-key (str (if (:scratchpad spc) "z" "a") "-"
-                                    (:awesome_index spc)))))
+                                    (format "%03d" (or (:awesome_index spc)
+                                                       0))))))
        ;; sort and map-indexed to set new_indexes
        (sort-by :sort-key)
        (map-indexed (fn [i wsp] (assoc wsp :new_index
@@ -111,10 +112,17 @@
                                        (+ i 1))))))
 
 (comment
+  (format "%03d" nil)
   (->>
     (all-workspaces)
     (filter :awesome/tag)
-    (map workspace-name)))
+    (map workspace-name))
+
+  (->>
+    (active-workspaces)
+    (map :sort-key)
+    )
+  )
 
 (defn update-workspaces-widget
   ([] (update-workspaces-widget nil))
