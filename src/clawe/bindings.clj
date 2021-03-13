@@ -1,26 +1,45 @@
-;; (ns clawe.bindings)
+(ns clawe.bindings
+  (:require
+   [clawe.defthing :as defthing]
+   [ralphie.notify :as notify]))
 
-;; (defn awm-$ [& args]
-;;   (->> args
-;;        (map (fn [f] (f)))
-;;        (apply (fn [f]
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Workspaces API
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;;                 )
-;;               args)))
+(defn list-bindings []
+  (defthing/list-xs :clawe/bindings))
 
-;; (defn key [x fns]
-;;   ()
-;;   )
+(defn get-binding [bd]
+  (defthing/get-x :clawe/bindings
+    (comp #{(some bd [:name identity])} :name)))
 
-;; (def bindings
-;;   [
-;;    {:binding/modifiers {:clawe/mod :clawe/shift}
-;;     :binding/key-code  "r"
-;;     :binding/handler   :restart-helper/save_state_and_restart
-;;     :awesome/fn        (awm-$ :awesome.fn/awful.key
-;;                               :binding/modifiers
-;;                               :binding/key-code
-;;                               :binding/handler)}
+(defmacro defbinding [title & args]
+  (apply defthing/defthing :clawe/bindings title args))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Bindings
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defbinding toggle-floating
+  {:binding/key [[:mod] "f"]
+   :binding/command (fn []
+                      (notify/notify "Toggling Floating!"))})
+
+(defn kbd [key command]
+  (fn [x]
+    (assoc x
+           :binding/key key
+           :binding/command command)))
+
+(defbinding toggle-all-titlebars
+  (kbd [[:mod :shift] "t"]
+       (fn []
+         (notify/notify "Toggling all titlebars!"))))
+
+(comment
+  ((:binding/command toggle-all-titlebars)))
+
 
 ;;    ;; walk tags
 ;;    (key [:mod] "Left" awful.tag.viewprev)

@@ -1,160 +1,21 @@
-(ns clawe.defs
+(ns clawe.defs.workspaces
   (:require
-   [ralphie.emacs :as r.emacs]
-   [babashka.process :refer [$ check]]))
+   [clawe.defthing :as defthing]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; registry
+;; Workspaces API
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(def base-registry {::workspaces {}
-                    ::apps {}})
-
-(defonce registry* (atom base-registry))
-
-(defn clear-registry [] (reset! registry* base-registry))
-
-(comment
-  (clear-registry))
-
-(defn add-x [x]
-  (swap! registry* assoc-in
-         [(::type x) (::registry-key x)] x))
-
-(defn list-xs [type]
-  (vals (get @registry* type)))
-
-(defn get-x [type pred]
-  (some->> (get @registry* type)
-           vals
-           (filter pred)
-           first))
 
 (defn list-workspaces []
-  (list-xs ::workspaces))
+  (defthing/list-xs :clawe/workspaces))
 
 (defn get-workspace [wsp]
-  (get-x ::workspaces
-         (let [name (or (:org/name wsp) (:awesome/tag-name wsp) wsp)]
-           (fn [w]
-             (-> w ::name #{name})))))
-
-(defn list-apps []
-  (list-xs ::apps))
-
-(defn get-app [name]
-  (get-x ::apps
-         (fn [a]
-           (-> a ::name #{name}))))
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; defthing macro
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn- eval-xorf
-  "x is the current map of data for the thing being def-ed.
-
-  xorf is either a map to be merged into x,
-  or a function to be called with x (to update it).
-
-  Returns the merged/updated x.
-
-  The `seq?` `list?` may need to expand/get smarter at some point.
-  For now it seems to work for both anonymous and named functions."
-  [x xorf]
-  (let [merge-x (fn [x v]
-                  (cond
-                    (map? v) (merge x v)
-                    (string? v)
-                    (update x ::doc (fn [doc-str]
-                                      (str doc-str
-                                           (when doc-str "\n")
-                                           v)))
-
-                    :else x))]
-    (cond
-      (map? xorf)     (merge-x x xorf)
-      (or
-        (seq? xorf)
-        (list? xorf)) (merge-x x ((eval xorf) x))
-      (symbol? xorf)  (merge-x x ((eval xorf) x))
-      (string? xorf)  (merge-x x xorf)
-      :else           (do (println "unexpected xorf type!")
-                          (println "type" (type xorf))
-                          (println "xorf" xorf)
-                          x))))
-
-(comment
-  (assert (= {:yo :yo}
-             (reduce eval-xorf [{} 'println '#(assoc % :yo :yo) 'println])))
-  (assert (= {:meee :bee}
-             (eval-xorf {} '#(assoc % :meee :bee))))
-
-  (assert (= {::doc "my\ndocs"
-              :and  :keys}
-             (reduce eval-xorf [{} '"my" '{:and :keys} "docs"])))
-
-  ;; TODO apis like...
-  (defn two-arg-fn [x y] {:x x :y y})
-  (reduce eval-xorf [{} '(partial (two-arg-fn "my-x"))])
-  )
-
-(defn- initial-thing [type thing-sym]
-  {::name         (-> thing-sym name)
-   ::type         type
-   ::registry-key (keyword (str *ns*) (-> thing-sym name))
-   :ns                 (str *ns*)})
-
-(defn- defthing
-  ;; TODO refactor into fns-or-xs that get run w/ the obj so far, or
-  ;; just merge into that object
-  ;; try to keep them decoupled
-  ;;
-  ;; TODO partition xorfs on runtime/macro-time eval
-  ;; maybe with a :clawe.eval/runtime keyword
-  ([thing-type thing-sym] (defthing thing-type thing-sym {}))
-  ([thing-type thing-sym & xorfs]
-   (let [x (->> (concat
-                  [(initial-thing thing-type thing-sym)]
-                  xorfs)
-                (reduce eval-xorf))]
-     `(do
-        (def ~thing-sym ~x)
-        (add-x ~x)
-        ~x))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; defthing consumers
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (defthing/get-x :clawe/workspaces
+    (comp #{(some wsp [:workspace/title :awesome/tag-name :name identity])}
+          :name)))
 
 (defmacro defworkspace [title & args]
-  (apply defthing ::workspaces title args))
-
-(defmacro defapp [title & args]
-  (apply defthing ::app title args))
-
-(comment
-  ;; TODO convert to test suite?
-  ;; all of these should work
-
-  (defworkspace simpleton {:some/other :data})
-
-  (defworkspace my-simple-with-fns
-    {:just/a-map :data}
-    #(assoc % :some-fn/fn :data) identity)
-
-  (defworkspace my-simple-fn-then-x
-    (fn [x] (assoc x :somesecret/fun :data))
-    {:funfun/data :data})
-
-  (println "break\t\t\tbreak")
-  (defworkspace my-simple-anon-fn-then-x
-    #(assoc % :somesecret/fun :data)
-    "With a doc string"
-    #(assoc % :somesecret/fun :data)
-    "or two"
-    {:funfun/data :data}))
+  (apply defthing/defthing :clawe/workspaces title args))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Misc workspace builder helpers
@@ -176,27 +37,31 @@
       :properties {:tag name :first_tag name}})))
 
 (defn awesome-rules [& args]
-  (let [{::keys [name] :as thing} (last args)
-        args                      (butlast args)
-        ]
+  (let [{:keys [name] :as thing} (last args)
+        args                     (butlast args)]
     (assoc thing :awesome/rules (apply awm-workspace-rules name args))))
 
 (comment
-  (awesome-rules {::name "my-thing-name"})
-  (awesome-rules "onemore" {::name "my-thing-name"})
-  (awesome-rules "more" "andmore" {::name "my-thing-name"})
+  (awesome-rules {:name "my-thing-name"})
+  (awesome-rules "onemore" {:name "my-thing-name"})
+  (awesome-rules "more" "andmore" {:name "my-thing-name"})
   )
 
 (defn workspace-title
-  "Sets the workspace title using the ::name (defaults to the def-ed symbol)."
-  [{::keys [name]}]
+  "Sets the workspace title using the :name (which defaults to the symbol)."
+  [{:keys [name]}]
   {:workspace/title name})
 
-(defn local-repo [repo-path]
-  {:git/repo repo-path
-   :workspace/directory (str "/home/russ/" repo-path)
-   ;; TODO auto-discover readmes
-   :workspace/initial-file (str "/home/russ/" repo-path "/readme.org")})
+(defn local-repo
+  ([repo-path]
+   (local-repo repo-path
+               ;; TODO auto-discover readmes
+               "readme.org"))
+  ([repo-path readme-path]
+   {:git/repo               repo-path
+    :workspace/directory    (str "/home/russ/" repo-path)
+    :workspace/initial-file
+    (str "/home/russ/" repo-path "/" readme-path)}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; usage examples
@@ -205,26 +70,7 @@
 (comment
   (defworkspace my-workspace
     workspace-title
-    awesome-rules
-    )
-
-  (eval workspace-title)
-
-  my-workspace
-
-  ;; TODO get defthing to obey the threading rules
-  (defworkspace fancy-example
-    workspace-title
-    (awesome-rules "extra-match-phrase")
-    ))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; App defs
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defapp spotify-app
-  {:defcom/handler (fn [_ _] (-> ($ spotify) check))
-   :defcom/name    "start-spotify-client"})
+    awesome-rules))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Slack, Spotify, Web, other app-workspaces
@@ -574,4 +420,4 @@
 (defworkspace awesomewm
   awesome-rules
   workspace-title
-  (fn [_] (local-repo "awesomeWM/awesome")))
+  (fn [_] (local-repo "awesomeWM/awesome" "README.md")))

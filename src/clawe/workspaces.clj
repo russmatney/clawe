@@ -1,6 +1,6 @@
 (ns clawe.workspaces
   (:require
-   [clawe.defs :as defs]
+   [clawe.defs.workspaces :as defs.wsp]
    [clawe.awesome :as awm]
    [clawe.scratchpad :as scratchpad]
    [clawe.workspaces.create :as wsp.create]
@@ -14,7 +14,7 @@
    [ralphie.notify :as notify]))
 
 (defn current-workspace []
-  (defs/get-workspace (r.awm/current-tag-name)))
+  (defs.wsp/get-workspace (r.awm/current-tag-name)))
 
 (comment
   (current-workspace))
@@ -22,14 +22,7 @@
 ;; TODO move to getters ns (or something like that?)
 ;; or just decide to use the right keys
 (defn workspace-name [wsp]
-  (or
-    (:workspace/title wsp)
-    ;; DEPRECATED key (use :clawe.defs/name or :workspace/title)
-    (:clawe/name wsp)
-    (:clawe.defs/name wsp)
-    (:workspace/name wsp)
-    (:org/name wsp)
-    (:awesome/name wsp)))
+  (:workspace/title wsp))
 
 (defn workspace-repo [wsp]
   (or (:workspace/directory wsp)
@@ -51,7 +44,7 @@
 (defn all-workspaces []
   (let [awm-all-tags (r.awm/all-tags)]
     (->>
-      (defs/list-workspaces)
+      (defs.wsp/list-workspaces)
       (map (fn [wsp]
              (merge (r.awm/workspace-for-name
                       (workspace-name wsp)
