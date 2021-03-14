@@ -35,7 +35,8 @@
 (defbinding toggle-all-titlebars
   (kbd [[:mod :shift] "t"]
        (fn []
-         (notify/notify "Toggling all titlebars!"))))
+         (notify/notify "Toggling all titlebars!")
+         )))
 
 (comment
   ((:binding/command toggle-all-titlebars)))

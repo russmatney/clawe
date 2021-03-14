@@ -83,179 +83,170 @@ Returns a function expected to be attached to a keybinding.
           (= n "centerworkh")
           (= n "centerwork"))))))
 
-(local global-keys
-       (gears.table.join
-        ;; helpers
-        (key [:mod :shift] "r" restart-helper.save_state_and_restart)
-
-        ;; walk tags
-        (key [:mod] "Left" awful.tag.viewprev)
-        (key [:mod] "Right" awful.tag.viewnext)
-
-        ;; previous tag
-        (key [:mod] "Escape" awful.tag.history.restore)
-
-        ;; TODO move all these bindings into ralphie itself
-        ;; ralphie rofi
-        (key [:mod] "x" (spawn-fn "ralphie rofi"))
-        (key [:mod] "i" (spawn-fn "ralphie-emacs-cli '(org-clock-menu)'"))
-
-        ;; scratchpads
-        ;; TODO should pull the letter from workspaces.org
-        ;; and write into ralphie-build-and-install
-        (key [:mod] "z" (spawn-fn "clawe toggle-scratchpad zoom"))
-        (key [:mod] "u" (spawn-fn "clawe toggle-scratchpad journal"))
-        (key [:mod] "y" (spawn-fn "clawe toggle-scratchpad yodo"))
-        (key [:mod] "g" (spawn-fn "clawe toggle-scratchpad garden"))
-        (key [:mod] "t" (spawn-fn "clawe toggle-scratchpad web"))
-        ;; (key [:mod] "b" (spawn-fn "clawe toggle-scratchpad chrome"))
-        (key [:mod] "a" (spawn-fn "clawe toggle-scratchpad slack"))
-        (key [:mod] "s" (spawn-fn "clawe toggle-scratchpad spotify"))
-        (key [:mod] "e" (spawn-fn "clawe toggle-scratchpad chess"))
-
-        ;; clawe keybindings
-        (key [:mod] "r"
-             (fn []
-               ;; WARN potential race case on widgets reloading
-               (awful.spawn "clawe rebuild-clawe" false)
-               (awful.spawn "clawe reload" false)))
-
-        (key [:mod] "d" (spawn-fn "clawe clean-workspaces"))
-        (key [:mod] "o" (spawn-fn "clawe open-workspace"))
-        (key [:mod] "w" (spawn-fn "clawe dwim"))
-
-        ;; cycle layouts
-        (key [:mod] "Tab"
-             (fn []
-               (let [scr (awful.screen.focused)]
-                 (awful.layout.inc 1 scr _G.layouts))))
-        (key [:mod :shift] "Tab"
-             (fn []
-               (let [scr (awful.screen.focused)]
-                 (awful.layout.inc -1 scr _G.layouts))))
-
-        ;; cycle workspaces
-        (key [:mod] "n"
-             (fn []
-               (let [scr (awful.screen.focused)
-                     current-tag scr.selected_tag
-                     idx (if current-tag current-tag.index 1)
-                     tag-count (tablex.size scr.tags)
-                     next-idx (- idx 1)
-                     next-idx (if (< next-idx 1)
-                                  tag-count
-                                  next-idx)
-                     next-tag (. scr.tags next-idx)]
-                 (next-tag:view_only)
-                 (clawe.update-workspaces))))
-        (key [:mod] "p"
-             (fn []
-               (let [scr (awful.screen.focused)
-                     current-tag scr.selected_tag
-                     idx (if current-tag current-tag.index 1)
-                     tag-count (tablex.size scr.tags)
-                     next-idx (+ idx 1)
-                     next-idx (if (> next-idx tag-count)
-                                  1
-                                  next-idx)
-                     next-tag (. scr.tags next-idx)]
-                 (next-tag:view_only)
-                 (clawe.update-workspaces))))
-
-        (key [:mod :shift] "n" (spawn-fn "clawe drag-workspace-index down"))
-        (key [:mod :shift] "p" (spawn-fn "clawe drag-workspace-index up"))
-
-        ;; terminal
-        (key [:mod] "Return"
-             (fn []
-               (let [current-tag (. (awful.screen.focused) :selected_tag)
-                     name current-tag.name
-                     str (.. "ralphie-open-term " name)]
-                 (awful.spawn str))))
-
-        ;; emacs
-        (key [:mod :shift] "Return" (spawn-fn "ralphie-open-emacs"))
-
-        ;; launcher (rofi)
-        (key [:mod] "space" (spawn-fn "/usr/bin/rofi -show combi"))
-
-        ;; screenshots
-        (key [:mod :shift] "s" (spawn-fn "ralphie screenshot full"))
-        (key [:mod :shift] "a" (spawn-fn "ralphie screenshot region"))
-
-        ;; brightness
-        (key [] "XF86MonBrightnessUp" (spawn-fn "light -A 5"))
-        (key [] "XF86MonBrightnessDown" (spawn-fn "light -U 5"))
-
-        ;; media controls
-        ;; TODO play-pause should create spotify if its not open
-        (key [] "XF86AudioPlay" (spawn-fn "spotifycli --playpause"))
-        (key [] "XF86AudioNext" (spawn-fn "playerctl next"))
-        (key [] "XF86AudioPrev" (spawn-fn "playerctl previous"))
-        (key [] "XF86AudioMute" (spawn-fn "pactl set-sink-mute @DEFAULT_SINK@ toggle"))
-        (key [] "XF86AudioRaiseVolume" (spawn-fn "pactl set-sink-volume @DEFAULT_SINK@ +5%"))
-        (key [] "XF86AudioLowerVolume" (spawn-fn "pactl set-sink-volume @DEFAULT_SINK@ -5%"))
-        (key [:mod] "XF86AudioRaiseVolume" (spawn-fn "ralphie spotify-volume up"))
-        (key [:mod] "XF86AudioLowerVolume" (spawn-fn "ralphie spotify-volume down"))
-        ))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; numbered Tag global keybindings
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(var tag-keys [])
-
-(for [it 0 10]
-  (set tag-keys
-       (gears.table.join
-        tag-keys
-
-        ;; show tag (workspace)
-        (key [:mod] (.. "#" (+ 9 it))
-             (fn []
-               (let [scr (awful.screen.focused)
-                     keyed-tag (. scr.tags it)]
-                 (if keyed-tag
-                     (do
-                       (helpers.tag_back_and_forth keyed-tag.index)
-                       (clawe.update-workspaces))
-                     (let []
-                       ;; create tag
-                       ;; TODO fetch name  from config for index
-                       ;; include other tag config?
-                       (awful.tag.add (.. "num" it) {:layout (. layouts 1)
-                                                     :selected true}))))))
-
-        ;; add tag to current perspective
-        (key [:mod :ctrl] (.. "#" (+ 9 it))
-             (fn []
-               (let [scr (awful.screen.focused)
-                     scr-tag (. scr.tags it)]
-                 (when scr-tag (awful.tag.viewtoggle scr-tag)))
-               (clawe.update-workspaces)))
-
-        ;; move current focus to tag (workspace)
-        (key [:mod :shift] (.. "#" (+ 9 it))
-             (fn []
-               (when _G.client.focus
-                 (let [scr-tag (. _G.client.focus.screen.tags it)]
-                   (when scr-tag
-                     (_G.client.focus:move_to_tag scr-tag)
-                     (clawe.update-workspaces))))))
-
-        ;; add/remove focused client on tag
-        (key [:mod :shift :ctrl] (.. "#" (+ 9 it))
-             (fn []
-               (when _G.client.focus
-                 (let [scr-tag (. _G.client.focus.screen.tags it)]
-                   (when scr-tag
-                     (_G.client.focus:toggle_tag scr-tag)
-                     (clawe.update-workspaces)))))))))
-
-(global
- set_global_keys
+(set
+ _G.set_global_keys
  (fn []
-   (_G.root.keys (gears.table.join global-keys tag-keys))))
+   (awful.keyboard.append_global_keybindings
+    [ ;; helpers
+     (key [:mod :shift] "r" restart-helper.save_state_and_restart)
+
+     ;; walk tags
+     (key [:mod] "Left" awful.tag.viewprev)
+     (key [:mod] "Right" awful.tag.viewnext)
+
+     ;; previous tag
+     (key [:mod] "Escape" awful.tag.history.restore)
+
+     ;; TODO move all these bindings into ralphie itself
+     ;; ralphie rofi
+     (key [:mod] "x" (spawn-fn "ralphie rofi"))
+     (key [:mod] "i" (spawn-fn "ralphie-emacs-cli '(org-clock-menu)'"))
+
+     ;; scratchpads
+     ;; TODO should pull the letter from workspaces.org
+     ;; and write into ralphie-build-and-install
+     (key [:mod] "z" (spawn-fn "clawe toggle-scratchpad zoom"))
+     (key [:mod] "u" (spawn-fn "clawe toggle-scratchpad journal"))
+     (key [:mod] "y" (spawn-fn "clawe toggle-scratchpad yodo"))
+     (key [:mod] "g" (spawn-fn "clawe toggle-scratchpad garden"))
+     (key [:mod] "t" (spawn-fn "clawe toggle-scratchpad web"))
+     ;; (key [:mod] "b" (spawn-fn "clawe toggle-scratchpad chrome"))
+     (key [:mod] "a" (spawn-fn "clawe toggle-scratchpad slack"))
+     (key [:mod] "s" (spawn-fn "clawe toggle-scratchpad spotify"))
+     (key [:mod] "e" (spawn-fn "clawe toggle-scratchpad chess"))
+
+     ;; clawe keybindings
+     (key [:mod] "r"
+          (fn []
+            ;; WARN potential race case on widgets reloading
+            (awful.spawn "clawe rebuild-clawe" false)
+            (awful.spawn "clawe reload" false)))
+
+     (key [:mod] "d" (spawn-fn "clawe clean-workspaces"))
+     (key [:mod] "o" (spawn-fn "clawe open-workspace"))
+     (key [:mod] "w" (spawn-fn "clawe dwim"))
+
+     ;; cycle layouts
+     (key [:mod] "Tab"
+          (fn []
+            (let [scr (awful.screen.focused)]
+              (awful.layout.inc 1 scr _G.layouts))))
+     (key [:mod :shift] "Tab"
+          (fn []
+            (let [scr (awful.screen.focused)]
+              (awful.layout.inc -1 scr _G.layouts))))
+
+     ;; cycle workspaces
+     (key [:mod] "n"
+          (fn []
+            (let [scr (awful.screen.focused)
+                  current-tag scr.selected_tag
+                  idx (if current-tag current-tag.index 1)
+                  tag-count (tablex.size scr.tags)
+                  next-idx (- idx 1)
+                  next-idx (if (< next-idx 1)
+                               tag-count
+                               next-idx)
+                  next-tag (. scr.tags next-idx)]
+              (next-tag:view_only)
+              (clawe.update-workspaces))))
+     (key [:mod] "p"
+          (fn []
+            (let [scr (awful.screen.focused)
+                  current-tag scr.selected_tag
+                  idx (if current-tag current-tag.index 1)
+                  tag-count (tablex.size scr.tags)
+                  next-idx (+ idx 1)
+                  next-idx (if (> next-idx tag-count)
+                               1
+                               next-idx)
+                  next-tag (. scr.tags next-idx)]
+              (next-tag:view_only)
+              (clawe.update-workspaces))))
+
+     (key [:mod :shift] "n" (spawn-fn "clawe drag-workspace-index down"))
+     (key [:mod :shift] "p" (spawn-fn "clawe drag-workspace-index up"))
+
+     ;; terminal
+     (key [:mod] "Return"
+          (fn []
+            (let [current-tag (. (awful.screen.focused) :selected_tag)
+                  name current-tag.name
+                  str (.. "ralphie-open-term " name)]
+              (awful.spawn str))))
+
+     ;; emacs
+     (key [:mod :shift] "Return" (spawn-fn "ralphie-open-emacs"))
+
+     ;; launcher (rofi)
+     (key [:mod] "space" (spawn-fn "/usr/bin/rofi -show combi"))
+
+     ;; screenshots
+     (key [:mod :shift] "s" (spawn-fn "ralphie screenshot full"))
+     (key [:mod :shift] "a" (spawn-fn "ralphie screenshot region"))
+
+     ;; brightness
+     (key [] "XF86MonBrightnessUp" (spawn-fn "light -A 5"))
+     (key [] "XF86MonBrightnessDown" (spawn-fn "light -U 5"))
+
+     ;; media controls
+     ;; TODO play-pause should create spotify if its not open
+     (key [] "XF86AudioPlay" (spawn-fn "spotifycli --playpause"))
+     (key [] "XF86AudioNext" (spawn-fn "playerctl next"))
+     (key [] "XF86AudioPrev" (spawn-fn "playerctl previous"))
+     (key [] "XF86AudioMute" (spawn-fn "pactl set-sink-mute @DEFAULT_SINK@ toggle"))
+     (key [] "XF86AudioRaiseVolume" (spawn-fn "pactl set-sink-volume @DEFAULT_SINK@ +5%"))
+     (key [] "XF86AudioLowerVolume" (spawn-fn "pactl set-sink-volume @DEFAULT_SINK@ -5%"))
+     (key [:mod] "XF86AudioRaiseVolume" (spawn-fn "ralphie spotify-volume up"))
+     (key [:mod] "XF86AudioLowerVolume" (spawn-fn "ralphie spotify-volume down"))])
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+   ;; numbered Tag global keybindings
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+   (for [it 0 10]
+     (awful.keyboard.append_global_keybindings
+      [ ;; show tag (workspace)
+       (key [:mod] (.. "#" (+ 9 it))
+            (fn []
+              (let [scr (awful.screen.focused)
+                    keyed-tag (. scr.tags it)]
+                (if keyed-tag
+                    (do
+                      (helpers.tag_back_and_forth keyed-tag.index)
+                      (clawe.update-workspaces))
+                    (let []
+                      ;; create tag
+                      ;; TODO fetch name  from config for index
+                      ;; include other tag config?
+                      (awful.tag.add (.. "num" it) {:layout (. layouts 1)
+                                                    :selected true}))))))
+
+       ;; add tag to current perspective
+       (key [:mod :ctrl] (.. "#" (+ 9 it))
+            (fn []
+              (let [scr (awful.screen.focused)
+                    scr-tag (. scr.tags it)]
+                (when scr-tag (awful.tag.viewtoggle scr-tag)))
+              (clawe.update-workspaces)))
+
+       ;; move current focus to tag (workspace)
+       (key [:mod :shift] (.. "#" (+ 9 it))
+            (fn []
+              (when _G.client.focus
+                (let [scr-tag (. _G.client.focus.screen.tags it)]
+                  (when scr-tag
+                    (_G.client.focus:move_to_tag scr-tag)
+                    (clawe.update-workspaces))))))
+
+       ;; add/remove focused client on tag
+       (key [:mod :shift :ctrl] (.. "#" (+ 9 it))
+            (fn []
+              (when _G.client.focus
+                (let [scr-tag (. _G.client.focus.screen.tags it)]
+                  (when scr-tag
+                    (_G.client.focus:toggle_tag scr-tag)
+                    (clawe.update-workspaces))))))]))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Client Keybindings

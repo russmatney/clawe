@@ -20,14 +20,15 @@
       "[ " (string/join " " mods) " ] \"" key "\" "
       "(fn [] "
       "(local naughty (require :naughty)) "
-      "(naughty.notify {:title \"My Binding\" :text \"key pressed\"})"
+      "(naughty.notify {:title \"My Binding\" :text \"key pressed\"}) "
       "))")))
 
 (defn append-global-keybindings []
+  ;; TODO this adds a listener for each key, but does not clear any existing...
   (let [awful-keys (->> (bindings/list-bindings)
                         (map binding->awful-key)
                         (string/join " "))]
-    (str "(awful.keyboard.append_global_keybindings " awful-keys " )")))
+    (str "(awful.keyboard.append_global_keybindings [" awful-keys "] )")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Update the bindings in-place
