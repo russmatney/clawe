@@ -103,10 +103,12 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn defthing
-  "Supports creating a macro that composes a list of xorfs, which is a made up
-  word that refers to an x that can be a few different things:
+  "Creates a map defined as the passed symbol.
 
-  - a map (that will be merged)
+  Provides a convenient builder pattern that composes \"xorfs\",
+  which is a made up word that refers to a union of a few different things:
+
+  - a map (that will be merged into the map being constructed)
   - a function (that will be called on the built up x, the result of which is
     then merged)
   - a string (that currently appends a newline to a :doc key.)

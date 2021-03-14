@@ -12,7 +12,7 @@
 
 (defn get-app [app]
   (defthing/get-x :clawe/apps
-    (comp #{(some app [:name identity])} :name)))
+    (comp #{(:name app app)} :name)))
 
 (defmacro defapp [title & args]
   (apply defthing/defthing :clawe/apps title args))

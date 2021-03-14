@@ -11,7 +11,9 @@
 
 (defn get-workspace [wsp]
   (defthing/get-x :clawe/workspaces
-    (comp #{(some wsp [:workspace/title :awesome/tag-name :name identity])}
+    (comp #{(if (map? wsp)
+              (some wsp [:workspace/title :awesome/tag-name :name])
+              wsp)}
           :name)))
 
 (defmacro defworkspace [title & args]
