@@ -5,6 +5,7 @@
 (local fun (require "fun"))
 (local tablex (require :pl.tablex))
 (local clawe (require "clawe"))
+(require "clawe-bindings")
 
 ;; (local dashboard (require :dashboard.dashboard))
 (local helpers (require :dashboard.helpers))
@@ -86,6 +87,9 @@ Returns a function expected to be attached to a keybinding.
 (set
  _G.set_global_keys
  (fn []
+   (if _G.append_clawe_bindings
+       (_G.append_clawe_bindings))
+
    (awful.keyboard.append_global_keybindings
     [ ;; helpers
      (key [:mod :shift] "r" restart-helper.save_state_and_restart)

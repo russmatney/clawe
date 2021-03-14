@@ -326,11 +326,16 @@ util = require 'util';
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; keybindings
 
+;; TODO fix to not always append on all keybindings - maybe by leaving awm completely
 (defn reload-keybindings []
   (hotswap-module-names ["bindings"])
   (awm-cli
     {:quiet? true}
     "require('bindings'); set_global_keys();"))
+
+(comment
+  (awm-cli "awful.keyboard.remove_global_keybinding();")
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; misc

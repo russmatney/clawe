@@ -3,6 +3,7 @@
    [clawe.workspaces :as workspaces]
    [clawe.workspaces.create :as wsp.create]
    [clawe.workrave]
+   [clawe.bindings]
    [clawe.yodo]
    [clawe.doctor]
    [clawe.install]
@@ -59,15 +60,11 @@
 (comment
   (->>
     (dwim-commands)
-    (group-by :defcom/name)
-    (filter (comp #(> % 1) count second))
-    (map (comp first second))
-    )
-
-  (->>
-    (dwim-commands)
     (filter :defcom/name)
-    (filter (comp #(re-seq #"doctor" %) :defcom/name))
+    (filter (comp #(re-seq #"key" %) :defcom/name))
+    (first)
+    :rofi/on-select
+    ((fn [f] (f)))
     )
   )
 

@@ -1,6 +1,7 @@
 (ns clawe.awesome.restart
   (:require [ralph.defcom :refer [defcom]]
             [clawe.awesome.rules :as awm.rules]
+            [clawe.awesome.bindings :as awm.bindings]
             [clawe.awesome :as awm]
             [ralphie.notify :as notify]))
 
@@ -16,8 +17,12 @@
      (notify/notify "Reloading Clawe")
      (println "\trewriting awesome rules")
      (awm.rules/write-awesome-rules)
-     (println "\treloading keybindings")
-     (awm/reload-keybindings)
+
+     (println "\trewriting clawe bindings")
+     (awm.bindings/write-awesome-bindings)
+
+     ;; (println "\treloading keybindings")
+     ;; (awm/reload-keybindings)
      (println "\treloading misc")
      (awm/reload-misc)
      (println "\treloading widgets!")

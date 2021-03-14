@@ -1,7 +1,9 @@
 (ns clawe.bindings
   (:require
    [clawe.defthing :as defthing]
-   [ralphie.notify :as notify]))
+   [ralphie.notify :as notify]
+   [ralph.defcom :as defcom]
+   [clojure.string :as string]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Workspaces API
@@ -12,19 +14,33 @@
 
 (defn get-binding [bd]
   (defthing/get-x :clawe/bindings
-    (comp #{(some bd [:name identity])} :name)))
+    (comp #{(:name bd bd)} :name)))
+
+(defn binding-key->str [k]
+  (let [mods (->> (first k) (apply str) (#(string/replace % #":" "")))
+        k (second k)]
+    (str mods k)))
+
+(defn binding->defcom
+  "Expands a binding to fulfill the defcom api."
+  [{:keys [binding/key binding/command name] :as bd}]
+  (let [nm (str name "-keybdg-" (binding-key->str key))
+        bd (assoc bd
+                  :defcom/name nm
+                  :defcom/handler command
+                  ;; an attempt to deal with defcom's 2 airty situation
+                  ;; (fn [_ _] (command))
+                  )]
+    ;; not sure if this is enough - might fail in some cases (install-micro)
+    (defcom/add-command (symbol nm) bd)
+    bd))
 
 (defmacro defbinding [title & args]
   (apply defthing/defthing :clawe/bindings title args))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Bindings
+;; Binding helpers
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defbinding toggle-floating
-  {:binding/key [[:mod] "f"]
-   :binding/command (fn []
-                      (notify/notify "Toggling Floating!"))})
 
 (defn kbd [key command]
   (fn [x]
@@ -32,14 +48,28 @@
            :binding/key key
            :binding/command command)))
 
-(defbinding toggle-all-titlebars
-  (kbd [[:mod :shift] "t"]
-       (fn []
-         (notify/notify "Toggling all titlebars!")
-         )))
+(defn call-kbd [bd]
+  ((:binding/command bd) nil nil))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Bindings
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defbinding toggle-floating
+  (kbd [[:mod] "v"]
+       (fn [_ _] (notify/notify "Toggling Floating!")))
+  binding->defcom)
 
 (comment
-  ((:binding/command toggle-all-titlebars)))
+  (call-kbd toggle-floating))
+
+(defbinding toggle-all-titlebars
+  (kbd [[:mod :shift] "t"]
+       (fn [_ _] (notify/notify "Toggling all titlebars!")))
+  binding->defcom)
+
+(comment
+  (call-kbd toggle-all-titlebars))
 
 
 ;;    ;; walk tags
