@@ -3,7 +3,8 @@
    [clawe.defthing :as defthing]
    [ralphie.notify :as notify]
    [ralph.defcom :as defcom]
-   [clojure.string :as string]))
+   [clojure.string :as string]
+   [clawe.awesome :as awm]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Workspaces API
@@ -64,8 +65,15 @@
   (call-kbd toggle-floating))
 
 (defbinding toggle-all-titlebars
-  (kbd [[:mod :shift] "t"]
-       (fn [_ _] (notify/notify "Toggling all titlebars!")))
+  (kbd
+    [[:mod :shift] "t"]
+    (fn [_ _]
+      (notify/notify "Toggling all titlebars!")
+      (awm/awm-fnl
+        '(->
+           (client.get)
+           (lume.each awful.titlebar.toggle)))))
+
   binding->defcom)
 
 (comment
