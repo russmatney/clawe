@@ -15,3 +15,5 @@ awesome/stdout
 clawe-script.clj
 src/clawe/temp.clj
 uberscripts/*
+
+resources/config.edn

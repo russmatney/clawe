@@ -1,10 +1,12 @@
-{:paths ["src"]
+{:paths ["src" "resources"]
  :deps  {cheshire/cheshire        {:mvn/version "5.10.0"}
          wing/wing                {:mvn/version "0.1.4"}
          org.clojure/tools.reader {:mvn/version "1.3.4"}
          clj-http/clj-http        {:mvn/version "3.11.0"}
 
          russmatney/ralphie {:local/root "../ralphie"}
+
+         russmatney/chess {:local/root "../chess"}
 
          borkdude/carve
          {:git/url "https://github.com/borkdude/carve"

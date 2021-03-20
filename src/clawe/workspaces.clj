@@ -4,29 +4,27 @@
    [clawe.awesome :as awm]
    [clawe.scratchpad :as scratchpad]
    [clawe.workspaces.create :as wsp.create]
-
    [ralph.defcom :refer [defcom]]
-
    [ralphie.rofi :as rofi]
    [ralphie.awesome :as r.awm]
    [ralphie.git :as r.git]
    [ralphie.item :as item]
    [ralphie.notify :as notify]))
 
-(defn current-workspace []
-  (defs.wsp/get-workspace (r.awm/current-tag-name)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Workspace helpers
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(comment
-  (current-workspace))
-
-;; TODO move to getters ns (or something like that?)
-;; or just decide to use the right keys
 (defn workspace-name [wsp]
   (:workspace/title wsp))
 
 (defn workspace-repo [wsp]
   (or (:workspace/directory wsp)
       (:org.prop/directory wsp)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Workspace hydration
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn apply-git-status
   "Performs a git-status check and updates the passed workspace.
@@ -41,30 +39,36 @@
         wsp))
     wsp))
 
-(defn all-workspaces []
+(defn merge-awm-tags
+  "Fetches all awm tags and merges those with matching
+  `tag-name == :workspace/title` into the passed workspaces.
+
+  Fetching awm tags one at a time can be a bit slow,
+  so we just get them all up-front."
+  [wsps]
   (let [awm-all-tags (r.awm/all-tags)]
-    (->>
-      (defs.wsp/list-workspaces)
-      (map (fn [wsp]
-             (merge (r.awm/workspace-for-name
-                      (workspace-name wsp)
-                      awm-all-tags)
-                    wsp)))
-      (group-by workspace-name)
-      (remove (comp nil? first))
-      (map second)
-      (map #(apply merge %)))))
+    (->> wsps
+         (map (fn [wsp]
+                (merge (r.awm/workspace-for-name
+                         (workspace-name wsp)
+                         awm-all-tags)
+                       wsp))))))
 
-(comment
-  (->>
-    (all-workspaces)
-    count
-    ;; (filter (comp #{"org-roam"} workspace-name))
-    )
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Workspaces fetchers
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn current-workspace []
+  (let [workspaces (->> (r.awm/current-tag-names)
+                        (map defs.wsp/get-workspace))]
+    (some->> workspaces first)))
+
+(defn all-workspaces
+  "Returns all defs.workspaces, merged with awesome tags."
+  []
   (->>
-    (all-workspaces)
-    (filter :workspace/scratchpad)))
+    (defs.wsp/list-workspaces)
+    merge-awm-tags))
 
 (defn for-name [name]
   (some->>

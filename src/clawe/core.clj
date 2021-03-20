@@ -3,7 +3,7 @@
    [clawe.workspaces :as workspaces]
    [clawe.workspaces.create :as wsp.create]
    [clawe.workrave]
-   [clawe.bindings]
+   [clawe.defs.bindings]
    [clawe.yodo]
    [clawe.doctor]
    [clawe.install]

@@ -131,8 +131,8 @@
    :workspace/initial-file "/home/russ/Dropbox/tiles/readme.org"})
 
 (defworkspace steam
-  awesome-rules
-  workspace-title)
+  workspace-title
+  awesome-rules)
 
 (defworkspace audacity
   awesome-rules
@@ -366,7 +366,7 @@
 (defworkspace grid
   awesome-rules
   workspace-title
-  (fn [_] (local-repo "urbint/grid")))
+  (fn [_] (local-repo "urbint/grid" "README.md")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Emacs repos

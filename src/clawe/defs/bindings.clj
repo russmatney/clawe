@@ -1,10 +1,17 @@
-(ns clawe.bindings
+(ns clawe.defs.bindings
   (:require
    [clawe.defthing :as defthing]
-   [ralphie.notify :as notify]
+   [clawe.awesome :as awm]
+   [clawe.workspaces :as workspaces]
    [ralph.defcom :as defcom]
-   [clojure.string :as string]
-   [clawe.awesome :as awm]))
+   [ralphie.notify :as notify]
+   [ralphie.rofi :as rofi]
+   ;; TODO remove non bb deps from chess (clj-http)
+   ;; [chess.core :as chess]
+   ;; TODO require as first class dep
+   ;; [systemic.core :as sys]
+
+   [clojure.string :as string]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Workspaces API
@@ -39,6 +46,13 @@
 (defmacro defbinding [title & args]
   (apply defthing/defthing :clawe/bindings title args))
 
+
+(declare kbd)
+(defmacro defbinding-kbd [title key-def command]
+  `(defbinding ~title
+    (kbd ~key-def ~command)
+    binding->defcom))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Binding helpers
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -56,29 +70,54 @@
 ;; Bindings
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defbinding toggle-floating
-  (kbd [[:mod] "v"]
-       (fn [_ _] (notify/notify "Toggling Floating!")))
-  binding->defcom)
+(defbinding-kbd toggle-floating
+  [[:mod] "v"]
+  (fn [_ _] (notify/notify "Toggling Floating!")))
 
-(comment
-  (call-kbd toggle-floating))
+(defbinding-kbd toggle-all-titlebars
+  [[:mod :shift] "t"]
+  (fn [_ _]
+    (notify/notify "Toggling all titlebars!")
+    (awm/awm-fnl
+      '(->
+         (client.get)
+         (lume.each awful.titlebar.toggle)))))
 
-(defbinding toggle-all-titlebars
-  (kbd
-    [[:mod :shift] "t"]
-    (fn [_ _]
-      (notify/notify "Toggling all titlebars!")
-      (awm/awm-fnl
-        '(->
-           (client.get)
-           (lume.each awful.titlebar.toggle)))))
+(defbinding-kbd toggle-workspace-browser
+  [[:mod] "b"]
+  (fn [_ _]
+    (notify/notify "toggling workspace browser")
+    ;; get current workspace
+    ;; determine if it has it's browser open already
+    ;; toggle!
+    (workspaces/current-workspace)))
 
-  binding->defcom)
+(defbinding-kbd tile-all-windows
+  [[:mod :shift] "f"]
+  (fn [_ _]
+    (notify/notify "tiling all windows")
+    (awm/awm-fnl
+      '(->
+         (client.get)
+         (lume.each (fn [c] (tset c :floating false)))))))
 
-(comment
-  (call-kbd toggle-all-titlebars))
 
+(defbinding-kbd open-chess-game
+  [[:mod :shift] "e"]
+  (fn [_ _]
+    (notify/notify "Fetching chess games")
+    ;; (sys/start! 'chess/*lichess-env*)
+    (->>
+      [] #_(chess/fetch-games)
+      (map (fn [{:keys [lichess/url white-user black-user] :as game}]
+             (assoc game
+                    :rofi/label (str white-user " vs " black-user)
+                    :rofi/url   url)))
+      ;; TODO expand games into open-in-browser, open-in-garden options
+      (rofi/rofi {:msg       "Open Game"
+                  :on-select (fn [game]
+                               (notify/notify "TODO impl open game"
+                                              game))}))))
 
 ;;    ;; walk tags
 ;;    (key [:mod] "Left" awful.tag.viewprev)
