@@ -2,7 +2,8 @@
   (:require
    [wing.repl :as repl]
    [clawe.workspaces :as workspaces]
-   [clawe.awesome :as awm]))
+   [clawe.awesome :as awm]
+   [ralphie.notify :as notify]))
 
 (comment
   (repl/sync-libs!))
@@ -28,5 +29,17 @@
 
 
   (awm/awm-cli "return view(screen.count());")
+
+  (notify/notify "basic notification")
+  (notify/notify "notification" "with body")
+  (notify/notify {:subject "notification"
+                  :body "with body"})
+  (awm/awm-fnl
+    '(do
+       (local naughty (require :naughty))
+       (naughty.notify
+           {:title "My notif"
+            ;; :position "bottom_middle"
+            :text (.. "some sub head: " "with info")})))
 
   )

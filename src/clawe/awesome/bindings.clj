@@ -6,6 +6,7 @@
    [clawe.awesome :as awm]))
 
 (def modifiers {:mod     "Mod4"
+                :alt     "Mod1"
                 :shift   "Shift"
                 :control "Control"})
 

@@ -171,7 +171,9 @@ util = require 'util';
   "
   ([fnl] (awm-fnl {} fnl))
   ([opts fnl]
-   (let [fnl fnl ;; TODO consider removing line-breaks
+   (let [fnl     (-> fnl
+                     (string/replace "," ""))
+         ;; TODO consider removing line-breaks, commas
          lua-str (str
                    "local fennel = require('fennel'); "
                    "local compiled_lua = fennel.compileString('" fnl "'); "

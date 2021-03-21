@@ -11,7 +11,8 @@
    ;; TODO require as first class dep
    ;; [systemic.core :as sys]
 
-   [clojure.string :as string]))
+   [clojure.string :as string]
+   [babashka.process :as process]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Workspaces API
@@ -118,6 +119,18 @@
                   :on-select (fn [game]
                                (notify/notify "TODO impl open game"
                                               game))}))))
+
+(defbinding-kbd toggle-notifications-center
+  [[:mod :alt] "n"]
+  (fn [_ _]
+    (let [deadd-pid (->
+                      ^{:out :string}
+                      (process/$ pidof deadd-notification-center)
+                      process/check
+                      :out
+                      string/trim)]
+      (-> (process/$ kill -s USR1 ~deadd-pid)
+          process/check))))
 
 ;;    ;; walk tags
 ;;    (key [:mod] "Left" awful.tag.viewprev)
