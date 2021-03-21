@@ -13,4 +13,12 @@
 		(spawn-fn "clawe toggle-floating-keybdg-modv" ))
 	(awful.key [ "Mod4" "Shift" ] "t"
 		(spawn-fn "clawe toggle-all-titlebars-keybdg-modshiftt" ))
+	(awful.key [ "Mod4" ] "b"
+		(spawn-fn "clawe toggle-workspace-browser-keybdg-modb" ))
+	(awful.key [ "Mod4" "Shift" ] "f"
+		(spawn-fn "clawe tile-all-windows-keybdg-modshiftf" ))
+	(awful.key [ "Mod4" "Shift" ] "e"
+		(spawn-fn "clawe open-chess-game-keybdg-modshifte" ))
+	(awful.key [ "Mod4" "Mod1" ] "n"
+		(spawn-fn "clawe toggle-notifications-center-keybdg-modaltn" ))
 ])))

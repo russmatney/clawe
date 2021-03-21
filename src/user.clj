@@ -42,4 +42,6 @@
             ;; :position "bottom_middle"
             :text (.. "some sub head: " "with info")})))
 
+  (notify/notify "updated notification")
+
   )

@@ -102,7 +102,6 @@
          (client.get)
          (lume.each (fn [c] (tset c :floating false)))))))
 
-
 (defbinding-kbd open-chess-game
   [[:mod :shift] "e"]
   (fn [_ _]
@@ -120,9 +119,15 @@
                                (notify/notify "TODO impl open game"
                                               game))}))))
 
+(defn reload-notification-css []
+  (process/$
+    notify-send.py a --hint boolean:deadd-notification-center:true
+    string:type:reloadStyle))
+
 (defbinding-kbd toggle-notifications-center
   [[:mod :alt] "n"]
   (fn [_ _]
+    ;; (reload-notification-css)
     (let [deadd-pid (->
                       ^{:out :string}
                       (process/$ pidof deadd-notification-center)

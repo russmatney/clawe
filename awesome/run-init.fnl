@@ -49,7 +49,7 @@
   (set beautiful.notification_font "Noto Sans Bold 14")
   (set beautiful.notification_max_height 100)
   (if (util.is_vader)
-      (set beautiful.useless_gap 10)
+      (set beautiful.useless_gap 6)
       (set beautiful.useless_gap 20)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

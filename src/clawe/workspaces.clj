@@ -244,7 +244,7 @@ which is called with a list of workspaces maps."]
 (defn clean-workspaces
   "Closes workspaces with 0 clients."
   []
-  (notify/notify "Cleaning up workspaces")
+  (notify/notify {:subject "Cleaning up workspaces"})
   (->>
     (all-workspaces)
     (filter :awesome/empty)
@@ -264,7 +264,6 @@ which is called with a list of workspaces maps."]
 (defn clean-workspaces-handler
   ([] (clean-workspaces-handler nil nil))
   ([_config _parsed]
-   (notify/notify "Cleaning up workspaces - 1")
    (clean-workspaces)
    (update-workspaces-widget)))
 

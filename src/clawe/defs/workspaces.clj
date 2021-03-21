@@ -279,7 +279,9 @@
 (defworkspace org-crud
   awesome-rules
   workspace-title
-  (fn [_] (local-repo "russmatney/org-crud")))
+  (fn [_] (local-repo "russmatney/org-crud"))
+  {:git/check-status? true}
+  )
 
 (defworkspace ink-mode
   awesome-rules
@@ -294,7 +296,8 @@
 (defworkspace chess
   awesome-rules
   workspace-title
-  (fn [_] (local-repo "russmatney/chess")))
+  (fn [_] (local-repo "russmatney/chess"))
+  {:git/check-status? true})
 
 (defworkspace nix-pills
   awesome-rules
@@ -318,12 +321,14 @@
 (defworkspace wing
   awesome-rules
   workspace-title
-  (fn [_] (local-repo "teknql/wing")))
+  (fn [_] (local-repo "teknql/wing"))
+  {:git/check-status? true})
 
 (defworkspace systemic
   awesome-rules
   workspace-title
-  (fn [_] (local-repo "teknql/systemic")))
+  (fn [_] (local-repo "teknql/systemic"))
+  {:git/check-status? true})
 
 (defworkspace plasma
   awesome-rules
@@ -366,7 +371,8 @@
 (defworkspace grid
   awesome-rules
   workspace-title
-  (fn [_] (local-repo "urbint/grid" "README.md")))
+  (fn [_] (local-repo "urbint/grid" "README.md"))
+  {:git/check-status? true})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Emacs repos
