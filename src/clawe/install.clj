@@ -31,13 +31,16 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn build-uberscript []
-  (r.notify/notify "Re-Building Clawe Uberscript")
-  (let [cp (r.util/get-cp (r.sh/expand "~/russmatney/clawe"))]
-    (->
-      ^{:dir (r.sh/expand "~/russmatney/clawe")}
-      ($ bb -cp ~cp -m clawe.core --uberscript clawe-script.clj)
-      check)
-    (r.notify/notify "Clawe Uberscript Rebuilt.")))
+  (let [proc "rebuilding-clawe-uberscript"]
+    (r.notify/notify {:subject          "Clawe Uberscript: Rebuilding"
+                      :replaces-process proc})
+    (let [cp (r.util/get-cp (r.sh/expand "~/russmatney/clawe"))]
+      (->
+        ^{:dir (r.sh/expand "~/russmatney/clawe")}
+        ($ bb -cp ~cp -m clawe.core --uberscript clawe-script.clj)
+        check)
+      (r.notify/notify {:subject          "Clawe Uberscript: Rebuild Complete"
+                        :replaces-process proc}))))
 
 (defcom build-clawe
   {:defcom/name    "rebuild-clawe"

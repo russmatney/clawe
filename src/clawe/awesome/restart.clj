@@ -14,7 +14,8 @@
   {:defcom/name "reload"
    :defcom/handler
    (fn [_ _]
-     (notify/notify "Reloading Clawe")
+     (notify/notify {:subject "Reloading Clawe"
+                     :replaces-process "reloading-clawe"})
      (println "\trewriting awesome rules")
      (awm.rules/write-awesome-rules)
 

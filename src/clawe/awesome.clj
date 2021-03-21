@@ -258,24 +258,28 @@ util = require 'util';
   - possibly it could be impled to not re-run in run-init
   (if it's already alive)"
   []
-  (notify/notify "Checking AWM Config" "Syntax and Other BS")
-  (let [config-files (concat
-                       (expand-files "~/.config/awesome/*")
-                       (expand-files "~/.config/awesome/**/*"))
-        ct           (count config-files)
-        errant-files (->> config-files
-                          (map #(-> {:error (->compiler-error %)
-                                     :file  %}))
-                          (filter :error))]
-    (if (seq errant-files)
-      (->> errant-files
-           (map (fn [{:keys [file error]}]
-                  (notify/notify "Found issue:" error)
-                  (println (str file "\n" (str error) "\n\n")))))
+  (let [notif-proc "awm-error-check"]
+    (notify/notify "Checking AWM Config" "Syntax and Other BS"
+                   {:replaces-process notif-proc})
+    (let [config-files (concat
+                         (expand-files "~/.config/awesome/*")
+                         (expand-files "~/.config/awesome/**/*"))
+          ct           (count config-files)
+          errant-files (->> config-files
+                            (map #(-> {:error (->compiler-error %)
+                                       :file  %}))
+                            (filter :error))]
+      (if (seq errant-files)
+        (->> errant-files
+             (map (fn [{:keys [file error]}]
+                    (notify/notify "Found issue:" error
+                                   {:replaces-process notif-proc})
+                    (println (str file "\n" (str error) "\n\n")))))
 
-      (do
-        (notify/notify "Clean Awesome config!" (str "Checked " ct " files"))
-        "No Errors."))))
+        (do
+          (notify/notify "Clean Awesome config!" (str "Checked " ct " files")
+                         {:replaces-process notif-proc})
+          "No Errors.")))))
 
 (comment
   (check-for-errors))
