@@ -389,3 +389,80 @@ util = require 'util';
 (defcom tile-all-clients-cmd
   {:defcom/name    "tile-all-clients"
    :defcom/handler tile-all-clients-handler})
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Client functions
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn set-focused
+  "
+  Focuses the passed client.
+  Expects client as a map with `:window` or `:client/window`.
+
+  Options:
+  - :tile-all? - default: true.
+    Sets all other clients ontop and floating to false
+  - :float? - default: true.
+    Set this client ontop and floating to true
+  - :center? - default: true.
+    Centers this client with awful
+  "
+  ([client] (set-focused nil client))
+  ([opts client]
+   (let [{:keys [window]} client
+         window           (:client/window client window)
+         tile-all?        (:tile-all? opts true)
+         float?           (:float? opts true)
+         center?          (:center? opts true)]
+     (if-not window
+       (notify/notify "Set Focused called with no client :window" {:client client
+                                                                   :opts   opts})
+       (awm-cli
+         {:parse? false
+          :pp?    false}
+         (str
+           ;; set all ontops false
+           (when tile-all?
+             (str
+               "for c in awful.client.iterate(function (c) return c.ontop end) do\n"
+               "c.ontop = false; "
+               "c.floating = false; "
+               "end;\n"))
+
+           "for c in awful.client.iterate(function (c) return c.window == "
+           window
+           " end) do\n"
+
+           (when float?
+             (str
+               "c.ontop = true; "
+               "c.floating = true; "))
+
+           (when center?
+             (str
+               "local f = awful.placement.centered; "
+               "f(c); "))
+
+           ;; focus it
+           "_G.client.focus = c;"
+           "end; "))))))
+
+(defn close-client
+  "
+  Closes the passed client.
+  Expects client as a map with `:window` or `:client/window`.
+  "
+  [client]
+  (let [{:keys [window]} client
+        window           (:client/window client window)]
+    (if-not window
+      (notify/notify "Set Focused called with no client :window"
+                     {:client client})
+      (awm-cli
+        {:parse? false :pp? false}
+        (str
+          "for c in awful.client.iterate(function (c) return c.window == "
+          window
+          " end) do\n"
+          "c:kill();"
+          "end; ")))))

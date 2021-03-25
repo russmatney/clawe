@@ -3,13 +3,17 @@
    [wing.repl :as repl]
    [clawe.workspaces :as workspaces]
    [clawe.awesome :as awm]
+   [clawe.defs.bindings :as bindings]
+   [clawe.defs.workspaces :as defs.wsp]
    [ralphie.notify :as notify]))
 
 (comment
   (repl/sync-libs!))
 
 (comment
-
+  (bindings/list-bindings)
+  (defs.wsp/list-workspaces)
+  (workspaces/active-workspaces)
   (workspaces/update-workspaces)
   (awm/reload)
 

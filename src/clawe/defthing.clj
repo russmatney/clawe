@@ -142,9 +142,10 @@
 
   ;; Example use:
   (defmacro defsomething [title & args]
-    (apply defthing ::app title args))
+    (apply defthing ::something title args))
 
-  (defsomething simpleton {:some/other :data})
+  (defsomething simpleton
+    {:some/other :data})
 
   (defsomething my-simple-with-fns
     {:just/a-map :data}

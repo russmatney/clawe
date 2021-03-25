@@ -6,13 +6,17 @@
    [ralph.defcom :as defcom]
    [ralphie.notify :as notify]
    [ralphie.rofi :as rofi]
+   [ralphie.term :as r.term]
+   [ralphie.tmux :as r.tmux]
+   [ralphie.zsh :as r.zsh]
    ;; TODO remove non bb deps from chess (clj-http)
    ;; [chess.core :as chess]
    ;; TODO require as first class dep
    ;; [systemic.core :as sys]
 
    [clojure.string :as string]
-   [babashka.process :as process]))
+   [babashka.process :as process]
+   [ralphie.emacs :as r.emacs]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Workspaces API
@@ -137,6 +141,54 @@
       (-> (process/$ kill -s USR1 ~deadd-pid)
           process/check))))
 
+(defbinding-kbd toggle-workspace-garden
+  [[:mod :shift] "g"]
+  (fn [_ _]
+    (notify/notify "Toggling workspace garden")
+    (let [{:workspace/keys [title]
+           :awesome/keys   [clients]}
+          (some->> [(workspaces/current-workspace)]
+                   (workspaces/merge-awm-tags)
+                   first)
+          wsp-garden-title (str "garden-" title)
+          open-client
+          (->> clients (filter (comp #{wsp-garden-title} :name))
+               first)]
+      (cond
+        (and open-client (:focused open-client))
+        (awm/close-client open-client)
+        (and open-client (not (:focused open-client)))
+        (awm/set-focused open-client)
+        (not open-client)
+        (r.emacs/open
+          {:emacs.open/workspace wsp-garden-title
+           :emacs.open/file
+           (r.zsh/expand (str "~/todo/garden/workspaces/" title ".org"))})))))
+
+(defbinding-kbd toggle-terminal
+  [[:mod] "Return"]
+  (fn [_ _]
+    (let [{:workspace/keys [title directory]} (workspaces/current-workspace)
+          opts                                {:tmux/name      title
+                                               :tmux/directory directory}]
+      (notify/notify "Toggling Terminal" opts)
+      (r.tmux/open-session opts))))
+
+(defbinding-kbd toggle-emacs
+  [[:mod :shift] "Return"]
+  (fn [_ _]
+    (let [{:workspace/keys
+           [title initial-file]} (workspaces/current-workspace)
+          initial-file           (or initial-file
+                                     nil
+                                     ;; TODO fall-back initial file
+                                     )
+          opts                   {:emacs.open/workspace title
+                                  :emacs.open/file      initial-file
+                                  }]
+      (notify/notify "Toggling Emacs" opts)
+      (r.emacs/open opts))))
+
 ;;    ;; walk tags
 ;;    (key [:mod] "Left" awful.tag.viewprev)
 ;;    (key [:mod] "Right" awful.tag.viewnext)
@@ -210,17 +262,6 @@
 
 ;;    (key [:mod :shift] "n" (spawn-fn "clawe drag-workspace-index down"))
 ;;    (key [:mod :shift] "p" (spawn-fn "clawe drag-workspace-index up"))
-
-;;    ;; terminal
-;;    (key [:mod] "Return"
-;;         (fn []
-;;           (let [current-tag (. (awful.screen.focused) :selected_tag)
-;;                 name        current-tag.name
-;;                 str         (.. "ralphie-open-term " name)]
-;;             (awful.spawn str))))
-
-;;    ;; emacs
-;;    (key [:mod :shift] "Return" (spawn-fn "ralphie-open-emacs"))
 
 ;;    ;; launcher (rofi)
 ;;    (key [:mod] "space" (spawn-fn "/usr/bin/rofi -show drun -modi drun"))

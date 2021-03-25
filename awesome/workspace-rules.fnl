@@ -21,6 +21,7 @@
 {:rule {:name "journal"} :properties {:tag "journal"}}
 {:rule {:name "ink"} :properties {:tag "ink"}}
 {:rule {:name "chess"} :properties {:tag "chess"}}
+{:rule {:name "workspaces"} :properties {:tag "workspaces"}}
 {:rule {:name "emacs"} :properties {:tag "emacs"}}
 {:rule {:name "clawe"} :properties {:tag "clawe"}}
 {:rule {:name "platformer"} :properties {:tag "platformer"}}
@@ -41,6 +42,7 @@
 {:rule {:name "md-roam"} :properties {:tag "md-roam"}}
 {:rule {:name "steam"} :properties {:tag "steam"}}
 {:rule_any {:class ["spotify" "spotify" "Pavucontrol" "pavucontrol"] :name ["spotify" "spotify" "Pavucontrol" "pavucontrol"]} :properties {:tag "spotify" :first_tag "spotify"}}
+{:rule {:name "bindings"} :properties {:tag "bindings"}}
 {:rule {:name "grid"} :properties {:tag "grid"}}
 {:rule {:name "git-summary"} :properties {:tag "git-summary"}}
 {:rule {:name "dotfiles"} :properties {:tag "dotfiles"}}

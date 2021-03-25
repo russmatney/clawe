@@ -158,6 +158,10 @@
   awesome-rules
   {:workspace/directory    "/home/russ/Dropbox/todo"
    :workspace/initial-file "/home/russ/Dropbox/todo/journal.org"
+   :workspace/color        "#42afff"
+   ;; TODO give workspaces their own highlight color
+   ;; (not just orange for everything)
+   ;; TODO need to make this easier to preview, or live-updating
    :workspace/fa-icon-code "f044"
    :workspace/key          "u"
    :workspace/scratchpad   true})
@@ -227,11 +231,35 @@
 (defworkspace emacs
   awesome-rules
   workspace-title
+  (fn [_] (local-repo ".doom.d"))
   {:workspace/directory    "/home/russ/.doom.d"
    :workspace/initial-file "/home/russ/.doom.d/init.el"
    :workspace/fa-icon-code "f1d1"
    :git/check-status?      true
    :workspace/title-pango  "<span>Emax</span>"})
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Bindings, Workspaces, Util
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defworkspace bindings
+  awesome-rules
+  workspace-title
+  (fn [_] (local-repo "russmatney/clawe"))
+  {:workspace/directory    "/home/russ/russmatney/clawe"
+   :workspace/initial-files
+   ["/home/russ/.doom.d/+bindings.el"
+    "/home/russ/russmatney/clawe/src/clawe/defs/bindings.clj"
+    "/home/russ/russmatney/clawe/awesome/bindings.fnl"]
+   :workspace/title-pango  "<span>KEYBINDINGS</span>"})
+
+(defworkspace workspaces
+  awesome-rules
+  workspace-title
+  (fn [_] (local-repo "russmatney/clawe"))
+  {:workspace/directory    "/home/russ/russmatney/clawe"
+   :workspace/initial-files "/home/russ/russmatney/clawe/src/clawe/defs/workspaces.clj"
+   :workspace/title-pango  "<span>WSPCS</span>"})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Vapor, game repos, lovejs tools
