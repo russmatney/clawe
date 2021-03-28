@@ -3,6 +3,7 @@
    [clawe.defthing :as defthing]
    [clawe.awesome :as awm]
    [clawe.workspaces :as workspaces]
+   [clawe.defs.workspaces :as defs.workspaces]
    [ralph.defcom :as defcom]
    [ralphie.notify :as notify]
    [ralphie.rofi :as rofi]
@@ -16,7 +17,8 @@
    [clojure.string :as string]
    [babashka.process :as process]
    [ralphie.emacs :as r.emacs]
-   [ralphie.awesome :as r.awm]))
+   [ralphie.awesome :as r.awm]
+   [clawe.scratchpad :as scratchpad]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Workspaces API
@@ -276,6 +278,45 @@
           (r.emacs/open opts)
           nil)))))
 
+(defn toggle-workspace-with-name [name]
+  (-> name
+      defs.workspaces/get-workspace
+      workspaces/merge-awm-tags
+      scratchpad/toggle-scratchpad))
+
+(comment
+  (toggle-workspace-with-name "journal")
+  (-> "spotify"
+      defs.workspaces/get-workspace
+      workspaces/merge-awm-tags
+      :awesome/clients
+      )
+  )
+
+(defbinding-kbd toggle-workspace-journal
+  [[:mod] "u"]
+  (fn [_ _] (toggle-workspace-with-name "journal")))
+
+(defbinding-kbd toggle-workspace-web
+  [[:mod] "t"]
+  (fn [_ _] (toggle-workspace-with-name "web")))
+
+(defbinding-kbd toggle-workspace-slack
+  [[:mod] "a"]
+  (fn [_ _] (toggle-workspace-with-name "slack")))
+
+(defbinding-kbd toggle-workspace-spotify
+  [[:mod] "s"]
+  (fn [_ _] (toggle-workspace-with-name "spotify")))
+
+(defbinding-kbd toggle-workspace-garden
+  [[:mod] "g"]
+  (fn [_ _] (toggle-workspace-with-name "garden")))
+
+(defbinding-kbd toggle-workspace-zoom
+  [[:mod] "z"]
+  (fn [_ _] (toggle-workspace-with-name "zoom")))
+
 ;;    ;; walk tags
 ;;    (key [:mod] "Left" awful.tag.viewprev)
 ;;    (key [:mod] "Right" awful.tag.viewnext)
@@ -286,17 +327,6 @@
 ;;    ;; TODO move all these bindings into ralphie itself
 ;;    ;; ralphie rofi
 ;;    (key [:mod] "x" (spawn-fn "ralphie rofi"))
-
-;;    ;; scratchpads
-;;    ;; TODO should pull the letter from workspaces.org
-;;    ;; and write into ralphie-build-and-install
-;;    (key [:mod] "u" (spawn-fn "ralphie-toggle-scratchpad journal"))
-;;    (key [:mod] "y" (spawn-fn "ralphie-toggle-scratchpad yodo-app"))
-;;    (key [:mod] "g" (spawn-fn "ralphie-toggle-scratchpad notes"))
-;;    (key [:mod] "t" (spawn-fn "ralphie-toggle-scratchpad web"))
-;;    ;; (key [:mod] "b" (spawn-fn "ralphie-toggle-scratchpad chrome"))
-;;    (key [:mod] "a" (spawn-fn "ralphie-toggle-scratchpad slack"))
-;;    (key [:mod] "s" (spawn-fn "ralphie-toggle-scratchpad spotify"))
 
 ;;    ;; clawe keybindings
 ;;    (key [:mod] "r"

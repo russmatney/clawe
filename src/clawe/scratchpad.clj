@@ -8,39 +8,68 @@
 ;; toggle scratchpad
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn focus-scratchpad
+  "Passes opts to focus-client ensuring that all other windows are buried/tiled,
+  the passed client is floated, put ontop, and centered."
+  [client]
+  (awm/focus-client
+    {:tile-all? true
+     :float?    true
+     :center?   true}
+    client))
+
 (defn toggle-scratchpad
-  ([wsp]
-   (let [wsp-name (some wsp [:workspace/title])
-         tag      (-> wsp :awesome/tag)
-         client   (some-> tag :clients first)]
-     (cond
-       ;; "found selected tag, client for:" wsp-name
-       (and tag client (:selected tag))
-       (if (:ontop client)
-         ;; TODO also set client ontop false ?
-         (r.awm/toggle-tag wsp-name)
-         (awm/focus-client client))
+  "Expects the passed wsp to have :awesome/tag and :awesome/clients metadata.
 
-       ;; "found unselected tag, client for:" wsp-name
-       (and tag client (not (:selected tag)))
-       (do
-         (r.awm/toggle-tag wsp-name)
-         (awm/focus-client client))
+  ;; TODO refactor workspace assumptions out
+  ;; maybe just expect tag/client/create-hook
+  "
+  [wsp]
+  (when wsp
+    (let [wsp-name    (some wsp [:workspace/title])
+          tag         (-> wsp :awesome/tag)
+          clients     (-> wsp :awesome/clients)
+          client      (if-let [cls (:workspace/scratchpad-class wsp)]
+                        (some->> clients (filter (comp #{cls} :class)) first)
+                        (some->> clients first))
+          centerwork? (= (:layout tag) "centerwork")
+          is-master?  (:master client)]
+      (cond
+        ;; "found selected tag, client for:" wsp-name
+        (and tag client (:selected tag))
+        (if (or (:ontop client) (and centerwork? is-master?))
+          (do
+            (r.awm/toggle-tag wsp-name)
+            (let [last-buried-client
+                  ;; TODO pop last-buried window, any buried in last 5 min...?
+                  nil]
+              (when last-buried-client
+                (focus-scratchpad last-buried-client))))
+          (focus-scratchpad client))
 
-       ;; tag exists, no client
-       (and tag (not client))
-       (wsp.create/create-client wsp)
+        ;; "found unselected tag, client for:" wsp-name
+        (and tag client (not (:selected tag)))
+        (do
+          (r.awm/toggle-tag wsp-name)
+          (focus-scratchpad client))
 
-       ;; tag does not exist, presumably no client either
-       (not tag)
-       (do
-         (r.awm/create-tag! wsp-name)
-         (r.awm/toggle-tag wsp-name)
-         (wsp.create/create-client wsp))))))
+        ;; tag exists, no client
+        (and tag (not client))
+        (wsp.create/create-client wsp)
+
+        ;; tag does not exist, presumably no client either
+        (not tag)
+        (do
+          (r.awm/create-tag! wsp-name)
+          (r.awm/toggle-tag wsp-name)
+          (wsp.create/create-client wsp))))))
 
 (comment
   (println "hi")
-  (toggle-scratchpad "journal")
+  (-> "journal"
+      ;; defs.workspaces/get-workspace
+      ;; workspaces/merge-awm-tags
+      toggle-scratchpad)
 
   (toggle-scratchpad "notes")
   (toggle-scratchpad "web")

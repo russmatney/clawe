@@ -13,18 +13,28 @@
 		(spawn-fn "clawe toggle-terminal-keybdg-modReturn" ))
 	(awful.key [ "Mod4" "Shift" ] "e"
 		(spawn-fn "clawe open-chess-game-keybdg-modshifte" ))
-	(awful.key [ "Mod4" "Shift" ] "g"
-		(spawn-fn "clawe toggle-workspace-garden-keybdg-modshiftg" ))
+	(awful.key [ "Mod4" ] "u"
+		(spawn-fn "clawe toggle-workspace-journal-keybdg-modu" ))
+	(awful.key [ "Mod4" ] "g"
+		(spawn-fn "clawe toggle-workspace-garden-keybdg-modg" ))
 	(awful.key [ "Mod4" "Shift" ] "Return"
 		(spawn-fn "clawe toggle-emacs-keybdg-modshiftReturn" ))
 	(awful.key [ "Mod4" "Shift" ] "t"
 		(spawn-fn "clawe toggle-all-titlebars-keybdg-modshiftt" ))
+	(awful.key [ "Mod4" ] "s"
+		(spawn-fn "clawe toggle-workspace-spotify-keybdg-mods" ))
+	(awful.key [ "Mod4" ] "a"
+		(spawn-fn "clawe toggle-workspace-slack-keybdg-moda" ))
 	(awful.key [ "Mod4" "Shift" ] "f"
 		(spawn-fn "clawe tile-all-windows-keybdg-modshiftf" ))
 	(awful.key [ "Mod4" ] "b"
 		(spawn-fn "clawe toggle-workspace-browser-keybdg-modb" ))
+	(awful.key [ "Mod4" ] "t"
+		(spawn-fn "clawe toggle-workspace-web-keybdg-modt" ))
 	(awful.key [ "Mod4" ] "v"
 		(spawn-fn "clawe toggle-floating-keybdg-modv" ))
 	(awful.key [ "Mod4" "Mod1" ] "n"
 		(spawn-fn "clawe toggle-notifications-center-keybdg-modaltn" ))
+	(awful.key [ "Mod4" ] "z"
+		(spawn-fn "clawe toggle-workspace-zoom-keybdg-modz" ))
 ])))

@@ -82,36 +82,39 @@
   workspace-title
   {:awesome/rules
    (awm-workspace-rules "spotify"  "spotify" "Pavucontrol" "pavucontrol")}
-  {:workspace/color        "#38b98a"
-   :workspace/directory    "/home/russ/"
-   :workspace/exec         "spotify"
-   :workspace/initial-file "/home/russ/.config/spicetify/config.ini"
-   :workspace/scratchpad   true
-   :workspace/key          "s"
-   :workspace/fa-icon-code "f1bc"})
+  {:workspace/color            "#38b98a"
+   :workspace/directory        "/home/russ/"
+   :workspace/exec             "spotify"
+   :workspace/initial-file     "/home/russ/.config/spicetify/config.ini"
+   :workspace/scratchpad       true
+   :workspace/scratchpad-class "Spotify"
+   :workspace/key              "s"
+   :workspace/fa-icon-code     "f1bc"})
 
 (defworkspace slack
   workspace-title
   {:awesome/rules
    (awm-workspace-rules "slack" "discord")}
-  {:workspace/color        "#38b98a"
-   :workspace/directory    "/home/russ/"
-   :workspace/exec         "slack"
-   :workspace/scratchpad   true
-   :workspace/key          "a"
-   :workspace/fa-icon-code "f198"})
+  {:workspace/color            "#38b98a"
+   :workspace/directory        "/home/russ/"
+   :workspace/exec             "slack"
+   :workspace/scratchpad       true
+   :workspace/scratchpad-class "Slack"
+   :workspace/key              "a"
+   :workspace/fa-icon-code     "f198"})
 
 (defworkspace web
   workspace-title
   {:awesome/rules
    ;; TODO get other awm names from rules
    (awm-workspace-rules "web" "firefox" "Firefox" "chrome")}
-  {:workspace/color        "#38b98a"
-   :workspace/directory    "/home/russ/"
-   :workspace/exec         "/usr/bin/gtk-launch firefox.desktop"
-   :workspace/scratchpad   true
-   :workspace/key          "t"
-   :workspace/fa-icon-code "f269"})
+  {:workspace/color            "#38b98a"
+   :workspace/directory        "/home/russ/"
+   :workspace/exec             "/usr/bin/gtk-launch firefox.desktop"
+   :workspace/scratchpad       true
+   :workspace/scratchpad-class "firefox"
+   :workspace/key              "t"
+   :workspace/fa-icon-code     "f269"})
 
 (defworkspace obs
   workspace-title
@@ -146,8 +149,9 @@
 (defworkspace zoom
   {:awesome/rules (awm-workspace-rules "zoom" "Zoom")}
   workspace-title
-  {:workspace/scratchpad true
-   :workspace/key        "z"})
+  {:workspace/scratchpad       true
+   :workspace/scratchpad-class "Zoom"
+   :workspace/key              "z"})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Org, mind-gardening, blogging, writing workspaces
@@ -156,24 +160,28 @@
 (defworkspace journal
   workspace-title
   awesome-rules
-  {:workspace/directory    "/home/russ/Dropbox/todo"
-   :workspace/initial-file "/home/russ/Dropbox/todo/journal.org"
-   :workspace/color        "#42afff"
+  {:workspace/directory        "/home/russ/Dropbox/todo"
+   :workspace/initial-file     "/home/russ/Dropbox/todo/journal.org"
+   :workspace/color            "#42afff"
    ;; TODO give workspaces their own highlight color
    ;; (not just orange for everything)
    ;; TODO need to make this easier to preview, or live-updating
-   :workspace/fa-icon-code "f044"
-   :workspace/key          "u"
-   :workspace/scratchpad   true})
+   :workspace/fa-icon-code     "f044"
+   :workspace/key              "u"
+   :workspace/scratchpad       true
+   :workspace/scratchpad-class "Emacs"
+   })
 
 (defworkspace garden
   workspace-title
   awesome-rules
-  {:workspace/directory "/home/russ/Dropbox/todo/garden"
-   :workspace/initial-file "/home/russ/Dropbox/todo/garden/readme.org"
-   :workspace/fa-icon-code "f18c"
-   :workspace/key          "g"
-   :workspace/scratchpad   true})
+  {:workspace/directory        "/home/russ/Dropbox/todo/garden"
+   :workspace/initial-file     "/home/russ/Dropbox/todo/garden/readme.org"
+   :workspace/fa-icon-code     "f18c"
+   :workspace/key              "g"
+   :workspace/scratchpad       true
+   :workspace/scratchpad-class "Emacs"
+   })
 
 (defworkspace todo
   workspace-title

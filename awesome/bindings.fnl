@@ -104,20 +104,18 @@ Returns a function expected to be attached to a keybinding.
      ;; TODO move all these bindings into ralphie itself
      ;; ralphie rofi
      (key [:mod] "x" (spawn-fn "ralphie rofi"))
-     (key [:mod] "i" (spawn-fn "ralphie-emacs-cli '(org-clock-menu)'"))
 
      ;; scratchpads
      ;; TODO should pull the letter from workspaces.org
      ;; and write into ralphie-build-and-install
-     (key [:mod] "z" (spawn-fn "clawe toggle-scratchpad zoom"))
-     (key [:mod] "u" (spawn-fn "clawe toggle-scratchpad journal"))
-     (key [:mod] "y" (spawn-fn "clawe toggle-scratchpad yodo"))
-     (key [:mod] "g" (spawn-fn "clawe toggle-scratchpad garden"))
-     (key [:mod] "t" (spawn-fn "clawe toggle-scratchpad web"))
-     ;; (key [:mod] "b" (spawn-fn "clawe toggle-scratchpad chrome"))
-     (key [:mod] "a" (spawn-fn "clawe toggle-scratchpad slack"))
-     (key [:mod] "s" (spawn-fn "clawe toggle-scratchpad spotify"))
-     (key [:mod] "e" (spawn-fn "clawe toggle-scratchpad chess"))
+     ;; (key [:mod] "u" (spawn-fn "clawe toggle-scratchpad journal"))
+     ;; (key [:mod] "y" (spawn-fn "clawe toggle-scratchpad yodo"))
+     ;; (key [:mod] "g" (spawn-fn "clawe toggle-scratchpad garden"))
+     ;; (key [:mod] "t" (spawn-fn "clawe toggle-scratchpad web"))
+     ;; ;; (key [:mod] "b" (spawn-fn "clawe toggle-scratchpad chrome"))
+     ;; (key [:mod] "a" (spawn-fn "clawe toggle-scratchpad slack"))
+     ;; (key [:mod] "s" (spawn-fn "clawe toggle-scratchpad spotify"))
+     ;; (key [:mod] "e" (spawn-fn "clawe toggle-scratchpad chess"))
 
      ;; clawe keybindings
      (key [:mod] "r"
