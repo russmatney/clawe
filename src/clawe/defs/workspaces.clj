@@ -151,7 +151,8 @@
   workspace-title
   {:workspace/scratchpad       true
    :workspace/scratchpad-class "Zoom"
-   :workspace/key              "z"})
+   :workspace/key              "z"
+   :workspace/fa-icon-code     "f03e"})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Org, mind-gardening, blogging, writing workspaces

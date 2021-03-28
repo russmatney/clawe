@@ -105,18 +105,6 @@ Returns a function expected to be attached to a keybinding.
      ;; ralphie rofi
      (key [:mod] "x" (spawn-fn "ralphie rofi"))
 
-     ;; scratchpads
-     ;; TODO should pull the letter from workspaces.org
-     ;; and write into ralphie-build-and-install
-     ;; (key [:mod] "u" (spawn-fn "clawe toggle-scratchpad journal"))
-     ;; (key [:mod] "y" (spawn-fn "clawe toggle-scratchpad yodo"))
-     ;; (key [:mod] "g" (spawn-fn "clawe toggle-scratchpad garden"))
-     ;; (key [:mod] "t" (spawn-fn "clawe toggle-scratchpad web"))
-     ;; ;; (key [:mod] "b" (spawn-fn "clawe toggle-scratchpad chrome"))
-     ;; (key [:mod] "a" (spawn-fn "clawe toggle-scratchpad slack"))
-     ;; (key [:mod] "s" (spawn-fn "clawe toggle-scratchpad spotify"))
-     ;; (key [:mod] "e" (spawn-fn "clawe toggle-scratchpad chess"))
-
      ;; clawe keybindings
      (key [:mod] "r"
           (fn []
