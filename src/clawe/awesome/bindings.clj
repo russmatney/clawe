@@ -64,7 +64,6 @@
   '(fn spawn-fn
      [cmd]
      (fn []
-       (pp "spawning-fn")
        (pp cmd)
        (if (. spawn-fn-cache cmd)
          (do

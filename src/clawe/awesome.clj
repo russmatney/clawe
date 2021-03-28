@@ -418,8 +418,7 @@ util = require 'util';
        (notify/notify "Set Focused called with no client :window" {:client client
                                                                    :opts   opts})
        (awm-cli
-         {:parse? false
-          :pp?    false}
+         {:quiet? true}
          (str
            ;; set all ontops false
            (when tile-all?
@@ -459,7 +458,7 @@ util = require 'util';
       (notify/notify "Set Focused called with no client :window"
                      {:client client})
       (awm-cli
-        {:parse? false :pp? false}
+        {:quiet? true}
         (str
           "for c in awful.client.iterate(function (c) return c.window == "
           window

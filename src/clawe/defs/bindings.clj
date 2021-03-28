@@ -186,10 +186,26 @@
 (defbinding-kbd toggle-terminal
   [[:mod] "Return"]
   (fn [_ _]
-    (let [{:workspace/keys [title directory]} (workspaces/current-workspace)
-          opts                                {:tmux/name      title
-                                               :tmux/directory directory}]
-      (notify/notify "Toggling Terminal" opts)
+    (let [{:workspace/keys [title directory]
+           :git/keys       [repo]
+           :awesome/keys   [clients]}
+          (some->> (workspaces/current-workspace)
+                   workspaces/merge-awm-tags)
+          directory               (or directory repo (r.zsh/expand "~"))
+          terminal-client         (some->> clients
+                                           (filter (fn [c]
+                                                     (and
+                                                       (-> c :class #{"Alacritty"})
+                                                       (-> c :name #{title}))))
+                                           first)
+          terminal-client-focused (:focused terminal-client)
+
+          opts {:tmux/name      title
+                :tmux/directory directory}]
+      (notify/notify "Toggling Terminal"
+                     (assoc opts
+                            :terminal-client terminal-client
+                            :already-focused terminal-client-focused))
       (cond
         ;; no tag
         (not title)
@@ -198,33 +214,47 @@
           (r.awm/focus-tag! "temp-tag")
           (r.tmux/open-session))
 
+        (and terminal-client terminal-client-focused)
+        (awm/close-client terminal-client)
+
+        (and terminal-client (not terminal-client-focused))
+        (awm/focus-client {:center?   false
+                           :float?    false
+                           :tile-all? false} terminal-client)
+
         :else
-        (r.tmux/open-session opts)))))
+        (do (r.tmux/open-session opts)
+            nil)))))
 
 (defbinding-kbd toggle-emacs
   [[:mod :shift] "Return"]
   (fn [_ _]
-    (let [{:workspace/keys [title initial-file]
+    (let [
+          {:workspace/keys [title initial-file directory]
+           :git/keys       [repo]
            :awesome/keys   [clients]}
           (some->> (workspaces/current-workspace)
                    workspaces/merge-awm-tags)
           emacs-client         (some->> clients
                                         (filter (fn [c]
-                                                  (println c)
                                                   (and
                                                     (-> c :class #{"Emacs"})
                                                     (-> c :name #{title}))))
                                         first)
           emacs-client-focused (:focused emacs-client)
-          initial-file         (or initial-file
-                                   nil
-                                   ;; TODO find fall-back initial file
-                                   ;; TODO detect if configured file exists
-                                   )
+          initial-file         (or
+                                 ;; TODO detect if configured file exists
+                                 initial-file
+                                 repo
+                                 directory)
           opts
           {:emacs.open/workspace title
-           ;; TODO only set the file if the workspace for new emacs workspaces
+           ;; TODO only set the file for a new emacs workspaces
            :emacs.open/file      initial-file}]
+      (notify/notify "Toggling Emacs"
+                     (assoc opts
+                            :emacs-client emacs-client
+                            :already-focused emacs-client-focused))
       (cond
         ;; no tag
         (not title)
@@ -234,24 +264,17 @@
           (r.emacs/open))
 
         (and emacs-client emacs-client-focused)
-        (do
-          ;; (notify/notify "found focused client, closing")
-          (awm/close-client emacs-client)
-          )
+        (awm/close-client emacs-client)
 
         (and emacs-client (not emacs-client-focused))
-        (do
-          ;; (notify/notify "found unfocused client, focusing")
-          ;; TODO focus-in-place (don't center and float)
-          (awm/focus-client {:center?   false
-                             :float?    false
-                             :tile-all? false} emacs-client))
+        (awm/focus-client {:center?   false
+                           :float?    false
+                           :tile-all? false} emacs-client)
 
         :else
         (do
-          ;; (notify/notify "no client, opening")
           (r.emacs/open opts)
-          )))))
+          nil)))))
 
 ;;    ;; walk tags
 ;;    (key [:mod] "Left" awful.tag.viewprev)
