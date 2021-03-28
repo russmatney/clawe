@@ -19,13 +19,13 @@
        (if (:ontop client)
          ;; TODO also set client ontop false ?
          (r.awm/toggle-tag wsp-name)
-         (awm/set-focused client))
+         (awm/focus-client client))
 
        ;; "found unselected tag, client for:" wsp-name
        (and tag client (not (:selected tag)))
        (do
          (r.awm/toggle-tag wsp-name)
-         (awm/set-focused client))
+         (awm/focus-client client))
 
        ;; tag exists, no client
        (and tag (not client))

@@ -6,7 +6,6 @@
    [ralph.defcom :as defcom]
    [ralphie.notify :as notify]
    [ralphie.rofi :as rofi]
-   [ralphie.term :as r.term]
    [ralphie.tmux :as r.tmux]
    [ralphie.zsh :as r.zsh]
    ;; TODO remove non bb deps from chess (clj-http)
@@ -83,11 +82,28 @@
 (defbinding-kbd toggle-all-titlebars
   [[:mod :shift] "t"]
   (fn [_ _]
-    (notify/notify "Toggling all titlebars!")
-    (awm/awm-fnl
-      '(->
-         (client.get)
-         (lume.each awful.titlebar.toggle)))))
+    ;; checks the first client to see if titlebars are visible or not
+    (let [no-titlebar
+          (awm/awm-fnl '(->
+                          (client.get)
+                          (lume.first)
+                          ((fn [c]
+                             (let [(_ size) (c:titlebar_top)]
+                               (= size 0))))
+                          (view)))]
+      (if no-titlebar
+        (do
+          (notify/notify "Showing all titlebars")
+          (awm/awm-fnl
+            '(->
+               (client.get)
+               (lume.each awful.titlebar.show))))
+        (do
+          (notify/notify "Hiding all titlebars")
+          (awm/awm-fnl
+            '(->
+               (client.get)
+               (lume.each awful.titlebar.hide))))))))
 
 (defbinding-kbd toggle-workspace-browser
   [[:mod] "b"]
@@ -96,6 +112,7 @@
     ;; get current workspace
     ;; determine if it has it's browser open already
     ;; toggle!
+    ;; TODO consider adding as a sub-workspace to the current base
     (workspaces/current-workspace)))
 
 (defbinding-kbd tile-all-windows
@@ -159,7 +176,7 @@
         (and open-client (:focused open-client))
         (awm/close-client open-client)
         (and open-client (not (:focused open-client)))
-        (awm/set-focused open-client)
+        (awm/focus-client open-client)
         (not open-client)
         (r.emacs/open
           {:emacs.open/workspace wsp-garden-title
@@ -187,16 +204,27 @@
 (defbinding-kbd toggle-emacs
   [[:mod :shift] "Return"]
   (fn [_ _]
-    (let [{:workspace/keys
-           [title initial-file]} (workspaces/current-workspace)
-          initial-file           (or initial-file
-                                     nil
-                                     ;; TODO find fall-back initial file
-                                     )
-          opts                   {:emacs.open/workspace title
-                                  :emacs.open/file      initial-file
-                                  }]
-      (notify/notify "Toggling Emacs" opts)
+    (let [{:workspace/keys [title initial-file]
+           :awesome/keys   [clients]}
+          (some->> (workspaces/current-workspace)
+                   workspaces/merge-awm-tags)
+          emacs-client         (some->> clients
+                                        (filter (fn [c]
+                                                  (println c)
+                                                  (and
+                                                    (-> c :class #{"Emacs"})
+                                                    (-> c :name #{title}))))
+                                        first)
+          emacs-client-focused (:focused emacs-client)
+          initial-file         (or initial-file
+                                   nil
+                                   ;; TODO find fall-back initial file
+                                   ;; TODO detect if configured file exists
+                                   )
+          opts
+          {:emacs.open/workspace title
+           ;; TODO only set the file if the workspace for new emacs workspaces
+           :emacs.open/file      initial-file}]
       (cond
         ;; no tag
         (not title)
@@ -205,8 +233,25 @@
           (r.awm/focus-tag! "temp-tag")
           (r.emacs/open))
 
+        (and emacs-client emacs-client-focused)
+        (do
+          ;; (notify/notify "found focused client, closing")
+          (awm/close-client emacs-client)
+          )
+
+        (and emacs-client (not emacs-client-focused))
+        (do
+          ;; (notify/notify "found unfocused client, focusing")
+          ;; TODO focus-in-place (don't center and float)
+          (awm/focus-client {:center?   false
+                             :float?    false
+                             :tile-all? false} emacs-client))
+
         :else
-        (r.emacs/open opts)))))
+        (do
+          ;; (notify/notify "no client, opening")
+          (r.emacs/open opts)
+          )))))
 
 ;;    ;; walk tags
 ;;    (key [:mod] "Left" awful.tag.viewprev)

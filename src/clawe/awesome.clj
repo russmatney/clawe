@@ -394,7 +394,7 @@ util = require 'util';
 ;; Client functions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn set-focused
+(defn focus-client
   "
   Focuses the passed client.
   Expects client as a map with `:window` or `:client/window`.
@@ -407,7 +407,7 @@ util = require 'util';
   - :center? - default: true.
     Centers this client with awful
   "
-  ([client] (set-focused nil client))
+  ([client] (focus-client nil client))
   ([opts client]
    (let [{:keys [window]} client
          window           (:client/window client window)

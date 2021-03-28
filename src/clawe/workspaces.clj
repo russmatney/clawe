@@ -46,22 +46,41 @@
   Fetching awm tags one at a time can be a bit slow,
   so we just get them all up-front."
   [wsps]
-  (let [awm-all-tags (r.awm/all-tags)]
-    (->> wsps
-         (map (fn [wsp]
-                (merge (r.awm/workspace-for-name
-                         (workspace-name wsp)
-                         awm-all-tags)
-                       wsp))))))
+  (let [awm-all-tags (r.awm/all-tags)
+        is-map?      (map? wsps)
+        wsps         (if is-map? [wsps] wsps)]
+    (cond->> wsps
+      true
+      (map (fn [wsp]
+             (merge (r.awm/workspace-for-name
+                      (workspace-name wsp)
+                      awm-all-tags)
+                    wsp)))
+
+      ;; unwrap if only one was passed
+      is-map?
+      first)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Workspaces fetchers
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn current-workspace []
-  (let [workspaces (->> (r.awm/current-tag-names)
-                        (map defs.wsp/get-workspace))]
-    (some->> workspaces first)))
+(defn current-workspace
+  "Returns the current workspace.
+  Sorts scratchpads to the end, intending to return the 'base' workspace,
+  which is usually what we want."
+  []
+  (some->> (r.awm/current-tag-names)
+           (map defs.wsp/get-workspace)
+           (sort-by :workspace/scratchpad)
+           ;; (take 1)
+           ;; merge-awm-tags
+           first))
+
+(comment
+  (->> (r.awm/current-tag-names)
+       (map defs.wsp/get-workspace)
+       (sort-by :workspace/scratchpad)))
 
 (defn all-workspaces
   "Returns all defs.workspaces, merged with awesome tags."
