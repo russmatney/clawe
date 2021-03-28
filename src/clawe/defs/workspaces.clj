@@ -211,7 +211,11 @@
   {:workspace/color        "#88aadd"
    ;; :workspace/title-pango  "<span>THE CLAWWEEEEEEEEE</span>"
    :workspace/title-pango  "<span size=\"large\">THE CLAWE</span>"
-   :workspace/title-hiccup [:h1 "The Cl-(awe)"]
+   :workspace/title-hiccup [:div
+                            [:h1
+                             {:class ["city-blue-500"]}
+                             "The Cl-(awe)"]
+                            ]
    :git/check-status?      true})
 
 (defworkspace ralphie
@@ -288,6 +292,14 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; misc ~/russmatney/ repos
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defworkspace doctor
+  "A plasma app that records logs and reports misc statuses."
+  awesome-rules
+  workspace-title
+  (fn [_] (local-repo "russmatney/doctor"))
+
+  )
 
 (defworkspace scratch
   awesome-rules

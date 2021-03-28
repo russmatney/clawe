@@ -23,6 +23,7 @@
 {:rule {:name "chess"} :properties {:tag "chess"}}
 {:rule {:name "workspaces"} :properties {:tag "workspaces"}}
 {:rule {:name "emacs"} :properties {:tag "emacs"}}
+{:rule {:name "doctor"} :properties {:tag "doctor"}}
 {:rule {:name "clawe"} :properties {:tag "clawe"}}
 {:rule {:name "platformer"} :properties {:tag "platformer"}}
 {:rule_any {:class ["zoom" "Zoom"] :name ["zoom" "Zoom"]} :properties {:tag "zoom" :first_tag "zoom"}}
