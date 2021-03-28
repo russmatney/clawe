@@ -16,7 +16,8 @@
 
    [clojure.string :as string]
    [babashka.process :as process]
-   [ralphie.emacs :as r.emacs]))
+   [ralphie.emacs :as r.emacs]
+   [ralphie.awesome :as r.awm]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Workspaces API
@@ -172,7 +173,16 @@
           opts                                {:tmux/name      title
                                                :tmux/directory directory}]
       (notify/notify "Toggling Terminal" opts)
-      (r.tmux/open-session opts))))
+      (cond
+        ;; no tag
+        (not title)
+        (do
+          (r.awm/create-tag! "temp-tag")
+          (r.awm/focus-tag! "temp-tag")
+          (r.tmux/open-session))
+
+        :else
+        (r.tmux/open-session opts)))))
 
 (defbinding-kbd toggle-emacs
   [[:mod :shift] "Return"]
@@ -181,13 +191,22 @@
            [title initial-file]} (workspaces/current-workspace)
           initial-file           (or initial-file
                                      nil
-                                     ;; TODO fall-back initial file
+                                     ;; TODO find fall-back initial file
                                      )
           opts                   {:emacs.open/workspace title
                                   :emacs.open/file      initial-file
                                   }]
       (notify/notify "Toggling Emacs" opts)
-      (r.emacs/open opts))))
+      (cond
+        ;; no tag
+        (not title)
+        (do
+          (r.awm/create-tag! "temp-tag")
+          (r.awm/focus-tag! "temp-tag")
+          (r.emacs/open))
+
+        :else
+        (r.emacs/open opts)))))
 
 ;;    ;; walk tags
 ;;    (key [:mod] "Left" awful.tag.viewprev)
