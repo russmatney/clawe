@@ -107,15 +107,17 @@
                (client.get)
                (lume.each awful.titlebar.hide))))))))
 
-(defbinding-kbd toggle-workspace-browser
-  [[:mod] "b"]
-  (fn [_ _]
-    (notify/notify "toggling workspace browser")
-    ;; get current workspace
-    ;; determine if it has it's browser open already
-    ;; toggle!
-    ;; TODO consider adding as a sub-workspace to the current base
-    (workspaces/current-workspace)))
+;; TODO resolve conflict with [:mod b] binding
+;; TODO keybinding conflicts doctor feature
+;; (defbinding-kbd toggle-workspace-browser
+;;   [[:mod] "b"]
+;;   (fn [_ _]
+;;     (notify/notify "toggling workspace browser")
+;;     ;; get current workspace
+;;     ;; determine if it has it's browser open already
+;;     ;; toggle!
+;;     ;; TODO consider adding as a sub-workspace to the current base
+;;     (workspaces/current-workspace)))
 
 (defbinding-kbd tile-all-windows
   [[:mod :shift] "f"]
@@ -161,10 +163,10 @@
       (-> (process/$ kill -s USR1 ~deadd-pid)
           process/check))))
 
-(defbinding-kbd toggle-workspace-garden
+(defbinding-kbd toggle-per-workspace-garden
   [[:mod :shift] "g"]
   (fn [_ _]
-    (notify/notify "Toggling workspace garden")
+    (notify/notify "Toggling per-workspace garden")
     (let [{:workspace/keys [title]
            :awesome/keys   [clients]}
           (some->> [(workspaces/current-workspace)]
@@ -293,6 +295,8 @@
       )
   )
 
+;; TODO import and depend on defs/workspace? or is that backwards?
+;; These should come for free, with :bindings/scratchpad options
 (defbinding-kbd toggle-workspace-journal
   [[:mod] "u"]
   (fn [_ _] (toggle-workspace-with-name "journal")))
@@ -300,6 +304,10 @@
 (defbinding-kbd toggle-workspace-web
   [[:mod] "t"]
   (fn [_ _] (toggle-workspace-with-name "web")))
+
+(defbinding-kbd toggle-workspace-chrome-browser
+  [[:mod] "b"]
+  (fn [_ _] (toggle-workspace-with-name "chrome-browser")))
 
 (defbinding-kbd toggle-workspace-slack
   [[:mod] "a"]
@@ -316,6 +324,10 @@
 (defbinding-kbd toggle-workspace-zoom
   [[:mod] "z"]
   (fn [_ _] (toggle-workspace-with-name "zoom")))
+
+(defbinding-kbd toggle-workspace-one-password
+  [[:mod] "."]
+  (fn [_ _] (toggle-workspace-with-name "one-password")))
 
 ;;    ;; walk tags
 ;;    (key [:mod] "Left" awful.tag.viewprev)

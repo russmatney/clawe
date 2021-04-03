@@ -107,7 +107,7 @@
   workspace-title
   {:awesome/rules
    ;; TODO get other awm names from rules
-   (awm-workspace-rules "web" "firefox" "Firefox" "chrome")}
+   (awm-workspace-rules "web" "firefox" "Firefox")}
   {:workspace/color            "#38b98a"
    :workspace/directory        "/home/russ/"
    :workspace/exec             "/usr/bin/gtk-launch firefox.desktop"
@@ -115,6 +115,18 @@
    :workspace/scratchpad-class "firefox"
    :workspace/key              "t"
    :workspace/fa-icon-code     "f269"})
+
+(defworkspace chrome-browser
+  workspace-title
+  {:awesome/rules
+   ;; TODO get other awm names from rules
+   (awm-workspace-rules "chrome-browser" "chrome" "Chrome")}
+  {:workspace/color            "#38b98a"
+   :workspace/directory        "/home/russ/"
+   :workspace/exec             "/usr/bin/gtk-launch google-chrome.desktop"
+   :workspace/scratchpad       true
+   :workspace/key              "b"
+   :workspace/fa-icon-code     "f268"})
 
 (defworkspace obs
   workspace-title
@@ -147,12 +159,20 @@
   {:workspace/exec "/usr/bin/gtk-launch firefox.desktop http://lichess.org"})
 
 (defworkspace zoom
-  {:awesome/rules (awm-workspace-rules "zoom" "Zoom")}
+  {:awesome/rules (awm-workspace-rules "zoom" "Zoom" "Slack call")}
   workspace-title
-  {:workspace/scratchpad       true
-   :workspace/scratchpad-class "Zoom"
-   :workspace/key              "z"
-   :workspace/fa-icon-code     "f03e"})
+  {:workspace/scratchpad   true
+   ;; :workspace/scratchpad-class "Zoom"
+   :workspace/key          "z"
+   :workspace/fa-icon-code "f03e"})
+
+(defworkspace one-password
+  ;; TODO get these rules to match, or grab/manage windows by hand
+  {:awesome/rules (awm-workspace-rules "1password" "1Password")}
+  workspace-title
+  {:workspace/scratchpad   true
+   :workspace/exec         "/usr/bin/gtk-launch 1password.desktop"
+   :workspace/key          "."})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Org, mind-gardening, blogging, writing workspaces
