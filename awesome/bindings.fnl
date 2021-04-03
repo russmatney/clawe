@@ -270,7 +270,11 @@ Returns a function expected to be attached to a keybinding.
       (key [:mod] "q" (fn [c] (c:kill)))
 
       ;; toggle floating
-      (key [:mod] "f" awful.client.floating.toggle)
+      (key [:mod] "f" (fn [c]
+                        (if c.floating
+                            (tset c :ontop false)
+                            (tset c :ontop true))
+                        (awful.client.floating.toggle c)))
 
       ;; focus movement
       (key [:mod :shift] "l" (fn [c]
@@ -343,6 +347,7 @@ Returns a function expected to be attached to a keybinding.
       ;; center on screen
       (key [:mod] "c"
            (fn [c]
+             (tset c :ontop true)
              (-> c
                  (tset :floating true)
                  ((+ awful.placement.scale
