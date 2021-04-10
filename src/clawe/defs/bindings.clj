@@ -9,6 +9,7 @@
    [ralphie.rofi :as rofi]
    [ralphie.tmux :as r.tmux]
    [ralphie.zsh :as r.zsh]
+   [ralphie.clipboard :as r.clip]
    ;; TODO remove non bb deps from chess (clj-http)
    ;; [chess.core :as chess]
    ;; TODO require as first class dep
@@ -73,13 +74,15 @@
 (defn call-kbd [bd]
   ((:binding/command bd) nil nil))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Bindings
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defbinding-kbd uuid-on-clipboard
+  [[:mod :ctrl] "u"]
+  (fn [_ _]
+    (let [uuid (str (java.util.UUID/randomUUID))]
+      (r.clip/set-clip uuid))))
 
-(defbinding-kbd toggle-floating
-  [[:mod] "v"]
-  (fn [_ _] (notify/notify "Toggling Floating!")))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Titlebars
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defbinding-kbd toggle-all-titlebars
   [[:mod :shift] "t"]
@@ -107,17 +110,9 @@
                (client.get)
                (lume.each awful.titlebar.hide))))))))
 
-;; TODO resolve conflict with [:mod b] binding
-;; TODO keybinding conflicts doctor feature
-;; (defbinding-kbd toggle-workspace-browser
-;;   [[:mod] "b"]
-;;   (fn [_ _]
-;;     (notify/notify "toggling workspace browser")
-;;     ;; get current workspace
-;;     ;; determine if it has it's browser open already
-;;     ;; toggle!
-;;     ;; TODO consider adding as a sub-workspace to the current base
-;;     (workspaces/current-workspace)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Window layout
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defbinding-kbd tile-all-windows
   [[:mod :shift] "f"]
@@ -127,6 +122,27 @@
       '(->
          (client.get)
          (lume.each (fn [c] (tset c :floating false)))))))
+
+(defbinding-kbd center-window-small
+  [[:mod] "v"]
+  (fn [_ _]
+    (notify/notify "center-window-small")
+    ;; TODO impl awesome client-style bindings?
+    ;;
+    (awm/awm-fnl
+      '(let [c (awful.focused.client)]
+         (tset c :ontop true)
+         (tset :floating true)
+         (-> c
+             ((+ awful.placement.scale
+                 awful.placement.centered)
+              {:honor_padding  true
+               :honor_workarea true
+               :to_percent     0.5}))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; chess
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defbinding-kbd open-chess-game
   [[:mod :shift] "e"]
@@ -145,6 +161,10 @@
                                (notify/notify "TODO impl open game"
                                               game))}))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Notifications
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defn reload-notification-css []
   (process/$
     notify-send.py a --hint boolean:deadd-notification-center:true
@@ -162,6 +182,63 @@
                       string/trim)]
       (-> (process/$ kill -s USR1 ~deadd-pid)
           process/check))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Workspace toggling
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn toggle-workspace-with-name [name]
+  (-> name
+      defs.workspaces/get-workspace
+      workspaces/merge-awm-tags
+      scratchpad/toggle-scratchpad))
+
+(comment
+  (toggle-workspace-with-name "journal")
+  (-> "spotify"
+      defs.workspaces/get-workspace
+      workspaces/merge-awm-tags
+      :awesome/clients
+      )
+  )
+
+;; TODO import and depend on defs/workspace? or is that backwards?
+;; These should come for free, with :bindings/scratchpad options
+(defbinding-kbd toggle-workspace-journal
+  [[:mod] "u"]
+  (fn [_ _] (toggle-workspace-with-name "journal")))
+
+(defbinding-kbd toggle-workspace-web
+  [[:mod] "t"]
+  (fn [_ _] (toggle-workspace-with-name "web")))
+
+(defbinding-kbd toggle-workspace-chrome-browser
+  [[:mod] "b"]
+  (fn [_ _] (toggle-workspace-with-name "chrome-browser")))
+
+(defbinding-kbd toggle-workspace-slack
+  [[:mod] "a"]
+  (fn [_ _] (toggle-workspace-with-name "slack")))
+
+(defbinding-kbd toggle-workspace-spotify
+  [[:mod] "s"]
+  (fn [_ _] (toggle-workspace-with-name "spotify")))
+
+(defbinding-kbd toggle-workspace-garden
+  [[:mod] "g"]
+  (fn [_ _] (toggle-workspace-with-name "garden")))
+
+(defbinding-kbd toggle-workspace-zoom
+  [[:mod] "z"]
+  (fn [_ _] (toggle-workspace-with-name "zoom")))
+
+(defbinding-kbd toggle-workspace-one-password
+  [[:mod] "."]
+  (fn [_ _] (toggle-workspace-with-name "one-password")))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; App toggling
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defbinding-kbd toggle-per-workspace-garden
   [[:mod :shift] "g"]
@@ -280,55 +357,6 @@
           (r.emacs/open opts)
           nil)))))
 
-(defn toggle-workspace-with-name [name]
-  (-> name
-      defs.workspaces/get-workspace
-      workspaces/merge-awm-tags
-      scratchpad/toggle-scratchpad))
-
-(comment
-  (toggle-workspace-with-name "journal")
-  (-> "spotify"
-      defs.workspaces/get-workspace
-      workspaces/merge-awm-tags
-      :awesome/clients
-      )
-  )
-
-;; TODO import and depend on defs/workspace? or is that backwards?
-;; These should come for free, with :bindings/scratchpad options
-(defbinding-kbd toggle-workspace-journal
-  [[:mod] "u"]
-  (fn [_ _] (toggle-workspace-with-name "journal")))
-
-(defbinding-kbd toggle-workspace-web
-  [[:mod] "t"]
-  (fn [_ _] (toggle-workspace-with-name "web")))
-
-(defbinding-kbd toggle-workspace-chrome-browser
-  [[:mod] "b"]
-  (fn [_ _] (toggle-workspace-with-name "chrome-browser")))
-
-(defbinding-kbd toggle-workspace-slack
-  [[:mod] "a"]
-  (fn [_ _] (toggle-workspace-with-name "slack")))
-
-(defbinding-kbd toggle-workspace-spotify
-  [[:mod] "s"]
-  (fn [_ _] (toggle-workspace-with-name "spotify")))
-
-(defbinding-kbd toggle-workspace-garden
-  [[:mod] "g"]
-  (fn [_ _] (toggle-workspace-with-name "garden")))
-
-(defbinding-kbd toggle-workspace-zoom
-  [[:mod] "z"]
-  (fn [_ _] (toggle-workspace-with-name "zoom")))
-
-(defbinding-kbd toggle-workspace-one-password
-  [[:mod] "."]
-  (fn [_ _] (toggle-workspace-with-name "one-password")))
-
 ;;    ;; walk tags
 ;;    (key [:mod] "Left" awful.tag.viewprev)
 ;;    (key [:mod] "Right" awful.tag.viewnext)
@@ -416,3 +444,4 @@
 ;;    (key [] "XF86AudioLowerVolume" (spawn-fn "pactl set-sink-volume @DEFAULT_SINK@ -5%"))
 
 ;;    ])
+

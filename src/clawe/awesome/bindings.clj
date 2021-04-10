@@ -8,6 +8,7 @@
 (def modifiers {:mod     "Mod4"
                 :alt     "Mod1"
                 :shift   "Shift"
+                :ctrl    "Control"
                 :control "Control"})
 
 (defn binding->awful-key

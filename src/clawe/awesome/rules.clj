@@ -1,9 +1,11 @@
 (ns clawe.awesome.rules
   "Manages the awesomeWM rules."
-  (:require [clawe.awesome :as awm]
-            [clawe.workspaces :as workspaces]
-            [clojure.string :as string]
-            [clojure.walk :as walk]))
+  (:require
+   [clawe.awesome :as awm]
+   [clawe.workspaces :as workspaces]
+   [clojure.string :as string]
+   [clojure.walk :as walk]
+   [ralph.defcom :refer [defcom]]))
 
 (comment
   (println "howdy")
@@ -30,3 +32,20 @@
 
 (comment
   (write-awesome-rules))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Apply rules to current awesome config
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn apply-rules
+  "Supports running :rules/apply hooks, which are 0-arg functions."
+  []
+  (->>
+    (workspaces/all-workspaces)
+    (keep :rules/apply)
+    (map (fn [f] (f)))
+    doall))
+
+(defcom apply-rules-cmd
+  {:defcom/name "clawe-apply-rules"
+   :defcom/handler (fn [_ _] (apply-rules))})

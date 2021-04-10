@@ -1,6 +1,9 @@
 (ns clawe.defs.workspaces
   (:require
-   [clawe.defthing :as defthing]))
+   [clawe.defthing :as defthing]
+   [ralphie.awesome :as r.awm]
+   [clojure.string :as string]
+   [ralphie.notify :as notify]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Workspaces API
@@ -160,6 +163,23 @@
 
 (defworkspace zoom
   {:awesome/rules (awm-workspace-rules "zoom" "Zoom" "Slack call")}
+  {:rules/apply (fn []
+                  (let [slack-client
+                        (some->>
+                          (r.awm/all-clients)
+                          (filter (comp
+                                    #(string/includes? % "Slack call")
+                                    :name))
+                          first
+                          ;; :window
+                          )]
+                    (notify/notify "slack client" slack-client)
+                    ;; TODO impl moving this client to the zoom tag
+
+                    ;; (r.awm/awm-cli
+                    ;;   {:pp? false}
+                    ;;   (str ""))
+                    ))}
   workspace-title
   {:workspace/scratchpad   true
    ;; :workspace/scratchpad-class "Zoom"
@@ -327,8 +347,7 @@
   awesome-rules
   workspace-title
   (fn [_] (local-repo "russmatney/doctor"))
-
-  )
+  {:git/check-status? true})
 
 (defworkspace scratch
   awesome-rules
