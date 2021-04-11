@@ -3,7 +3,10 @@
    [clawe.defthing :as defthing]
    [ralphie.awesome :as r.awm]
    [clojure.string :as string]
-   [ralphie.notify :as notify]))
+   [ralphie.notify :as notify]
+   [ralph.defcom :refer [defcom]]
+   [babashka.process :as process]
+   [ralphie.tmux :as tmux]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Workspaces API
@@ -341,6 +344,29 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; misc ~/russmatney/ repos
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defcom toggle-doctor-dock
+  {:defcom/name "toggle-doctor-dock"
+   :defcom/handler
+   (fn [_ _]
+     (notify/notify "toggling-doctor-dock")
+     (println "toggling-doctor-dock")
+
+     (let [doctor-server-started? true]
+       ;; TODO start doctor server if not started
+       ;; TODO toggle dock into view if hidden
+       ;; TODO toggle dock out of view if visible
+       ;; might reference the emacs tmux fire command for vapor/love2d restarts
+       ;; in my dotfiles
+
+       (tmux/fire "yrun dev http://localhost:5555 doctor"
+         {:tmux/directory "/home/russ/russmatney/clover"
+          :tmux/window-name  "clover-doctor"
+          :tmux/session-name "doctor"})))})
+
+(comment
+  (toggle-doctor-dock nil nil)
+  )
 
 (defworkspace doctor
   "A plasma app that records logs and reports misc statuses."
