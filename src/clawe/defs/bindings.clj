@@ -16,7 +16,7 @@
    ;; [systemic.core :as sys]
 
    [clojure.string :as string]
-   [babashka.process :as process]
+   [babashka.process :as process :refer [$ check]]
    [ralphie.emacs :as r.emacs]
    [ralphie.awesome :as r.awm]
    [clawe.scratchpad :as scratchpad]))
@@ -79,6 +79,14 @@
   (fn [_ _]
     (let [uuid (str (java.util.UUID/randomUUID))]
       (r.clip/set-clip uuid))))
+
+(defbinding-kbd toggle-mute
+  [[:mod] "m"]
+  (fn [_ _]
+    (notify/notify "Toggling mute")
+    (->
+      ($ amixer set Capture toggle)
+      check)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Titlebars
