@@ -13,6 +13,7 @@ awesome/.luacheckcache
 awesome/stdout
 
 clawe-script.clj
+clawe.jar
 src/clawe/temp.clj
 uberscripts/*
 

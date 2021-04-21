@@ -27,7 +27,7 @@
        (r.sh/expand "~/.config/awesome")))})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Build Clawe Uberscript
+;; Build Clawe Uberjar
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn build-uberscript []
@@ -42,9 +42,24 @@
       (r.notify/notify {:subject          "Clawe Uberscript: Rebuild Complete"
                         :replaces-process proc}))))
 
+(defn build-uberjar []
+  (let [proc "rebuilding-clawe-uberjar"]
+    (r.notify/notify {:subject          "Clawe Uberjar: Rebuilding"
+                      :replaces-process proc})
+    (let [cp (r.util/get-cp (r.sh/expand "~/russmatney/clawe"))]
+      (->
+        ^{:dir (r.sh/expand "~/russmatney/clawe")}
+        ($ bb -cp ~cp --uberjar clawe.jar -m clawe.core )
+        check)
+      (r.notify/notify {:subject          "Clawe Uberjar: Rebuild Complete"
+                        :replaces-process proc}))))
+
 (defcom build-clawe
   {:defcom/name    "rebuild-clawe"
-   :defcom/handler (fn [_config _parsed] (build-uberscript))})
+   :defcom/handler (fn [_config _parsed]
+                     (build-uberjar)
+                     ;; (build-uberscript)
+                     )})
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
