@@ -20,3 +20,5 @@ resources/config.edn
 
 awesome/clawe-bindings.fnl
 awesome/workspace-rules.fnl
+
+clawedb
