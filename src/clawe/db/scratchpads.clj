@@ -31,19 +31,19 @@
   (db/transact [(assoc dat :scratchpad.db/bury-cleared true)]))
 
 (defn last-buried []
-  (db/query '[:find (pull ?e [*])
-              :where
-              ;; TODO refactor to sort/get actual latest buried!
-              [?e :scratchpad.db/buried-at ?buried-at]
-              ;; [(and
-              ;;    [(missing? $ ?e :scratchpad.db/restored-at)]
-              ;;    [(and
-              ;;       [?e :scratchpad.db/restored-at ?restored-at]
-              ;;       [(> ?buried-at ?restored-at)])])]
-              (and
-                [?e :scratchpad.db/bury-cleared ?bury-cleared]
-                [(not= ?bury-cleared true)])
-              ]))
+  (db/query
+   '[:find (pull ?e [*])
+     :where
+     ;; TODO refactor to sort/get actual latest buried!
+     [?e :scratchpad.db/buried-at ?buried-at]
+     ;; [(and
+     ;;    [(missing? $ ?e :scratchpad.db/restored-at)]
+     ;;    [(and
+     ;;       [?e :scratchpad.db/restored-at ?restored-at]
+     ;;       [(> ?buried-at ?restored-at)])])]
+     (and
+      [?e :scratchpad.db/bury-cleared ?bury-cleared]
+      [(not= ?bury-cleared true)])]))
 
 (comment
   (def wsp1 {:some/name "wsp1" :my/custom "object"})
