@@ -6,7 +6,8 @@
    [ralphie.notify :as notify]
    [ralph.defcom :refer [defcom]]
    [babashka.process :as process]
-   [ralphie.tmux :as tmux]))
+   [ralphie.tmux :as tmux]
+   [clawe.awesome :as awm]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Workspaces API
@@ -167,22 +168,12 @@
 (defworkspace zoom
   {:awesome/rules (awm-workspace-rules "zoom" "Zoom" "Slack call")}
   {:rules/apply (fn []
-                  (let [slack-client
-                        (some->>
-                          (r.awm/all-clients)
-                          (filter (comp
-                                    #(string/includes? % "Slack call")
-                                    :name))
-                          first
-                          ;; :window
-                          )]
-                    (notify/notify "slack client" slack-client)
-                    ;; TODO impl moving this client to the zoom tag
-
-                    ;; (r.awm/awm-cli
-                    ;;   {:pp? false}
-                    ;;   (str ""))
-                    ))}
+                  (let [slack-call (awm/client-for-name "Slack call")]
+                    (when slack-call
+                      (notify/notify
+                        "Found slack call, moving to zoom workspace"
+                        slack-call)
+                      (awm/move-client-to-tag (:window slack-call) "zoom"))))}
   workspace-title
   {:workspace/scratchpad   true
    ;; :workspace/scratchpad-class "Zoom"
