@@ -5,6 +5,7 @@
    [ralph.defcom :refer [defcom]]
    [ralphie.sh :as sh]
    [ralphie.notify :as notify]
+   [ralphie.awesome :as r.awm]
    [clawe.db.scratchpad :as db.scratchpad]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -371,9 +372,7 @@ util = require 'util';
     {:quiet? true}
     (str "require('bar'); "
          (awm-fn "init_bar"
-                 {:top-bar (build-top-bar)}
-                 )))
-  )
+                 {:top-bar (build-top-bar)}))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Tile all clients
@@ -395,6 +394,49 @@ util = require 'util';
 ;; Client functions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn client-for-name [nm]
+  (some->>
+    (r.awm/all-clients)
+    (filter (comp
+              #(string/includes? % (string/lower-case nm))
+              string/lower-case
+              :name))
+    first))
+
+(comment
+  (client-for-name "clawe"))
+
+(defn wrap-over-client
+  "Reduces boilerplate for operating over a client.
+  Expects to match on the client's window id.
+  Expects to be a `c` in context.
+  "
+  [window-id cmd-str]
+  (awm-cli
+    {:quiet? true}
+    (str
+      "for c in awful.client.iterate(function (c) return c.window == "
+      window-id
+      " end) do\n" cmd-str "\nend; ")))
+
+(defn move-client-to-tag
+  "TODO create tag if it doesn't exist?"
+  [window-id tag-name]
+  (wrap-over-client
+    window-id
+    (str
+      "local t = awful.tag.find_by_name(nil, \"" tag-name "\");\n"
+      "if t then\n"
+      "c:tags({t})\nend\n")))
+
+(comment
+  (awm-fnl '(awful.tag.find_by_name nil "datalevin"))
+  (def -c (client-for-name "clawe"))
+
+  (move-client-to-tag (:window -c) "clawe")
+  )
+
+
 (defn mark-buried-clients []
   (let [floating-clients
         (awm-fnl
@@ -409,8 +451,7 @@ util = require 'util';
                                       :role     c.role})) view)))]
     (->> floating-clients
          (map #(db.scratchpad/mark-buried (str (:window %)) %))
-         doall)
-    ))
+         doall)))
 
 (defn focus-client
   "
@@ -468,21 +509,12 @@ util = require 'util';
              "end; ")))))))
 
 (defn close-client
-  "
-  Closes the passed client.
-  Expects client as a map with `:window` or `:client/window`.
-  "
+  "Closes the passed client.
+  Expects client as a map with `:window` or `:client/window`."
   [client]
   (let [{:keys [window]} client
         window           (:client/window client window)]
     (if-not window
       (notify/notify "Set Focused called with no client :window"
                      {:client client})
-      (awm-cli
-        {:quiet? true}
-        (str
-          "for c in awful.client.iterate(function (c) return c.window == "
-          window
-          " end) do\n"
-          "c:kill();"
-          "end; ")))))
+      (wrap-over-client window "c:kill();"))))
