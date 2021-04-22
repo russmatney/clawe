@@ -4,5 +4,8 @@
            :defcom/missing    {:level :warning}}
  :hooks   {:analyze-call
            {clawe.defs/defworkspace hooks.defworkspace/defworkspace
+            clawe.defs.workspaces/defworkspace hooks.defworkspace/defworkspace
+            clawe.defs.bindings/defbinding hooks.defworkspace/defworkspace
+            clawe.defs.bindings/defbinding-kbd hooks.defworkspace/defworkspace
             clawe.defs/defapp       hooks.defcom/defcom
             ralph.defcom/defcom     hooks.defcom/defcom}}}
