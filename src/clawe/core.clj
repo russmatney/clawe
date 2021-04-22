@@ -14,12 +14,16 @@
    [ralphie.rofi :as r.rofi]
 
    [ralph.defcom :as defcom :refer [defcom]]
-   [ralphie.git :as r.git]))
+   [ralphie.git :as r.git]
+   ))
+
 
 (defcom hello-cmd
   {:defcom/name    "hello"
    :defcom/handler (fn [_config _parsed]
-                     (println "Howdy"))})
+                     (println "Howdy")
+
+                     )})
 
 (defcom rofi-cmd
   {:defcom/name "rofi"

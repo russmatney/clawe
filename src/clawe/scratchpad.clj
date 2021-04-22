@@ -2,6 +2,7 @@
   (:require
    [clawe.workspaces.create :as wsp.create]
    [clawe.awesome :as awm]
+   [clawe.db.scratchpad :as db.scratchpad]
    [ralphie.awesome :as r.awm]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -13,7 +14,7 @@
   the passed client is floated, put ontop, and centered."
   [client]
   (awm/focus-client
-    {:tile-all? true
+    {:bury-all? true
      :float?    true
      :center?   true}
     client))
@@ -39,12 +40,16 @@
         (and tag client (:selected tag))
         (if (or (:ontop client) (and centerwork? is-master?))
           (do
+            ;; hide this tag
             (r.awm/toggle-tag wsp-name)
-            (let [last-buried-client
-                  ;; TODO pop last-buried window, any buried in last 5 min...?
-                  nil]
-              (when last-buried-client
-                (focus-scratchpad last-buried-client))))
+
+            ;; restore last buried client
+            (let [to-restore (db.scratchpad/next-restore)]
+              (println "to-restore" to-restore)
+              (when to-restore
+                (focus-scratchpad to-restore)
+                (db.scratchpad/mark-restored to-restore)
+                )))
           (focus-scratchpad client))
 
         ;; "found unselected tag, client for:" wsp-name

@@ -1,7 +1,12 @@
 (ns clawe.db.core
   "Exposes functions for working with a datalevin database via `dtlv`."
-  (:require [babashka.process :as process :refer [$]]
-            [clojure.string :as string]))
+  (:require
+   [babashka.pods :as pods]
+   [babashka.process :as process :refer [$]]
+   [clojure.string :as string]))
+
+(pods/load-pod "dtlv")
+(require '[pod.huahaiy.datalevin :as d])
 
 ;; TODO defsys and configuration
 (def clawe-db-filepath "/home/russ/russmatney/clawe/clawedb")
@@ -10,47 +15,9 @@
              {:db/valueType :db.type/string
               :db/unique :db.unique/identity}})
 
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Execute via dtlv
+;; DB Dump
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn exec
-  "Executes a passed command via dtlv."
-  [cmd]
-  (try
-    (->
-      ^{:out :string}
-      ($ dtlv exec ~cmd)
-      process/check
-      :out)
-    (catch Exception dtlv-e
-      (let [d (ex-data dtlv-e)]
-        (println "dtlv exception")
-        (println "command" (:cmd d))
-        (println "out" (:out d))
-        (-> d
-            :out
-            string/trim
-            string/split-lines
-            last)))))
-
-(comment
-  (exec "some command"))
-
-(defn wrap-exec [cmd]
-  (->
-    (exec
-      (str
-        "(def conn (get-conn \"" clawe-db-filepath "\" " schema "))"
-        "\n"
-        cmd
-        "\n"
-        "(close conn)"))
-    string/trim
-    string/split-lines
-    second
-    read-string))
 
 (defn dump
   "Return the database.
@@ -72,38 +39,30 @@
 ;; Transact
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn transact
-  "Executes the passed transactions against the clawe-db via `dtlv`."
-  [txs]
-  (->
-    (wrap-exec (str "(transact! conn " txs ")"))))
+(defn transact [txs]
+  ;; TODO refactor into defsys conn ?
+  (let [conn (d/get-conn clawe-db-filepath schema)
+        res (d/transact! conn txs)]
+    (d/close conn)
+    res))
 
 (comment
   (transact [{:name "Datalevin"}])
-  (transact [{:last "value"
-               :multi 5
-               :key ["val" #{"hi"}]}])
-
-  (transact [{:some-workspace "Clawe"}
-              {:some-other-data "jaja"}
-              ]))
+  (transact [{:last "value" :multi 5 :key ["val" #{"hi"}]}])
+  (transact [{:some-workspace "Clawe"} {:some-other-data "jaja"}]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Query
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn ->query-arg [arg]
-  (cond :else (str arg)))
-
-(defn args->query-args [args]
-  (->> args (map ->query-arg) (apply str)))
-
-(defn query
-  "Execs a query via `dtlv`, returning the result."
-  [q & args]
-  (wrap-exec (str "(q (quote " q ") @conn "
-                  (when (seq args) (args->query-args args))
-                   ")")))
+(defn query [q & args]
+  (let [conn (d/get-conn clawe-db-filepath schema)
+        res
+        (if args
+          (apply d/q q (d/db conn) args)
+          (d/q q (d/db conn)))]
+    (d/close conn)
+    res))
 
 (comment
   ;; pull just ent ids
@@ -114,8 +73,7 @@
 
   ;; fetch with arg
   (query '[:find (pull ?e [*]) :in $ ?inp :where [?e :some-other-data ?inp]]
-         ;; quoted string... gross!
-         "\"jaja\"")
+         "jaja")
 
   ;; fetch by :db/id
   (query '[:find (pull ?e [*]) :in $ ?e :where [?e _ _]]
@@ -126,4 +84,5 @@
            :where (or
                     [?e :name "Datalevin"]
                     [?e :last "value"])
-           ]))
+           ])
+  )

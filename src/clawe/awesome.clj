@@ -4,7 +4,8 @@
    [clojure.string :as string]
    [ralph.defcom :refer [defcom]]
    [ralphie.sh :as sh]
-   [ralphie.notify :as notify]))
+   [ralphie.notify :as notify]
+   [clawe.db.scratchpad :as db.scratchpad]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Lua -> Clojure, awm-cli
@@ -378,21 +379,38 @@ util = require 'util';
 ;; Tile all clients
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn tile-all-clients-handler
-  ([] (tile-all-clients-handler nil nil))
+(defn bury-all-clients-handler
+  ([] (bury-all-clients-handler nil nil))
   ([_config _parsed]
    (awm-fnl '(let [s (awful.screen.focused)]
                (lume.each s.clients
                           (fn [c]
                             (set c.floating false)))))))
 
-(defcom tile-all-clients-cmd
-  {:defcom/name    "tile-all-clients"
-   :defcom/handler tile-all-clients-handler})
+(defcom bury-all-clients-cmd
+  {:defcom/name    "bury-all-clients"
+   :defcom/handler bury-all-clients-handler})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Client functions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn mark-buried-clients []
+  (let [floating-clients
+        (awm-fnl
+          '(do (-> (awful.screen.focused)
+                   (. :clients)
+                   (lume.filter (fn [c] c.floating))
+                   (lume.map (fn [c] {:window   c.window
+                                      :name     c.name
+                                      :class    c.class
+                                      :instance c.instance
+                                      :pid      c.pid
+                                      :role     c.role})) view)))]
+    (->> floating-clients
+         (map #(db.scratchpad/mark-buried (str (:window %)) %))
+         doall)
+    ))
 
 (defn focus-client
   "
@@ -400,7 +418,7 @@ util = require 'util';
   Expects client as a map with `:window` or `:client/window`.
 
   Options:
-  - :tile-all? - default: true.
+  - :bury-all? - default: true.
     Sets all other clients ontop and floating to false
   - :float? - default: true.
     Set this client ontop and floating to true
@@ -411,40 +429,43 @@ util = require 'util';
   ([opts client]
    (let [{:keys [window]} client
          window           (:client/window client window)
-         tile-all?        (:tile-all? opts true)
+         bury-all?        (:bury-all? opts true)
          float?           (:float? opts true)
          center?          (:center? opts true)]
      (if-not window
        (notify/notify "Set Focused called with no client :window" {:client client
                                                                    :opts   opts})
-       (awm-cli
-         {:quiet? true}
-         (str
-           ;; set all ontops false
-           (when tile-all?
-             (str
-               "for c in awful.client.iterate(function (c) return c.ontop end) do\n"
-               "c.ontop = false; "
-               "c.floating = false; "
-               "end;\n"))
+       (do
+         (when bury-all? (mark-buried-clients))
 
-           "for c in awful.client.iterate(function (c) return c.window == "
-           window
-           " end) do\n"
+         (awm-cli
+           {:quiet? true}
+           (str
+             (when bury-all?
+               (str
+                 ;; set all ontops/floating false
+                 "for c in awful.client.iterate(function (c) return c.ontop end) do\n"
+                 "c.ontop = false; "
+                 "c.floating = false; "
+                 "end;\n"))
 
-           (when float?
-             (str
-               "c.ontop = true; "
-               "c.floating = true; "))
+             "for c in awful.client.iterate(function (c) return c.window == "
+             window
+             " end) do\n"
 
-           (when center?
-             (str
-               "local f = awful.placement.centered; "
-               "f(c); "))
+             (when float?
+               (str
+                 "c.ontop = true; "
+                 "c.floating = true; "))
 
-           ;; focus it
-           "_G.client.focus = c;"
-           "end; "))))))
+             (when center?
+               (str
+                 "local f = awful.placement.centered; "
+                 "f(c); "))
+
+             ;; focus it
+             "_G.client.focus = c;"
+             "end; ")))))))
 
 (defn close-client
   "

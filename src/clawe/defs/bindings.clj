@@ -122,10 +122,10 @@
 ;; Window layout
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defbinding-kbd tile-all-windows
+(defbinding-kbd bury-all-windows
   [[:mod :shift] "f"]
   (fn [_ _]
-    (notify/notify "tiling all windows")
+    (notify/notify "burying all windows")
     (awm/awm-fnl
       '(->
          (client.get)
@@ -309,7 +309,7 @@
         (and terminal-client (not terminal-client-focused))
         (awm/focus-client {:center?   false
                            :float?    false
-                           :tile-all? false} terminal-client)
+                           :bury-all? false} terminal-client)
 
         :else
         (do (r.tmux/open-session opts)
@@ -358,7 +358,7 @@
         (and emacs-client (not emacs-client-focused))
         (awm/focus-client {:center?   false
                            :float?    false
-                           :tile-all? false} emacs-client)
+                           :bury-all? false} emacs-client)
 
         :else
         (do
