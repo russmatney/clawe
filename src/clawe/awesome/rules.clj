@@ -5,7 +5,8 @@
    [clawe.workspaces :as workspaces]
    [clojure.string :as string]
    [clojure.walk :as walk]
-   [ralph.defcom :refer [defcom]]))
+   [ralph.defcom :refer [defcom]]
+   [ralphie.notify :as notify]))
 
 (comment
   (println "howdy")
@@ -38,13 +39,17 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn apply-rules
-  "Supports running :rules/apply hooks, which are 0-arg functions."
+  "Supports running :rules/apply hooks, which are 0-arg functions that usually
+  enforce client/workspace attachments."
   []
-  (->>
-    (workspaces/all-workspaces)
-    (keep :rules/apply)
-    (map (fn [f] (f)))
-    doall))
+  (let [rule-fns
+        (->>
+          (workspaces/all-workspaces)
+          (keep :rules/apply))]
+    (notify/notify (str "Applying " (count rule-fns) " Clawe rule(s)"))
+    (->> rule-fns
+         (map (fn [f] (f)))
+         doall)))
 
 (defcom apply-rules-cmd
   {:defcom/name "clawe-apply-rules"

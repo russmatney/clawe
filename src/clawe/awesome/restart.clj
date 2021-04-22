@@ -22,6 +22,9 @@
      (println "\trewriting clawe bindings")
      (awm.bindings/write-awesome-bindings)
 
+     (println "\tapplying clawe rules")
+     (awm.rules/apply-rules)
+
      ;; (println "\treloading keybindings")
      ;; (awm/reload-keybindings)
      (println "\treloading misc")
