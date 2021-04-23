@@ -371,6 +371,11 @@
   workspace-title
   (fn [_] (local-repo "russmatney/scratch")))
 
+(defworkspace yodo
+  awesome-rules
+  workspace-title
+  (fn [_] (local-repo "russmatney/yodo-two")))
+
 (defworkspace yodo-dev
   awesome-rules
   workspace-title
@@ -418,6 +423,26 @@
   awesome-rules
   workspace-title
   (fn [_] (local-repo "russmatney/clover")))
+
+(defworkspace expo
+  awesome-rules
+  workspace-title
+  (fn [_] (local-repo "russmatney/expo")))
+
+(defworkspace starters
+  awesome-rules
+  workspace-title
+  (fn [_] (local-repo "russmatney/starters")))
+
+(defworkspace company-css-classes
+  awesome-rules
+  workspace-title
+  (fn [_] (local-repo "russmatney/company-css-classes")))
+
+(defworkspace bb-task-completion
+  awesome-rules
+  workspace-title
+  (fn [_] (local-repo "russmatney/bb-task-completion")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Teknql repos
@@ -543,3 +568,12 @@
   awesome-rules
   workspace-title
   (fn [_] (local-repo "awesomeWM/awesome" "README.md")))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Misc
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defworkspace aseprite
+  awesome-rules
+  workspace-title
+  (fn [_] (local-repo "aseprite/aseprite")))
