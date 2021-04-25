@@ -21,19 +21,15 @@
                                    (notify/notify
                                      "Could not determine first client for wsp" wsp)
                                    :create/none))]
-    (println first-client init-file)
-    ;; (notify/notify first-client init-file)
 
     (case first-client
-      :create/emacs (emacs/open wsp)
-      :create/exec  (do
-                      ;; (notify/notify "Starting new client" exec)
-                      (-> exec
-                          (string/split #" ")
-                          process
-                          check)
-                      ;; (notify/notify "New client started" exec)
-                      )
+      :create/emacs (emacs/open {:emacs.open/workspace (:workspace/title wsp)
+                                 :emacs.open/file      init-file})
+      :create/exec  (-> exec
+                        (string/split #" ")
+                        process
+                        check)
+
       :create/none
       ;; NOTE maybe detect a readme in directories as well
       ;; (notify/notify "New workspace has no default client."
@@ -42,5 +38,5 @@
 
 (comment
   (create-client
-    {:workspace/initial-file "/home/russ/Dropbox/todo/projects.org"
+    {:workspace/initial-file "/home/russ/russmatney/ralphie/readme.org"
      :workspace/title "my-wsp"}))

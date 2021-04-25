@@ -1,5 +1,8 @@
 {:paths ["src"]
- :deps  {russmatney/ralphie {:local/root "../ralphie"}}
+ :deps  {russmatney/ralphie {:local/root "../ralphie"}
+         babashka/babashka.pods {:mvn/version "0.0.1"}
+         babashka/process {:mvn/version "0.0.2"}
+         babashka/fs {:mvn/version "0.0.5"}}
  :aliases
  {:dev
   {:extra-deps
@@ -20,6 +23,4 @@
   {:classpath-overrides
    {org.clojure/clojure          nil
     org.clojure/spec.alpha       nil
-    org.clojure/core.specs.alpha nil}}
-
-  }}
+    org.clojure/core.specs.alpha nil}}}}

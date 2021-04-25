@@ -143,9 +143,7 @@
 
   (->>
     (active-workspaces)
-    (map :sort-key)
-    )
-  )
+    (map :sort-key)))
 
 (defn update-workspaces-widget
   ([] (update-workspaces-widget nil))
@@ -284,6 +282,7 @@ which is called with a list of workspaces maps."]
   ([] (clean-workspaces-handler nil nil))
   ([_config _parsed]
    (clean-workspaces)
+   ;; TODO sometimes this doesn't work - race-case? could add a delay?
    (update-workspaces-widget)))
 
 (defcom clean-workspaces-cmd
@@ -302,16 +301,21 @@ which is called with a list of workspaces maps."]
   [wsp]
   (let [name (workspace-name wsp)]
 
+    (println "create-workspace")
+
     ;; create tag if none is found
     (when (not (r.awm/tag-for-name name))
+      (println "create-tag")
       (r.awm/create-tag! name))
 
+    (println "focus-tag")
     ;; focus the tag
     (r.awm/focus-tag! name)
 
     ;; run on-create hook
-    (when-let [f (:workspace/on-create wsp)]
-      (f wsp))
+    ;; (when-let [f (:workspace/on-create wsp)]
+    ;;   (println "found on-create" f)
+    ;;   (f wsp))
 
     ;; notify
     (notify/notify (str "Created new workspace: " name))
@@ -329,10 +333,12 @@ which is called with a list of workspaces maps."]
     wsp))
 
 (comment
+  (r.awm/tag-for-name "ralphie")
+  (r.awm/create-tag! "ralphie")
   (->
-    "org-roam"
+    "ralphie"
     (for-name)
-    ;; (create-workspace)
+    (create-workspace)
     ))
 
 
@@ -366,28 +372,19 @@ which is called with a list of workspaces maps."]
       (map #(assoc % :rofi/label (wsp->repo-and-status-label %)))
       seq)))
 
-(comment
-  (select-workspace))
-
 (defn open-workspace
   ([] (open-workspace nil))
   ([name]
    ;; select and create
    (if name
-     (do
-       (notify/notify (str "Workspace name passed, creating: " name))
-       (-> name
-           for-name
-           create-workspace))
-
+     (-> name for-name create-workspace)
      ;; no name passed, get from rofi
-     (some->
-       (select-workspace)
-       create-workspace))
-
+     (some-> (select-workspace) create-workspace))
    (update-workspaces-widget)))
 
 (comment
+  (open-workspace "ralphie")
+
   (open-workspace))
 
 (defcom open-workspace-cmd
