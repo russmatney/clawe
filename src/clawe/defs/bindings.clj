@@ -11,9 +11,9 @@
    [ralphie.zsh :as r.zsh]
    [ralphie.clipboard :as r.clip]
    ;; TODO remove non bb deps from chess (clj-http)
-   ;; [chess.core :as chess]
+   [chess.core :as chess]
    ;; TODO require as first class dep
-   ;; [systemic.core :as sys]
+   [systemic.core :as sys]
 
    [clojure.string :as string]
    [babashka.process :as process :refer [$ check]]
@@ -21,6 +21,7 @@
    [ralphie.awesome :as r.awm]
    [ralphie.spotify :as r.spotify]
    [ralphie.pulseaudio :as r.pulseaudio]
+   [ralphie.browser :as r.browser]
    [clawe.scratchpad :as scratchpad]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -150,18 +151,19 @@
   [[:mod :shift] "e"]
   (fn [_ _]
     (notify/notify "Fetching chess games")
-    ;; (sys/start! 'chess/*lichess-env*)
     (->>
-      [] #_(chess/fetch-games)
+      (chess/fetch-games)
       (map (fn [{:keys [lichess/url white-user black-user] :as game}]
              (assoc game
-                    :rofi/label (str white-user " vs " black-user)
-                    :rofi/url   url)))
-      ;; TODO expand games into open-in-browser, open-in-garden options
+                    :rofi/label (str white-user " vs " black-user))))
       (rofi/rofi {:msg       "Open Game"
-                  :on-select (fn [game]
-                               (notify/notify "TODO impl open game"
-                                              game))}))))
+                  :on-select (fn [{:keys [lichess/url]}]
+                               (notify/notify "Opening game" url)
+                               (r.browser/open {:browser.open/url url}))}))))
+
+(comment
+  (chess/fetch-games)
+  (call-kbd open-chess-game))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Notifications

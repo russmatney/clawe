@@ -2,6 +2,7 @@
                                          (babashka.process/$)]}
            :clawe/missing     {:level :warning}
            :defcom/missing    {:level :warning}}
+ :lint-as {systemic.core/defsys clojure.core/def}
  :hooks   {:analyze-call
            {clawe.defs/defworkspace hooks.defworkspace/defworkspace
             clawe.defs.workspaces/defworkspace hooks.defworkspace/defworkspace
