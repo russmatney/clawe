@@ -19,6 +19,8 @@
    [babashka.process :as process :refer [$ check]]
    [ralphie.emacs :as r.emacs]
    [ralphie.awesome :as r.awm]
+   [ralphie.spotify :as r.spotify]
+   [ralphie.pulseaudio :as r.pulseaudio]
    [clawe.scratchpad :as scratchpad]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -79,14 +81,6 @@
   (fn [_ _]
     (let [uuid (str (java.util.UUID/randomUUID))]
       (r.clip/set-clip uuid))))
-
-(defbinding-kbd toggle-mute
-  [[:mod] "m"]
-  (fn [_ _]
-    (notify/notify "Toggling mute")
-    (->
-      ($ amixer set Capture toggle)
-      check)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Titlebars
@@ -365,6 +359,115 @@
           (r.emacs/open opts)
           nil)))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Brightness
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defbinding-kbd brightness-up
+  [[] "XF86MonBrightnessUp"]
+  (fn [_ _]
+    (->
+      ($ light -A 5)
+      check :out slurp)))
+
+(defbinding-kbd brightness-down
+  [[] "XF86MonBrightnessDown"]
+  (fn [_ _]
+    (->
+      ($ light -U 5)
+      check :out slurp)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Play/Pause/Next/Prev
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defbinding-kbd spotify-pause
+  [[] "XF86AudioPause"]
+  (fn [_ _]
+    (->
+      ($ spotifycli --playpause)
+      check :out slurp)))
+
+(defbinding-kbd spotify-play
+  [[] "XF86AudioPlay"]
+  (fn [_ _]
+    (->
+      ($ spotifycli --playpause)
+      check :out slurp)))
+
+(defbinding-kbd audio-next
+  [[] "XF86AudioNext"]
+  (fn [_ _]
+    (->
+      ($ playerctl next)
+      check :out slurp)))
+
+(defbinding-kbd audio-prev
+  [[] "XF86AudioPrev"]
+  (fn [_ _]
+    (->
+      ($ playerctl previous)
+      check :out slurp)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Muting input/output
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defbinding-kbd toggle-input-mute
+  [[:mod] "m"]
+  (fn [_ _]
+    (notify/notify "Toggling mute")
+    (->
+      ($ amixer set Capture toggle)
+      check :out slurp)))
+
+(defbinding-kbd toggle-output-mute
+  [[] "XF86AudioMute"]
+  (fn [_ _]
+    (->
+      ($ pactl set-sink-mute "@DEFAULT_SINK@" toggle)
+      check :out slurp)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Volume up/down
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defbinding-kbd volume-up
+  [[] "XF86AudioRaiseVolume"]
+  (fn [_ _]
+    (->
+      ($ pactl set-sink-volume "@DEFAULT_SINK@" "+5%")
+      check :out slurp)
+    (notify/notify "Raised volume" (r.pulseaudio/default-sink-volume))))
+
+(defbinding-kbd volume-down
+  [[] "XF86AudioLowerVolume"]
+  (fn [_ _]
+    (->
+      ($ pactl set-sink-volume "@DEFAULT_SINK@" "-5%")
+      check :out slurp)
+    (notify/notify "Lowered volume" (r.pulseaudio/default-sink-volume))))
+
+(comment
+  (volume-down nil nil)
+  )
+
+(defbinding-kbd spotify-volume-up
+  [[:mod] "XF86AudioRaiseVolume"]
+  (fn [_ _]
+    ;; TODO this api is nonsense, should refactor when defcom arity is fixed
+    (r.spotify/spotify-volume nil {:arguments ["up"]})))
+
+(defbinding-kbd spotify-volume-down
+  [[:mod] "XF86AudioLowerVolume"]
+  (fn [_ _]
+    ;; TODO this api is nonsense, should refactor when defcom arity is fixed
+    (r.spotify/spotify-volume nil {:arguments ["down"]})))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Not yet transcribed
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 ;;    ;; walk tags
 ;;    (key [:mod] "Left" awful.tag.viewprev)
 ;;    (key [:mod] "Right" awful.tag.viewnext)
@@ -437,19 +540,6 @@
 ;;    ;; screenshots
 ;;    (key [:mod :shift] "s" (spawn-fn "ralphie screenshot full"))
 ;;    (key [:mod :shift] "a" (spawn-fn "ralphie screenshot region"))
-
-;;    ;; brightness
-;;    (key [] "XF86MonBrightnessUp" (spawn-fn "light -A 5"))
-;;    (key [] "XF86MonBrightnessDown" (spawn-fn "light -U 5"))
-
-;;    ;; media controls
-;;    ;; TODO play-pause should create spotify if its not open
-;;    (key [] "XF86AudioPlay" (spawn-fn "spotifycli --playpause"))
-;;    (key [] "XF86AudioNext" (spawn-fn "playerctl next"))
-;;    (key [] "XF86AudioPrev" (spawn-fn "playerctl previous"))
-;;    (key [] "XF86AudioMute" (spawn-fn "pactl set-sink-mute @DEFAULT_SINK@ toggle"))
-;;    (key [] "XF86AudioRaiseVolume" (spawn-fn "pactl set-sink-volume @DEFAULT_SINK@ +5%"))
-;;    (key [] "XF86AudioLowerVolume" (spawn-fn "pactl set-sink-volume @DEFAULT_SINK@ -5%"))
 
 ;;    ])
 

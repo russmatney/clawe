@@ -101,10 +101,6 @@ Returns a function expected to be attached to a keybinding.
      ;; previous tag
      (key [:mod] "Escape" awful.tag.history.restore)
 
-     ;; TODO move all these bindings into ralphie itself
-     ;; ralphie rofi
-     (key [:mod] "x" (spawn-fn "ralphie rofi"))
-
      ;; clawe keybindings
      (key [:mod] "r"
           (fn []
@@ -114,6 +110,7 @@ Returns a function expected to be attached to a keybinding.
 
      (key [:mod] "d" (spawn-fn "clawe clean-workspaces"))
      (key [:mod] "o" (spawn-fn "clawe open-workspace"))
+     (key [:mod] "x" (spawn-fn "ralphie rofi"))
      (key [:mod] "w" (spawn-fn "clawe dwim"))
 
      ;; cycle layouts
@@ -173,22 +170,7 @@ Returns a function expected to be attached to a keybinding.
 
      ;; screenshots
      (key [:mod :shift] "s" (spawn-fn "ralphie screenshot full"))
-     (key [:mod :shift] "a" (spawn-fn "ralphie screenshot region"))
-
-     ;; brightness
-     (key [] "XF86MonBrightnessUp" (spawn-fn "light -A 5"))
-     (key [] "XF86MonBrightnessDown" (spawn-fn "light -U 5"))
-
-     ;; media controls
-     ;; TODO play-pause should create spotify if its not open
-     (key [] "XF86AudioPlay" (spawn-fn "spotifycli --playpause"))
-     (key [] "XF86AudioNext" (spawn-fn "playerctl next"))
-     (key [] "XF86AudioPrev" (spawn-fn "playerctl previous"))
-     (key [] "XF86AudioMute" (spawn-fn "pactl set-sink-mute @DEFAULT_SINK@ toggle"))
-     (key [] "XF86AudioRaiseVolume" (spawn-fn "pactl set-sink-volume @DEFAULT_SINK@ +5%"))
-     (key [] "XF86AudioLowerVolume" (spawn-fn "pactl set-sink-volume @DEFAULT_SINK@ -5%"))
-     (key [:mod] "XF86AudioRaiseVolume" (spawn-fn "ralphie spotify-volume up"))
-     (key [:mod] "XF86AudioLowerVolume" (spawn-fn "ralphie spotify-volume down"))])
+     (key [:mod :shift] "a" (spawn-fn "ralphie screenshot region"))])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
    ;; numbered Tag global keybindings
