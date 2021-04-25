@@ -27,7 +27,8 @@
         ;; Make sure we don't go into an endless error loop
         (if (not in_error)
             (set in_error true)
-            (naughty.notify {:preset naughty.config.presets.critical
+            (naughty.notify {:preset naughty.config.presets.normal
                              :title "Oops, an error happened!"
+                             :timeout 5
                              :text (tostring err) })
             (set in_error false)))))))
