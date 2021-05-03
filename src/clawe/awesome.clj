@@ -406,6 +406,53 @@ util = require 'util';
 (comment
   (client-for-name "clawe"))
 
+(defn client-for-id [window-id]
+  (some->>
+    (r.awm/all-clients)
+    (filter (comp #{window-id} :window))
+    first))
+
+(comment
+  (client-for-id (read-string "58720263")))
+
+(defn client-on-tag? [client tag-name]
+  (let [tag-names (->> client
+                       :window
+                       client-for-id
+                       :tags
+                       (map :name)
+                       (into #{}))]
+    (boolean (tag-names tag-name))))
+
+(comment
+  (-> (client-for-id 58720263)
+   (client-on-tag? "spotify")
+   ))
+
+(comment
+  (awm-fnl
+   '(-> (awful.screen.focused)
+        (. :tags)
+        (lume.map (fn [t] {:name t.name}))
+        view)
+   )
+  (awm-fnl
+   '(-> (awful.screen.focused)
+        (. :clients)
+        ;; (lume.filter (fn [c] c.floating))
+        (lume.map (fn [c] {:window   c.window
+                           :name     c.name
+                           :class    c.class
+                           :instance c.instance
+                           :pid      c.pid
+                           :role     c.role
+                           :tags (-> (c:tags)
+                                     (lume.map (fn [t]
+                                                 {:name t.name})))}))
+        view)))
+
+
+
 (defn wrap-over-client
   "Reduces boilerplate for operating over a client.
   Expects to match on the client's window id.
@@ -437,18 +484,21 @@ util = require 'util';
   )
 
 
+
+
 (defn mark-buried-clients []
   (let [floating-clients
         (awm-fnl
-          '(do (-> (awful.screen.focused)
-                   (. :clients)
-                   (lume.filter (fn [c] c.floating))
-                   (lume.map (fn [c] {:window   c.window
-                                      :name     c.name
-                                      :class    c.class
-                                      :instance c.instance
-                                      :pid      c.pid
-                                      :role     c.role})) view)))]
+         '(-> (awful.screen.focused)
+              (. :clients)
+              (lume.filter (fn [c] c.floating))
+              (lume.map (fn [c] {:window   c.window
+                                 :name     c.name
+                                 :class    c.class
+                                 :instance c.instance
+                                 :pid      c.pid
+                                 :role     c.role}))
+              view))]
     (->> floating-clients
          (map #(db.scratchpad/mark-buried (str (:window %)) %))
          doall)))

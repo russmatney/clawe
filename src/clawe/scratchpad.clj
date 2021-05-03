@@ -45,11 +45,18 @@
 
             ;; restore last buried client
             (let [to-restore (db.scratchpad/next-restore)]
-              (println "to-restore" to-restore)
-              (when to-restore
+              (when (and to-restore
+                         (awm/client-on-tag? to-restore
+                                             (awm/awm-fnl
+                                              '(-> (awful.screen.focused)
+                                                   (. :selected_tags)
+                                                   (lume.map (fn [t] {:name t.name}))
+                                                   (lume.first)
+                                                   (. :name)))))
+                (println "found client to-restore focus to" to-restore)
+                (println "b/c it's clearly on tag" (:name tag))
                 (focus-scratchpad to-restore)
-                (db.scratchpad/mark-restored to-restore)
-                )))
+                (db.scratchpad/mark-restored to-restore))))
           (focus-scratchpad client))
 
         ;; "found unselected tag, client for:" wsp-name
