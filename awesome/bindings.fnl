@@ -154,17 +154,6 @@ Returns a function expected to be attached to a keybinding.
      (key [:mod :shift] "n" (spawn-fn "clawe drag-workspace-index down"))
      (key [:mod :shift] "p" (spawn-fn "clawe drag-workspace-index up"))
 
-     ;; ;; terminal
-     ;; (key [:mod] "Return"
-     ;;      (fn []
-     ;;        (let [current-tag (. (awful.screen.focused) :selected_tag)
-     ;;              name current-tag.name
-     ;;              str (.. "ralphie-open-term " name)]
-     ;;          (awful.spawn str))))
-
-     ;; ;; emacs
-     ;; (key [:mod :shift] "Return" (spawn-fn "ralphie-open-emacs"))
-
      ;; launcher (rofi)
      (key [:mod] "space" (spawn-fn "/usr/bin/rofi -show combi"))
 
@@ -359,6 +348,7 @@ Returns a function expected to be attached to a keybinding.
                    :honor_workarea true}))))
 
       ;; swap with master
+      ;; TODO unless already master, swap with first other
       (key [:mod :ctrl] "Return" (fn [c] (c:swap (awful.client.getmaster))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

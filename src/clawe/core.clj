@@ -20,10 +20,7 @@
 
 (defcom hello-cmd
   {:defcom/name    "hello"
-   :defcom/handler (fn [_config _parsed]
-                     (println "Howdy")
-
-                     )})
+   :defcom/handler (fn [_config _parsed] (println "Howdy"))})
 
 (defcom rofi-cmd
   {:defcom/name "rofi"
