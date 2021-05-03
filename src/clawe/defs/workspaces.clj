@@ -171,7 +171,7 @@
                   (let [slack-call (awm/client-for-name "Slack call")]
                     (when slack-call
                       (notify/notify
-                        "Found slack call, moving to zoom workspace"
+                        "Found slack call client, moving to zoom workspace"
                         slack-call)
                       (awm/move-client-to-tag (:window slack-call) "zoom"))))}
   workspace-title
@@ -181,8 +181,14 @@
    :workspace/fa-icon-code "f03e"})
 
 (defworkspace one-password
-  ;; TODO get these rules to match, or grab/manage windows by hand
   {:awesome/rules (awm-workspace-rules "1password" "1Password")}
+  {:rules/apply (fn []
+                  (let [c (awm/client-for-name "1Password")]
+                    (when c
+                      (notify/notify
+                        "Found 1password client, moving to zoom workspace"
+                        c)
+                      (awm/move-client-to-tag (:window c) "one-password"))))}
   workspace-title
   {:workspace/scratchpad   true
    :workspace/exec         "/usr/bin/gtk-launch 1password.desktop"
@@ -577,3 +583,8 @@
   awesome-rules
   workspace-title
   (fn [_] (local-repo "aseprite/aseprite")))
+
+(defworkspace godot
+  awesome-rules
+  workspace-title
+  (fn [_] (local-repo "godotengine/godot")))
