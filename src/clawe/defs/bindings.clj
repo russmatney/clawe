@@ -418,10 +418,14 @@
 (defbinding-kbd toggle-input-mute
   [[:mod] "m"]
   (fn [_ _]
-    (notify/notify "Toggling mute")
     (->
       ($ amixer set Capture toggle)
-      check :out slurp)))
+      check :out slurp)
+    (notify/notify
+      {:notify/subject "Mute Toggled!"
+       :notify/body    (if (r.pulseaudio/input-muted?)
+                         "Muted!" "Unmuted!")
+       :notify/id      "mute-notif"})))
 
 (defbinding-kbd toggle-output-mute
   [[] "XF86AudioMute"]
@@ -440,7 +444,9 @@
     (->
       ($ pactl set-sink-volume "@DEFAULT_SINK@" "+5%")
       check :out slurp)
-    (notify/notify "Raised volume" (r.pulseaudio/default-sink-volume))))
+    (notify/notify {:notify/subject "Raised volume"
+                    :notify/body (r.pulseaudio/default-sink-volume)
+                    :notify/id "changed-volume"})))
 
 (defbinding-kbd volume-down
   [[] "XF86AudioLowerVolume"]
@@ -448,7 +454,9 @@
     (->
       ($ pactl set-sink-volume "@DEFAULT_SINK@" "-5%")
       check :out slurp)
-    (notify/notify "Lowered volume" (r.pulseaudio/default-sink-volume))))
+    (notify/notify {:notify/subject "Lowered volume"
+                    :notify/body (r.pulseaudio/default-sink-volume)
+                    :notify/id "changed-volume"})))
 
 (comment
   (volume-down nil nil)
@@ -545,3 +553,121 @@
 
 ;;    ])
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Client bindings
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; (set exp.clientkeys
+;;      (gears.table.join
+;;       ;; kill current client
+;;       (key [:mod] "q" (fn [c] (c:kill)))
+
+;;       ;; toggle floating
+;;       (key [:mod] "f" (fn [c]
+;;                         (if c.floating
+;;                             (tset c :ontop false)
+;;                             (tset c :ontop true))
+;;                         (awful.client.floating.toggle c)))
+
+;;       ;; focus movement
+;;       (key [:mod :shift] "l" (fn [c]
+;;                                (if c.floating
+;;                                    (move-client c "right")
+;;                                    (focus-move "right" "right" "up"))))
+;;       (key [:mod :shift] "h" (fn [c]
+;;                                (if c.floating
+;;                                    (move-client c "left")
+;;                                    (focus-move "left" "left" "down"))))
+;;       (key [:mod :shift] "j" (fn [c]
+;;                                (if c.floating
+;;                                    (move-client c "down")
+;;                                    (focus-move "down" "right" "down"))))
+;;       (key [:mod :shift] "k" (fn [c]
+;;                                (if c.floating
+;;                                    (move-client c "up")
+;;                                    (focus-move "up" "left" "up"))))
+
+;;       ;; widen/shink windows
+;;       (key [:ctrl :shift] "l"
+;;            (fn [c]
+;;              (if c.floating
+;;                  (do
+;;                    (awful.placement.scale
+;;                     c {:direction "right"
+;;                        :by_percent 1.1})
+;;                    (awful.placement.scale
+;;                     c {:direction "left"
+;;                        :by_percent 1.1})
+;;                    )
+;;                  (awful.tag.incmwfact 0.05))))
+;;       (key [:ctrl :shift] "h"
+;;            (fn [c]
+;;              (if c.floating
+;;                  (do
+;;                    (awful.placement.scale
+;;                     c {:direction "left"
+;;                        :by_percent 0.9})
+;;                    (awful.placement.scale
+;;                     c {:direction "right"
+;;                        :by_percent 0.9})
+;;                    )
+;;                  (awful.tag.incmwfact -0.05))))
+;;       (key [:ctrl :shift] "j"
+;;            (fn [c]
+;;              (if c.floating
+;;                  (do
+;;                    (awful.placement.scale
+;;                     c {:direction "down"
+;;                        :by_percent 1.1})
+;;                    (awful.placement.scale
+;;                     c {:direction "up"
+;;                        :by_percent 1.1})
+;;                    )
+;;                  (awful.client.incwfact 0.05))))
+;;       (key [:ctrl :shift] "k"
+;;            (fn [c]
+;;              (if c.floating
+;;                  (do
+;;                    (awful.placement.scale
+;;                     c {:direction "up"
+;;                        :by_percent 0.9})
+;;                    (awful.placement.scale
+;;                     c {:direction "down"
+;;                        :by_percent 0.9})
+;;                    )
+;;                  (awful.client.incwfact -0.05))))
+
+;;       ;; center on screen
+;;       (key [:mod] "c"
+;;            (fn [c]
+;;              (tset c :ontop true)
+;;              (-> c
+;;                  (tset :floating true)
+;;                  ((+ awful.placement.scale
+;;                      awful.placement.centered)
+;;                   {:honor_padding true
+;;                    :honor_workarea true
+;;                    :to_percent 0.75}))))
+
+;;       ;; large centered
+;;       (key [:mod :shift] "c"
+;;            (fn [c]
+;;              (-> c
+;;                  (tset :floating true)
+;;                  ((+ awful.placement.scale
+;;                      awful.placement.centered)
+;;                   {:honor_padding true
+;;                    :honor_workarea true
+;;                    :to_percent 0.9}))))
+
+;;       ;; center without resizing
+;;       (key [:mod :ctrl] "c"
+;;            (fn [c]
+;;              (-> c
+;;                  (tset :floating true)
+;;                  (awful.placement.centered
+;;                   {:honor_padding true
+;;                    :honor_workarea true}))))
+
+;;       ;; swap with master
+;;       (key [:mod :ctrl] "Return" (fn [c] (c:swap (awful.client.getmaster))))))
