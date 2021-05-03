@@ -144,7 +144,11 @@
   workspace-title
   {:workspace/fa-icon-code "f03e"
    :workspace/directory    "/home/russ/Dropbox/pixels"
-   :workspace/initial-file "/home/russ/Dropbox/pixels/readme.org"})
+   :workspace/initial-file "/home/russ/Dropbox/pixels/readme.org"}
+  {:rules/apply (fn []
+                  (let [client (awm/client-for-name "Aseprite")]
+                    (when client
+                      (awm/move-client-to-tag (:window client) "pixels"))))} )
 
 (defworkspace tiles
   workspace-title
