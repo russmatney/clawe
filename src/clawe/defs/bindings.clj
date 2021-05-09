@@ -15,6 +15,8 @@
    ;; TODO require as first class dep
    [systemic.core :as sys]
 
+   [clawe.defs.local.workspaces :as defs.local.workspaces]
+
    [clojure.string :as string]
    [babashka.process :as process :refer [$ check]]
    [ralphie.emacs :as r.emacs]
@@ -197,13 +199,20 @@
       workspaces/merge-awm-tags
       scratchpad/toggle-scratchpad))
 
+(defn toggle-workspace [workspace]
+  (-> workspace
+      workspaces/merge-awm-tags
+      scratchpad/toggle-scratchpad))
+
 (comment
   (toggle-workspace-with-name "journal")
   (-> "spotify"
       defs.workspaces/get-workspace
       workspaces/merge-awm-tags
-      :awesome/clients
-      )
+      :awesome/clients)
+
+  (-> defs.local.workspaces/editor
+      toggle-workspace)
   )
 
 ;; TODO import and depend on defs/workspace? or is that backwards?
@@ -211,6 +220,10 @@
 (defbinding-kbd toggle-workspace-journal
   [[:mod] "u"]
   (fn [_ _] (toggle-workspace-with-name "journal")))
+
+(defbinding-kbd toggle-workspace-editor
+  [[:mod] "e"]
+  (fn [_ _] (toggle-workspace defs.local.workspaces/editor)))
 
 (defbinding-kbd toggle-workspace-web
   [[:mod] "t"]
@@ -228,9 +241,9 @@
   [[:mod] "s"]
   (fn [_ _] (toggle-workspace-with-name "spotify")))
 
-(defbinding-kbd toggle-workspace-garden
+(defbinding-kbd toggle-workspace-godot
   [[:mod] "g"]
-  (fn [_ _] (toggle-workspace-with-name "garden")))
+  (fn [_ _] (toggle-workspace defs.workspaces/godot)))
 
 (defbinding-kbd toggle-workspace-zoom
   [[:mod] "z"]
@@ -475,6 +488,24 @@
     (r.spotify/spotify-volume nil {:arguments ["down"]})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Open Workspace
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defbinding-kbd open-workspace
+  [[:mod] "o"]
+  (fn [_ _]
+    (notify/notify "Opening Workspace!")
+    (workspaces/open-workspace)))
+
+(defbinding-kbd create-new-workspace
+  [[:mod :shift] "o"]
+  (fn [_ _]
+    ;; TODO add support for creating a new one
+    (notify/notify "Creating new Workspace!")))
+
+;;    (key [:mod] "o" (spawn-fn "clawe open-workspace"))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Not yet transcribed
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -497,7 +528,6 @@
 ;;           (awful.spawn "clawe reload" false)))
 
 ;;    (key [:mod] "d" (spawn-fn "clawe clean-workspaces"))
-;;    (key [:mod] "o" (spawn-fn "clawe open-workspace"))
 ;;    (key [:mod] "w" (spawn-fn "clawe rofi"))
 
 ;;    ;; cycle layouts

@@ -109,7 +109,6 @@ Returns a function expected to be attached to a keybinding.
             (awful.spawn "clawe reload" false)))
 
      (key [:mod] "d" (spawn-fn "clawe clean-workspaces"))
-     (key [:mod] "o" (spawn-fn "clawe open-workspace"))
      (key [:mod] "x" (spawn-fn "ralphie rofi"))
      (key [:mod] "w" (spawn-fn "clawe dwim"))
 
@@ -389,8 +388,9 @@ Returns a function expected to be attached to a keybinding.
    (_G.root.buttons (gears.table.join
                      ;; (btn [] 1 mymainmenu:hide)
                      ;; (btn [] 3 mymainmenu:toggle)
-                     (btn [] 4 awful.tag.viewnext)
-                     (btn [] 5 awful.tag.viewprev)))))
+                     ;; (btn [] 4 awful.tag.viewnext)
+                     ;; (btn [] 5 awful.tag.viewprev)
+                     ))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Titlebar buttons

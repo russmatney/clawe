@@ -46,24 +46,39 @@
             ;; restore last buried client
             (let [to-restore (db.scratchpad/next-restore)]
               (when (and to-restore
-                         (awm/client-on-tag? to-restore
-                                             (awm/awm-fnl
-                                              '(-> (awful.screen.focused)
-                                                   (. :selected_tags)
-                                                   (lume.map (fn [t] {:name t.name}))
-                                                   (lume.first)
-                                                   (. :name)))))
+                         (awm/client-on-tag?
+                           to-restore
+                           (awm/awm-fnl
+                             '(-> (awful.screen.focused)
+                                  (. :selected_tags)
+                                  (lume.map (fn [t] {:name t.name}))
+                                  (lume.first)
+                                  (. :name)))))
                 (println "found client to-restore focus to" to-restore)
                 (println "b/c it's clearly on tag" (:name tag))
-                (focus-scratchpad to-restore)
+                (awm/focus-client
+                  {:bury-all? true
+                   :float?    true
+                   :center?   false}
+                  client)
+
                 (db.scratchpad/mark-restored to-restore))))
-          (focus-scratchpad client))
+          (awm/focus-client
+            {:bury-all? true
+             :float?    true
+             :center?   false}
+            client))
 
         ;; "found unselected tag, client for:" wsp-name
         (and tag client (not (:selected tag)))
         (do
           (r.awm/toggle-tag wsp-name)
-          (focus-scratchpad client))
+
+          (awm/focus-client
+            {:bury-all? true
+             :float?    true
+             :center?   false}
+            client))
 
         ;; tag exists, no client
         (and tag (not client))

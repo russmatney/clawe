@@ -2,11 +2,13 @@
   (:require
    [clawe.workspaces :as workspaces]
    [clawe.workspaces.create :as wsp.create]
-   [clawe.workrave]
-   [clawe.defs.bindings]
-   [clawe.yodo]
-   [clawe.doctor]
-   [clawe.install]
+   clawe.workrave
+   clawe.defs.bindings
+   clawe.defs.workspaces
+   clawe.defs.local.workspaces
+   clawe.yodo
+   clawe.doctor
+   clawe.install
    [clawe.awesome :as awm]
    [clawe.awesome.restart]
    [clawe.awesome.rules]
@@ -16,6 +18,7 @@
    [ralph.defcom :as defcom :refer [defcom]]
    [ralphie.git :as r.git]
    ))
+
 
 
 (defcom hello-cmd

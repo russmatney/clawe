@@ -23,9 +23,6 @@
               wsp)}
           :name)))
 
-(defmacro defworkspace [title & args]
-  (apply defthing/defthing :clawe/workspaces title args))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Misc workspace builder helpers
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -57,20 +54,33 @@
   )
 
 (defn workspace-title
-  "Sets the workspace title using the :name (which defaults to the symbol)."
+  "Sets the workspace title using the :name (which defaults to the symbol).
+
+  This only happens to work b/c defthing sets the {:name blah} attr with
+  the passed symbol.
+  "
   [{:keys [name]}]
   {:workspace/title name})
 
+;; TODO rewrite to work on a {:workspace/directory ""} if it exists
 (defn local-repo
   ([repo-path]
-   (local-repo repo-path
-               ;; TODO auto-discover readmes
-               "readme.org"))
+   (local-repo repo-path nil))
   ([repo-path readme-path]
-   {:git/repo               repo-path
-    :workspace/directory    (str "/home/russ/" repo-path)
-    :workspace/initial-file
-    (str "/home/russ/" repo-path "/" readme-path)}))
+   (let [readme-path (or readme-path "readme.org")]
+     {:git/repo               repo-path
+      :workspace/directory    (str "/home/russ/" repo-path)
+      :workspace/initial-file
+      (str "/home/russ/" repo-path "/" readme-path)})))
+
+(defn workspace-repo
+  [{:workspace/keys [directory initial-file]}]
+  (local-repo directory initial-file))
+
+
+(defmacro defworkspace [title & args]
+  (apply defthing/defthing :clawe/workspaces title
+         (conj args `workspace-title)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; usage examples
@@ -585,10 +595,21 @@
 
 (defworkspace aseprite
   awesome-rules
-  workspace-title
   (fn [_] (local-repo "aseprite/aseprite")))
 
+;; TODO support creating a scratchpad workspace and keybinding completely from here
+;; TODO support conflict alerts on keybindings via clj kondo helpers/the db? in-memory clj structures?
 (defworkspace godot
   awesome-rules
-  workspace-title
-  (fn [_] (local-repo "godotengine/godot")))
+  {:rules/apply (fn []
+                  ;; sometimes conflicts with the godot emacs/term sessions
+                  (let [clients (awm/clients-for-name "godot")]
+                    (when (seq clients)
+                      (doall
+                        (for [client clients]
+                          (awm/move-client-to-tag (:window client) "godot"))))))}
+  {:workspace/directory "/home/russ/godot"
+   :workspace/initial-file "/home/russ/godot/readme.org"
+   :workspace/fa-icon-code "f130"
+   :workspace/color "#42afff"
+   :workspace/scratchpad true})

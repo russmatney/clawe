@@ -394,14 +394,16 @@ util = require 'util';
 ;; Client functions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn client-for-name [nm]
+(defn clients-for-name [nm]
   (some->>
     (r.awm/all-clients)
     (filter (comp
               #(string/includes? % (string/lower-case nm))
               string/lower-case
-              :name))
-    first))
+              :name))))
+
+(defn client-for-name [nm]
+  (some->> nm clients-for-name first))
 
 (comment
   (client-for-name "clawe"))
@@ -554,6 +556,7 @@ util = require 'util';
                  "local f = awful.placement.centered; "
                  "f(c); "))
 
+             ;; TODO set minimum height/width?
              ;; focus it
              "_G.client.focus = c;"
              "end; ")))))))
