@@ -394,6 +394,17 @@ util = require 'util';
 ;; Client functions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn clients-for-class [nm]
+  (some->>
+    (r.awm/all-clients)
+    (filter (comp
+              #(string/includes? % (string/lower-case nm))
+              string/lower-case
+              :class))))
+
+(defn client-for-class [nm]
+  (some->> nm clients-for-class first))
+
 (defn clients-for-name [nm]
   (some->>
     (r.awm/all-clients)
