@@ -231,7 +231,7 @@
 
 (defbinding-kbd toggle-workspace-chrome-browser
   [[:mod] "b"]
-  (fn [_ _] (toggle-workspace-with-name "chrome-browser")))
+  (fn [_ _] (toggle-workspace defs.workspaces/dev-browser)))
 
 (defbinding-kbd toggle-workspace-slack
   [[:mod] "a"]

@@ -133,17 +133,24 @@
    :workspace/key              "t"
    :workspace/fa-icon-code     "f269"})
 
-(defworkspace chrome-browser
+(defworkspace dev-browser
   workspace-title
   {:awesome/rules
    ;; TODO get other awm names from rules
-   (awm-workspace-rules "chrome-browser" "chrome" "Chrome")}
+   (awm-workspace-rules "dev-browser" "chrome" "Chrome" "Firefox Developer Edition")}
   {:workspace/color            "#38b98a"
    :workspace/directory        "/home/russ/"
-   :workspace/exec             "/usr/bin/gtk-launch google-chrome.desktop"
+   :workspace/exec             "/usr/bin/gtk-launch firefox-developer-edition.desktop"
    :workspace/scratchpad       true
    :workspace/key              "b"
-   :workspace/fa-icon-code     "f268"})
+   :workspace/fa-icon-code     "f268"}
+  {:rules/apply (fn []
+                  (let [x (awm/client-for-class "firefoxdeveloperedition")]
+                    (when x
+                      (notify/notify
+                        "Found firefoxdeveloper client, moving to dev-browser workspace"
+                        x)
+                      (awm/move-client-to-tag (:window x) "dev-browser"))))} )
 
 (defworkspace obs
   workspace-title
