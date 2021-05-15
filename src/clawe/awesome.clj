@@ -494,10 +494,27 @@ util = require 'util';
   (def -c (client-for-name "clawe"))
 
   (move-client-to-tag (:window -c) "clawe")
-  )
 
+  (awm-fnl
+    '(do (-> (awful.screen.focused)
+             (. :clients)
+             (lume.map
+               (fn [c]
+                 {:window   c.window
+                  :name     c.name
+                  :class    c.class
+                  :instance c.instance
+                  :pid      c.pid
+                  :role     c.role
+                  }))
+             view))))
 
-
+(defn ignore-client?
+  "These clients should not be buried or restored...
+  (or interacted with at all, really, but that's going
+  to take some work...)"
+  [{:keys [name]}]
+  (string/includes? name "meet.google.com"))
 
 (defn mark-buried-clients []
   (let [floating-clients
@@ -513,6 +530,7 @@ util = require 'util';
                                  :role     c.role}))
               view))]
     (->> floating-clients
+         (remove ignore-client?)
          (map #(db.scratchpad/mark-buried (str (:window %)) %))
          doall)))
 
@@ -582,3 +600,7 @@ util = require 'util';
       (notify/notify "Set Focused called with no client :window"
                      {:client client})
       (wrap-over-client window "c:kill();"))))
+
+(comment
+  (r.awm/all-clients)
+  )
