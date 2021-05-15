@@ -471,10 +471,6 @@
                     :notify/body (r.pulseaudio/default-sink-volume)
                     :notify/id "changed-volume"})))
 
-(comment
-  (volume-down nil nil)
-  )
-
 (defbinding-kbd spotify-volume-up
   [[:mod] "XF86AudioRaiseVolume"]
   (fn [_ _]
@@ -502,8 +498,6 @@
   (fn [_ _]
     ;; TODO add support for creating a new one
     (notify/notify "Creating new Workspace!")))
-
-;;    (key [:mod] "o" (spawn-fn "clawe open-workspace"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Not yet transcribed

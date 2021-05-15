@@ -14,12 +14,8 @@
    [clawe.awesome.rules]
    [ralphie.notify :as r.notify]
    [ralphie.rofi :as r.rofi]
-
    [ralph.defcom :as defcom :refer [defcom]]
-   [ralphie.git :as r.git]
-   ))
-
-
+   [ralphie.git :as r.git]))
 
 (defcom hello-cmd
   {:defcom/name    "hello"
@@ -68,9 +64,7 @@
     (filter (comp #(re-seq #"key" %) :defcom/name))
     (first)
     :rofi/on-select
-    ((fn [f] (f)))
-    )
-  )
+    ((fn [f] (f)))))
 
 (defn dwim []
   (let [wsp (workspaces/current-workspace)]

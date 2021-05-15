@@ -45,4 +45,6 @@ To install the uberjar for the first time:
 #+BEGIN_SRC
 # from clawe project root
 bb -cp $(clojure -Spath) --uberjar clawe.jar -m clawe.core
+# or
+bb install
 #+END_SRC
