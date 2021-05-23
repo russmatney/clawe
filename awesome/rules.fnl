@@ -1,6 +1,7 @@
 (local gears (require "gears"))
 (local awful (require "awful"))
 (local beautiful (require "beautiful"))
+(local view (require :fennelview))
 
 (local bindings (require :bindings))
 
@@ -15,6 +16,15 @@
        (gears.table.join
         workspace-rules.all
         [{:rule {}
+          :callback
+          (fn [c]
+            (pp "rule callback")
+            ;; TODO fire into clawe rules command
+            ;; toward an abstraction like :async-flow - spawn and catch new client
+            ;; feels related to the create-client module
+            (pp c))}
+
+         {:rule {}
           :properties
           {:border_width beautiful.border_width
            :border_color beautiful.border_normal
