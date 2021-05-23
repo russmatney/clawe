@@ -85,7 +85,7 @@
 (set
  _G.log_garbage
  (fn []
-   (pp {:garbage :log
+   (pp {:log :garbage-counts
         :count (collectgarbage "count")
         :button (button.instances)
         :client (client.instances)
@@ -119,6 +119,7 @@
 (gears.timer
  {:timeout 300
   :autostart true
+  :call_now true
   :callback _G.handle_garbage})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -132,7 +133,7 @@
 (local rules (require :rules))
 (local signals (require :signals))
 (local titlebars (require :titlebars))
-(local spawns (require :spawns))
+(local clawe (require :clawe))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; init
@@ -146,8 +147,8 @@
    (_G.init_error_handling config)
 
    ;; init remote
-   (print "init_remote")
-   (_G.init_remote config)
+   (print "skipping init_remote...")
+   ;; (_G.init_remote config)
 
    ;; theme
    (print "init_theme")
@@ -173,11 +174,17 @@
 
    (print "init_tags/restore_state")
    (restart-helper.restore_state)
-   (_G.reapply_rules)
 
    ;; spawns
    (print "init_spawns")
-   (spawns.init_spawns config)
+   (awful.spawn "~/.config/awesome/autorun.sh" false)
+   (awful.spawn "xset r rate 170 60" false)
+   (awful.spawn.once "picom" false)
+
+   ;; reapply rules after restoring state of clients/tags
+   (print "reapplying rules")
+   (_G.reapply_rules)
+   (clawe.cmd "clawe-apply-rules")
 
    (print "------------------Awesome Init Complete---------")))
 

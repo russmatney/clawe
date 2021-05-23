@@ -10,4 +10,12 @@ which is called from the clojure side."
      ;; no-op
      nil)))
 
-{: update-workspaces}
+(fn cmd [cmd-name]
+  (spawn.easy_async
+   (.. "bash -c \"clawe " cmd-name "\"")
+   (fn [_res]
+     ;; no-op
+     nil)))
+
+{: update-workspaces
+ : cmd}
