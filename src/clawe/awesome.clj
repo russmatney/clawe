@@ -319,7 +319,6 @@ util = require 'util';
     (map (partial str "widgets.")
          ["workspaces"
           "workspace-meta"
-          "org-clock"
           "workrave"
           "focus"
           "dirty-repos"])

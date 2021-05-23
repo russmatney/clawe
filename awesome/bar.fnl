@@ -3,7 +3,6 @@
 (local beautiful (require "beautiful"))
 
 (local dirty-repos (require "widgets.dirty-repos"))
-(local org-clock (require "widgets.org-clock"))
 (local workspaces (require "widgets.workspaces"))
 (local workspace-meta (require "widgets.workspace-meta"))
 (local workrave (require "widgets.workrave"))
@@ -85,8 +84,7 @@
                  3 (workrave)}}
            4 {:layout wibox.container.place
               :valign "center"
-              :halign "center"
-              2 (org-clock)}
+              :halign "center"}
            5 {:layout wibox.layout.fixed.horizontal
               1 (spotify-widget)
               2 (when (util.is_vader) (batteryarc-widget))

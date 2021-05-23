@@ -6,7 +6,6 @@
    clawe.defs.bindings
    clawe.defs.workspaces
    clawe.defs.local.workspaces
-   clawe.yodo
    clawe.doctor
    clawe.install
    [clawe.awesome :as awm]
