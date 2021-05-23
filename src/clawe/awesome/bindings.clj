@@ -66,13 +66,15 @@
      [cmd]
      (fn []
        (pp cmd)
+       (pp spawn-fn-cache)
        (if (. spawn-fn-cache cmd)
          (do
            (naughty.notify {:title "Dropping binding call"
                             :text  cmd})
-           (gears.timer
-             {:timeout  5
-              :callback (fn [] (tset spawn-fn-cache cmd nil))}))
+           (gears.timer.start_new 0.1
+                                  (fn []
+                                    (tset spawn-fn-cache cmd nil)
+                                    false)))
          (do
            (tset spawn-fn-cache cmd true)
            (awful.spawn.easy_async

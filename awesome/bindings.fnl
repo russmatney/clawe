@@ -55,12 +55,13 @@ Returns a function expected to be attached to a keybinding.
           (pp spawn-fn-cache)
           (naughty.notify {:title "Dropping binding call"
                            :text cmd})
-          (gears.timer
-           {:timeout 5
-            :callback (fn []
-                        (pp "Callback took longer than 5s, clearing.")
-                        (tset spawn-fn-cache cmd nil)
-                        (pp spawn-fn-cache))}) )
+          (gears.timer.start_new
+           0.1
+           (fn []
+             (pp "Callback took longer than expected, clearing.")
+             (tset spawn-fn-cache cmd nil)
+             (pp spawn-fn-cache)
+             false)) )
         (do
           (tset spawn-fn-cache cmd true)
           (awful.spawn.easy_async
