@@ -2,7 +2,6 @@
 (local gears (require "gears"))
 (local beautiful (require "beautiful"))
 
-(local dirty-repos (require "widgets.dirty-repos"))
 (local workspaces (require "widgets.workspaces"))
 (local workspace-meta (require "widgets.workspace-meta"))
 (local workrave (require "widgets.workrave"))
@@ -74,22 +73,19 @@
            2 {:layout wibox.container.place
               :valign "center"
               :halign "center"
-              1 (workspace-meta)}
-           3 {:layout wibox.container.place
-              :valign "center"
-              :halign "center"
               1 {:layout wibox.layout.fixed.horizontal
                  1 mytextclock
                  2 separator
                  3 (workrave)}}
+           3 {:layout wibox.container.place
+              :valign "center"
+              :halign "center"}
            4 {:layout wibox.container.place
               :valign "center"
               :halign "center"}
            5 {:layout wibox.layout.fixed.horizontal
               1 (spotify-widget)
-              2 (when (util.is_vader) (batteryarc-widget))
-              3 separator
-              4 (dirty-repos)}})
+              2 (when (util.is_vader) (batteryarc-widget))}})
 
          ;; Create the wibox
          (set s.bottom-bar
@@ -102,7 +98,10 @@
          ;; Add widgets to the wibox
          (s.bottom-bar:setup
           {:layout wibox.layout.align.horizontal
-           1 nil
+           1 {:layout wibox.container.place
+              :valign "center"
+              :halign "center"
+              1 (workspace-meta)}
            2 {:layout wibox.container.place
               :valign "center"
               :halign "center"
