@@ -49,6 +49,7 @@
                          (awm/client-on-tag?
                            to-restore
                            (awm/awm-fnl
+                             {:quiet? true}
                              '(-> (awful.screen.focused)
                                   (. :selected_tags)
                                   (lume.map (fn [t] {:name t.name}))

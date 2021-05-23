@@ -380,10 +380,12 @@ util = require 'util';
 (defn bury-all-clients-handler
   ([] (bury-all-clients-handler nil nil))
   ([_config _parsed]
-   (awm-fnl '(let [s (awful.screen.focused)]
-               (lume.each s.clients
-                          (fn [c]
-                            (set c.floating false)))))))
+   (awm-fnl
+     {:quiet? true}
+     '(let [s (awful.screen.focused)]
+        (lume.each s.clients
+                   (fn [c]
+                     (set c.floating false)))))))
 
 (defcom bury-all-clients-cmd
   {:defcom/name    "bury-all-clients"
@@ -518,6 +520,7 @@ util = require 'util';
 (defn mark-buried-clients []
   (let [floating-clients
         (awm-fnl
+          {:quiet? true}
          '(-> (awful.screen.focused)
               (. :clients)
               (lume.filter (fn [c] c.floating))

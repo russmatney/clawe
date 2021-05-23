@@ -59,16 +59,16 @@
     "(local gears (require :gears))\n"
     "(local awful (require :awful))\n"
     "(local naughty (require :naughty))\n"
-    "(local spawn-fn-cache {:spawn-fn-cache \"\"})\n"))
+    "(local spawn-fn-cache {})\n"))
 
 (def spawn-fn-impl
   '(fn spawn-fn
      [cmd]
      (fn []
-       (pp cmd)
-       (pp spawn-fn-cache)
        (if (. spawn-fn-cache cmd)
          (do
+           (pp cmd)
+           (pp spawn-fn-cache)
            (naughty.notify {:title "Dropping binding call"
                             :text  cmd})
            (gears.timer.start_new 0.1
