@@ -99,9 +99,6 @@ Returns a function expected to be attached to a keybinding.
      (key [:mod] "Left" awful.tag.viewprev)
      (key [:mod] "Right" awful.tag.viewnext)
 
-     ;; previous tag
-     (key [:mod] "Escape" awful.tag.history.restore)
-
      ;; clawe keybindings
      (key [:mod] "r"
           (fn []

@@ -219,15 +219,18 @@
 ;; These should come for free, with :bindings/scratchpad options
 (defbinding-kbd toggle-workspace-journal
   [[:mod] "u"]
-  (fn [_ _] (toggle-workspace-with-name "journal")))
+  (fn [_ _] (toggle-workspace defs.workspaces/journal)))
 
-(defbinding-kbd toggle-workspace-editor
-  [[:mod] "e"]
-  (fn [_ _] (toggle-workspace defs.local.workspaces/editor)))
+;; (defbinding-kbd toggle-workspace-editor
+;;   [[:mod] "e"]
+;;   (fn [_ _] (toggle-workspace defs.local.workspaces/editor)))
 
 (defbinding-kbd toggle-workspace-web
   [[:mod] "t"]
-  (fn [_ _] (toggle-workspace-with-name "web")))
+  (fn [_ _]
+    ;; TODO configuration system? or a go-to-def system?
+    ;; (toggle-workspace defs.workspaces/web)
+    (toggle-workspace defs.workspaces/dev-browser)))
 
 (defbinding-kbd toggle-workspace-chrome-browser
   [[:mod] "b"]
@@ -235,11 +238,11 @@
 
 (defbinding-kbd toggle-workspace-slack
   [[:mod] "a"]
-  (fn [_ _] (toggle-workspace-with-name "slack")))
+  (fn [_ _] (toggle-workspace defs.workspaces/slack)))
 
 (defbinding-kbd toggle-workspace-spotify
   [[:mod] "s"]
-  (fn [_ _] (toggle-workspace-with-name "spotify")))
+  (fn [_ _] (toggle-workspace defs.workspaces/spotify)))
 
 (defbinding-kbd toggle-workspace-godot
   [[:mod] "g"]
@@ -247,11 +250,11 @@
 
 (defbinding-kbd toggle-workspace-zoom
   [[:mod] "z"]
-  (fn [_ _] (toggle-workspace-with-name "zoom")))
+  (fn [_ _] (toggle-workspace defs.workspaces/zoom)))
 
 (defbinding-kbd toggle-workspace-one-password
   [[:mod] "."]
-  (fn [_ _] (toggle-workspace-with-name "one-password")))
+  (fn [_ _] (toggle-workspace defs.workspaces/one-password)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; App toggling
@@ -500,15 +503,30 @@
     (notify/notify "Creating new Workspace!")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; cycle focus
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defbinding-kbd cycle-focus
+  [[:mod] "e"]
+  (fn [_ _]
+    (notify/notify "Cycling focus")
+    ;; TODO impl an actual cycle - right now it just focuses the first
+    ;; client on screen that isn't focused
+    (awm/awm-fnl
+      '(let [c (->
+                 (awful.screen.focused)
+                 (. :clients)
+                 (lume.reject (fn [c] (= c.window client.focus.window)))
+                 (lume.first))]
+         (set _G.client.focus c)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Not yet transcribed
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;    ;; walk tags
 ;;    (key [:mod] "Left" awful.tag.viewprev)
 ;;    (key [:mod] "Right" awful.tag.viewnext)
-
-;;    ;; previous tag
-;;    (key [:mod] "Escape" awful.tag.history.restore)
 
 ;;    ;; TODO move all these bindings into ralphie itself
 ;;    ;; ralphie rofi
