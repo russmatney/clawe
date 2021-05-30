@@ -456,7 +456,8 @@
 (defworkspace defthing
   awesome-rules
   workspace-title
-  (fn [_] (local-repo "russmatney/defthing")))
+  (fn [_] (local-repo "russmatney/defthing"))
+  {:git/check-status? true})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Teknql repos

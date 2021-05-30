@@ -30,6 +30,7 @@
 (defworkspace beatemup-two
   "beatemup rebuilt in godot"
   {:workspace/directory "godot/beatemup-two"}
+  {:git/check-status? true}
   defs.wrk/awesome-rules
   defs.wrk/workspace-repo)
 
