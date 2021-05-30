@@ -48,3 +48,9 @@ bb -cp $(clojure -Spath) --uberjar clawe.jar -m clawe.core
 # or
 bb install
 #+END_SRC
+
+* Development
+Visit any clojure file in the repo, then ~M-x cider-jack-in-clj~, which might be
+bound to ~SPC c '~.
+
+Here's [[file:src/user.clj][src/user.clj]] and [[file:src/clawe/core.clj][src/clawe/core.clj]]
