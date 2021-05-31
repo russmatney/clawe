@@ -50,7 +50,20 @@ bb install
 #+END_SRC
 
 * Development
+** Clojure dev
 Visit any clojure file in the repo, then ~M-x cider-jack-in-clj~, which might be
 bound to ~SPC c '~.
 
 Here's [[file:src/user.clj][src/user.clj]] and [[file:src/clawe/core.clj][src/clawe/core.clj]]
+** Logs
+AwesomeWM Logs can be viewed in the terminal with something like:
+
+#+begin_src shell
+tail -f ~/.cache/awesome/logs | bat --paging=never -l lua
+#+end_src
+
+Note that this expects you to run AwesomeWM with logging enabled, is explained
+briefly in their FAQ: https://awesomewm.org/apidoc/documentation/90-FAQ.md.html
+(search `logs`).
+
+You can also [[file:~/.cache/awesome/logs][visit this file in emacs]].
