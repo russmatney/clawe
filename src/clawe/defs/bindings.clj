@@ -256,10 +256,18 @@
   [[:mod] "."]
   (fn [_ _] (toggle-workspace defs.workspaces/one-password)))
 
+(defbinding-kbd toggle-workspace-pixels
+  [[:mod :shift] "p"]
+  (fn [_ _] (toggle-workspace defs.workspaces/pixels)))
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; App toggling
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; TODO express godot/aseprite as a quick app-toggle right here
+;; could be that it's a dried up version of the below toggle emacs/terminal
+;; maybe just an :app/open workspace
 (defbinding-kbd toggle-per-workspace-garden
   [[:mod :shift] "g"]
   (fn [_ _]
@@ -376,6 +384,34 @@
         (do
           (r.emacs/open opts)
           nil)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; cycle workspaces
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defbinding-kbd cycle-prev-tag
+  [[:mod] "Left"]
+  (fn [_ _] (awm/awm-fnl '(awful.tag.viewprev))))
+
+(defbinding-kbd cycle-next-tag
+  [[:mod] "Right"]
+  (fn [_ _] (awm/awm-fnl '(awful.tag.viewnext))))
+
+(defbinding-kbd cycle-prev-tag
+  [[:mod] "n"]
+  (fn [_ _] (awm/awm-fnl '(awful.tag.viewprev))))
+
+(defbinding-kbd cycle-next-tag
+  [[:mod] "p"]
+  (fn [_ _] (awm/awm-fnl '(awful.tag.viewnext))))
+
+(defbinding-kbd drag-workspace-prev
+  [[:mod :shift] "Left"]
+  (fn [_ _] (workspaces/drag-workspace "down")))
+
+(defbinding-kbd drag-workspace-next
+  [[:mod :shift] "Right"]
+  (fn [_ _] (workspaces/drag-workspace "up")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Brightness
@@ -524,10 +560,6 @@
 ;; Not yet transcribed
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;;    ;; walk tags
-;;    (key [:mod] "Left" awful.tag.viewprev)
-;;    (key [:mod] "Right" awful.tag.viewnext)
-
 ;;    ;; TODO move all these bindings into ralphie itself
 ;;    ;; ralphie rofi
 ;;    (key [:mod] "x" (spawn-fn "ralphie rofi"))
@@ -551,37 +583,6 @@
 ;;         (fn []
 ;;           (let [scr (awful.screen.focused)]
 ;;             (awful.layout.inc -1 scr _G.layouts))))
-
-;;    ;; cycle workspaces
-;;    (key [:mod] "n"
-;;         (fn []
-;;           (let [scr         (awful.screen.focused)
-;;                 current-tag scr.selected_tag
-;;                 idx         (if current-tag current-tag.index 1)
-;;                 tag-count   (tablex.size scr.tags)
-;;                 next-idx    (- idx 1)
-;;                 next-idx    (if (< next-idx 1)
-;;                               tag-count
-;;                               next-idx)
-;;                 next-tag    (. scr.tags next-idx)]
-;;             (next-tag:view_only)
-;;             (clawe.update-workspaces))))
-;;    (key [:mod] "p"
-;;         (fn []
-;;           (let [scr         (awful.screen.focused)
-;;                 current-tag scr.selected_tag
-;;                 idx         (if current-tag current-tag.index 1)
-;;                 tag-count   (tablex.size scr.tags)
-;;                 next-idx    (+ idx 1)
-;;                 next-idx    (if (> next-idx tag-count)
-;;                               1
-;;                               next-idx)
-;;                 next-tag    (. scr.tags next-idx)]
-;;             (next-tag:view_only)
-;;             (clawe.update-workspaces))))
-
-;;    (key [:mod :shift] "n" (spawn-fn "clawe drag-workspace-index down"))
-;;    (key [:mod :shift] "p" (spawn-fn "clawe drag-workspace-index up"))
 
 ;;    ;; launcher (rofi)
 ;;    (key [:mod] "space" (spawn-fn "/usr/bin/rofi -show drun -modi drun"))

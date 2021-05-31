@@ -95,10 +95,6 @@ Returns a function expected to be attached to a keybinding.
     [ ;; helpers
      (key [:mod :shift] "r" restart-helper.save_state_and_restart)
 
-     ;; walk tags
-     (key [:mod] "Left" awful.tag.viewprev)
-     (key [:mod] "Right" awful.tag.viewnext)
-
      ;; clawe keybindings
      (key [:mod] "r"
           (fn []
@@ -119,37 +115,6 @@ Returns a function expected to be attached to a keybinding.
           (fn []
             (let [scr (awful.screen.focused)]
               (awful.layout.inc -1 scr _G.layouts))))
-
-     ;; cycle workspaces
-     (key [:mod] "n"
-          (fn []
-            (let [scr (awful.screen.focused)
-                  current-tag scr.selected_tag
-                  idx (if current-tag current-tag.index 1)
-                  tag-count (tablex.size scr.tags)
-                  next-idx (- idx 1)
-                  next-idx (if (< next-idx 1)
-                               tag-count
-                               next-idx)
-                  next-tag (. scr.tags next-idx)]
-              (next-tag:view_only)
-              (clawe.update-workspaces))))
-     (key [:mod] "p"
-          (fn []
-            (let [scr (awful.screen.focused)
-                  current-tag scr.selected_tag
-                  idx (if current-tag current-tag.index 1)
-                  tag-count (tablex.size scr.tags)
-                  next-idx (+ idx 1)
-                  next-idx (if (> next-idx tag-count)
-                               1
-                               next-idx)
-                  next-tag (. scr.tags next-idx)]
-              (next-tag:view_only)
-              (clawe.update-workspaces))))
-
-     (key [:mod :shift] "n" (spawn-fn "clawe drag-workspace-index down"))
-     (key [:mod :shift] "p" (spawn-fn "clawe drag-workspace-index up"))
 
      ;; launcher (rofi)
      (key [:mod] "space" (spawn-fn "/usr/bin/rofi -show combi"))
