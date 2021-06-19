@@ -32,3 +32,9 @@
   {:workspace/directory "godot/beatemup-two"}
   defs.wrk/awesome-rules
   defs.wrk/workspace-repo)
+
+(defworkspace lil-shooter
+  "small top-down shooter in godot"
+  {:workspace/directory "godot/lil-shooter"}
+  defs.wrk/awesome-rules
+  defs.wrk/workspace-repo)

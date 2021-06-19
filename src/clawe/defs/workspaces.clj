@@ -546,10 +546,16 @@
   (fn [_] (local-repo "urbint/grid" "README.md"))
   {:git/check-status? true})
 
-(defworkspace proddebug
+(defworkspace urbint
   awesome-rules
   workspace-title
   (fn [_] (local-repo "urbint/grid" "README.md")))
+
+(defworkspace lens
+  awesome-rules
+  workspace-title
+  (fn [_] (local-repo "urbint/lens" "README.md"))
+  {:git/check-status? true})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Emacs repos

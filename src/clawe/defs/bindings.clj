@@ -229,8 +229,9 @@
   [[:mod] "t"]
   (fn [_ _]
     ;; TODO configuration system? or a go-to-def system?
-    ;; (toggle-workspace defs.workspaces/web)
-    (toggle-workspace defs.workspaces/dev-browser)))
+    (toggle-workspace defs.workspaces/web)
+    ;; (toggle-workspace defs.workspaces/dev-browser)
+    ))
 
 (defbinding-kbd toggle-workspace-chrome-browser
   [[:mod] "b"]
