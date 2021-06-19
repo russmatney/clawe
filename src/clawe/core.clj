@@ -8,6 +8,7 @@
    clawe.defs.local.workspaces
    clawe.doctor
    clawe.install
+   clawe.rules
    [clawe.awesome :as awm]
    [clawe.awesome.restart]
    [clawe.awesome.rules]

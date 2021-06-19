@@ -1,4 +1,5 @@
 (local spawn (require "awful.spawn"))
+(local view (require "fennelview"))
 
 (local update-wsp-cb "update_workspaces_widget")
 (fn update-workspaces [cb-fname]
@@ -17,5 +18,10 @@ which is called from the clojure side."
      ;; no-op
      nil)))
 
+(fn cmd-args [cmd-name arg]
+  (let [s (.. "bash -c \"clawe " cmd-name " '" (view arg) "'\"")]
+    (spawn.easy_async s (fn [_res] nil))))
+
 {: update-workspaces
- : cmd}
+ : cmd
+ : cmd-args}

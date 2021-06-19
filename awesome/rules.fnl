@@ -2,6 +2,7 @@
 (local awful (require "awful"))
 (local beautiful (require "beautiful"))
 (local view (require :fennelview))
+(local clawe (require :clawe))
 
 (local bindings (require :bindings))
 
@@ -11,18 +12,24 @@
 ;; Rules
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(fn to-client-data [c]
+  {:name c.name
+   :ontop    c.ontop
+   :window   c.window
+   :type     c.type
+   :class    c.class
+   :instance c.instance
+   :pid      c.pid
+   :role     c.role})
+
 ;; Rules to apply to new clients (through the "manage" signal).
 (local global_rules
        (gears.table.join
-        workspace-rules.all
-        [{:rule {}
+        [
+         {:rule {}
           :callback
-          (fn [c]
-            (pp "rule callback")
-            ;; TODO fire into clawe rules command
-            ;; toward an abstraction like :async-flow - spawn and catch new client
-            ;; feels related to the create-client module
-            (pp c))}
+          ;; TODO this doesn't seem to fire for all new windows, just some...?
+          (fn [c] (clawe.cmd-args "window-callback" (to-client-data c)))}
 
          {:rule {}
           :properties
@@ -88,10 +95,10 @@
                        :ontop true
                        :sticky true}}
 
-         {:rule {:class "firefox"}
-          :properties {:tag "web"
-                       :maximized false
-                       :floating false}}
+         ;; {:rule {:class "firefox"}
+         ;;  :properties {:tag "web"
+         ;;               :maximized false
+         ;;               :floating false}}
 
          ;; youtube fix
          {:rule {:instance "plugin-container"}
@@ -131,7 +138,8 @@
           :properties {:tag "slack"
                        :first_tag "slack"
                        ;; :switch_to_tags true
-                       }}]))
+                       }}]
+        workspace-rules.all))
 
 (fn init_rules []
   ;; TODO be nice to update changed rules, not _all_
