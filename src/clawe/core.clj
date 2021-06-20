@@ -14,6 +14,7 @@
    [clawe.awesome.rules]
    [ralphie.notify :as r.notify]
    [ralphie.rofi :as r.rofi]
+   [ralphie.core :as r.core]
    [ralph.defcom :as defcom :refer [defcom]]
    [ralphie.git :as r.git]))
 
@@ -55,7 +56,7 @@
                                (r.git/fetch (workspaces/workspace-repo wsp)))})]
          (->>
            (defcom/list-commands)
-           (map (partial r.rofi/defcom->rofi nil))))))))
+           (map (partial r.core/defcom->rofi nil))))))))
 
 (comment
   (->>
