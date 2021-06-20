@@ -102,7 +102,6 @@ Returns a function expected to be attached to a keybinding.
             (awful.spawn "clawe rebuild-clawe" false)
             (awful.spawn "clawe reload" false)))
 
-     (key [:mod] "d" (spawn-fn "clawe clean-workspaces"))
      (key [:mod] "x" (spawn-fn "ralphie rofi"))
      (key [:mod] "w" (spawn-fn "clawe dwim"))
 

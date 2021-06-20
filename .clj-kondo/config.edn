@@ -2,11 +2,10 @@
                                          (babashka.process/$)]}
            :clawe/missing     {:level :warning}
            :defcom/missing    {:level :warning}}
- :lint-as {systemic.core/defsys clojure.core/def}
+ :lint-as {systemic.core/defsys       clojure.core/def
+           defthing.defcom/defcom     clojure.core/def
+           clawe.defs.bindings/defkbd clojure.core/def}
  :hooks   {:analyze-call
-           {clawe.defs/defworkspace hooks.defworkspace/defworkspace
-            clawe.defs.workspaces/defworkspace hooks.defworkspace/defworkspace
-            clawe.defs.bindings/defbinding hooks.defworkspace/defworkspace
-            clawe.defs.bindings/defbinding-kbd hooks.defworkspace/defworkspace
-            clawe.defs/defapp       hooks.defcom/defcom
-            ralph.defcom/defcom     hooks.defcom/defcom}}}
+           {clawe.defs/defworkspace            hooks.defworkspace/defworkspace
+            clawe.defs/defapp                  hooks.defcom/defcom
+            clawe.defs.workspaces/defworkspace hooks.defworkspace/defworkspace}}}

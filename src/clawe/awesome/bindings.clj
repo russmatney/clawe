@@ -12,8 +12,8 @@
                 :control "Control"})
 
 (defn binding->awful-key
-  [{:keys [binding/key defcom/name]}]
-  ;; TODO assertion/warning if a binding is missing something here?
+  "Maps a clawe keybinding to a call to `awful.key`."
+  [{:keys [binding/key] :as bd}]
   (let [[mods key] key
         mods       (->> mods
                         (map modifiers)
@@ -22,11 +22,13 @@
       "(awful.key "
       "[ " (string/join " " mods) " ] \"" key "\""
       ;; TODO support wider range of function calls here
-      "\n\t\t(spawn-fn \"clawe " name "\" )"
+      "\n\t\t(spawn-fn \"" (bindings/binding-cli-command bd) "\" )"
       ")")))
 
 (defn append-global-keybindings []
-  ;; TODO this adds a listener for each key, but does not clear any existing...
+  ;; TODO this adds a listener for each key, but does not clear any existing,
+  ;; still need to restart awesome to prevent bindings from firing multiple
+  ;; listeners
   (let [awful-keys (->> (bindings/list-bindings)
                         (map binding->awful-key)
                         (string/join "\n\t"))]
@@ -71,7 +73,7 @@
            (pp spawn-fn-cache)
            (naughty.notify {:title "Dropping binding call"
                             :text  cmd})
-           (gears.timer.start_new 0.1
+           (gears.timer.start_new 0.03
                                   (fn []
                                     (tset spawn-fn-cache cmd nil)
                                     false)))

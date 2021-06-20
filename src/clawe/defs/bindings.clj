@@ -1,19 +1,16 @@
 (ns clawe.defs.bindings
   (:require
-   [clawe.defthing :as defthing]
+   [defthing.core :as defthing]
+   [defthing.defcom :refer [defcom]]
    [clawe.awesome :as awm]
    [clawe.workspaces :as workspaces]
    [clawe.defs.workspaces :as defs.workspaces]
-   [ralph.defcom :as defcom]
    [ralphie.notify :as notify]
    [ralphie.rofi :as rofi]
    [ralphie.tmux :as r.tmux]
    [ralphie.zsh :as r.zsh]
    [ralphie.clipboard :as r.clip]
-   ;; TODO remove non bb deps from chess (clj-http)
    [chess.core :as chess]
-   ;; TODO require as first class dep
-   [systemic.core :as sys]
 
    [clawe.defs.local.workspaces :as defs.local.workspaces]
 
@@ -27,113 +24,183 @@
    [clawe.scratchpad :as scratchpad]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Workspaces API
+;; Getters
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn list-bindings []
-  (defthing/list-xs :clawe/bindings))
+  (defthing/list-things :clawe/binding))
 
 (defn get-binding [bd]
-  (defthing/get-x :clawe/bindings
+  (defthing/get-thing :clawe/binding
     (comp #{(:name bd bd)} :name)))
 
-(defn binding-key->str [k]
-  (let [mods (->> (first k) (apply str) (#(string/replace % #":" "")))
-        k (second k)]
-    (str mods k)))
+(defn binding-cli-command
+  "Returns a string that can be called on the command line to execute the
+  binding's `defcom` command.
 
-(defn binding->defcom
-  "Expands a binding to fulfill the defcom api."
-  [{:keys [binding/key binding/command name] :as bd}]
-  (let [nm (str name "-keybdg-" (binding-key->str key))
-        bd (assoc bd
-                  :defcom/name nm
-                  :defcom/handler command
-                  ;; an attempt to deal with defcom's 2 airty situation
-                  ;; (fn [_ _] (command))
-                  )]
-    ;; not sure if this is enough - might fail in some cases (install-micro)
-    (defcom/add-command (symbol nm) bd)
-    bd))
-
-(defmacro defbinding [title & args]
-  (apply defthing/defthing :clawe/bindings title args))
-
-
-(declare kbd)
-(defmacro defbinding-kbd [title key-def command]
-  `(defbinding ~title
-    (kbd ~key-def ~command)
-    binding->defcom))
+  Consumed when writing these bindings to external configuration files.
+  "
+  [{:binding/keys [command-name]}]
+  (str "clawe " command-name))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Binding helpers
+;; defkbd
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn kbd [key command]
-  (fn [x]
-    (assoc x
-           :binding/key key
-           :binding/command command)))
+(defn ->key-string
+  "Returns a string for the keybinding name + key-def.
 
-(defn call-kbd [bd]
-  ((:binding/command bd) nil nil))
+  This string is:
+  - set on the clawe/binding (at :binding/command-name)
+  - used as the symbol/name for the binding's `defcom`
+  - used to call the keybinding via `clawe <key-string>` in `binding-cli-command`
 
-(defbinding-kbd uuid-on-clipboard
+  It should have no spaces or other crazy shell-interpreted chars."
+  [n key-def]
+  (let [mods    (->> (first key-def) (apply str) (#(string/replace % #":" "")))
+        key-def (second key-def)]
+    (str n "-kbd-" mods key-def)))
+
+(defmacro defkbd
+  "Creates both a clawe-binding and a defcom with an associated name.
+
+  Key to this working is the binding's :binding/command-name matching the
+  `defcom`'s `:name` (first param).
+
+  The bindings are consumed via `list-bindings` and written to whatever
+  key-binding configuration (awesomewm, i3, etc) as shelling out to `clawe` with
+  a name determined by `->key-string`.
+
+  The key-def format is a list like: `[<mods> <key>]`
+  where `mods` is a list of keywords like:
+  - `:mod`, `:alt`, `:shift`, `:ctrl`
+  and `key` is a string like:
+  - `a`, `b`, `Return`, `Left`, `XF86MonBrightnessUp`
+
+  The rest of the args are passed to `defcom`, which is used to create the
+  actual command to be called. `defcom` has it's own docs, but the gist is that
+  the final form passed will be adapted into a callable function, so can be
+  either an anonymous function, a named function, or a form (like `do` or `let`)
+  that will be wrapped as callable function.
+
+  Examples:
+
+  (defkbd say-bye
+    [[:mod :ctrl :shift] \"h\"]
+    (notify/notify \"Bye!!\"))
+
+  (defkbd open-emacs
+    [[:mod :shift] \"Return\"]
+    (do
+      (notify/notify \"Opening emacs!\")
+      (emacs/open)))
+  "
+  [n key-def & xorfs]
+  (let [full-name (->key-string n key-def)
+
+        ;; pull the defcom fn off the end
+        ;; so it isn't called when evaling the binding
+        rst (butlast xorfs)
+
+        binding (apply defthing/defthing :clawe/binding n
+                       {:binding/key          key-def
+                        :binding/command-name full-name}
+                       rst)]
+    `(do
+       ;; register a defcom with the full binding name
+       ;; may want to only include the fn-form `i.e. (last xorfs)` here,
+       ;; if binding defs grow and we don't care for those key-vals on defcoms
+       (defcom ~(symbol full-name) ~@xorfs)
+
+       ;; return the binding
+       ~binding)))
+
+(comment
+  (defkbd say-bye
+    [[:mod :ctrl :shift] "h"]
+    (notify/notify "Bye!!"))
+
+  (->>
+    (list-bindings)
+    (filter (fn [com] (-> com :name (#(string/includes? % "say-bye")))))
+    first
+    )
+
+  (->>
+    (defthing.defcom/list-commands)
+    (filter :name)
+    (filter (fn [com] (-> com :name (#(string/includes? % "say-bye")))))
+    first
+    ;; defthing.defcom/exec
+    ))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Misc
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defkbd uuid-on-clipboard
   [[:mod :ctrl] "u"]
-  (fn [_ _]
-    (let [uuid (str (java.util.UUID/randomUUID))]
-      (r.clip/set-clip uuid))))
+  (let [uuid (str (java.util.UUID/randomUUID))]
+    (notify/notify "clippy!")
+    (r.clip/set-clip uuid)))
+
+(comment
+  (->>
+    (defthing.defcom/list-commands)
+    (filter :name)
+    (filter (fn [com] (-> com :name (#(string/includes? % "uuid-on")))))
+    ;; first
+    ;; defthing.defcom/exec
+    )
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Titlebars
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defbinding-kbd toggle-all-titlebars
+(defkbd toggle-all-titlebars
   [[:mod :shift] "t"]
-  (fn [_ _]
-    ;; checks the first client to see if titlebars are visible or not
-    (let [no-titlebar
-          (awm/awm-fnl '(->
-                          (client.get)
-                          (lume.first)
-                          ((fn [c]
-                             (let [(_ size) (c:titlebar_top)]
-                               (= size 0))))
-                          (view)))]
-      (if no-titlebar
-        (do
-          (notify/notify "Showing all titlebars")
-          (awm/awm-fnl
-            '(->
-               (client.get)
-               (lume.each awful.titlebar.show))))
-        (do
-          (notify/notify "Hiding all titlebars")
-          (awm/awm-fnl
-            '(->
-               (client.get)
-               (lume.each awful.titlebar.hide))))))))
+  "checks the first client to see if titlebars are visible or not"
+  (let [no-titlebar
+        (awm/awm-fnl '(->
+                        (client.get)
+                        (lume.first)
+                        ((fn [c]
+                           (let [(_ size) (c:titlebar_top)]
+                             (= size 0))))
+                        (view)))]
+    (if no-titlebar
+      (do
+        (notify/notify "Showing all titlebars")
+        (awm/awm-fnl
+          '(->
+             (client.get)
+             (lume.each awful.titlebar.show))))
+      (do
+        (notify/notify "Hiding all titlebars")
+        (awm/awm-fnl
+          '(->
+             (client.get)
+             (lume.each awful.titlebar.hide)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Window layout
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defbinding-kbd bury-all-windows
+(defkbd bury-all-windows
   [[:mod :shift] "f"]
-  (fn [_ _]
+  (do
     (notify/notify "burying all windows")
     (awm/awm-fnl
       '(->
          (client.get)
          (lume.each (fn [c] (tset c :floating false)))))))
 
-(defbinding-kbd center-window-small
+(defkbd center-window-small
   [[:mod] "v"]
-  (fn [_ _]
+  (do
     (notify/notify "center-window-small")
     ;; TODO impl awesome client-style bindings?
-    ;;
     (awm/awm-fnl
       '(let [c (awful.focused.client)]
          (tset c :ontop true)
@@ -149,23 +216,19 @@
 ;; chess
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defbinding-kbd open-chess-game
+(defkbd open-chess-game
   [[:mod :shift] "e"]
-  (fn [_ _]
+  (do
     (notify/notify "Fetching chess games")
     (->>
       (chess/fetch-games)
-      (map (fn [{:keys [lichess/url white-user black-user] :as game}]
+      (map (fn [{:keys [white-user black-user] :as game}]
              (assoc game
                     :rofi/label (str white-user " vs " black-user))))
       (rofi/rofi {:msg       "Open Game"
                   :on-select (fn [{:keys [lichess/url]}]
                                (notify/notify "Opening game" url)
                                (r.browser/open {:browser.open/url url}))}))))
-
-(comment
-  (chess/fetch-games)
-  (call-kbd open-chess-game))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Notifications
@@ -176,28 +239,21 @@
     notify-send.py a --hint boolean:deadd-notification-center:true
     string:type:reloadStyle))
 
-(defbinding-kbd toggle-notifications-center
+(defkbd toggle-notifications-center
   [[:mod :alt] "n"]
-  (fn [_ _]
-    ;; (reload-notification-css)
-    (let [deadd-pid (->
-                      ^{:out :string}
-                      (process/$ pidof deadd-notification-center)
-                      process/check
-                      :out
-                      string/trim)]
-      (-> (process/$ kill -s USR1 ~deadd-pid)
-          process/check))))
+  ;; (reload-notification-css)
+  (let [deadd-pid (->
+                    ^{:out :string}
+                    (process/$ pidof deadd-notification-center)
+                    process/check
+                    :out
+                    string/trim)]
+    (-> (process/$ kill -s USR1 ~deadd-pid)
+        process/check)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Workspace toggling
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn toggle-workspace-with-name [name]
-  (-> name
-      defs.workspaces/get-workspace
-      workspaces/merge-awm-tags
-      scratchpad/toggle-scratchpad))
 
 (defn toggle-workspace [workspace]
   (-> workspace
@@ -205,59 +261,44 @@
       scratchpad/toggle-scratchpad))
 
 (comment
-  (toggle-workspace-with-name "journal")
-  (-> "spotify"
-      defs.workspaces/get-workspace
-      workspaces/merge-awm-tags
-      :awesome/clients)
+  (-> defs.local.workspaces/editor toggle-workspace))
 
-  (-> defs.local.workspaces/editor
-      toggle-workspace)
+;; these should come for free, with :binding/scratchpad options
+(defkbd toggle-workspace-journal
+  [[:mod] "u"]
+  (toggle-workspace defs.workspaces/journal))
+
+(defkbd toggle-workspace-web
+  [[:mod] "t"]
+  (toggle-workspace defs.workspaces/web)
+  ;; (toggle-workspace defs.workspaces/dev-browser)
   )
 
-;; TODO import and depend on defs/workspace? or is that backwards?
-;; These should come for free, with :bindings/scratchpad options
-(defbinding-kbd toggle-workspace-journal
-  [[:mod] "u"]
-  (fn [_ _] (toggle-workspace defs.workspaces/journal)))
-
-;; (defbinding-kbd toggle-workspace-editor
-;;   [[:mod] "e"]
-;;   (fn [_ _] (toggle-workspace defs.local.workspaces/editor)))
-
-(defbinding-kbd toggle-workspace-web
-  [[:mod] "t"]
-  (fn [_ _]
-    ;; TODO configuration system? or a go-to-def system?
-    (toggle-workspace defs.workspaces/web)
-    ;; (toggle-workspace defs.workspaces/dev-browser)
-    ))
-
-(defbinding-kbd toggle-workspace-chrome-browser
+(defkbd toggle-workspace-chrome-browser
   [[:mod] "b"]
-  (fn [_ _] (toggle-workspace defs.workspaces/dev-browser)))
+  (toggle-workspace defs.workspaces/dev-browser))
 
-(defbinding-kbd toggle-workspace-slack
+(defkbd toggle-workspace-slack
   [[:mod] "a"]
-  (fn [_ _] (toggle-workspace defs.workspaces/slack)))
+  (toggle-workspace defs.workspaces/slack))
 
-(defbinding-kbd toggle-workspace-spotify
+(defkbd toggle-workspace-spotify
   [[:mod] "s"]
-  (fn [_ _] (toggle-workspace defs.workspaces/spotify)))
+  (toggle-workspace defs.workspaces/spotify))
 
-(defbinding-kbd toggle-workspace-godot
+(defkbd toggle-workspace-godot
   [[:mod] "g"]
-  (fn [_ _] (toggle-workspace defs.workspaces/godot)))
+  (toggle-workspace defs.workspaces/godot))
 
-(defbinding-kbd toggle-workspace-zoom
+(defkbd toggle-workspace-zoom
   [[:mod] "z"]
-  (fn [_ _] (toggle-workspace defs.workspaces/zoom)))
+  (toggle-workspace defs.workspaces/zoom))
 
-(defbinding-kbd toggle-workspace-one-password
+(defkbd toggle-workspace-one-password
   [[:mod] "."]
   (fn [_ _] (toggle-workspace defs.workspaces/one-password)))
 
-(defbinding-kbd toggle-workspace-pixels
+(defkbd toggle-workspace-pixels
   [[:mod :shift] "p"]
   (fn [_ _] (toggle-workspace defs.workspaces/pixels)))
 
@@ -269,7 +310,7 @@
 ;; TODO express godot/aseprite as a quick app-toggle right here
 ;; could be that it's a dried up version of the below toggle emacs/terminal
 ;; maybe just an :app/open workspace
-(defbinding-kbd toggle-per-workspace-garden
+(defkbd toggle-per-workspace-garden
   [[:mod :shift] "g"]
   (fn [_ _]
     (notify/notify "Toggling per-workspace garden")
@@ -293,7 +334,7 @@
            :emacs.open/file
            (r.zsh/expand (str "~/todo/garden/workspaces/" title ".org"))})))))
 
-(defbinding-kbd toggle-terminal
+(defkbd toggle-terminal
   [[:mod] "Return"]
   (fn [_ _]
     (let [{:workspace/keys [title directory]
@@ -336,7 +377,7 @@
         (do (r.tmux/open-session opts)
             nil)))))
 
-(defbinding-kbd toggle-emacs
+(defkbd toggle-emacs
   [[:mod :shift] "Return"]
   (fn [_ _]
     (let [
@@ -390,87 +431,86 @@
 ;; cycle workspaces
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defbinding-kbd cycle-prev-tag
+(defkbd cycle-prev-tag
   [[:mod] "Left"]
   (fn [_ _] (awm/awm-fnl '(awful.tag.viewprev))))
 
-(defbinding-kbd cycle-next-tag
+(defkbd cycle-next-tag
   [[:mod] "Right"]
   (fn [_ _] (awm/awm-fnl '(awful.tag.viewnext))))
 
-(defbinding-kbd cycle-prev-tag
+(defkbd cycle-prev-tag-2
   [[:mod] "n"]
   (fn [_ _] (awm/awm-fnl '(awful.tag.viewprev))))
 
-(defbinding-kbd cycle-next-tag
+(defkbd cycle-next-tag-2
   [[:mod] "p"]
   (fn [_ _] (awm/awm-fnl '(awful.tag.viewnext))))
 
-(defbinding-kbd drag-workspace-prev
+(defkbd drag-workspace-prev
   [[:mod :shift] "Left"]
-  (fn [_ _] (workspaces/drag-workspace "down")))
+  (workspaces/drag-workspace "down"))
 
-(defbinding-kbd drag-workspace-next
+(defkbd drag-workspace-next
   [[:mod :shift] "Right"]
-  (fn [_ _] (workspaces/drag-workspace "up")))
+  (workspaces/drag-workspace "up"))
+
+(defkbd clean-workspaces
+  [[:mod] "d"]
+  (workspaces/clean-workspaces))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Brightness
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defbinding-kbd brightness-up
+(defkbd brightness-up
   [[] "XF86MonBrightnessUp"]
-  (fn [_ _]
-    (->
-      ($ light -A 5)
-      check :out slurp)))
+  (->
+    ($ light -A 5)
+    check :out slurp))
 
-(defbinding-kbd brightness-down
+(defkbd brightness-down
   [[] "XF86MonBrightnessDown"]
-  (fn [_ _]
-    (->
-      ($ light -U 5)
-      check :out slurp)))
+  (->
+    ($ light -U 5)
+    check :out slurp))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Play/Pause/Next/Prev
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defbinding-kbd spotify-pause
+(defkbd spotify-pause
   [[] "XF86AudioPause"]
-  (fn [_ _]
-    (->
-      ($ spotifycli --playpause)
-      check :out slurp)))
+  (->
+    ($ spotifycli --playpause)
+    check :out slurp))
 
-(defbinding-kbd spotify-play
+(defkbd spotify-play
   [[] "XF86AudioPlay"]
-  (fn [_ _]
-    (->
-      ($ spotifycli --playpause)
-      check :out slurp)))
+  (->
+    ($ spotifycli --playpause)
+    check :out slurp))
 
-(defbinding-kbd audio-next
+(defkbd audio-next
   [[] "XF86AudioNext"]
-  (fn [_ _]
-    (->
-      ($ playerctl next)
-      check :out slurp)))
+  (->
+    ($ playerctl next)
+    check :out slurp))
 
-(defbinding-kbd audio-prev
+(defkbd audio-prev
   [[] "XF86AudioPrev"]
-  (fn [_ _]
-    (->
-      ($ playerctl previous)
-      check :out slurp)))
+  (->
+    ($ playerctl previous)
+    check :out slurp))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Muting input/output
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defbinding-kbd toggle-input-mute
+(defkbd toggle-input-mute
   [[:mod] "m"]
-  (fn [_ _]
+  (do
     (->
       ($ amixer set Capture toggle)
       check :out slurp)
@@ -480,72 +520,66 @@
                          "Muted!" "Unmuted!")
        :notify/id      "mute-notif"})))
 
-(defbinding-kbd toggle-output-mute
+(defkbd toggle-output-mute
   [[] "XF86AudioMute"]
-  (fn [_ _]
-    (->
-      ($ pactl set-sink-mute "@DEFAULT_SINK@" toggle)
-      check :out slurp)))
+  (->
+    ($ pactl set-sink-mute "@DEFAULT_SINK@" toggle)
+    check :out slurp))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Volume up/down
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defbinding-kbd volume-up
+(defkbd volume-up
   [[] "XF86AudioRaiseVolume"]
-  (fn [_ _]
+  (do
     (->
       ($ pactl set-sink-volume "@DEFAULT_SINK@" "+5%")
       check :out slurp)
     (notify/notify {:notify/subject "Raised volume"
-                    :notify/body (r.pulseaudio/default-sink-volume)
-                    :notify/id "changed-volume"})))
+                    :notify/body    (r.pulseaudio/default-sink-volume)
+                    :notify/id      "changed-volume"})))
 
-(defbinding-kbd volume-down
+(defkbd volume-down
   [[] "XF86AudioLowerVolume"]
-  (fn [_ _]
+  (do
     (->
       ($ pactl set-sink-volume "@DEFAULT_SINK@" "-5%")
       check :out slurp)
     (notify/notify {:notify/subject "Lowered volume"
-                    :notify/body (r.pulseaudio/default-sink-volume)
-                    :notify/id "changed-volume"})))
+                    :notify/body    (r.pulseaudio/default-sink-volume)
+                    :notify/id      "changed-volume"})))
 
-(defbinding-kbd spotify-volume-up
+(defkbd spotify-volume-up
   [[:mod] "XF86AudioRaiseVolume"]
-  (fn [_ _]
-    ;; TODO this api is nonsense, should refactor when defcom arity is fixed
-    (r.spotify/spotify-volume nil {:arguments ["up"]})))
+  (r.spotify/adjust-spotify-volume "up"))
 
-(defbinding-kbd spotify-volume-down
+(defkbd spotify-volume-down
   [[:mod] "XF86AudioLowerVolume"]
-  (fn [_ _]
-    ;; TODO this api is nonsense, should refactor when defcom arity is fixed
-    (r.spotify/spotify-volume nil {:arguments ["down"]})))
+  (r.spotify/adjust-spotify-volume "down"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Open Workspace
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defbinding-kbd open-workspace
+(defkbd open-workspace
   [[:mod] "o"]
-  (fn [_ _]
+  (do
     (notify/notify "Opening Workspace!")
     (workspaces/open-workspace)))
 
-(defbinding-kbd create-new-workspace
+(defkbd create-new-workspace
   [[:mod :shift] "o"]
-  (fn [_ _]
-    ;; TODO add support for creating a new one
-    (notify/notify "Creating new Workspace!")))
+  ;; TODO add support for creating a new one
+  (notify/notify "Creating new Workspace!"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; cycle focus
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defbinding-kbd cycle-focus
+(defkbd cycle-focus
   [[:mod] "e"]
-  (fn [_ _]
+  (do
     (notify/notify "Cycling focus")
     ;; TODO impl an actual cycle - right now it just focuses the first
     ;; client on screen that isn't focused
@@ -571,9 +605,6 @@
 ;;           ;; WARN potential race case on widgets reloading
 ;;           (awful.spawn "clawe rebuild-clawe" false)
 ;;           (awful.spawn "clawe reload" false)))
-
-;;    (key [:mod] "d" (spawn-fn "clawe clean-workspaces"))
-;;    (key [:mod] "w" (spawn-fn "clawe rofi"))
 
 ;;    ;; cycle layouts
 ;;    (key [:mod] "Tab"
