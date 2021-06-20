@@ -4,7 +4,11 @@
    [ralphie.util :as r.util]
    [ralphie.notify :as r.notify]
    [ralphie.sh :as r.sh]
+   [ralphie.install :as r.install]
    [defthing.defcom :as defcom :refer [defcom]]))
+
+(defcom install-clawe-zsh-tab-completion
+  (r.install/install-zsh-completion "clawe"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Build Clawe Uberjar
