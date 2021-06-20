@@ -1,10 +1,8 @@
 {:linters {:unresolved-symbol {:exclude [(babashka.process/$)]}
            :clawe/missing     {:level :warning}
            :defcom/missing    {:level :warning}}
- :lint-as {systemic.core/defsys       clojure.core/def
-           defthing.defcom/defcom     clojure.core/def
-           clawe.defs.bindings/defkbd clojure.core/def}
- :hooks   {:analyze-call
-           {clawe.defs/defworkspace            hooks.defworkspace/defworkspace
-            clawe.defs/defapp                  hooks.defcom/defcom
-            clawe.defs.workspaces/defworkspace hooks.defworkspace/defworkspace}}}
+ :lint-as {systemic.core/defsys               clojure.core/def
+           defthing.defcom/defcom             clojure.core/def
+           clawe.defs.worksapces/defworkspace clojure.core/def
+           clawe.defs.apps/defapp             clojure.core/def
+           clawe.defs.bindings/defkbd         clojure.core/def}}

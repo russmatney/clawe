@@ -1,11 +1,7 @@
 (ns clawe.defs.workspaces
   (:require
-   [clawe.defthing :as defthing]
-   [ralphie.awesome :as r.awm]
-   [clojure.string :as string]
+   [defthing.core :as defthing]
    [ralphie.notify :as notify]
-   [babashka.process :as process]
-   [ralphie.tmux :as tmux]
    [clawe.awesome :as awm]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -13,10 +9,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn list-workspaces []
-  (defthing/list-xs :clawe/workspaces))
+  (defthing/list-things :clawe/workspaces))
 
 (defn get-workspace [wsp]
-  (defthing/get-x :clawe/workspaces
+  (defthing/get-thing :clawe/workspaces
     (comp #{(if (map? wsp)
               (some wsp [:workspace/title :awesome/tag-name :name])
               wsp)}

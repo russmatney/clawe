@@ -1,17 +1,17 @@
 (ns clawe.defs.apps
   (:require
    [babashka.process :refer [$ check]]
-   [clawe.defthing :as defthing]))
+   [defthing.core :as defthing]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Apps API
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn list-apps []
-  (defthing/list-xs :clawe/apps))
+  (defthing/list-things :clawe/apps))
 
 (defn get-app [app]
-  (defthing/get-x :clawe/apps
+  (defthing/get-thing :clawe/apps
     (comp #{(:name app app)} :name)))
 
 (defmacro defapp [title & args]
