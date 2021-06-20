@@ -1,20 +1,11 @@
 (ns clawe.awesome.rules
   "Manages the awesomeWM rules."
   (:require
-   [clawe.awesome :as awm]
    [clawe.workspaces :as workspaces]
    [clojure.string :as string]
    [clojure.walk :as walk]
-   [ralph.defcom :refer [defcom]]
+   [defthing.defcom :refer [defcom]]
    [ralphie.notify :as notify]))
-
-(comment
-  (println "howdy")
-
-  ;; trying to read the rules here, not yet parseable
-  (awm/awm-fnl
-    '(view awful.rules.rules))
-  )
 
 (defn write-awesome-rules []
   (let [wsp-rules
@@ -51,6 +42,4 @@
          (map (fn [f] (f)))
          doall)))
 
-(defcom apply-rules-cmd
-  {:defcom/name "clawe-apply-rules"
-   :defcom/handler (fn [_ _] (apply-rules))})
+(defcom clawe-apply-rules apply-rules)

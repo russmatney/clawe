@@ -1,5 +1,4 @@
-{:linters {:unresolved-symbol {:exclude [(ralph.defcom/defcom)
-                                         (babashka.process/$)]}
+{:linters {:unresolved-symbol {:exclude [(babashka.process/$)]}
            :clawe/missing     {:level :warning}
            :defcom/missing    {:level :warning}}
  :lint-as {systemic.core/defsys       clojure.core/def

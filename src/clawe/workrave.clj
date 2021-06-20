@@ -3,7 +3,7 @@
    [babashka.process :refer [$ check]]
    [clojure.string :as string]
    [clawe.awesome :as awm]
-   [ralph.defcom :refer [defcom]]))
+   [defthing.defcom :refer [defcom] :as defcom]))
 
 ;; dbus-send --print-reply \
 ;; --dest=org.workrave.Workrave \
@@ -13,9 +13,6 @@
 (defn dbus-arg [arg]
   (cond
     (string? arg) (str "string:" arg)))
-
-(defn dbus [{:keys [dest path interface command arg]}]
-  )
 
 (defn workrave-dbus [cmd arg]
   (let [dest "org.workrave.Workrave"
@@ -57,15 +54,7 @@
           mins (int (/ secs 60))]
       (awm/awm-cli (awm/awm-fn "update_rest_break" mins)))))
 
-(comment
-  (update-workrave-widget :workrave/micro)
-  )
-
-(defcom update-rest-break-cmd
-  {:name    "update-rest-break"
-   :handler (fn [_ _]
-              (update-workrave-widget :workrave/rest))})
-(defcom next-rest-break-cmd
-  {:name    "update-micro-break"
-   :handler (fn [_ _]
-              (update-workrave-widget :workrave/micro))})
+(defcom update-rest-break
+  (update-workrave-widget :workrave/rest))
+(defcom update-micro-break
+  (update-workrave-widget :workrave/micro))

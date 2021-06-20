@@ -2,9 +2,8 @@
   (:require
    [clawe.defs.workspaces :as defs.wsp]
    [clawe.awesome :as awm]
-   [clawe.scratchpad :as scratchpad]
    [clawe.workspaces.create :as wsp.create]
-   [ralph.defcom :refer [defcom]]
+   [defthing.defcom :refer [defcom] :as defcom]
    [ralphie.rofi :as rofi]
    [ralphie.awesome :as r.awm]
    [ralphie.git :as r.git]
@@ -146,12 +145,11 @@
     (map :sort-key)))
 
 (defn update-workspaces-widget
-  ([] (update-workspaces-widget nil))
-  ([fname]
-   (let [fname (or fname "update_workspaces_widget")]
-     (awm/awm-cli
-       {:quiet? true}
-       (awm/awm-fn fname (active-workspaces))))))
+  []
+  (let [fname "update_workspaces_widget"]
+    (awm/awm-cli
+      {:quiet? true}
+      (awm/awm-fn fname (active-workspaces)))))
 
 (comment
   (->>
@@ -161,15 +159,11 @@
 
   (update-workspaces-widget))
 
-(defcom update-workspaces-cmd
-  {:defcom/name    "update-workspaces"
-   :one-line-desc
-   "updates the workspaces widget to reflect the current workspaces state."
-   :description
-   ["expects a function-name as an argument,
-which is called with a list of workspaces maps."]
-   :defcom/handler (fn [_ parsed]
-              (update-workspaces-widget (-> parsed :arguments first)))})
+(defcom update-workspaces
+  "updates the workspaces widget to reflect the current workspaces state."
+  "expects a function-name as an argument,
+which is called with a list of workspaces maps."
+  (update-workspaces-widget))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -199,21 +193,6 @@ which is called with a list of workspaces maps."]
   (println "hi")
   (drag-workspace "up"))
 
-(defn drag-workspace-index-handler
-  ([] (drag-workspace-index-handler nil nil))
-  ([_config {:keys [arguments]}]
-   (let [[dir & _rest] arguments]
-     (drag-workspace dir))))
-
-(defcom drag-workspace-index-cmd
-  {:defcom/name          "drag-workspace-index"
-   ;; TODO *keys-pressed* as a dynamic var/macro or partially applied key in your keybinding
-   ;; TODO support keybindings right here
-   :keybinding    "ctrl-shift-p"
-   :one-line-desc "Drags a workspace up or down an index."
-   :description   ["Intended to feel like dragging a workspace in a direction."]
-   :defcom/handler       drag-workspace-index-handler})
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; consolidate workspaces
@@ -239,20 +218,12 @@ which is called with a list of workspaces maps."]
                      "local tag2 = tags[" new-index "];"
                      "tag:swap(tag2);")))))))))
 
-(comment
-  (consolidate-workspaces))
-
-(defn consolidate-workspaces-handler
-  ([] (consolidate-workspaces-handler nil nil))
-  ([_config _parsed]
-   (consolidate-workspaces)
-   (update-workspaces-widget)))
-
 (defcom consolidate-workspaces-cmd
-  {:defcom/name          "consolidate-workspaces"
-   :one-line-desc "Groups active workspaces closer together"
-   :description   ["Moves active workspaces to the front of the list."]
-   :defcom/handler       consolidate-workspaces-handler})
+  "Groups active workspaces closer together"
+  "Moves active workspaces to the front of the list."
+  (do
+    (consolidate-workspaces)
+    (update-workspaces-widget)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; clean up workspaces
@@ -274,23 +245,6 @@ which is called with a list of workspaces maps."]
             (catch Exception e e
                    (notify/notify "Error deleting tag" e))))))
     doall))
-
-(comment
-  (clean-workspaces))
-
-(defn clean-workspaces-handler
-  ([] (clean-workspaces-handler nil nil))
-  ([_config _parsed]
-   (clean-workspaces)
-   ;; TODO sometimes this doesn't work - race-case? could add a delay?
-   (update-workspaces-widget)))
-
-(defcom clean-workspaces-cmd
-  {:defcom/name          "clean-workspaces"
-   :one-line-desc "Closes workspaces that have no active clients"
-   :defcom/handler       clean-workspaces-handler})
-
-(comment)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; New create workspace
@@ -382,60 +336,11 @@ which is called with a list of workspaces maps."]
      (some-> (select-workspace) create-workspace))
    (update-workspaces-widget)))
 
-(comment
-  (open-workspace "ralphie")
-
-  (open-workspace))
-
-(defcom open-workspace-cmd
-  {:defcom/name          "open-workspace"
-   :one-line-desc "Opens a new workspace via rofi."
-   :defcom/handler       (fn [_ parsed]
-                    (open-workspace (some-> parsed :arguments first)))})
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; toggle workspace names
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defcom toggle-scratchpad-names
-  {:defcom/name    "toggle-scratchpad-names"
-   :defcom/handler (fn [_ _]
-              (awm/awm-cli "_G.toggle_show_scratchpad_names();")
-              (update-workspaces-widget))})
-
-(comment
-  (toggle-scratchpad-names nil nil)
-  )
-
-(defcom toggle-current-workspace-name
-  {:defcom/name    "toggle-current-workspace-name"
-   :defcom/handler (fn [_ _]
-                     ;; TODO where to store this for future update-workspaces-widgets
-                     ;; some kind of local storage?
-                     (update-workspaces-widget))})
-
-(comment
-  (toggle-current-workspace-name nil nil)
-  )
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Toggle scratchpad handler
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn toggle-scratchpad-handler
-  ([] (toggle-scratchpad-handler nil nil))
-  ([_config parsed]
-   (let [wsp
-         (if-let [arg (some-> parsed :arguments first)]
-           (for-name arg)
-           (current-workspace))]
-     (scratchpad/toggle-scratchpad wsp))))
-
-(defcom toggle-scratchpad-cmd
-  {:defcom/name    "toggle-scratchpad"
-   :defcom/handler toggle-scratchpad-handler})
-
-(comment
-  (toggle-scratchpad-handler)
-  )
+  (do
+    (awm/awm-cli "_G.toggle_show_scratchpad_names();")
+    (update-workspaces-widget)))

@@ -1,5 +1,6 @@
 (ns clawe.core
   (:require
+   [defthing.defcom :as defcom :refer [defcom]]
    [clawe.workspaces :as workspaces]
    [clawe.workspaces.create :as wsp.create]
    clawe.workrave
@@ -15,22 +16,16 @@
    [ralphie.notify :as r.notify]
    [ralphie.rofi :as r.rofi]
    [ralphie.core :as r.core]
-   [ralph.defcom :as defcom :refer [defcom]]
    [ralphie.git :as r.git]))
 
-(defcom hello-cmd
-  {:defcom/name    "hello"
-   :defcom/handler (fn [_config _parsed] (println "Howdy"))})
+(defcom hello-cmd (println "Howdy"))
 
-(defcom rofi-cmd
-  {:defcom/name "rofi"
-   :defcom/handler
-   (fn [config parsed]
-     (when-let [cmd (some->> (defcom/list-commands)
-                             (map :name)
-                             (r.rofi/rofi {:require-match? true
-                                           :msg            "Clawe commands"}))]
-       (defcom/call-handler cmd config parsed)))})
+(defcom rofi
+  (when-let [cmd (some->> (defcom/list-commands)
+                          (map :name)
+                          (r.rofi/rofi {:require-match? true
+                                        :msg            "Clawe commands"}))]
+    (defcom/exec cmd)))
 
 (defn dwim-commands
   ([] (dwim-commands nil))
@@ -56,7 +51,7 @@
                                (r.git/fetch (workspaces/workspace-repo wsp)))})]
          (->>
            (defcom/list-commands)
-           (map (partial r.core/defcom->rofi nil))))))))
+           (map r.core/defcom->rofi)))))))
 
 (comment
   (->>
@@ -67,7 +62,7 @@
     :rofi/on-select
     ((fn [f] (f)))))
 
-(defn dwim []
+(defcom dwim
   (let [wsp (workspaces/current-workspace)]
 
     ;; Notify with git status
@@ -83,26 +78,17 @@
          (r.rofi/rofi {:require-match? true
                        :msg            "Clawe commands"}))))
 
-(defcom dwim-cmd
-  {:defcom/name    "dwim"
-   :defcom/handler (fn [_config _parsed] (dwim))})
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; awm-cli wrapper
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defcom awm-cli-cmd
-  {:defcom/name "awm-cli"
-   ;; this doesn't do anything, but felt easier than documentation....
-   :validate    (fn [arguments] (-> arguments first string?))
-   :defcom/handler
-   (fn [_config {:keys [arguments]}]
-     (let [res (awm/awm-cli (first arguments))]
-       (println res)))})
+(defcom awm-cli
+  (fn [_config & arguments]
+    (let [res (awm/awm-cli (-> arguments first first))]
+      (println res))))
 
-(defcom collect-garbage
-  {:defcom/name    "awm-collect-garbage"
-   :defcom/handler (fn [_ _] (awm/awm-cli "handle_garbage();"))})
+(defcom awm-collect-garbage
+  (awm/awm-cli "handle_garbage();"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; main

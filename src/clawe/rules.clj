@@ -1,7 +1,7 @@
 (ns clawe.rules
   (:require
    [clawe.workspaces :as workspaces]
-   [ralph.defcom :refer [defcom]]
+   [defthing.defcom :refer [defcom]]
    [ralphie.notify :as notify]
    [clojure.edn :as edn]))
 
@@ -15,14 +15,10 @@
     wsp-awm-rules))
 
 
-
-;; TODO put in doc string
+(defcom window-callback
   "Awesome fires this from awesome/rules.fnl for every 'rule event'
 (for all new clients, maybe more: see clawe/awesome/rules.fnl)."
-(defcom window-callback
-  {:defcom/name "window-callback"
-   :defcom/handler
-   (fn [_ {:keys [arguments]}]
-     (let [arg (some-> arguments first edn/read-string)]
-       (println "window-callback called" arg)
-       (notify/notify "window-callback called" arg)))})
+  (fn [_ & arguments]
+    (let [arg (some-> arguments first first str edn/read-string)]
+      (println "window-callback called" arg)
+      (notify/notify "window-callback called" arg))))

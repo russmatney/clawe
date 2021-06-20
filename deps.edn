@@ -1,6 +1,7 @@
 {:paths ["src"]
  :deps
  {russmatney/ralphie     {:local/root "../ralphie"}
+  russmatney/defthing    {:local/root "../defthing"}
   russmatney/chess       {:local/root "../chess"}
   teknql/systemic        {:local/root "../../teknql/systemic"}
   babashka/babashka.pods {:mvn/version "0.0.1"}

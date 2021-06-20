@@ -2,7 +2,7 @@
   (:require
    [babashka.process :as process :refer [$ check]]
    [clojure.string :as string]
-   [ralph.defcom :refer [defcom]]
+   [defthing.defcom :refer [defcom]]
    [ralphie.sh :as sh]
    [ralphie.notify :as notify]
    [ralphie.awesome :as r.awm]
@@ -286,9 +286,7 @@ util = require 'util';
 (comment
   (check-for-errors))
 
-(defcom awesome-doctor
-  {:defcom/name    "awesome-doctor"
-   :defcom/handler (fn [_ _] (check-for-errors))})
+(defcom awesome-doctor check-for-errors)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Reloading files
@@ -377,19 +375,15 @@ util = require 'util';
 ;; Tile all clients
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn bury-all-clients-handler
-  ([] (bury-all-clients-handler nil nil))
-  ([_config _parsed]
-   (awm-fnl
-     {:quiet? true}
-     '(let [s (awful.screen.focused)]
-        (lume.each s.clients
-                   (fn [c]
-                     (set c.floating false)))))))
+(defn bury-all-clients []
+  (awm-fnl
+    {:quiet? true}
+    '(let [s (awful.screen.focused)]
+       (lume.each s.clients
+                  (fn [c]
+                    (set c.floating false))))))
 
-(defcom bury-all-clients-cmd
-  {:defcom/name    "bury-all-clients"
-   :defcom/handler bury-all-clients-handler})
+(defcom bury-all-clients-cmd bury-all-clients)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Client functions
