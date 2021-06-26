@@ -171,7 +171,16 @@
 
 (defworkspace steam
   workspace-title
-  awesome-rules)
+  awesome-rules
+  {:workspace/fa-icon-code "f03e"
+   :rules/apply
+   (fn []
+     (let [steam-client (awm/client-for-name "Steam")]
+       (when steam-client
+         (notify/notify
+           "Found slack call client, moving to zoom workspace"
+           steam-client)
+         (awm/move-client-to-tag (:window steam-client) "steam"))))})
 
 (defworkspace audacity
   awesome-rules

@@ -1,27 +1,29 @@
 (ns clawe.defs.bindings
   (:require
+   [babashka.process :as process :refer [$ check]]
+   [clojure.string :as string]
+   [chess.core :as chess]
    [defthing.core :as defthing]
-   [defthing.defcom :refer [defcom]]
-   [clawe.awesome :as awm]
-   [clawe.workspaces :as workspaces]
-   [clawe.defs.workspaces :as defs.workspaces]
+   [defthing.defcom :refer [defcom] :as defcom]
    [ralphie.notify :as notify]
    [ralphie.rofi :as rofi]
+   [ralphie.core :as r.core]
    [ralphie.tmux :as r.tmux]
    [ralphie.zsh :as r.zsh]
    [ralphie.clipboard :as r.clip]
-   [chess.core :as chess]
-
-   [clawe.defs.local.workspaces :as defs.local.workspaces]
-
-   [clojure.string :as string]
-   [babashka.process :as process :refer [$ check]]
+   [ralphie.screenshot :as r.screenshot]
    [ralphie.emacs :as r.emacs]
    [ralphie.awesome :as r.awm]
    [ralphie.spotify :as r.spotify]
    [ralphie.pulseaudio :as r.pulseaudio]
    [ralphie.browser :as r.browser]
-   [clawe.scratchpad :as scratchpad]))
+   [clawe.awesome :as awm]
+   [clawe.defs.workspaces :as defs.workspaces]
+   [clawe.defs.local.workspaces :as defs.local.workspaces]
+   [clawe.dwim :as c.dwim]
+   [clawe.scratchpad :as scratchpad]
+   [clawe.install :as c.install]
+   [clawe.workspaces :as workspaces]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Getters
@@ -196,13 +198,55 @@
          (client.get)
          (lume.each (fn [c] (tset c :floating false)))))))
 
+(defkbd swap-master
+  [[:mod :ctrl] "Return"]
+  (awm/awm-fnl
+    '(let [c _G.client.focus
+           m (awful.client.getmaster)]
+       (if (= c.window m.window)
+         ;; if we are master, swap us back
+         (awful.client.setslave c)
+         (c:swap m)))))
+
+(defkbd center-window
+  [[:mod] "c"]
+  (do
+    (notify/notify "center-window-small")
+    ;; TODO impl awesome client-style bindings?
+    (awm/awm-fnl
+      '(let [c _G.client.focus]
+         (tset c :ontop true)
+         (tset :floating true)
+         (-> c
+             ((+ awful.placement.scale
+                 awful.placement.centered)
+              {:honor_padding  true
+               :honor_workarea true
+               :to_percent     0.75}))))))
+
+(defkbd center-window-large
+  [[:mod :shift] "c"]
+  (do
+    (notify/notify "center-window-small")
+    ;; TODO impl awesome client-style bindings?
+    (awm/awm-fnl
+      '(let [c _G.client.focus]
+         (tset c :ontop true)
+         (tset :floating true)
+         (-> c
+             ((+ awful.placement.scale
+                 awful.placement.centered)
+              {:honor_padding  true
+               :honor_workarea true
+               :to_percent     0.9}))))))
+
 (defkbd center-window-small
   [[:mod] "v"]
   (do
     (notify/notify "center-window-small")
     ;; TODO impl awesome client-style bindings?
     (awm/awm-fnl
-      '(let [c (awful.focused.client)]
+      '(let [c _G.client.focus]
          (tset c :ontop true)
          (tset :floating true)
          (-> c
@@ -211,6 +255,20 @@
               {:honor_padding  true
                :honor_workarea true
                :to_percent     0.5}))))))
+
+(defkbd center-window-no-resize
+  [[:mod :ctrl] "c"]
+  (do
+    (notify/notify "center-window-small")
+    ;; TODO impl awesome client-style bindings?
+    (awm/awm-fnl
+      '(let [c _G.client.focus]
+         (tset c :ontop true)
+         (tset :floating true)
+         (-> c
+             (awful.placement.centered
+               {:honor_padding  true
+                :honor_workarea true}))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; chess
@@ -457,7 +515,9 @@
 
 (defkbd clean-workspaces
   [[:mod] "d"]
-  (workspaces/clean-workspaces))
+  (do
+    (workspaces/clean-workspaces)
+    (workspaces/consolidate-workspaces)))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -591,42 +651,86 @@
                  (lume.first))]
          (set _G.client.focus c)))))
 
+(defkbd cycle-layout-next
+  [[:mod] "Tab"]
+  (awm/awm-fnl
+    '(let [scr (awful.screen.focused)]
+       (awful.layout.inc 1 scr _G.layouts))))
+
+(defkbd cycle-layout-prev
+  [[:mod :shift] "Tab"]
+  (awm/awm-fnl
+    '(let [scr (awful.screen.focused)]
+       (awful.layout.inc -1 scr _G.layouts))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Not yet transcribed
+;; Screenshots
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;;    ;; TODO move all these bindings into ralphie itself
-;;    ;; ralphie rofi
-;;    (key [:mod] "x" (spawn-fn "ralphie rofi"))
+(defkbd screenshot-full
+  [[:mod :shift] "s"]
+  (r.screenshot/full-screen))
 
-;;    ;; clawe keybindings
-;;    (key [:mod] "r"
-;;         (fn []
-;;           ;; WARN potential race case on widgets reloading
-;;           (awful.spawn "clawe rebuild-clawe" false)
-;;           (awful.spawn "clawe reload" false)))
+(defkbd screenshot-region
+  [[:mod :shift] "a"]
+  (r.screenshot/select-region))
 
-;;    ;; cycle layouts
-;;    (key [:mod] "Tab"
-;;         (fn []
-;;           (let [scr (awful.screen.focused)]
-;;             (awful.layout.inc 1 scr _G.layouts))))
-;;    (key [:mod :shift] "Tab"
-;;         (fn []
-;;           (let [scr (awful.screen.focused)]
-;;             (awful.layout.inc -1 scr _G.layouts))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; rofi, launchers, command selectors
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;;    ;; launcher (rofi)
-;;    (key [:mod] "space" (spawn-fn "/usr/bin/rofi -show drun -modi drun"))
+(defkbd ralphie-rofi
+  [[:mod] "x"]
+  (defcom/exec c.dwim/dwim)
+  ;; c.dwim includes all ralphie rofi
+  ;; (defcom/exec r.core/rofi)
+  )
 
-;;    ;; finder (thunar)
-;;    (key [:mod] "e" (spawn-fn "/usr/bin/thunar"))
+(defkbd clawe-dwim
+  [[:mod] "w"]
+  (defcom/exec c.dwim/dwim))
 
-;;    ;; screenshots
-;;    (key [:mod :shift] "s" (spawn-fn "ralphie screenshot full"))
-;;    (key [:mod :shift] "a" (spawn-fn "ralphie screenshot region"))
+(defkbd rofi-launcher
+  [[:mod] "space"]
+  (->
+    ($ rofi -show combi)
+    (check)))
 
-;;    ])
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Rebuild and reload clawe
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defkbd rebuild-and-reload-clawe
+  [[:mod] "r"]
+  (do
+    ;; maybe detect if the current uberjar is out of date?
+    (c.install/build-uberjar)
+    (->
+      ;; kicking to process here could mean we use the new uberjar
+      ;; (if the prev command waits for completion, which it seems to)
+      ;; Also helps avoid a circular dep, b/c reload depends on these bnds
+      ^{:out :inherit}
+      ($ clawe reload)
+      check :out slurp)))
+
+(defkbd kill-client
+  [[:mod] "q"]
+  (do
+    (notify/notify "kill-client")
+    (awm/awm-fnl
+      '(let [c _G.client.focus]
+         (c:kill)))))
+
+(defkbd toggle-floating
+  [[:mod] "f"]
+  (do
+    (notify/notify "toggle-floating")
+    (awm/awm-fnl
+      '(let [c _G.client.focus]
+         (if c.floating
+           (tset c :ontop false)
+           (tset c :ontop true))
+         (awful.client.floating.toggle c)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Client bindings
@@ -635,14 +739,6 @@
 ;; (set exp.clientkeys
 ;;      (gears.table.join
 ;;       ;; kill current client
-;;       (key [:mod] "q" (fn [c] (c:kill)))
-
-;;       ;; toggle floating
-;;       (key [:mod] "f" (fn [c]
-;;                         (if c.floating
-;;                             (tset c :ontop false)
-;;                             (tset c :ontop true))
-;;                         (awful.client.floating.toggle c)))
 
 ;;       ;; focus movement
 ;;       (key [:mod :shift] "l" (fn [c]
@@ -711,38 +807,3 @@
 ;;                        :by_percent 0.9})
 ;;                    )
 ;;                  (awful.client.incwfact -0.05))))
-
-;;       ;; center on screen
-;;       (key [:mod] "c"
-;;            (fn [c]
-;;              (tset c :ontop true)
-;;              (-> c
-;;                  (tset :floating true)
-;;                  ((+ awful.placement.scale
-;;                      awful.placement.centered)
-;;                   {:honor_padding true
-;;                    :honor_workarea true
-;;                    :to_percent 0.75}))))
-
-;;       ;; large centered
-;;       (key [:mod :shift] "c"
-;;            (fn [c]
-;;              (-> c
-;;                  (tset :floating true)
-;;                  ((+ awful.placement.scale
-;;                      awful.placement.centered)
-;;                   {:honor_padding true
-;;                    :honor_workarea true
-;;                    :to_percent 0.9}))))
-
-;;       ;; center without resizing
-;;       (key [:mod :ctrl] "c"
-;;            (fn [c]
-;;              (-> c
-;;                  (tset :floating true)
-;;                  (awful.placement.centered
-;;                   {:honor_padding true
-;;                    :honor_workarea true}))))
-
-;;       ;; swap with master
-;;       (key [:mod :ctrl] "Return" (fn [c] (c:swap (awful.client.getmaster))))))

@@ -1,9 +1,7 @@
 (local gears (require "gears"))
 (local awful (require "awful"))
-(local naughty (require "naughty"))
 
 (local fun (require "fun"))
-(local tablex (require :pl.tablex))
 (local clawe (require "clawe"))
 (require "clawe-bindings")
 
@@ -40,37 +38,6 @@
 
 (set exp.btn btn)
 
-(local spawn-fn-cache {:spawn-fn-cache "me"})
-
-(fn spawn-fn
-  [cmd]
-  "Prevents re-firing of the same command until the previous has completed.
-
-Returns a function expected to be attached to a keybinding.
-"
-  (fn []
-    (if (. spawn-fn-cache cmd)
-        (do
-          (pp "dropping call, fn not yet complete")
-          (pp spawn-fn-cache)
-          (naughty.notify {:title "Dropping binding call"
-                           :text cmd})
-          (gears.timer.start_new
-           0.1
-           (fn []
-             (pp "Callback took longer than expected, clearing.")
-             (tset spawn-fn-cache cmd nil)
-             (pp spawn-fn-cache)
-             false)) )
-        (do
-          (tset spawn-fn-cache cmd true)
-          (awful.spawn.easy_async
-           cmd
-           (fn [stdout stderr _exitreason _exitcode]
-             (tset spawn-fn-cache cmd nil)
-             (when (and stdout (> (# stdout) 0)) (print stdout))
-             (when (and stdout (> (# stdout) 0)) (print stderr))))))))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Global keybindings
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -93,34 +60,7 @@ Returns a function expected to be attached to a keybinding.
 
    (awful.keyboard.append_global_keybindings
     [ ;; helpers
-     (key [:mod :shift] "r" restart-helper.save_state_and_restart)
-
-     ;; clawe keybindings
-     (key [:mod] "r"
-          (fn []
-            ;; WARN potential race case on widgets reloading
-            (awful.spawn "clawe rebuild-clawe" false)
-            (awful.spawn "clawe reload" false)))
-
-     (key [:mod] "x" (spawn-fn "ralphie rofi"))
-     (key [:mod] "w" (spawn-fn "clawe dwim"))
-
-     ;; cycle layouts
-     (key [:mod] "Tab"
-          (fn []
-            (let [scr (awful.screen.focused)]
-              (awful.layout.inc 1 scr _G.layouts))))
-     (key [:mod :shift] "Tab"
-          (fn []
-            (let [scr (awful.screen.focused)]
-              (awful.layout.inc -1 scr _G.layouts))))
-
-     ;; launcher (rofi)
-     (key [:mod] "space" (spawn-fn "/usr/bin/rofi -show combi"))
-
-     ;; screenshots
-     (key [:mod :shift] "s" (spawn-fn "ralphie screenshot full"))
-     (key [:mod :shift] "a" (spawn-fn "ralphie screenshot region"))])
+     (key [:mod :shift] "r" restart-helper.save_state_and_restart)])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
    ;; numbered Tag global keybindings
@@ -198,15 +138,6 @@ Returns a function expected to be attached to a keybinding.
 ;; exported to add to global rules
 (set exp.clientkeys
      (gears.table.join
-      ;; kill current client
-      (key [:mod] "q" (fn [c] (c:kill)))
-
-      ;; toggle floating
-      (key [:mod] "f" (fn [c]
-                        (if c.floating
-                            (tset c :ontop false)
-                            (tset c :ontop true))
-                        (awful.client.floating.toggle c)))
 
       ;; focus movement
       (key [:mod :shift] "l" (fn [c]
@@ -274,43 +205,7 @@ Returns a function expected to be attached to a keybinding.
                     c {:direction "down"
                        :by_percent 0.9})
                    )
-                 (awful.client.incwfact -0.05))))
-
-      ;; center on screen
-      (key [:mod] "c"
-           (fn [c]
-             (tset c :ontop true)
-             (-> c
-                 (tset :floating true)
-                 ((+ awful.placement.scale
-                     awful.placement.centered)
-                  {:honor_padding true
-                   :honor_workarea true
-                   :to_percent 0.75}))))
-
-      ;; large centered
-      (key [:mod :shift] "c"
-           (fn [c]
-             (-> c
-                 (tset :floating true)
-                 ((+ awful.placement.scale
-                     awful.placement.centered)
-                  {:honor_padding true
-                   :honor_workarea true
-                   :to_percent 0.9}))))
-
-      ;; center without resizing
-      (key [:mod :ctrl] "c"
-           (fn [c]
-             (-> c
-                 (tset :floating true)
-                 (awful.placement.centered
-                  {:honor_padding true
-                   :honor_workarea true}))))
-
-      ;; swap with master
-      ;; TODO unless already master, swap with first other
-      (key [:mod :ctrl] "Return" (fn [c] (c:swap (awful.client.getmaster))))))
+                 (awful.client.incwfact -0.05))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Mouse bindings
@@ -323,7 +218,7 @@ Returns a function expected to be attached to a keybinding.
                   (tset _G.client :focus c)
                   (c:raise)))
       (btn [:mod] 1 awful.mouse.client.move)
-      (btn [:mod] 2 (fn [c]
+      (btn [:mod] 2 (fn [_c]
                       ;; (naughty.notify
                       ;;  {:title (.. "Pulling "
                       ;;              (or c.name "client")
