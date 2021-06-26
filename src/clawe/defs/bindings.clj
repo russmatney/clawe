@@ -146,6 +146,54 @@
     ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; rofi, launchers, command selectors
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defkbd clawe-rofi
+  [[:mod] "x"]
+  (defcom/exec c.dwim/dwim))
+
+(defkbd rofi-launcher
+  [[:mod] "space"]
+  (awm/awm-fnl '(awful.spawn.easy_async "rofi -show combi")))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Rebuild and reload clawe
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defkbd rebuild-and-reload-clawe
+  [[:mod] "r"]
+  (do
+    ;; maybe detect if the current uberjar is out of date?
+    (c.install/build-uberjar)
+    (->
+      ;; kicking to process here could mean we use the new uberjar
+      ;; (if the prev command waits for completion, which it seems to)
+      ;; Also helps avoid a circular dep, b/c reload depends on these bnds
+      ^{:out :inherit}
+      ($ clawe reload)
+      check :out slurp)))
+
+(defkbd kill-client
+  [[:mod] "q"]
+  (awm/awm-fnl
+    '(let [c _G.client.focus]
+       (c:kill))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Screenshots
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defkbd screenshot-full
+  [[:mod :shift] "s"]
+  (r.screenshot/full-screen))
+
+(defkbd screenshot-region
+  [[:mod :shift] "a"]
+  (r.screenshot/select-region))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Misc
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -198,6 +246,15 @@
 ;; Window layout
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defkbd toggle-floating
+  [[:mod] "f"]
+  (awm/awm-fnl
+    '(let [c _G.client.focus]
+       (if c.floating
+         (tset c :ontop false)
+         (tset c :ontop true))
+       (awful.client.floating.toggle c))))
+
 (defkbd bury-all-windows
   [[:mod :shift] "f"]
   ;; tho being smart enough to consume this would be fun too
@@ -231,46 +288,40 @@
 
 (defkbd center-window-large
   [[:mod :shift] "c"]
-  (do
-    (notify/notify "center-window-small")
-    (awm/awm-fnl
-      '(let [c _G.client.focus]
-         (tset c :ontop true)
-         (tset c :floating true)
-         (-> c
-             ((+ awful.placement.scale
-                 awful.placement.centered)
-              {:honor_padding  true
-               :honor_workarea true
-               :to_percent     0.9}))))))
+  (awm/awm-fnl
+    '(let [c _G.client.focus]
+       (tset c :ontop true)
+       (tset c :floating true)
+       (-> c
+           ((+ awful.placement.scale
+               awful.placement.centered)
+            {:honor_padding  true
+             :honor_workarea true
+             :to_percent     0.9})))))
 
 (defkbd center-window-small
   [[:mod] "v"]
-  (do
-    (notify/notify "center-window-small")
-    (awm/awm-fnl
-      '(let [c _G.client.focus]
-         (tset c :ontop true)
-         (tset c :floating true)
-         (-> c
-             ((+ awful.placement.scale
-                 awful.placement.centered)
-              {:honor_padding  true
-               :honor_workarea true
-               :to_percent     0.5}))))))
+  (awm/awm-fnl
+    '(let [c _G.client.focus]
+       (tset c :ontop true)
+       (tset c :floating true)
+       (-> c
+           ((+ awful.placement.scale
+               awful.placement.centered)
+            {:honor_padding  true
+             :honor_workarea true
+             :to_percent     0.5})))))
 
 (defkbd center-window-no-resize
   [[:mod :ctrl] "c"]
-  (do
-    (notify/notify "center-window-small")
-    (awm/awm-fnl
-      '(let [c _G.client.focus]
-         (tset c :ontop true)
-         (tset c :floating true)
-         (-> c
-             (awful.placement.centered
-               {:honor_padding  true
-                :honor_workarea true}))))))
+  (awm/awm-fnl
+    '(let [c _G.client.focus]
+       (tset c :ontop true)
+       (tset c :floating true)
+       (-> c
+           (awful.placement.centered
+             {:honor_padding  true
+              :honor_workarea true})))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; chess
@@ -493,19 +544,19 @@
 
 (defkbd cycle-prev-tag
   [[:mod] "Left"]
-  (fn [_ _] (awm/awm-fnl '(awful.tag.viewprev))))
+  (awm/awm-fnl '(awful.tag.viewprev)))
 
 (defkbd cycle-next-tag
   [[:mod] "Right"]
-  (fn [_ _] (awm/awm-fnl '(awful.tag.viewnext))))
+  (awm/awm-fnl '(awful.tag.viewnext)))
 
 (defkbd cycle-prev-tag-2
   [[:mod] "n"]
-  (fn [_ _] (awm/awm-fnl '(awful.tag.viewprev))))
+  (awm/awm-fnl '(awful.tag.viewprev)))
 
 (defkbd cycle-next-tag-2
   [[:mod] "p"]
-  (fn [_ _] (awm/awm-fnl '(awful.tag.viewnext))))
+  (awm/awm-fnl '(awful.tag.viewnext)))
 
 (defkbd drag-workspace-prev
   [[:mod :shift] "Left"]
@@ -528,15 +579,13 @@
 
 (defkbd brightness-up
   [[] "XF86MonBrightnessUp"]
-  (->
-    ($ light -A 5)
-    check :out slurp))
+  (awm/awm-fnl
+    '(awful.spawn.easy_async "light -A 5")))
 
 (defkbd brightness-down
   [[] "XF86MonBrightnessDown"]
-  (->
-    ($ light -U 5)
-    check :out slurp))
+  (awm/awm-fnl
+    '(awful.spawn.easy_async "light -U 5")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Play/Pause/Next/Prev
@@ -544,27 +593,23 @@
 
 (defkbd spotify-pause
   [[] "XF86AudioPause"]
-  (->
-    ($ spotifycli --playpause)
-    check :out slurp))
+  (awm/awm-fnl
+    '(awful.spawn.easy_async "spotifycli --playpause")))
 
 (defkbd spotify-play
   [[] "XF86AudioPlay"]
-  (->
-    ($ spotifycli --playpause)
-    check :out slurp))
+  (awm/awm-fnl
+    '(awful.spawn.easy_async "spotifycli --playpause")))
 
 (defkbd audio-next
   [[] "XF86AudioNext"]
-  (->
-    ($ playerctl next)
-    check :out slurp))
+  (awm/awm-fnl
+    '(awful.spawn.easy_async "playerctl next")))
 
 (defkbd audio-prev
   [[] "XF86AudioPrev"]
-  (->
-    ($ playerctl previous)
-    check :out slurp))
+  (awm/awm-fnl
+    '(awful.spawn.easy_async "playerctl previous")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Muting input/output
@@ -572,6 +617,8 @@
 
 (defkbd toggle-input-mute
   [[:mod] "m"]
+  ;; TODO write another supported wrapper/unwrapper that lets me include clawe-based notifs here
+  ;; could even still write it's own defcom, and fire both the raw-fnl and clojure command
   (do
     (->
       ($ amixer set Capture toggle)
@@ -584,33 +631,27 @@
 
 (defkbd toggle-output-mute
   [[] "XF86AudioMute"]
-  (->
-    ($ pactl set-sink-mute "@DEFAULT_SINK@" toggle)
-    check :out slurp))
+  (awm/awm-fnl
+    '(awful.spawn.easy_async "pactl set-sink-mute @DEFAULT_SINK@ toggle")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Volume up/down
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(comment
+  (notify/notify {:notify/subject "Current volume"
+                  :notify/body    (r.pulseaudio/default-sink-volume)
+                  :notify/id      "volume"}))
+
 (defkbd volume-up
   [[] "XF86AudioRaiseVolume"]
-  (do
-    (->
-      ($ pactl set-sink-volume "@DEFAULT_SINK@" "+5%")
-      check :out slurp)
-    (notify/notify {:notify/subject "Raised volume"
-                    :notify/body    (r.pulseaudio/default-sink-volume)
-                    :notify/id      "changed-volume"})))
+  (awm/awm-fnl
+    '(awful.spawn.easy_async "pactl set-sink-volume @DEFAULT_SINK@ +5%")))
 
 (defkbd volume-down
   [[] "XF86AudioLowerVolume"]
-  (do
-    (->
-      ($ pactl set-sink-volume "@DEFAULT_SINK@" "-5%")
-      check :out slurp)
-    (notify/notify {:notify/subject "Lowered volume"
-                    :notify/body    (r.pulseaudio/default-sink-volume)
-                    :notify/id      "changed-volume"})))
+  (awm/awm-fnl
+    '(awful.spawn.easy_async "pactl set-sink-volume @DEFAULT_SINK@ -5%")))
 
 (defkbd spotify-volume-up
   [[:mod] "XF86AudioRaiseVolume"]
@@ -641,17 +682,15 @@
 
 (defkbd cycle-focus
   [[:mod] "e"]
-  (do
-    (notify/notify "Cycling focus")
-    ;; TODO impl an actual cycle - right now it just focuses the first
-    ;; client on screen that isn't focused
-    (awm/awm-fnl
-      '(let [c (->
-                 (awful.screen.focused)
-                 (. :clients)
-                 (lume.reject (fn [c] (= c.window client.focus.window)))
-                 (lume.first))]
-         (set _G.client.focus c)))))
+  ;; TODO impl an actual cycle - right now it just focuses the first
+  ;; client on screen that isn't focused
+  (awm/awm-fnl
+    '(let [c (->
+               (awful.screen.focused)
+               (. :clients)
+               (lume.reject (fn [c] (= c.window client.focus.window)))
+               (lume.first))]
+       (set _G.client.focus c))))
 
 (defkbd cycle-layout-next
   [[:mod] "Tab"]
@@ -664,75 +703,6 @@
   (awm/awm-fnl
     '(let [scr (awful.screen.focused)]
        (awful.layout.inc -1 scr _G.layouts))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Screenshots
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defkbd screenshot-full
-  [[:mod :shift] "s"]
-  (r.screenshot/full-screen))
-
-(defkbd screenshot-region
-  [[:mod :shift] "a"]
-  (r.screenshot/select-region))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; rofi, launchers, command selectors
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defkbd ralphie-rofi
-  [[:mod] "x"]
-  (defcom/exec c.dwim/dwim)
-  ;; c.dwim includes all ralphie rofi
-  ;; (defcom/exec r.core/rofi)
-  )
-
-(defkbd clawe-dwim
-  [[:mod] "w"]
-  (defcom/exec c.dwim/dwim))
-
-(defkbd rofi-launcher
-  [[:mod] "space"]
-  (->
-    ($ rofi -show combi)
-    (check)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Rebuild and reload clawe
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defkbd rebuild-and-reload-clawe
-  [[:mod] "r"]
-  (do
-    ;; maybe detect if the current uberjar is out of date?
-    (c.install/build-uberjar)
-    (->
-      ;; kicking to process here could mean we use the new uberjar
-      ;; (if the prev command waits for completion, which it seems to)
-      ;; Also helps avoid a circular dep, b/c reload depends on these bnds
-      ^{:out :inherit}
-      ($ clawe reload)
-      check :out slurp)))
-
-(defkbd kill-client
-  [[:mod] "q"]
-  (do
-    (notify/notify "kill-client")
-    (awm/awm-fnl
-      '(let [c _G.client.focus]
-         (c:kill)))))
-
-(defkbd toggle-floating
-  [[:mod] "f"]
-  (do
-    (notify/notify "toggle-floating")
-    (awm/awm-fnl
-      '(let [c _G.client.focus]
-         (if c.floating
-           (tset c :ontop false)
-           (tset c :ontop true))
-         (awful.client.floating.toggle c)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Client bindings

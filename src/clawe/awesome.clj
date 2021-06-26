@@ -1,6 +1,6 @@
 (ns clawe.awesome
   (:require
-   [babashka.process :as process :refer [$ check]]
+   [babashka.process :as process :refer [check]]
    [clojure.string :as string]
    [defthing.defcom :refer [defcom]]
    [ralphie.sh :as sh]
@@ -61,7 +61,7 @@ util = require 'util';
         lua-str))
      ((fn [lua-str]
         ^{:out :string}
-        ($ awesome-client ~lua-str)))
+        (process/$ awesome-client ~lua-str)))
      check
      :out
      parse-output)))
@@ -228,7 +228,7 @@ util = require 'util';
 
 (defn fennel-compile [{:keys [path]}]
   (-> ^{:out :string}
-      ($ fennel --compile ~path)
+      (process/$ fennel --compile ~path)
       check))
 
 (defn expand-files [str]
@@ -599,4 +599,23 @@ util = require 'util';
 
 (comment
   (r.awm/all-clients)
+  )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Awesome-$ (shell command)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn $
+  "Does not quite work yet.
+  TODO finish this out"
+  [arg]
+  (awm-fnl (str
+             ;; TODO async or not? maybe `$!` is async?
+             "(awful.spawn.easy_async \"" arg "\")")))
+
+(comment
+  ($ "notify-send hi")
+  ($ "pactl set-sink-volume @DEFAULT_SINK@ +5%")
+  ($ "pactl set-sink-volume @DEFAULT_SINK@ -5%")
+
   )
