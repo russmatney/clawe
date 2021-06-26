@@ -11,57 +11,75 @@
                 :ctrl    "Control"
                 :control "Control"})
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Update awm bindings
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defn binding->awful-key
   "Maps a clawe keybinding to a call to `awful.key`."
-  [{:keys [binding/key] :as bd}]
+  [{:keys [binding/key binding/raw-fnl] :as bd}]
+
   (let [[mods key] key
         mods       (->> mods
                         (map modifiers)
                         (map #(str "\"" % "\"")))]
     (str
-      "(awful.key "
+      "  (awful.key "
       "[ " (string/join " " mods) " ] \"" key "\""
-      ;; TODO support wider range of function calls here
-      "\n\t\t(spawn-fn \"" (bindings/binding-cli-command bd) "\" )"
+      "\n    "
+      (cond
+        raw-fnl
+        (str "(fn [] " raw-fnl " )")
+
+        :else (str "(spawn-fn \"" (bindings/binding-cli-command bd) "\" )"))
       ")")))
 
-(defn append-global-keybindings []
+(comment
+  (binding->awful-key
+    {:binding/key          [[:mod] "Yah!"]
+     ;; :binding/raw-fnl      '(let [] (pp "yah!"))
+     :binding/command-name "yah-command"}))
+
+(defn raw-append-global-keybindings
+  "Returns a string of fennel to be evaluated."
+  []
   ;; TODO this adds a listener for each key, but does not clear any existing,
   ;; still need to restart awesome to prevent bindings from firing multiple
   ;; listeners
   (let [awful-keys (->> (bindings/list-bindings)
                         (map binding->awful-key)
-                        (string/join "\n\t"))]
-    (str "(awful.keyboard.append_global_keybindings [\n\t" awful-keys "\n])")))
+                        (string/join "\n"))]
+    (str "(awful.keyboard.append_global_keybindings\n[\n" awful-keys "\n])")))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Update the bindings in-place
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(comment
+  (raw-append-global-keybindings))
 
-;; does not work yet - awesome requires holding onto refs to the same `awful.key`
+
+;; this does not work yet - awesome requires holding onto refs to the same `awful.key`
 ;; to be able to remove things, so for now updating means rewriting the def and
 ;; then restarting awesome :(
 ;; probable next steps are moving to a non-awesomewm keybinding handler
 (defn update-awesome-bindings []
   ;; TODO might need to remove newlines here or in awm-fnl (or just handle them)
   ;; TODO also might need to ensure deps/requires for these
-  (let [global (append-global-keybindings)]
+  (let [global (raw-append-global-keybindings)]
     (awm/awm-fnl global)))
-
-(comment
-  (update-awesome-bindings)
-  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Write out code that awesome loads at startup/restart
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def spawn-fn-deps ""
-  (str
-    "(local gears (require :gears))\n"
-    "(local awful (require :awful))\n"
-    "(local naughty (require :naughty))\n"
-    "(local spawn-fn-cache {})\n"))
+(def spawn-fn-deps
+  "Returns a string of fennel pre-amble to the clawe-bindings.fnl file.
+  Should include all fennel deps in bindings.
+  ;; TODO generate this based on keywords used in fennel commands?"
+  (string/join
+    "\n"
+    (list '(local gears (require :gears))
+          '(local awful (require :awful))
+          '(local naughty (require :naughty))
+          '(local lume (require :lume))
+          '(local spawn-fn-cache {}))))
 
 (def spawn-fn-impl
   '(fn spawn-fn
@@ -87,13 +105,13 @@
                (when stderr (print stderr)))))))))
 
 (defn write-awesome-bindings []
-  (let [str-to-eval   (append-global-keybindings)
+  (let [str-to-eval   (raw-append-global-keybindings)
         file-contents (str ";; deps helpers\n"
                            spawn-fn-deps
                            "\n\n"
                            spawn-fn-impl
                            "\n;; global bindings\n"
-                           "(set _G.append_clawe_bindings (fn []\n"
+                           "(set _G.append_clawe_bindings\n(fn []\n"
                            str-to-eval
                            "))")
         file-contents (string/replace file-contents "," "")]

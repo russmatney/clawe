@@ -104,9 +104,18 @@
         ;; so it isn't called when evaling the binding
         rst (butlast xorfs)
 
+        ;; check for a direct call to `(awm/awm-fnl '(some-fnl-exp))`
+        raw-fnl (when (some-> xorfs last first
+                              ;; could one day get a better match pattern
+                              ;; TODO how to do this from other kbd namespaces?
+                              #{'awm/awm-fnl})
+                  (some-> xorfs last second))
+
         binding (apply defthing/defthing :clawe/binding n
-                       {:binding/key          key-def
-                        :binding/command-name full-name}
+                       (cond-> {:binding/key          key-def
+                                :binding/command-name full-name}
+
+                         raw-fnl (assoc :binding/raw-fnl raw-fnl))
                        rst)]
     `(do
        ;; register a defcom with the full binding name
@@ -191,12 +200,11 @@
 
 (defkbd bury-all-windows
   [[:mod :shift] "f"]
-  (do
-    (notify/notify "burying all windows")
-    (awm/awm-fnl
-      '(->
-         (client.get)
-         (lume.each (fn [c] (tset c :floating false)))))))
+  ;; tho being smart enough to consume this would be fun too
+  (awm/awm-fnl
+    '(->
+       (client.get)
+       (lume.each (fn [c] (tset c :floating false))))))
 
 (defkbd swap-master
   [[:mod :ctrl] "Return"]
@@ -210,29 +218,25 @@
 
 (defkbd center-window
   [[:mod] "c"]
-  (do
-    (notify/notify "center-window-small")
-    ;; TODO impl awesome client-style bindings?
-    (awm/awm-fnl
-      '(let [c _G.client.focus]
-         (tset c :ontop true)
-         (tset :floating true)
-         (-> c
-             ((+ awful.placement.scale
-                 awful.placement.centered)
-              {:honor_padding  true
-               :honor_workarea true
-               :to_percent     0.75}))))))
+  (awm/awm-fnl
+    '(let [c _G.client.focus]
+       (tset c :ontop true)
+       (tset c :floating true)
+       (-> c
+           ((+ awful.placement.scale
+               awful.placement.centered)
+            {:honor_padding  true
+             :honor_workarea true
+             :to_percent     0.75})))))
 
 (defkbd center-window-large
   [[:mod :shift] "c"]
   (do
     (notify/notify "center-window-small")
-    ;; TODO impl awesome client-style bindings?
     (awm/awm-fnl
       '(let [c _G.client.focus]
          (tset c :ontop true)
-         (tset :floating true)
+         (tset c :floating true)
          (-> c
              ((+ awful.placement.scale
                  awful.placement.centered)
@@ -244,11 +248,10 @@
   [[:mod] "v"]
   (do
     (notify/notify "center-window-small")
-    ;; TODO impl awesome client-style bindings?
     (awm/awm-fnl
       '(let [c _G.client.focus]
          (tset c :ontop true)
-         (tset :floating true)
+         (tset c :floating true)
          (-> c
              ((+ awful.placement.scale
                  awful.placement.centered)
@@ -260,11 +263,10 @@
   [[:mod :ctrl] "c"]
   (do
     (notify/notify "center-window-small")
-    ;; TODO impl awesome client-style bindings?
     (awm/awm-fnl
       '(let [c _G.client.focus]
          (tset c :ontop true)
-         (tset :floating true)
+         (tset c :floating true)
          (-> c
              (awful.placement.centered
                {:honor_padding  true
