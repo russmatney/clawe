@@ -570,7 +570,8 @@
   [[:mod] "d"]
   (do
     (workspaces/clean-workspaces)
-    (workspaces/consolidate-workspaces)))
+    (workspaces/consolidate-workspaces)
+    (workspaces/update-workspaces-widget)))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
