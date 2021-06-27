@@ -7,7 +7,6 @@
    [ralphie.rofi :as rofi]
    [ralphie.awesome :as r.awm]
    [ralphie.git :as r.git]
-   [ralphie.item :as item]
    [ralphie.notify :as notify]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -238,7 +237,7 @@ which is called with a list of workspaces maps."
     (filter :awesome/empty)
     (map
       (fn [it]
-        (when-let [name (item/awesome-name it)]
+        (when-let [name (:awesome/name it)]
           (try
             (r.awm/delete-tag! name)
             (notify/notify "Deleted Tag" name)
