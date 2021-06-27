@@ -48,6 +48,27 @@
   (awesome-rules "more" "andmore" {:name "my-thing-name"})
   )
 
+
+(comment
+  (awm/awm-fnl
+    '(if (awful.tag.find_by_name (awful.screen.focused) "clawe")
+       "true" "false"))
+
+  (awm/awm-fnl
+    "(awful.spawn.easy_async \"notify-send hi\")")
+  )
+
+(defn create-tag-if-none [tag-name]
+  (awm/awm-fnl
+    (str
+      "(if (awful.tag.find_by_name (awful.screen.focused) \"" tag-name "\")"
+      " nil (awful.tag.add \"" tag-name "\" {:layout awful.layout.suit.tile}))")))
+
+(comment
+  (awm/awm-fnl
+    (create-tag-if-none "zoom")))
+
+
 (defn workspace-title
   "Sets the workspace title using the :name (which defaults to the symbol).
 
@@ -133,18 +154,20 @@
   {:awesome/rules
    ;; TODO get other awm names from rules
    (awm-workspace-rules "dev-browser" "chrome" "Chrome" "Firefox Developer Edition")}
-  {:workspace/color            "#38b98a"
-   :workspace/directory        "/home/russ/"
-   :workspace/exec             "/usr/bin/gtk-launch firefox-developer-edition.desktop"
-   :workspace/scratchpad       true
-   :workspace/key              "b"
-   :workspace/fa-icon-code     "f268"}
+  {:workspace/color        "#38b98a"
+   :workspace/directory    "/home/russ/"
+   :workspace/exec         "/usr/bin/gtk-launch firefox-developer-edition.desktop"
+   :workspace/scratchpad   true
+   :workspace/key          "b"
+   :workspace/fa-icon-code "f268"}
   {:rules/apply (fn []
                   (let [x (awm/client-for-class "firefoxdeveloperedition")]
                     (when x
                       (notify/notify
                         "Found firefoxdeveloper client, moving to dev-browser workspace"
                         x)
+                      ;; TODO create workspace if it doesn't exist
+                      (create-tag-if-none "dev-browser")
                       (awm/move-client-to-tag (:window x) "dev-browser"))))} )
 
 (defworkspace obs
@@ -157,11 +180,13 @@
   {:workspace/fa-icon-code "f03e"
    :workspace/directory    "/home/russ/Dropbox/pixels"
    :workspace/initial-file "/home/russ/Dropbox/pixels/readme.org"
-   :workspace/exec "/usr/bin/gtk-launch aseprite"}
+   :workspace/exec         "/usr/bin/gtk-launch aseprite"}
   {:rules/apply (fn []
                   (let [client (awm/client-for-name "Aseprite")]
                     (when client
-                      (awm/move-client-to-tag (:window client) "pixels"))))} )
+                      (create-tag-if-none "pixels")
+                      (awm/move-client-to-tag (:window client) "pixels")))
+                  )} )
 
 (defworkspace tiles
   workspace-title
@@ -180,6 +205,7 @@
          (notify/notify
            "Found slack call client, moving to zoom workspace"
            steam-client)
+         (create-tag-if-none "steam")
          (awm/move-client-to-tag (:window steam-client) "steam"))))})
 
 (defworkspace audacity
@@ -199,6 +225,7 @@
                       (notify/notify
                         "Found slack call client, moving to zoom workspace"
                         slack-call)
+                      (create-tag-if-none "zoom")
                       (awm/move-client-to-tag (:window slack-call) "zoom"))))}
   workspace-title
   {:workspace/scratchpad   true
@@ -214,11 +241,12 @@
                       (notify/notify
                         "Found 1password client, moving to zoom workspace"
                         c)
+                      (create-tag-if-none "one-password")
                       (awm/move-client-to-tag (:window c) "one-password"))))}
   workspace-title
-  {:workspace/scratchpad   true
-   :workspace/exec         "/usr/bin/gtk-launch 1password.desktop"
-   :workspace/key          "."})
+  {:workspace/scratchpad true
+   :workspace/exec       "/usr/bin/gtk-launch 1password.desktop"
+   :workspace/key        "."})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Org, mind-gardening, blogging, writing workspaces
@@ -607,18 +635,20 @@
 ;; TODO support conflict alerts on keybindings via clj kondo helpers/the db? in-memory clj structures?
 (defworkspace godot
   awesome-rules
-  {:rules/apply (fn []
-                  ;; sometimes conflicts with the godot emacs/term sessions
-                  (let [clients (awm/clients-for-name "godot")]
-                    (when (seq clients)
-                      (doall
-                        (for [client clients]
-                          (awm/move-client-to-tag (:window client) "godot"))))))}
-  {:workspace/directory "/home/russ/godot"
+  ;; {:rules/apply (fn []
+  ;;                 ;; sometimes conflicts with the godot emacs/term sessions
+  ;;                 ;; TODO this grabs browsers with 'godot' window titles
+  ;;                 (let [clients (awm/clients-for-name "godot")]
+  ;;                   (when (seq clients)
+  ;;                     (create-tag-if-none "godot")
+  ;;                     (doall
+  ;;                       (for [client clients]
+  ;;                         (awm/move-client-to-tag (:window client) "godot"))))))}
+  {:workspace/directory    "/home/russ/godot"
    :workspace/initial-file "/home/russ/godot/readme.org"
    :workspace/fa-icon-code "f130"
-   :workspace/color "#42afff"
-   :workspace/scratchpad true})
+   :workspace/color        "#42afff"
+   :workspace/scratchpad   true})
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
