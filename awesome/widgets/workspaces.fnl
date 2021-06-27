@@ -131,30 +131,25 @@
 Sets all workspace indexes to match the passed :i."
    (util.log_if_error
     (fn []
-      ;; set local awesome tag on each wsp
-      (-> workspaces
-          (lume.each (fn [wsp]
-                       (let [tag (util.get_tag {:name wsp.name})]
-                         (when tag (tset wsp :tag tag))))))
+      (let [children
+            (-> workspaces
+                (lume.map
+                 (fn [wsp]
+                   ;; set local awesome tag on each wsp
+                   (let [tag (util.get_tag {:name wsp.name})]
+                     (when tag (tset wsp :tag tag)))
 
-      ;; delete all but one empty workspace
-      ;; (-> workspaces
-      ;;     (lume.filter (fn [wsp] wsp.empty))
-      ;;     (#(lume.slice $ 2 (# $)))
-      ;;     (lume.each (fn [{: tag}] (tag:delete))))
+                   ;; sets the order according to what was passed in
+                   (let [{:new_index i} wsp]
+                     (when (not (= wsp.tag.index i))
+                       (util.move_tag_to_index wsp.tag i)))
 
-      ;; sets the order according to what was passed in
-      (-> workspaces
-          (lume.each (fn [wsp]
-                       (let [{:new_index i} wsp]
-                         (util.move_tag_to_index wsp.tag i)))))
+                   ;; map into a widget, attach callbacks
+                   (-> wsp
+                       make-workspace-widget
+                       (attach-callbacks wsp)))))]
 
-      (: workspaces-list :set_children
-         (-> workspaces
-             (lume.map (fn [wsp]
-                         (-> wsp
-                             make-workspace-widget
-                             (attach-callbacks wsp))))))))))
+        (: workspaces-list :set_children children))))))
 
 (fn list-worker []
   (let [cb (fn [_tag]
