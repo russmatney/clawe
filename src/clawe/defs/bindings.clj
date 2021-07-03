@@ -315,50 +315,50 @@
 
 (defkbd toggle-terminal
   [[:mod] "Return"]
-  (fn [_ _]
-    (let [{:workspace/keys [title directory]
-           :git/keys       [repo]
-           :awesome/keys   [clients]}
-          (some->> (workspaces/current-workspace)
-                   workspaces/merge-awm-tags)
-          directory               (or directory repo (r.zsh/expand "~"))
-          terminal-client         (some->> clients
-                                           (filter (fn [c]
-                                                     (and
-                                                       (-> c :class #{"Alacritty"})
-                                                       (-> c :name #{title}))))
-                                           first)
-          terminal-client-focused (:focused terminal-client)
+  {:binding/awm true}
+  (let [{:workspace/keys [title directory]
+         :git/keys       [repo]
+         :awesome/keys   [clients]}
+        (some->> (workspaces/current-workspace)
+                 workspaces/merge-awm-tags)
+        directory               (or directory repo (r.zsh/expand "~"))
+        terminal-client         (some->> clients
+                                         (filter (fn [c]
+                                                   (and
+                                                     (-> c :class #{"Alacritty"})
+                                                     (-> c :name #{title}))))
+                                         first)
+        terminal-client-focused (:focused terminal-client)
 
-          opts {:tmux/name      title
-                :tmux/directory directory}]
-      (notify/notify "Toggling Terminal"
-                     (assoc opts
-                            :terminal-client terminal-client
-                            :already-focused terminal-client-focused))
-      (cond
-        ;; no tag
-        (not title)
-        (do
-          (r.awm/create-tag! "temp-tag")
-          (r.awm/focus-tag! "temp-tag")
-          (r.tmux/open-session))
+        opts {:tmux/name      title
+              :tmux/directory directory}]
+    (notify/notify "Toggling Terminal"
+                   (assoc opts
+                          :terminal-client terminal-client
+                          :already-focused terminal-client-focused))
+    (cond
+      ;; no tag
+      (not title)
+      (do
+        (r.awm/create-tag! "temp-tag")
+        (r.awm/focus-tag! "temp-tag")
+        (r.tmux/open-session))
 
-        (and terminal-client terminal-client-focused)
-        (awm/close-client terminal-client)
+      (and terminal-client terminal-client-focused)
+      (awm/close-client terminal-client)
 
-        (and terminal-client (not terminal-client-focused))
-        (awm/focus-client {:center?   false
-                           :float?    false
-                           :bury-all? false} terminal-client)
+      (and terminal-client (not terminal-client-focused))
+      (awm/focus-client {:center?   false
+                         :float?    false
+                         :bury-all? false} terminal-client)
 
-        :else
-        (do (r.tmux/open-session opts)
-            nil)))))
+      :else
+      (do (r.tmux/open-session opts)
+          nil))))
 
 (defkbd toggle-emacs
   [[:mod :shift] "Return"]
-  (fn [_ _]
+  (do
     (let [
           {:workspace/keys [title initial-file directory]
            :git/keys       [repo]
