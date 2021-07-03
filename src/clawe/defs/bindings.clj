@@ -34,13 +34,13 @@
 
 (defkbd clawe-rofi-awm
   [[:mod] "x"]
+  {:binding/awm true}
   ;; {:binding/awm true}
   (defcom/exec c.dwim/dwim))
 
 (defkbd rofi-launcher
   [[:mod] "space"]
   (awm/awm-fnl '(awful.spawn.easy_async "rofi -show combi")))
-
 
 (defkbd kill-client
   [[:mod] "q"]

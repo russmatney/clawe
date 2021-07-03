@@ -676,3 +676,12 @@
   "A tool for chaining key presses in emacs."
   awesome-rules
   (fn [_] (local-repo "abo-abo/hydra")))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; baskerville
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defworkspace baskerville-sxhkd
+  "A keybinding daemon."
+  awesome-rules
+  (fn [_] (local-repo "baskerville/sxhkd")))

@@ -19,9 +19,6 @@ super + u
 super + shift + Return
   clawe toggle-emacs-kbd-modshiftReturn
 
-super + x
-  clawe clawe-rofi-awm-kbd-modx
-
 super + shift + p
   clawe toggle-workspace-pixels-kbd-modshiftp
 
