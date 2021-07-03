@@ -1,21 +1,21 @@
 (ns clawe.core
   (:require
    [defthing.defcom :as defcom :refer [defcom]]
-   clawe.workspaces
-   clawe.workspaces.create
-   clawe.workrave
+   [clawe.awesome :as awm]
+   clawe.awesome.rules
    clawe.defs.bindings
    clawe.defs.workspaces
    clawe.defs.local.workspaces
    clawe.doctor
    clawe.dwim
    clawe.install
+   clawe.restart
    clawe.rules
-   [clawe.awesome :as awm]
-   [clawe.awesome.restart]
-   [clawe.awesome.rules]
-   [ralphie.rofi :as r.rofi]
-   ralphie.core)) ;; so we include all ralphie commands
+   clawe.workrave
+   clawe.workspaces
+   clawe.workspaces.create
+   ralphie.core ;; so we include all ralphie commands
+   [ralphie.rofi :as r.rofi]))
 
 (defcom hello-cmd (println "Howdy"))
 

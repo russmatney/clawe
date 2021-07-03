@@ -1,0 +1,83 @@
+super + .
+  clawe toggle-workspace-one-password-kbd-mod.
+
+super + m
+  clawe toggle-input-mute-kbd-modm
+
+super + d
+  clawe clean-workspaces-kbd-modd
+
+super + Return
+  clawe toggle-terminal-kbd-modReturn
+
+super + shift + e
+  clawe open-chess-game-kbd-modshifte
+
+super + u
+  clawe toggle-workspace-journal-kbd-modu
+
+super + shift + Return
+  clawe toggle-emacs-kbd-modshiftReturn
+
+super + x
+  clawe clawe-rofi-awm-kbd-modx
+
+super + shift + p
+  clawe toggle-workspace-pixels-kbd-modshiftp
+
+super + shift + a
+  clawe screenshot-region-kbd-modshifta
+
+super + shift + t
+  clawe toggle-all-titlebars-kbd-modshiftt
+
+super + s
+  clawe toggle-workspace-spotify-kbd-mods
+
+super + g
+  clawe toggle-workspace-godot-kbd-modg
+
+super + ctrl + u
+  clawe uuid-on-clipboard-kbd-modctrlu
+
+super + a
+  clawe toggle-workspace-slack-kbd-moda
+
+super + XF86AudioLowerVolume
+  clawe spotify-volume-down-kbd-modXF86AudioLowerVolume
+
+super + b
+  clawe toggle-workspace-chrome-browser-kbd-modb
+
+super + shift + Left
+  clawe drag-workspace-prev-kbd-modshiftLeft
+
+super + XF86AudioRaiseVolume
+  clawe spotify-volume-up-kbd-modXF86AudioRaiseVolume
+
+super + t
+  clawe toggle-workspace-web-kbd-modt
+
+super + shift + g
+  clawe toggle-per-workspace-garden-kbd-modshiftg
+
+super + alt + n
+  clawe toggle-notifications-center-kbd-modaltn
+
+super + shift + s
+  clawe screenshot-full-kbd-modshifts
+
+super + shift + Right
+  clawe drag-workspace-next-kbd-modshiftRight
+
+super + w
+  clawe clawe-rofi-sxhkd-kbd-modw
+
+super + shift + o
+  clawe create-new-workspace-kbd-modshifto
+
+super + o
+  clawe open-workspace-kbd-modo
+
+super + z
+  clawe toggle-workspace-zoom-kbd-modz

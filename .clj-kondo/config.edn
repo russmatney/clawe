@@ -5,4 +5,5 @@
            defthing.defcom/defcom             clojure.core/def
            clawe.defs.workspaces/defworkspace clojure.core/def
            clawe.defs.apps/defapp             clojure.core/def
+           clawe.bindings/defkbd              clojure.core/def
            clawe.defs.bindings/defkbd         clojure.core/def}}

@@ -353,20 +353,20 @@
   awesome-rules
   workspace-title
   (fn [_] (local-repo "russmatney/clawe"))
-  {:workspace/directory    "/home/russ/russmatney/clawe"
-   :workspace/initial-files
+  {:workspace/directory   "/home/russ/russmatney/clawe"
+   :workspace/files
    ["/home/russ/.doom.d/+bindings.el"
     "/home/russ/russmatney/clawe/src/clawe/defs/bindings.clj"
     "/home/russ/russmatney/clawe/awesome/bindings.fnl"]
-   :workspace/title-pango  "<span>KEYBINDINGS</span>"})
+   :workspace/title-pango "<span>KEYBINDINGS</span>"})
 
 (defworkspace workspaces
   awesome-rules
   workspace-title
   (fn [_] (local-repo "russmatney/clawe"))
-  {:workspace/directory    "/home/russ/russmatney/clawe"
-   :workspace/initial-files "/home/russ/russmatney/clawe/src/clawe/defs/workspaces.clj"
-   :workspace/title-pango  "<span>WSPCS</span>"})
+  {:workspace/directory   "/home/russ/russmatney/clawe"
+   :workspace/files       "/home/russ/russmatney/clawe/src/clawe/defs/workspaces.clj"
+   :workspace/title-pango "<span>WSPCS</span>"})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Vapor, game repos, lovejs tools

@@ -1,7 +1,7 @@
 (ns clawe.awesome.bindings
   "Manages awesomeWM bindings derived from clawe in-memory data structures."
   (:require
-   [clawe.defs.bindings :as bindings]
+   [clawe.bindings :as bindings]
    [clojure.string :as string]
    [clawe.awesome :as awm]))
 
@@ -16,23 +16,25 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn binding->awful-key
-  "Maps a clawe keybinding to a call to `awful.key`."
-  [{:keys [binding/key binding/raw-fnl] :as bd}]
+  "Maps a clawe keybinding to a call to `awful.key`.
+
+  These bindings are now opt-in, unless you use raw-fnl.
+  "
+  [{:keys [binding/key binding/raw-fnl binding/awm] :as bd}]
 
   (let [[mods key] key
         mods       (->> mods
                         (map modifiers)
                         (map #(str "\"" % "\"")))]
-    (str
-      "  (awful.key "
-      "[ " (string/join " " mods) " ] \"" key "\""
-      "\n    "
-      (cond
-        raw-fnl
-        (str "(fn [] " raw-fnl " )")
+    ;; TODO this would read cleaner if it were quoted lisp instead of strings
+    (when (or raw-fnl awm)
+      (str
+        "  (awful.key " "[ " (string/join " " mods) " ] \"" key "\"" "\n    "
+        (cond raw-fnl (str "(fn [] " raw-fnl " )")
 
-        :else (str "(spawn-fn \"" (bindings/binding-cli-command bd) "\" )"))
-      ")")))
+              ;; these are now opt-in, unless you use raw-fnl
+              awm (str "(spawn-fn \"" (bindings/binding-cli-command bd) "\" )"))
+        ")"))))
 
 (comment
   (binding->awful-key
@@ -48,6 +50,7 @@
   ;; listeners
   (let [awful-keys (->> (bindings/list-bindings)
                         (map binding->awful-key)
+                        (remove nil?)
                         (string/join "\n"))]
     (str "(awful.keyboard.append_global_keybindings\n[\n" awful-keys "\n])")))
 
