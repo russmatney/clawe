@@ -35,7 +35,7 @@
     (when-not (or raw-fnl awm)
       (str
         (string/join " + " mods) (when (seq mods) " + ") key
-        "\n  nohup " (bindings/binding-cli-command bd) " &"))))
+        "\n  " (bindings/binding-cli-command bd)))))
 
 (comment
   (binding->sxhkd-key
