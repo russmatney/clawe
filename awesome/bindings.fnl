@@ -42,16 +42,6 @@
 ;; Global keybindings
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(fn centerwork_layout? []
-  (-> (awful.screen.focused)
-      (. :selected_tag)
-      (. :layout)
-      (. :name)
-      ((fn [n]
-         (or
-          (= n "centerworkh")
-          (= n "centerwork"))))))
-
 (set
  _G.set_global_keys
  (fn []
@@ -113,6 +103,16 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Client Keybindings
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(fn centerwork_layout? []
+  (-> (awful.screen.focused)
+      (. :selected_tag)
+      (. :layout)
+      (. :name)
+      ((fn [n]
+         (or
+          (= n "centerworkh")
+          (= n "centerwork"))))))
 
 (fn focus-move [dir centerwork-dir centerwork-dir2]
   ;; TODO should move floating windows if floating

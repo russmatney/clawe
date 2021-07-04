@@ -22,6 +22,9 @@
                 :ctrl    "ctrl"
                 :control "ctrl"})
 
+(def keyname {"." "period"
+              "," "comma"})
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Update bindings
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -30,7 +33,8 @@
   "Maps a clawe keybinding to a call to `awful.key`."
   [{:keys [binding/key binding/raw-fnl binding/awm] :as bd}]
   (let [[mods key] key
-        mods       (->> mods (map modifiers))]
+        mods       (->> mods (map modifiers))
+        key        (keyname key key)]
     ;; TODO rewrite so that the bindings impls aren't aware of each other
     (when-not (or raw-fnl awm)
       (str
