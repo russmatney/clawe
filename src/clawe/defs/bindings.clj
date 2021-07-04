@@ -315,7 +315,6 @@
 
 (defkbd toggle-terminal
   [[:mod] "Return"]
-  {:binding/awm true}
   (let [{:workspace/keys [title directory]
          :git/keys       [repo]
          :awesome/keys   [clients]}
