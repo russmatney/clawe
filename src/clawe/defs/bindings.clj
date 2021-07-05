@@ -513,13 +513,22 @@
 
 (defkbd volume-up
   [[] "XF86AudioRaiseVolume"]
-  (awm/awm-fnl
-    '(awful.spawn.easy_async "pactl set-sink-volume @DEFAULT_SINK@ +5%")))
+  ;; TODO impl sxhkd 'raw' support for firing right via SXHKD shell
+  (do
+    (notify/notify {:notify/id      "volume"
+                    :notify/subject "Raising volume"})
+    (->
+      ($ pactl set-sink-volume "@DEFAULT_SINK@" "+5%")
+      check :out slurp)))
 
 (defkbd volume-down
   [[] "XF86AudioLowerVolume"]
-  (awm/awm-fnl
-    '(awful.spawn.easy_async "pactl set-sink-volume @DEFAULT_SINK@ -5%")))
+  (do
+    (notify/notify {:notify/id      "volume"
+                    :notify/subject "Lowering volume"})
+    (->
+      ($ pactl set-sink-volume "@DEFAULT_SINK@" "-5%")
+      check :out slurp)))
 
 (defkbd spotify-volume-up
   [[:mod] "XF86AudioRaiseVolume"]

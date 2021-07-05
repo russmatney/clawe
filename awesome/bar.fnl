@@ -58,8 +58,7 @@
          (set s.top-bar
               (awful.wibar
                (or
-                (and bar
-                     (. bar :top_bar))
+                (and bar (. bar :top_bar))
                 {:position "top"
                  :screen s
                  :height (if (util.is_vader) 30 50)
@@ -76,10 +75,14 @@
               1 {:layout wibox.layout.fixed.horizontal
                  1 mytextclock
                  2 separator
-                 3 (workrave)}}
+                 3 (wibox.widget.textbox
+                    (.. "<span>" (if (util.is_vader) "vader" "algo") "</span>"))
+                 4 separator
+                 5 (workrave)}}
            3 {:layout wibox.container.place
               :valign "center"
-              :halign "center"}
+              :halign "center"
+              1 (workspace-meta) }
            4 {:layout wibox.container.place
               :valign "center"
               :halign "center"}
@@ -98,10 +101,7 @@
          ;; Add widgets to the wibox
          (s.bottom-bar:setup
           {:layout wibox.layout.align.horizontal
-           1 {:layout wibox.container.place
-              :valign "center"
-              :halign "center"
-              1 (workspace-meta)}
+           1 nil
            2 {:layout wibox.container.place
               :valign "center"
               :halign "center"
