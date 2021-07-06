@@ -99,11 +99,12 @@
                 :bg beautiful.bg_transparent}))
 
          ;; Add widgets to the wibox
-         (s.bottom-bar:setup
-          {:layout wibox.layout.align.horizontal
-           1 nil
-           2 {:layout wibox.container.place
-              :valign "center"
-              :halign "center"
-              1 (workspaces)}
-           3 nil})))))))
+         ;; (s.bottom-bar:setup
+         ;;  {:layout wibox.layout.align.horizontal
+         ;;   1 nil
+         ;;   2 {:layout wibox.container.place
+         ;;      :valign "center"
+         ;;      :halign "center"
+         ;;      1 (workspaces)}
+         ;;   3 nil})
+         ))))))
