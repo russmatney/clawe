@@ -72,7 +72,8 @@
                       ;; TODO fetch name  from config for index
                       ;; include other tag config?
                       (awful.tag.add (.. "num" it) {:layout (. layouts 1)
-                                                    :selected true}))))))
+                                                    :selected true})))
+                (awful.spawn.easy_async "curl http://localhost:3334/dock/update" nil))))
 
        ;; add tag to current perspective
        (key [:mod :ctrl] (.. "#" (+ 9 it))
@@ -89,7 +90,9 @@
                 (let [scr-tag (. _G.client.focus.screen.tags it)]
                   (when scr-tag
                     (_G.client.focus:move_to_tag scr-tag)
-                    (clawe.update-workspaces))))))
+                    (clawe.update-workspaces)
+                    (awful.spawn.easy_async "curl http://localhost:3334/dock/update" nil))
+                  ))))
 
        ;; add/remove focused client on tag
        (key [:mod :shift :ctrl] (.. "#" (+ 9 it))

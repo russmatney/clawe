@@ -95,7 +95,7 @@
               (awful.wibar
                {:position "bottom"
                 :screen s
-                :height (if (util.is_vader) 70 100)
+                :height (if (util.is_vader) 90 100)
                 :bg beautiful.bg_transparent}))
 
          ;; Add widgets to the wibox

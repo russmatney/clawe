@@ -95,6 +95,24 @@
                        :ontop true
                        :sticky true}}
 
+         {:rule {:name "clover/doctor-dock"}
+          :properties
+          {:border_width 0
+           :border_color 0
+           :maximized_horizontal true
+           :height 300
+           :y 1140
+           :placement awful.placement.bottom
+           :ontop true
+           :above true
+           :sticky true
+           :focusable false
+           :type "dock"
+           :honor_padding false
+           :honor_workarea false
+           :valid false
+           }}
+
          ;; {:rule {:class "firefox"}
          ;;  :properties {:tag "web"
          ;;               :maximized false

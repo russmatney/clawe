@@ -509,7 +509,10 @@ util = require 'util';
   (or interacted with at all, really, but that's going
   to take some work...)"
   [{:keys [name]}]
-  (string/includes? name "meet.google.com"))
+  (or
+    (string/includes? name "meet.google.com")
+    (string/includes? name "clover/doctor-dock")
+    ))
 
 (defn mark-buried-clients []
   (let [floating-clients
@@ -556,6 +559,7 @@ util = require 'util';
        (do
          (when bury-all? (mark-buried-clients))
 
+         ;; TODO rewrite as awm-fnl
          (awm-cli
            {:quiet? true}
            (str
@@ -563,6 +567,7 @@ util = require 'util';
                (str
                  ;; set all ontops/floating false
                  "for c in awful.client.iterate(function (c) return c.ontop end) do\n"
+                 ;; TODO filter things to bury (no clover/doctor-dock)
                  "c.ontop = false; "
                  "c.floating = false; "
                  "end;\n"))

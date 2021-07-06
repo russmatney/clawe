@@ -237,7 +237,9 @@
 (defn toggle-workspace [workspace]
   (-> workspace
       workspaces/merge-awm-tags
-      scratchpad/toggle-scratchpad))
+      scratchpad/toggle-scratchpad)
+  (slurp "http://localhost:3334/dock/update")
+  )
 
 (comment
   (-> defs.local.workspaces/editor toggle-workspace))
@@ -419,19 +421,29 @@
 
 (defkbd cycle-prev-tag-2
   [[:mod] "n"]
-  (awm/awm-fnl '(awful.tag.viewprev)))
+  (awm/awm-fnl
+    '(do (awful.tag.viewprev)
+         (awful.spawn.easy_async "curl http://localhost:3334/dock/update" nil))))
 
 (defkbd cycle-next-tag-2
   [[:mod] "p"]
-  (awm/awm-fnl '(awful.tag.viewnext)))
+  (awm/awm-fnl
+    '(do (awful.tag.viewnext)
+         (awful.spawn.easy_async "curl http://localhost:3334/dock/update" nil))))
 
 (defkbd drag-workspace-prev
   [[:mod :shift] "Left"]
-  (workspaces/drag-workspace "down"))
+  (do
+    (workspaces/drag-workspace "down")
+    (slurp "http://localhost:3334/dock/update"))
+  )
 
 (defkbd drag-workspace-next
   [[:mod :shift] "Right"]
-  (workspaces/drag-workspace "up"))
+  (do
+    (workspaces/drag-workspace "up")
+    (slurp "http://localhost:3334/dock/update"))
+  )
 
 (defkbd clean-workspaces
   [[:mod] "d"]
