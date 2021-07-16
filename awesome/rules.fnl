@@ -3,6 +3,7 @@
 (local beautiful (require "beautiful"))
 (local view (require :fennelview))
 (local clawe (require :clawe))
+(local util (require "util"))
 
 (local bindings (require :bindings))
 
@@ -101,7 +102,7 @@
            :border_color 0
            :maximized_horizontal true
            :height 300
-           :y 1140
+           :y (if (util.is_vader) 1140 1860)
            :placement awful.placement.bottom
            :ontop true
            :above true
