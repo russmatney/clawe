@@ -17,7 +17,10 @@
       (->>
         (filter seq)
         (map #(str base-dir %))
-        sort))))
+        sort
+        ;; attempting to cheaply sort by date
+        ;; could just renamed the ones in the wrong pattern to match the new ones
+        reverse))))
 
 (defn all-screenshots []
   (let [filenames (local-screenshot-files)]

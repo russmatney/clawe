@@ -54,11 +54,15 @@
 
 (defkbd screenshot-full
   [[:mod :shift] "s"]
-  (r.screenshot/full-screen))
+  (do
+    (r.screenshot/full-screen)
+    (slurp "http://localhost:3334/screenshots/update")))
 
 (defkbd screenshot-region
   [[:mod :shift] "a"]
-  (r.screenshot/select-region))
+  (do
+    (r.screenshot/select-region)
+    (slurp "http://localhost:3334/screenshots/update")))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
