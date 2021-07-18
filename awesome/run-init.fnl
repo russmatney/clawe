@@ -172,10 +172,10 @@
    (signals.init_focus_signals config)
    (titlebars.init_request_titlebars config)
 
+   (tag.connect_signal "property::screen" (fn [_] (update-doctor-dock)))
    (tag.connect_signal "tagged" (fn [_] (update-doctor-dock)))
    (tag.connect_signal "untagged" (fn [_] (update-doctor-dock)))
    (tag.connect_signal "property::urgent" (fn [_] (update-doctor-dock)))
-   ;; (client.connect_signal "focus" update-widget)
 
    (print "init_rules")
    (rules.init_rules config)
