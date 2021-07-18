@@ -114,10 +114,10 @@
            :valid false
            }}
 
-         ;; {:rule {:class "firefox"}
-         ;;  :properties {:tag "web"
-         ;;               :maximized false
-         ;;               :floating false}}
+         {:rule {:class "firefox"}
+          :properties {:tag "web"
+                       :maximized false
+                       :floating false}}
 
          ;; youtube fix
          {:rule {:instance "plugin-container"}
