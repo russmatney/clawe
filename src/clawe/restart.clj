@@ -74,6 +74,12 @@ uberjar."
     (log "reapplying rules")
     (awm.rules/apply-rules)
 
+    ;; Notifications
+    (log "reloading notifications")
+    ;; TODO untested - i'm hoping this saves the manual effort at startup
+    (-> (proc/$ systemctl --user start deadd-notification-center)
+        (proc/check))
+
     ;; Misc
     (log "reloading misc")
     (awm/reload-misc)
@@ -81,6 +87,10 @@ uberjar."
     ;; Widgets
     (log "reloading widgets")
     (awm/reload-bar-and-widgets)
+
+    ;; considering...
+    ;; (-> (proc/$ systemctl --user restart doctor-dock)
+    ;;     (proc/check))
 
     (log "completed.")))
 
