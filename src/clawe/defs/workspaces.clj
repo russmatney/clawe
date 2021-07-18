@@ -567,6 +567,11 @@
   (fn [_] (local-repo "urbint/lens" "README.md"))
   {:git/check-status? true})
 
+(defworkspace gitops
+  awesome-rules
+  workspace-title
+  (fn [_] (local-repo "urbint/gitops" "README.md")))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Emacs repos
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
