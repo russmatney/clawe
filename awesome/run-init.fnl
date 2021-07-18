@@ -139,6 +139,9 @@
 ;; init
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(fn update-doctor-dock []
+  (awful.spawn.easy_async "curl http://localhost:3334/dock/update" nil))
+
 (global
  init
  (fn [config]
@@ -168,6 +171,11 @@
    (signals.init_manage_signal config)
    (signals.init_focus_signals config)
    (titlebars.init_request_titlebars config)
+
+   (tag.connect_signal "tagged" (fn [_] (update-doctor-dock)))
+   (tag.connect_signal "untagged" (fn [_] (update-doctor-dock)))
+   (tag.connect_signal "property::urgent" (fn [_] (update-doctor-dock)))
+   ;; (client.connect_signal "focus" update-widget)
 
    (print "init_rules")
    (rules.init_rules config)
