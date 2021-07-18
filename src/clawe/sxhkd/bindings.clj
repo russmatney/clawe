@@ -4,7 +4,8 @@
    [clawe.bindings :as bindings]
    [clojure.string :as string]
    [babashka.process :as proc]
-   [ralphie.notify :as notify]))
+   [ralphie.notify :as notify]
+   [ralphie.tmux :as r.tmux]))
 
 (defn log [msg]
   ;; TODO consider clawe.log macro
@@ -55,6 +56,9 @@
        (remove nil?)
        (string/join "\n\n")))
 
+(defn ensure-sxhkd-tmux-session []
+  (r.tmux/ensure-background-session {:name "sxhkd"}))
+
 (defn reset-bindings []
   (log "SXHKD bindings resetting...")
   (let [config (raw-sxhkdrc)]
@@ -62,6 +66,7 @@
     (log "SXHKD bindings rewritten.")
     (-> (proc/$ systemctl --user restart sxhkd)
         (proc/check))
+    (ensure-sxhkd-tmux-session)
     (log "SXHKD bindings reset.")))
 
 (comment
