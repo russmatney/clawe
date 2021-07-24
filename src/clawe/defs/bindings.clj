@@ -3,7 +3,7 @@
    [babashka.process :as process :refer [$ check]]
    [clojure.string :as string]
    [chess.core :as chess]
-   [defthing.defcom :as defcom]
+   [defthing.defcom :as defcom :refer [defcom]]
    [ralphie.notify :as notify]
    [ralphie.rofi :as rofi]
    [ralphie.tmux :as r.tmux]
@@ -199,8 +199,8 @@
 ;; chess
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defkbd open-chess-game
-  [[:mod :shift] "e"]
+(defcom open-chess-game
+  ;; [[:mod :shift] "e"]
   (do
     (notify/notify "Fetching chess games")
     (->>
@@ -576,17 +576,13 @@
 ;; cycle focus
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defkbd cycle-focus
+(defkbd cycle-focus-next
   [[:mod] "e"]
-  ;; TODO impl an actual cycle - right now it just focuses the first
-  ;; client on screen that isn't focused
-  (awm/awm-fnl
-    '(let [c (->
-               (awful.screen.focused)
-               (. :clients)
-               (lume.reject (fn [c] (= c.window client.focus.window)))
-               (lume.first))]
-       (set _G.client.focus c))))
+  (awm/awm-fnl '(awful.client.focus.byidx 1)))
+
+(defkbd cycle-focus-prev
+  [[:mod :shift] "e"]
+  (awm/awm-fnl '(awful.client.focus.byidx -1)))
 
 (defkbd cycle-layout-next
   [[:mod] "Tab"]

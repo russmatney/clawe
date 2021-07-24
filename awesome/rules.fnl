@@ -12,25 +12,10 @@
 ;; Rules
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(fn to-client-data [c]
-  {:name c.name
-   :ontop    c.ontop
-   :window   c.window
-   :type     c.type
-   :class    c.class
-   :instance c.instance
-   :pid      c.pid
-   :role     c.role})
-
 ;; Rules to apply to new clients (through the "manage" signal).
 (local global_rules
        (gears.table.join
         [{:rule {}
-          :callback
-          ;; TODO this doesn't seem to fire for all new windows, just some...?
-          (fn [c] (clawe.cmd-args "window-callback" (to-client-data c)))}
-
-         {:rule {}
           :properties
           {:border_width beautiful.border_width
            :border_color beautiful.border_normal

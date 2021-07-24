@@ -10,9 +10,6 @@ super + d
 super + Return
   clawe toggle-terminal-kbd-modReturn
 
-super + shift + e
-  clawe open-chess-game-kbd-modshifte
-
 super + u
   clawe toggle-workspace-journal-kbd-modu
 

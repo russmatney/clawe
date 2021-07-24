@@ -142,6 +142,16 @@
 (fn update-doctor-dock []
   (awful.spawn.easy_async "curl http://localhost:3334/dock/update" nil))
 
+(fn to-client-data [c]
+  {:name     c.name
+   :ontop    c.ontop
+   :window   c.window
+   :type     c.type
+   :class    c.class
+   :instance c.instance
+   :pid      c.pid
+   :role     c.role})
+
 (global
  init
  (fn [config]
@@ -172,6 +182,22 @@
    (signals.init_focus_signals config)
    (titlebars.init_request_titlebars config)
 
+   ;; (client.connect_signal
+   ;;  "property::name"
+   ;;  (fn [c]
+   ;;    (pp {:signal "property::name" :c (to-client-data c)})
+   ;;    (clawe.cmd-args "apply-rules-to-client" (to-client-data c))))
+   ;; (client.connect_signal
+   ;;  "manage"
+   ;;  (fn [c]
+   ;;    (pp {:signal "manage" :c (to-client-data c)})
+   ;;    (clawe.cmd-args "apply-rules-to-client" (to-client-data c))))
+   ;; (client.connect_signal
+   ;;  "request::urgent"
+   ;;  (fn [c]
+   ;;    (pp {:signal "request::urgent"})
+   ;;    (clawe.cmd-args "apply-rules-to-client" (to-client-data c))))
+   (client.connect_signal "focus" (fn [_] (update-doctor-dock)))
    (tag.connect_signal "property::screen" (fn [_] (update-doctor-dock)))
    (tag.connect_signal "tagged" (fn [_] (update-doctor-dock)))
    (tag.connect_signal "untagged" (fn [_] (update-doctor-dock)))
