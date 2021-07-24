@@ -179,10 +179,11 @@
 
 (defworkspace pixels
   workspace-title
-  {:workspace/fa-icon-code "f03e"
-   :workspace/directory    "/home/russ/Dropbox/pixels"
-   :workspace/initial-file "/home/russ/Dropbox/pixels/readme.org"
-   :workspace/exec         "/usr/bin/gtk-launch aseprite"}
+  {:workspace/fa-icon-code       "f03e"
+   :workspace/directory          "/home/russ/Dropbox/pixels"
+   :workspace/initial-file       "/home/russ/Dropbox/pixels/readme.org"
+   :workspace/scratchpad-classes #{"Aseprite"}
+   :workspace/exec               "/usr/bin/gtk-launch aseprite"}
   {:rules/apply (fn []
                   (let [client (awm/client-for-name "Aseprite")]
                     (when client
@@ -246,9 +247,10 @@
                       (create-tag-if-none "one-password")
                       (awm/move-client-to-tag (:window c) "one-password"))))}
   workspace-title
-  {:workspace/scratchpad true
-   :workspace/exec       "/usr/bin/gtk-launch 1password.desktop"
-   :workspace/key        "."})
+  {:workspace/scratchpad         true
+   :workspace/scratchpad-classes #{"1Password"}
+   :workspace/exec               "/usr/bin/gtk-launch 1password.desktop"
+   :workspace/key                "."})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Org, mind-gardening, blogging, writing workspaces
