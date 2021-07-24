@@ -140,7 +140,8 @@
   workspace-title
   {:awesome/rules
    ;; TODO get other awm names from rules
-   (awm-workspace-rules "web" "firefox" "Firefox")}
+   ;; TODO don't catch 'firefoxdeveloperedition' here
+   (awm-workspace-rules "web" "firefox")}
   {:workspace/color            "#38b98a"
    :workspace/directory        "/home/russ/"
    :workspace/exec             "/usr/bin/gtk-launch firefox.desktop"
@@ -154,12 +155,13 @@
   {:awesome/rules
    ;; TODO get other awm names from rules
    (awm-workspace-rules "dev-browser" "chrome" "Chrome" "Firefox Developer Edition")}
-  {:workspace/color        "#38b98a"
-   :workspace/directory    "/home/russ/"
-   :workspace/exec         "/usr/bin/gtk-launch firefox-developer-edition.desktop"
-   :workspace/scratchpad   true
-   :workspace/key          "b"
-   :workspace/fa-icon-code "f268"}
+  {:workspace/color              "#38b98a"
+   :workspace/directory          "/home/russ/"
+   :workspace/exec               "/usr/bin/gtk-launch firefox-developer-edition.desktop"
+   :workspace/scratchpad         true
+   :workspace/scratchpad-classes #{"firefoxdeveloperedition"}
+   :workspace/key                "b"
+   :workspace/fa-icon-code       "f268"}
   {:rules/apply (fn []
                   (let [x (awm/client-for-class "firefoxdeveloperedition")]
                     (when x
@@ -228,10 +230,10 @@
                       (create-tag-if-none "zoom")
                       (awm/move-client-to-tag (:window slack-call) "zoom"))))}
   workspace-title
-  {:workspace/scratchpad   true
-   ;; :workspace/scratchpad-class "Zoom"
-   :workspace/key          "z"
-   :workspace/fa-icon-code "f03e"})
+  {:workspace/scratchpad         true
+   :workspace/scratchpad-classes #{"Zoom" "Slack call"}
+   :workspace/key                "z"
+   :workspace/fa-icon-code       "f03e"})
 
 (defworkspace one-password
   {:awesome/rules (awm-workspace-rules "1password" "1Password")}
@@ -690,3 +692,11 @@
   "A keybinding daemon."
   awesome-rules
   (fn [_] (local-repo "baskerville/sxhkd")))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; apache
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defworkspace apache-superset
+  awesome-rules
+  (fn [_] (local-repo "apache/superset")))

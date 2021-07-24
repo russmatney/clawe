@@ -562,7 +562,10 @@
   [[:mod] "o"]
   (do
     (notify/notify "Opening Workspace!")
-    (workspaces/open-workspace)))
+    (workspaces/open-workspace)
+    (slurp "http://localhost:3334/dock/update")
+    ))
+
 
 (defkbd create-new-workspace
   [[:mod :shift] "o"]

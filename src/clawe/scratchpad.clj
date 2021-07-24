@@ -3,6 +3,7 @@
    [clawe.workspaces.create :as wsp.create]
    [clawe.awesome :as awm]
    [clawe.db.scratchpad :as db.scratchpad]
+   [ralphie.notify :as r.notify]
    [ralphie.awesome :as r.awm]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -27,14 +28,25 @@
   "
   [wsp]
   (when wsp
-    (let [wsp-name    (some wsp [:workspace/title])
-          tag         (-> wsp :awesome/tag)
-          clients     (-> wsp :awesome/clients)
-          client      (if-let [cls (:workspace/scratchpad-class wsp)]
-                        (some->> clients (filter (comp #{cls} :class)) first)
-                        (some->> clients first))
-          centerwork? (= (:layout tag) "centerwork")
-          is-master?  (:master client)]
+    (let [wsp-name              (some wsp [:workspace/title])
+          tag                   (-> wsp :awesome/tag)
+          clients               (-> wsp :awesome/clients)
+          client-classes        (-> wsp
+                                    :workspace/scratchpad-classes
+                                    (conj (:workspace/scratchpad-class wsp))
+                                    (->>
+                                      (remove nil?)
+                                      (into #{})))
+          client                (if (seq client-classes)
+                                  (some->> clients (filter (comp client-classes :class)) first)
+                                  (some->> clients first))
+          rules-fn              (-> wsp :rules/apply)
+          client-in-another-wsp (when (and (not client) (seq client-classes))
+                                  (->> (r.awm/all-clients)
+                                       (filter (comp client-classes :class))
+                                       first))
+          centerwork?           (= (:layout tag) "centerwork")
+          is-master?            (:master client)]
       (cond
         ;; "found selected tag, client for:" wsp-name
         (and tag client (:selected tag))
@@ -55,8 +67,6 @@
                                   (lume.map (fn [t] {:name t.name}))
                                   (lume.first)
                                   (. :name)))))
-                (println "found client to-restore focus to" to-restore)
-                (println "b/c it's clearly on tag" (:name tag))
                 (awm/focus-client
                   {:bury-all? true
                    :float?    true
@@ -81,8 +91,13 @@
              :center?   false}
             client))
 
+        ;; apply rules if another client was found
+        (and rules-fn client-in-another-wsp)
+        (rules-fn)
+
         ;; tag exists, no client
         (and tag (not client))
+        ;; create the client
         (wsp.create/create-client wsp)
 
         ;; tag does not exist, presumably no client either
@@ -101,4 +116,8 @@
 
   (toggle-scratchpad "notes")
   (toggle-scratchpad "web")
+
+  (->>
+    (r.awm/all-clients)
+    (map :class))
   )

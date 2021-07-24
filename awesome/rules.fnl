@@ -1,7 +1,6 @@
 (local gears (require "gears"))
 (local awful (require "awful"))
 (local beautiful (require "beautiful"))
-(local view (require :fennelview))
 (local clawe (require :clawe))
 (local util (require "util"))
 
@@ -26,8 +25,7 @@
 ;; Rules to apply to new clients (through the "manage" signal).
 (local global_rules
        (gears.table.join
-        [
-         {:rule {}
+        [{:rule {}
           :callback
           ;; TODO this doesn't seem to fire for all new windows, just some...?
           (fn [c] (clawe.cmd-args "window-callback" (to-client-data c)))}
@@ -96,9 +94,11 @@
                        :ontop true
                        :sticky true}}
 
+         ;; doctor-dock
          {:rule {:name "clover/doctor-dock"}
           :properties
-          {:border_width 0
+          {:tag "journal"
+           :border_width 0
            :border_color 0
            :maximized_horizontal true
            :height 300
@@ -114,9 +114,9 @@
            :valid false
            }}
 
+         ;; ff fix
          {:rule {:class "firefox"}
-          :properties {:tag "web"
-                       :maximized false
+          :properties {:maximized false
                        :floating false}}
 
          ;; youtube fix
@@ -140,24 +140,7 @@
                               awful.placement.centered)
                            {:honor_padding true
                             :honor_workarea true
-                            :to_percent 0.9})))}
-
-
-         {:rule_any {:class ["Spotify" "spotify" "Pavucontrol" "pavucontrol"]
-                     :name ["Spotify" "spotify" "Pavucontrol" "pavucontrol"]}
-          :properties {:tag "spotify"
-                       ;; :switch_to_tags true
-                       :first_tag "spotify"}}
-
-         {:rule_any {:name ["Slack | mini panel"]}
-          :properties {:placement awful.placement.bottom_right}}
-
-         {:rule_any {:class ["Slack" "slack" "Discord" "discord"]
-                     :name ["Slack" "slack" "Discord" "discord"]}
-          :properties {:tag "slack"
-                       :first_tag "slack"
-                       ;; :switch_to_tags true
-                       }}]
+                            :to_percent 0.9})))}]
         workspace-rules.all))
 
 (fn init_rules []
