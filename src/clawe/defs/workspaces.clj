@@ -206,7 +206,7 @@
      (let [steam-client (awm/client-for-name "Steam")]
        (when steam-client
          (notify/notify
-           "Found slack call client, moving to zoom workspace"
+           "Found slack call client, moving to steam workspace"
            steam-client)
          (create-tag-if-none "steam")
          (awm/move-client-to-tag (:window steam-client) "steam"))))})
@@ -232,7 +232,7 @@
                       (awm/move-client-to-tag (:window slack-call) "zoom"))))}
   workspace-title
   {:workspace/scratchpad         true
-   :workspace/scratchpad-classes #{"Zoom" "Slack call"}
+   :workspace/scratchpad-classes #{"zoom" "Slack call"}
    :workspace/key                "z"
    :workspace/fa-icon-code       "f03e"})
 
