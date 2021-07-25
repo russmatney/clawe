@@ -26,7 +26,6 @@
   (let [filenames (local-screenshot-files)]
     (->>
       filenames
-      (take 5)
       (map (fn [f]
              {:file/filename       f
               :file/web-asset-path (str "/assets/screenshots/" (fs/file-name f))
