@@ -37,5 +37,6 @@
 (defworkspace lil-shooter
   "small top-down shooter in godot"
   {:workspace/directory "godot/lil-shooter"}
+  {:git/check-status? true}
   defs.wrk/awesome-rules
   defs.wrk/workspace-repo)

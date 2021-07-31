@@ -511,7 +511,8 @@
       {:notify/subject "Mute Toggled!"
        :notify/body    (if (r.pulseaudio/input-muted?)
                          "Muted!" "Unmuted!")
-       :notify/id      "mute-notif"})))
+       :notify/id      "mute-notif"})
+    (slurp "http://localhost:3334/dock/update")))
 
 (defkbd toggle-output-mute
   [[] "XF86AudioMute"]

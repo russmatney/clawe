@@ -232,7 +232,7 @@
                       (awm/move-client-to-tag (:window slack-call) "zoom"))))}
   workspace-title
   {:workspace/scratchpad         true
-   :workspace/scratchpad-classes #{"zoom" "Slack call"}
+   :workspace/scratchpad-classes #{"zoom" "Slack"}
    :workspace/key                "z"
    :workspace/fa-icon-code       "f03e"})
 
@@ -463,12 +463,14 @@
 (defworkspace clover
   awesome-rules
   workspace-title
-  (fn [_] (local-repo "russmatney/clover")))
+  (fn [_] (local-repo "russmatney/clover"))
+  {:git/check-status? true})
 
 (defworkspace expo
   awesome-rules
   workspace-title
-  (fn [_] (local-repo "russmatney/expo")))
+  (fn [_] (local-repo "russmatney/expo"))
+  {:git/check-status? true})
 
 (defworkspace starters
   awesome-rules
@@ -510,7 +512,8 @@
 (defworkspace plasma
   awesome-rules
   workspace-title
-  (fn [_] (local-repo "teknql/plasma")))
+  (fn [_] (local-repo "teknql/plasma"))
+  {:git/check-status? true})
 
 (defworkspace statik
   awesome-rules

@@ -42,6 +42,9 @@
                                   (some->> clients first))
           rules-fn              (-> wsp :rules/apply)
           client-in-another-wsp (when (and (not client) (seq client-classes))
+                                  ;; TODO refactor in a workspace client-predicate pattern
+                                  ;; (rather than matching on a class like this)
+                                  ;; could even just have the workspace-pred-fn return the client directly
                                   (->> (r.awm/all-clients)
                                        (filter (comp client-classes :class))
                                        first))
