@@ -579,11 +579,16 @@
 
 (defkbd cycle-focus-next
   [[:mod] "e"]
-  (awm/awm-fnl '(awful.client.focus.byidx 1)))
+  (do
+    ;; TODO should be able to notify from sxhkd, but run this awm-fnl from awesome
+    (notify/notify "Client focus next!" (r.awm/visible-clients))
+    (awm/awm-fnl '(awful.client.focus.byidx 1))))
 
 (defkbd cycle-focus-prev
   [[:mod :shift] "e"]
-  (awm/awm-fnl '(awful.client.focus.byidx -1)))
+  (do
+    (notify/notify "Client focus prev!" (r.awm/visible-clients))
+    (awm/awm-fnl '(awful.client.focus.byidx -1))))
 
 (defkbd cycle-layout-next
   [[:mod] "Tab"]
