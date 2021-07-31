@@ -4,6 +4,7 @@
    [clojure.string :as string]
    [chess.core :as chess]
    [defthing.defcom :as defcom :refer [defcom]]
+
    [ralphie.notify :as notify]
    [ralphie.rofi :as rofi]
    [ralphie.tmux :as r.tmux]
@@ -11,11 +12,12 @@
    [ralphie.clipboard :as r.clip]
    [ralphie.screenshot :as r.screenshot]
    [ralphie.emacs :as r.emacs]
-   [ralphie.awesome :as r.awm]
+   [ralphie.awesome :as awm]
    [ralphie.spotify :as r.spotify]
    [ralphie.pulseaudio :as r.pulseaudio]
    [ralphie.browser :as r.browser]
-   [clawe.awesome :as awm]
+
+   [clawe.awesome :as c.awm] ;; DEPRECATED
    [clawe.bindings :refer [defkbd]]
    [clawe.defs.workspaces :as defs.workspaces]
    [clawe.defs.local.workspaces :as defs.local.workspaces]
@@ -299,20 +301,21 @@
   [[:mod :shift] "g"]
   (fn [_ _]
     (notify/notify "Toggling per-workspace garden")
-    (let [{:workspace/keys [title]
-           :awesome/keys   [clients]}
+    (let [{:workspace/keys   [title]
+           :awesome.tag/keys [clients]}
           (some->> [(workspaces/current-workspace)]
                    (workspaces/merge-awm-tags)
                    first)
           wsp-garden-title (str "garden-" title)
           open-client
-          (->> clients (filter (comp #{wsp-garden-title} :name))
+          (->> clients (filter (comp #{wsp-garden-title} :awesome.client/name))
                first)]
       (cond
-        (and open-client (:focused open-client))
+        (and open-client (:awesome.client/focused open-client))
         (awm/close-client open-client)
-        (and open-client (not (:focused open-client)))
-        (awm/focus-client open-client)
+        (and open-client (not (:awesome.client/focused open-client)))
+        ;; DEPRECATED
+        (c.awm/focus-client open-client)
         (not open-client)
         (r.emacs/open
           {:emacs.open/workspace wsp-garden-title
@@ -321,19 +324,19 @@
 
 (defkbd toggle-terminal
   [[:mod] "Return"]
-  (let [{:workspace/keys [title directory]
-         :git/keys       [repo]
-         :awesome/keys   [clients]}
+  (let [{:workspace/keys   [title directory]
+         :git/keys         [repo]
+         :awesome.tag/keys [clients]}
         (some->> (workspaces/current-workspace)
                  workspaces/merge-awm-tags)
         directory               (or directory repo (r.zsh/expand "~"))
         terminal-client         (some->> clients
                                          (filter (fn [c]
                                                    (and
-                                                     (-> c :class #{"Alacritty"})
-                                                     (-> c :name #{title}))))
+                                                     (-> c :awesome.client/class #{"Alacritty"})
+                                                     (-> c :awesome.client/name #{title}))))
                                          first)
-        terminal-client-focused (:focused terminal-client)
+        terminal-client-focused (:awesome.client/focused terminal-client)
 
         opts {:tmux/name      title
               :tmux/directory directory}]
@@ -345,17 +348,18 @@
       ;; no tag
       (not title)
       (do
-        (r.awm/create-tag! "temp-tag")
-        (r.awm/focus-tag! "temp-tag")
+        (awm/create-tag! "temp-tag")
+        (awm/focus-tag! "temp-tag")
         (r.tmux/open-session))
 
       (and terminal-client terminal-client-focused)
       (awm/close-client terminal-client)
 
       (and terminal-client (not terminal-client-focused))
-      (awm/focus-client {:center?   false
-                         :float?    false
-                         :bury-all? false} terminal-client)
+      ;; DEPRECATED
+      (c.awm/focus-client {:center?   false
+                           :float?    false
+                           :bury-all? false} terminal-client)
 
       :else
       (do (r.tmux/open-session opts)
@@ -363,53 +367,58 @@
 
 (defkbd toggle-emacs
   [[:mod :shift] "Return"]
-  (do
-    (let [
-          {:workspace/keys [title initial-file directory]
-           :git/keys       [repo]
-           :awesome/keys   [clients]}
-          (some->> (workspaces/current-workspace)
-                   workspaces/merge-awm-tags)
-          emacs-client         (some->> clients
-                                        (filter (fn [c]
-                                                  (and
-                                                    (-> c :class #{"Emacs"})
-                                                    (-> c :name #{title}))))
-                                        first)
-          emacs-client-focused (:focused emacs-client)
-          initial-file         (or
-                                 ;; TODO detect if configured file exists
-                                 initial-file
-                                 repo
-                                 directory)
-          opts
-          {:emacs.open/workspace title
-           ;; TODO only set the file for a new emacs workspaces
-           :emacs.open/file      initial-file}]
-      (notify/notify "Toggling Emacs"
-                     (assoc opts
-                            :emacs-client emacs-client
-                            :already-focused emacs-client-focused))
-      (cond
-        ;; no tag
-        (not title)
-        (do
-          (r.awm/create-tag! "temp-tag")
-          (r.awm/focus-tag! "temp-tag")
-          (r.emacs/open))
+  (let [{:workspace/keys   [title initial-file directory]
+         :git/keys         [repo]
+         :awesome.tag/keys [clients]}
+        (some->> (workspaces/current-workspace)
+                 workspaces/merge-awm-tags)
+        emacs-client         (some->> clients
+                                      (filter (fn [c]
+                                                (and
+                                                  (-> c :awesome.client/class #{"Emacs"})
+                                                  (-> c :awesome.client/name #{title}))))
+                                      first)
+        emacs-client-focused (:awesome.client/focused emacs-client)
+        initial-file         (or
+                               ;; TODO detect if configured file exists
+                               initial-file
+                               repo
+                               directory)
+        opts
+        {:emacs.open/workspace title
+         ;; TODO only set the file for a new emacs workspaces
+         :emacs.open/file      initial-file}]
+    (notify/notify "Toggling Emacs"
+                   (assoc opts
+                          :emacs-client emacs-client
+                          :already-focused emacs-client-focused))
+    (cond
+      ;; no tag
+      (not title)
+      (do
+        (println "no tag, creating")
+        (awm/create-tag! "temp-tag")
+        (awm/focus-tag! "temp-tag")
+        (r.emacs/open))
 
-        (and emacs-client emacs-client-focused)
-        (awm/close-client emacs-client)
+      (and emacs-client emacs-client-focused)
+      (do
+        (println "client is focused, closing")
+        (awm/close-client emacs-client))
 
-        (and emacs-client (not emacs-client-focused))
-        (awm/focus-client {:center?   false
-                           :float?    false
-                           :bury-all? false} emacs-client)
+      (and emacs-client (not emacs-client-focused))
+      (do
+        (println "client not focused, focusing")
+        ;; DEPRECATED
+        (c.awm/focus-client {:center?   false
+                             :float?    false
+                             :bury-all? false} emacs-client))
 
-        :else
-        (do
-          (r.emacs/open opts)
-          nil)))))
+      :else
+      (do
+        (println "no emacs-client in current tag, opening new one")
+        (r.emacs/open opts)
+        nil))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; cycle workspaces
@@ -581,13 +590,13 @@
   [[:mod] "e"]
   (do
     ;; TODO should be able to notify from sxhkd, but run this awm-fnl from awesome
-    (notify/notify "Client focus next!" (r.awm/visible-clients))
+    (notify/notify "Client focus next!" (seq (awm/visible-clients)))
     (awm/awm-fnl '(awful.client.focus.byidx 1))))
 
 (defkbd cycle-focus-prev
   [[:mod :shift] "e"]
   (do
-    (notify/notify "Client focus prev!" (r.awm/visible-clients))
+    (notify/notify "Client focus prev!" (seq (awm/visible-clients)))
     (awm/awm-fnl '(awful.client.focus.byidx -1))))
 
 (defkbd cycle-layout-next

@@ -1,11 +1,11 @@
 (ns user
   (:require
    [wing.repl :as repl]
+   [ralphie.awesome :as awm]
+   [ralphie.notify :as notify]
    [clawe.workspaces :as workspaces]
-   [clawe.awesome :as awm]
-   [clawe.defs.bindings :as bindings]
-   [clawe.defs.workspaces :as defs.wsp]
-   [ralphie.notify :as notify]))
+   [clawe.bindings :as bindings]
+   [clawe.defs.workspaces :as defs.wsp]))
 
 (comment
   (repl/sync-libs!))
@@ -36,14 +36,14 @@
   (notify/notify "basic notification")
   (notify/notify "notification" "with body")
   (notify/notify {:subject "notification"
-                  :body "with body"})
+                  :body    "with body"})
   (awm/awm-fnl
     '(do
        (local naughty (require :naughty))
        (naughty.notify
-           {:title "My notif"
-            ;; :position "bottom_middle"
-            :text (.. "some sub head: " "with info")})))
+         {:title "My notif"
+          ;; :position "bottom_middle"
+          :text  (.. "some sub head: " "with info")})))
 
   (notify/notify "updated notification")
 

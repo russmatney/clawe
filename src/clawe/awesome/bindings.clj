@@ -2,8 +2,7 @@
   "Manages awesomeWM bindings derived from clawe in-memory data structures."
   (:require
    [clawe.bindings :as bindings]
-   [clojure.string :as string]
-   [clawe.awesome :as awm]))
+   [clojure.string :as string]))
 
 (def modifiers {:mod     "Mod4"
                 :alt     "Mod1"
@@ -65,8 +64,9 @@
 (defn update-awesome-bindings []
   ;; TODO might need to remove newlines here or in awm-fnl (or just handle them)
   ;; TODO also might need to ensure deps/requires for these
-  (let [global (raw-append-global-keybindings)]
-    (awm/awm-fnl global)))
+  ;; (let [global (raw-append-global-keybindings)]
+  ;;   (awm/awm-fnl global))
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Write out code that awesome loads at startup/restart

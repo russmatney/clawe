@@ -1,10 +1,11 @@
 (ns clawe.scratchpad
   (:require
+   [ralphie.notify :as notify]
+   [ralphie.awesome :as awm]
+
+   [clawe.awesome :as c.awm] ;; DEPRECATED
    [clawe.workspaces.create :as wsp.create]
-   [clawe.awesome :as awm]
-   [clawe.db.scratchpad :as db.scratchpad]
-   [ralphie.notify :as r.notify]
-   [ralphie.awesome :as r.awm]))
+   [clawe.db.scratchpad :as db.scratchpad]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; toggle scratchpad
@@ -14,7 +15,8 @@
   "Passes opts to focus-client ensuring that all other windows are buried/tiled,
   the passed client is floated, put ontop, and centered."
   [client]
-  (awm/focus-client
+  ;; DEPRECATED
+  (c.awm/focus-client
     {:bury-all? true
      :float?    true
      :center?   true}
@@ -29,8 +31,8 @@
   [wsp]
   (when wsp
     (let [wsp-name              (some wsp [:workspace/title])
-          tag                   (-> wsp :awesome/tag)
-          clients               (-> wsp :awesome/clients)
+          tag?                  (-> wsp :awesome.tag/name seq)
+          clients               (-> wsp :awesome.tag/clients seq)
           client-classes        (-> wsp
                                     :workspace/scratchpad-classes
                                     (conj (:workspace/scratchpad-class wsp))
@@ -38,25 +40,25 @@
                                       (remove nil?)
                                       (into #{})))
           client                (if (seq client-classes)
-                                  (some->> clients (filter (comp client-classes :class)) first)
+                                  (some->> clients (filter (comp client-classes :awesome.client/class)) first)
                                   (some->> clients first))
           rules-fn              (-> wsp :rules/apply)
           client-in-another-wsp (when (and (not client) (seq client-classes))
                                   ;; TODO refactor in a workspace client-predicate pattern
                                   ;; (rather than matching on a class like this)
                                   ;; could even just have the workspace-pred-fn return the client directly
-                                  (->> (r.awm/all-clients)
-                                       (filter (comp client-classes :class))
+                                  (->> (awm/all-clients)
+                                       (filter (comp client-classes :awesome.client/class))
                                        first))
-          centerwork?           (= (:layout tag) "centerwork")
-          is-master?            (:master client)]
+          centerwork?           (= (:awesome.tag/layout wsp) "centerwork")
+          is-master?            (:awesome.client/master client)]
       (cond
         ;; "found selected tag, client for:" wsp-name
-        (and tag client (:selected tag))
-        (if (or (:ontop client) (and centerwork? is-master?))
+        (and tag? client (:awesome.tag/selected wsp))
+        (if (or (:awesome.client/ontop client) (and centerwork? is-master?))
           (do
             ;; hide this tag
-            (r.awm/toggle-tag wsp-name)
+            (awm/toggle-tag wsp-name)
 
             ;; restore last buried client
             (let [to-restore (db.scratchpad/next-restore)]
@@ -70,25 +72,28 @@
                                   (lume.map (fn [t] {:name t.name}))
                                   (lume.first)
                                   (. :name)))))
-                (awm/focus-client
+                ;; DEPRECATED
+                (c.awm/focus-client
                   {:bury-all? true
                    :float?    true
                    :center?   false}
                   client)
 
                 (db.scratchpad/mark-restored to-restore))))
-          (awm/focus-client
+          ;; DEPRECATED
+          (c.awm/focus-client
             {:bury-all? true
              :float?    true
              :center?   false}
             client))
 
         ;; "found unselected tag, client for:" wsp-name
-        (and tag client (not (:selected tag)))
+        (and tag? client (not (:awesome.tag/selected wsp)))
         (do
-          (r.awm/toggle-tag wsp-name)
+          (awm/toggle-tag wsp-name)
 
-          (awm/focus-client
+          ;; DEPRECATED
+          (c.awm/focus-client
             {:bury-all? true
              :float?    true
              :center?   false}
@@ -99,15 +104,15 @@
         (rules-fn)
 
         ;; tag exists, no client
-        (and tag (not client))
+        (and tag? (not client))
         ;; create the client
         (wsp.create/create-client wsp)
 
         ;; tag does not exist, presumably no client either
-        (not tag)
+        (not tag?)
         (do
-          (r.awm/create-tag! wsp-name)
-          (r.awm/toggle-tag wsp-name)
+          (awm/create-tag! wsp-name)
+          (awm/toggle-tag wsp-name)
           (wsp.create/create-client wsp))))))
 
 (comment
@@ -121,6 +126,6 @@
   (toggle-scratchpad "web")
 
   (->>
-    (r.awm/all-clients)
-    (map :class))
+    (awm/all-clients)
+    (map :awesome.client/class))
   )

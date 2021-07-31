@@ -1,7 +1,7 @@
 (ns clawe.core
   (:require
    [defthing.defcom :as defcom :refer [defcom]]
-   [clawe.awesome :as awm]
+   [ralphie.awesome :as awm]
    clawe.awesome.rules
    clawe.defs.bindings
    clawe.defs.workspaces
@@ -30,6 +30,7 @@
 ;; awm-cli wrapper
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; TODO move to ralphie.awesome or pure clojure-awesome library/adapter
 (defcom awm-cli
   (fn [_config & arguments]
     (let [res (awm/awm-cli (-> arguments first first))]

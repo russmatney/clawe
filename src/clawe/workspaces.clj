@@ -1,13 +1,13 @@
 (ns clawe.workspaces
   (:require
-   [clawe.defs.workspaces :as defs.wsp]
-   [clawe.awesome :as awm]
-   [clawe.workspaces.create :as wsp.create]
    [defthing.defcom :refer [defcom] :as defcom]
+   [ralphie.awesome :as awm]
    [ralphie.rofi :as rofi]
-   [ralphie.awesome :as r.awm]
    [ralphie.git :as r.git]
-   [ralphie.notify :as notify]))
+   [ralphie.notify :as notify]
+
+   [clawe.defs.workspaces :as defs.wsp]
+   [clawe.workspaces.create :as wsp.create]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Workspace helpers
@@ -44,13 +44,15 @@
   Fetching awm tags one at a time can be a bit slow,
   so we just get them all up-front."
   [wsps]
-  (let [awm-all-tags (r.awm/all-tags)
+  (let [awm-all-tags (awm/all-tags)
         is-map?      (map? wsps)
         wsps         (if is-map? [wsps] wsps)]
     (cond->> wsps
       true
       (map (fn [wsp]
-             (merge (r.awm/workspace-for-name
+             ;; depends on the :workspace/title matching the awm tag name
+             ;; could also just be a unique id stored from open-workspace
+             (merge (awm/tag-for-name
                       (workspace-name wsp)
                       awm-all-tags)
                     wsp)))
@@ -68,7 +70,7 @@
   Sorts scratchpads to the end, intending to return the 'base' workspace,
   which is usually what we want."
   []
-  (some->> (r.awm/current-tag-names)
+  (some->> (awm/current-tag-names)
            (map defs.wsp/get-workspace)
            (sort-by :workspace/scratchpad)
            ;; (take 1)
@@ -76,7 +78,7 @@
            first))
 
 (comment
-  (->> (r.awm/current-tag-names)
+  (->> (awm/current-tag-names)
        (map defs.wsp/get-workspace)
        (sort-by :workspace/scratchpad)))
 
@@ -85,7 +87,9 @@
   []
   (->>
     (defs.wsp/list-workspaces)
-    merge-awm-tags))
+    merge-awm-tags
+    ;; (map apply-git-status)
+    ))
 
 (defn for-name [name]
   (some->>
@@ -97,30 +101,35 @@
   (for-name "ralphie"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Active workspaces
+;; Awesoem workspaces widget
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn active-workspaces
-  "Pulls workspaces to show in the workspaces-widget."
+  "DEPRECATED
+  Pulls workspaces to show in the workspaces-widget.
+
+  supports the workspaces-widget."
   []
   (->> (all-workspaces)
-       (filter :awesome/tag)
+       (filter :awesome.tag/name)
        (map apply-git-status)
        (map (fn [spc]
               {;; consider flags for is-scratchpad/is-app/is-repo
-               :name          (:awesome/name spc)
-               :awesome_index (:awesome/index spc)
+               :name          (:awesome.tag/name spc)
+               :awesome_index (:awesome.tag/index spc)
                :key           (:workspace/key spc)
                :fa_icon_code  (when-let [code (:workspace/fa-icon-code spc)]
                                 (str "\\u{" code "}"))
                :scratchpad    (:workspace/scratchpad spc)
-               :selected      (:awesome/selected spc)
-               :empty         (:awesome/empty spc)
+               :selected      (:awesome.tag/selected spc)
+               :empty         (:awesome.tag/empty spc)
                :dirty         (:git/dirty? spc)
                :needs_pull    (:git/needs-pull? spc)
                :needs_push    (:git/needs-push? spc)
                :color         (:workspace/color spc)
                :title_pango   (:workspace/title-pango spc)}))
+       ;; TODO refactor the sorting/workspace-order, it should be a post-command hook
+       ;; this is where it gets sorted, and the update is in awesome widget
        (map (fn [spc]
               (assoc spc
                      :sort-key (str (if (:scratchpad spc) "z" "a") "-"
@@ -132,17 +141,6 @@
                                        ;; lua indexes start at 1
                                        (+ i 1))))))
 
-(comment
-  (format "%03d" nil)
-  (->>
-    (all-workspaces)
-    (filter :awesome/tag)
-    (map workspace-name))
-
-  (->>
-    (active-workspaces)
-    (map :sort-key)))
-
 (defn update-workspaces-widget
   []
   (let [fname "update_workspaces_widget"]
@@ -150,20 +148,14 @@
       {:quiet? true}
       (awm/awm-fn fname (active-workspaces)))))
 
-(comment
-  (->>
-    (active-workspaces)
-    (map :awesome-index))
-  (awm/awm-fn "update_workspaces_widget" (active-workspaces))
-
-  (update-workspaces-widget))
-
 (defcom update-workspaces
   "updates the workspaces widget to reflect the current workspaces state."
   "expects a function-name as an argument,
 which is called with a list of workspaces maps."
   (update-workspaces-widget))
 
+;; TODO the rest of this should be refactored into ralphie.awesome or clawe.defs.bindings
+;; maybe the workspace functions stay, but should dispatch to whatever window manager
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Swapping Workspaces
@@ -188,11 +180,6 @@ which is called with a list of workspaces maps."
         (update-workspaces-widget))
       (notify/notify "drag-workspace called without 'up' or 'down'!"))))
 
-(comment
-  (println "hi")
-  (drag-workspace "up"))
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; consolidate workspaces
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -200,22 +187,22 @@ which is called with a list of workspaces maps."
 (defn consolidate-workspaces []
   (->>
     (all-workspaces)
-    (remove :awesome/empty)
-    (sort-by :awesome/index)
+    (remove :awesome.tag/empty)
+    (sort-by :awesome.tag/index)
     (map-indexed
-      (fn [new-index {:keys [awesome/name awesome/index]}]
-        (let [new-index (+ 1 new-index)] ;; b/c lua 1-based
+      (fn [new-index {:keys [awesome.tag/name awesome.tag/index]}]
+        (let [new-index (+ 1 new-index)] ;; b/c lua is 1-based
           (if (== index new-index)
             (prn "nothing to do")
             (do
               (prn "swapping tags" {:name      name
                                     :idx       index
                                     :new-index new-index})
-              (awm/awm-cli
-                (str "local tag = awful.tag.find_by_name(nil, \"" name "\");"
-                     "local tags = awful.screen.focused().tags;"
-                     "local tag2 = tags[" new-index "];"
-                     "tag:swap(tag2);")))))))))
+              (awm/awm-cli {:quiet? true}
+                           (str "local tag = awful.tag.find_by_name(nil, \"" name "\");"
+                                "local tags = awful.screen.focused().tags;"
+                                "local tag2 = tags[" new-index "];"
+                                "tag:swap(tag2);")))))))))
 
 (defcom consolidate-workspaces-cmd
   "Groups active workspaces closer together"
@@ -234,12 +221,12 @@ which is called with a list of workspaces maps."
   (notify/notify {:subject "Cleaning up workspaces"})
   (->>
     (all-workspaces)
-    (filter :awesome/empty)
+    (filter :awesome.tag/empty)
     (map
       (fn [it]
-        (when-let [name (:awesome/name it)]
+        (when-let [name (:awesome.tag/name it)]
           (try
-            (r.awm/delete-tag! name)
+            (awm/delete-tag! name)
             (notify/notify "Deleted Tag" name)
             (catch Exception e e
                    (notify/notify "Error deleting tag" e))))))
@@ -257,13 +244,13 @@ which is called with a list of workspaces maps."
     (println "create-workspace")
 
     ;; create tag if none is found
-    (when (not (r.awm/tag-for-name name))
+    (when (not (awm/tag-for-name name))
       (println "create-tag")
-      (r.awm/create-tag! name))
+      (awm/create-tag! name))
 
     (println "focus-tag")
     ;; focus the tag
-    (r.awm/focus-tag! name)
+    (awm/focus-tag! name)
 
     ;; run on-create hook
     ;; (when-let [f (:workspace/on-create wsp)]
@@ -277,23 +264,21 @@ which is called with a list of workspaces maps."
     ;; NOTE might want this to be opt-in/out
     (when (or
             ;; was empty
-            (:awesome/empty wsp)
+            (:awesome.tag/empty wsp)
             ;; or had no tag
-            (not (:awesome/tag wsp)))
+            (not (:awesome.tag/name wsp)))
       (wsp.create/create-client wsp))
 
     ;; return the workspace
     wsp))
 
 (comment
-  (r.awm/tag-for-name "ralphie")
-  (r.awm/create-tag! "ralphie")
+  (awm/tag-for-name "ralphie")
+  (awm/create-tag! "ralphie")
   (->
     "ralphie"
     (for-name)
-    (create-workspace)
-    ))
-
+    (create-workspace)))
 
 (defn wsp->repo-and-status-label
   [{:as   wsp

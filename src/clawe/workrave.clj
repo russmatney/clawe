@@ -2,7 +2,7 @@
   (:require
    [babashka.process :refer [$ check]]
    [clojure.string :as string]
-   [clawe.awesome :as awm]
+   [ralphie.awesome :as awm]
    [defthing.defcom :refer [defcom] :as defcom]))
 
 ;; dbus-send --print-reply \

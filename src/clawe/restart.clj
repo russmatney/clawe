@@ -1,11 +1,11 @@
 (ns clawe.restart
   (:require
+   [babashka.process :as proc]
    [defthing.defcom :as defcom :refer [defcom]]
    [ralphie.notify :as notify]
-   [clawe.install :as c.install]
-   [babashka.process :as proc]
+   [ralphie.awesome :as awm]
 
-   [clawe.awesome :as awm]
+   [clawe.install :as c.install]
    [clawe.awesome.rules :as awm.rules]
    [clawe.awesome.bindings :as awm.bindings]
    [clawe.bindings :refer [defkbd]]

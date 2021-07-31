@@ -78,15 +78,14 @@
                  3 (wibox.widget.textbox
                     (.. "<span>" (if (util.is_vader) "vader" "algo") "</span>"))
                  4 separator
-                 5 (workrave)}}
+                 5 (workrave)
+                 6 (workspace-meta)
+                 }}
            3 {:layout wibox.container.place
               :valign "center"
               :halign "center"
-              1 (workspace-meta) }
-           4 {:layout wibox.container.place
-              :valign "center"
-              :halign "center"}
-           5 {:layout wibox.layout.fixed.horizontal
+              1 (workspaces)}
+           4 {:layout wibox.layout.fixed.horizontal
               1 (spotify-widget)
               2 (when (util.is_vader) (batteryarc-widget))}})
 

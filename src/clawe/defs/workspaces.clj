@@ -2,7 +2,7 @@
   (:require
    [defthing.core :as defthing]
    [ralphie.notify :as notify]
-   [clawe.awesome :as awm]))
+   [ralphie.awesome :as awm]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Workspaces API
@@ -170,7 +170,7 @@
                         x)
                       ;; TODO create workspace if it doesn't exist
                       (create-tag-if-none "dev-browser")
-                      (awm/move-client-to-tag (:window x) "dev-browser"))))} )
+                      (awm/move-client-to-tag (:awesome.client/window x) "dev-browser"))))} )
 
 (defworkspace obs
   workspace-title
@@ -188,7 +188,7 @@
                   (let [client (awm/client-for-name "Aseprite")]
                     (when client
                       (create-tag-if-none "pixels")
-                      (awm/move-client-to-tag (:window client) "pixels")))
+                      (awm/move-client-to-tag (:awesome.client/window client) "pixels")))
                   )} )
 
 (defworkspace tiles
@@ -209,7 +209,7 @@
            "Found slack call client, moving to steam workspace"
            steam-client)
          (create-tag-if-none "steam")
-         (awm/move-client-to-tag (:window steam-client) "steam"))))})
+         (awm/move-client-to-tag (:awesome.client/window steam-client) "steam"))))})
 
 (defworkspace audacity
   awesome-rules
@@ -229,7 +229,7 @@
                         "Found slack call client, moving to zoom workspace"
                         slack-call)
                       (create-tag-if-none "zoom")
-                      (awm/move-client-to-tag (:window slack-call) "zoom"))))}
+                      (awm/move-client-to-tag (:awesome.client/window slack-call) "zoom"))))}
   workspace-title
   {:workspace/scratchpad         true
    :workspace/scratchpad-classes #{"zoom" "Slack"}
@@ -245,7 +245,7 @@
                         "Found 1password client, moving to zoom workspace"
                         c)
                       (create-tag-if-none "one-password")
-                      (awm/move-client-to-tag (:window c) "one-password"))))}
+                      (awm/move-client-to-tag (:awesome.client/window c) "one-password"))))}
   workspace-title
   {:workspace/scratchpad         true
    :workspace/scratchpad-classes #{"1Password"}
@@ -655,7 +655,7 @@
   ;;                     (create-tag-if-none "godot")
   ;;                     (doall
   ;;                       (for [client clients]
-  ;;                         (awm/move-client-to-tag (:window client) "godot"))))))}
+  ;;                         (awm/move-client-to-tag (:awesome.client/window client) "godot"))))))}
   {:workspace/directory    "/home/russ/godot"
    :workspace/initial-file "/home/russ/godot/readme.org"
    :workspace/fa-icon-code "f130"
