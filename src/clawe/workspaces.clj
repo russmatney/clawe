@@ -6,7 +6,10 @@
    [ralphie.git :as r.git]
    [ralphie.notify :as notify]
 
+   ;; be sure to require all workspaces here, or (all-workspaces) will be incomplete
    [clawe.defs.workspaces :as defs.wsp]
+   clawe.defs.local.workspaces
+
    [clawe.workspaces.create :as wsp.create]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

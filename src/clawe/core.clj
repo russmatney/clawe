@@ -5,7 +5,6 @@
    clawe.awesome.rules
    clawe.defs.bindings
    clawe.defs.workspaces
-   clawe.defs.local.workspaces
    clawe.doctor
    clawe.dwim
    clawe.install
