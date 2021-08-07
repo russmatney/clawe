@@ -23,7 +23,8 @@
    [clawe.defs.local.workspaces :as defs.local.workspaces]
    [clawe.dwim :as c.dwim]
    [clawe.scratchpad :as scratchpad]
-   [clawe.workspaces :as workspaces]))
+   [clawe.workspaces :as workspaces]
+   [clawe.rules :as c.rules]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; rofi, launchers, command selectors
@@ -458,12 +459,10 @@
     (slurp "http://localhost:3334/dock/update"))
   )
 
-(defkbd clean-workspaces
+(defkbd correct-clients-and-workspaces
   [[:mod] "d"]
-  (do
-    (workspaces/clean-workspaces)
-    (workspaces/consolidate-workspaces)
-    (workspaces/update-workspaces-widget)))
+  "Applies clawe rules"
+  (c.rules/correct-clients-and-workspaces))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

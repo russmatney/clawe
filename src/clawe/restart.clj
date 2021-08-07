@@ -6,6 +6,7 @@
    [ralphie.awesome :as awm]
 
    [clawe.install :as c.install]
+   [clawe.rules :as c.rules]
    [clawe.awesome.rules :as awm.rules]
    [clawe.awesome.bindings :as awm.bindings]
    [clawe.bindings :refer [defkbd]]
@@ -24,10 +25,12 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defcom restart
-  "Rebuild the uberjar exec `clawe rewrite-and-reload`.
+  "Rebuilds the clawe executable, which is an uberjar.
+
+Fires `clawe reload`, which is implemented below.
 
 We want to make sure the new config is written with the updated
-uberjar."
+uberjar. Otherwise this might need to be called twice."
   (do
     (log "restarting...")
     ;; maybe detect if the current uberjar is out of date?
@@ -35,6 +38,8 @@ uberjar."
     (c.install/build-uberjar)
     (log "rebuilt uberjar...")
     ;; maybe a pause or file read/watch, something that shows it's new?
+    ;; or at least some log that reveals whether it is new or not
+    ;; log and compare the checksum of the uberjar, with a fallback
 
     ;; if nothing has changed, maybe just call rewrite-and-reload from here
     (log "reloading...")
@@ -72,7 +77,8 @@ uberjar."
     (log "rewriting rules")
     (awm.rules/write-awesome-rules)
     (log "reapplying rules")
-    (awm.rules/apply-rules)
+    (c.rules/apply-rules)
+    (c.rules/correct-clients-and-workspaces)
 
     ;; Notifications
     (log "reloading notifications")
@@ -83,6 +89,10 @@ uberjar."
     ;; Misc
     (log "reloading misc")
     (awm/reload-misc)
+
+    ;; Reload completions/aches
+    (log "reloading zsh tab completion")
+    (c.install/install-zsh-tab-completion)
 
     ;; Widgets
     (log "reloading widgets")

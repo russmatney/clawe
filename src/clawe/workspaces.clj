@@ -82,6 +82,13 @@
        (map defs.wsp/get-workspace)
        (sort-by :workspace/scratchpad)))
 
+(defn all-workspaces-fast
+  "Returns all defs.workspaces, merged with awesome tags."
+  []
+  (->>
+    (defs.wsp/list-workspaces)
+    ))
+
 (defn all-workspaces
   "Returns all defs.workspaces, merged with awesome tags."
   []

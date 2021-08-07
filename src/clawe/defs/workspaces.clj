@@ -2,7 +2,8 @@
   (:require
    [defthing.core :as defthing]
    [ralphie.notify :as notify]
-   [ralphie.awesome :as awm]))
+   [ralphie.awesome :as awm]
+   [clojure.string :as string]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Workspaces API
@@ -58,17 +59,6 @@
     "(awful.spawn.easy_async \"notify-send hi\")")
   )
 
-(defn create-tag-if-none [tag-name]
-  (awm/awm-fnl
-    (str
-      "(if (awful.tag.find_by_name (awful.screen.focused) \"" tag-name "\")"
-      " nil (awful.tag.add \"" tag-name "\" {:layout awful.layout.suit.tile}))")))
-
-(comment
-  (awm/awm-fnl
-    (create-tag-if-none "zoom")))
-
-
 (defn workspace-title
   "Sets the workspace title using the :name (which defaults to the symbol).
 
@@ -114,27 +104,35 @@
 (defworkspace spotify
   workspace-title
   {:awesome/rules
-   (awm-workspace-rules "spotify"  "spotify" "Pavucontrol" "pavucontrol")}
-  {:workspace/color            "#38b98a"
-   :workspace/directory        "/home/russ/"
+   (awm-workspace-rules "spotify"  "Spotify" "Pavucontrol" "pavucontrol")}
+  {:workspace/directory        "/home/russ/"
    :workspace/exec             "spotify"
    :workspace/initial-file     "/home/russ/.config/spicetify/config.ini"
    :workspace/scratchpad       true
    :workspace/scratchpad-class "Spotify"
-   :workspace/key              "s"
-   :workspace/fa-icon-code     "f1bc"})
+   :workspace/fa-icon-code     "f1bc"
+   :rules/is-my-client?
+   (fn [c]
+     (let [matches
+           #{"spotify" "Spotify"}
+           {:awesome.client/keys [name class]} c]
+       (or (matches name) (matches class))))})
 
 (defworkspace slack
   workspace-title
   {:awesome/rules
    (awm-workspace-rules "slack" "discord")}
-  {:workspace/color            "#38b98a"
-   :workspace/directory        "/home/russ/"
+  {:workspace/directory        "/home/russ/"
    :workspace/exec             "slack"
    :workspace/scratchpad       true
    :workspace/scratchpad-class "Slack"
-   :workspace/key              "a"
-   :workspace/fa-icon-code     "f198"})
+   :workspace/fa-icon-code     "f198"
+   :rules/is-my-client?
+   (fn [c]
+     ;; TODO ignore 'Slack call' clients
+     (let [matches                             #{"slack" "Slack"}
+           {:awesome.client/keys [name class]} c]
+       (or (matches name) (matches class))))})
 
 (defworkspace web
   workspace-title
@@ -142,35 +140,46 @@
    ;; TODO get other awm names from rules
    ;; TODO don't catch 'firefoxdeveloperedition' here
    (awm-workspace-rules "web" "firefox")}
-  {:workspace/color            "#38b98a"
-   :workspace/directory        "/home/russ/"
+  {:workspace/directory        "/home/russ/"
    :workspace/exec             "/usr/bin/gtk-launch firefox.desktop"
    :workspace/scratchpad       true
    :workspace/scratchpad-class "firefox"
-   :workspace/key              "t"
-   :workspace/fa-icon-code     "f269"})
+   :workspace/fa-icon-code     "f269"
+   :rules/is-my-client?
+   (fn [c]
+     (let [matches                             #{"firefox" "web"}
+           {:awesome.client/keys [name class]} c]
+       (or (matches name) (matches class))))
+   })
 
 (defworkspace dev-browser
   workspace-title
   {:awesome/rules
-   ;; TODO get other awm names from rules
-   (awm-workspace-rules "dev-browser" "chrome" "Chrome" "Firefox Developer Edition")}
-  {:workspace/color              "#38b98a"
-   :workspace/directory          "/home/russ/"
+   (awm-workspace-rules "dev-browser" "chrome" "Chrome" "Firefox Developer Edition"
+                        "firefoxdeveloperedition")}
+  {:workspace/directory          "/home/russ/"
    :workspace/exec               "/usr/bin/gtk-launch firefox-developer-edition.desktop"
    :workspace/scratchpad         true
    :workspace/scratchpad-classes #{"firefoxdeveloperedition"}
-   :workspace/key                "b"
    :workspace/fa-icon-code       "f268"}
-  {:rules/apply (fn []
-                  (let [x (awm/client-for-class "firefoxdeveloperedition")]
-                    (when x
-                      (notify/notify
-                        "Found firefoxdeveloper client, moving to dev-browser workspace"
-                        x)
-                      ;; TODO create workspace if it doesn't exist
-                      (create-tag-if-none "dev-browser")
-                      (awm/move-client-to-tag (:awesome.client/window x) "dev-browser"))))} )
+  {:rules/is-my-client?
+   (fn [c]
+     (let [matches
+           #{"dev-browser" ;; emacs match? ;; include title by default?
+             "chrome" "Chrome"
+             "Firefox Developer Edition" "firefoxdeveloperedition" }
+           {:awesome.client/keys [name class]} c]
+       (or (matches name) (matches class))))
+   :rules/apply
+   (fn []
+     (let [x (awm/client-for-class "firefoxdeveloperedition")]
+       (when x
+         (notify/notify
+           "Found firefoxdeveloper client, moving to dev-browser workspace"
+           x)
+         ;; TODO create workspace if it doesn't exist
+         (awm/ensure-tag "dev-browser")
+         (awm/move-client-to-tag (:awesome.client/window x) "dev-browser"))))} )
 
 (defworkspace obs
   workspace-title
@@ -187,7 +196,7 @@
   {:rules/apply (fn []
                   (let [client (awm/client-for-name "Aseprite")]
                     (when client
-                      (create-tag-if-none "pixels")
+                      (awm/ensure-tag "pixels")
                       (awm/move-client-to-tag (:awesome.client/window client) "pixels")))
                   )} )
 
@@ -208,7 +217,7 @@
          (notify/notify
            "Found slack call client, moving to steam workspace"
            steam-client)
-         (create-tag-if-none "steam")
+         (awm/ensure-tag "steam")
          (awm/move-client-to-tag (:awesome.client/window steam-client) "steam"))))})
 
 (defworkspace audacity
@@ -228,8 +237,14 @@
                       (notify/notify
                         "Found slack call client, moving to zoom workspace"
                         slack-call)
-                      (create-tag-if-none "zoom")
-                      (awm/move-client-to-tag (:awesome.client/window slack-call) "zoom"))))}
+                      (awm/ensure-tag "zoom")
+                      (awm/move-client-to-tag (:awesome.client/window slack-call) "zoom"))))
+   :rules/is-my-client?
+   (fn [c]
+     (let [matches                             #{"zoom" "Zoom" "Slack call"}
+           {:awesome.client/keys [name class]} c]
+       (or (matches name) (matches class)
+           (string/includes? name "Slack call"))))}
   workspace-title
   {:workspace/scratchpad         true
    :workspace/scratchpad-classes #{"zoom" "Slack"}
@@ -238,13 +253,18 @@
 
 (defworkspace one-password
   {:awesome/rules (awm-workspace-rules "1password" "1Password")}
-  {:rules/apply (fn []
+  {:rules/is-my-client?
+   (fn [c]
+     (let [matches                             #{"1password" "1Password"}
+           {:awesome.client/keys [name class]} c]
+       (or (matches name) (matches class))))
+   :rules/apply (fn []
                   (let [c (awm/client-for-name "1Password")]
                     (when c
                       (notify/notify
                         "Found 1password client, moving to zoom workspace"
                         c)
-                      (create-tag-if-none "one-password")
+                      (awm/ensure-tag "one-password")
                       (awm/move-client-to-tag (:awesome.client/window c) "one-password"))))}
   workspace-title
   {:workspace/scratchpad         true
@@ -269,6 +289,11 @@
    :workspace/key              "u"
    :workspace/scratchpad       true
    :workspace/scratchpad-class "Emacs"
+   :rules/is-my-client?
+   (fn [c]
+     (let [matches                             #{"journal" "clover/doctor-dock"}
+           {:awesome.client/keys [name class]} c]
+       (or (matches name) (matches class))))
    })
 
 (defworkspace garden
@@ -652,7 +677,7 @@
   ;;                 ;; TODO this grabs browsers with 'godot' window titles
   ;;                 (let [clients (awm/clients-for-name "godot")]
   ;;                   (when (seq clients)
-  ;;                     (create-tag-if-none "godot")
+  ;;                     (awm/ensure-tag "godot")
   ;;                     (doall
   ;;                       (for [client clients]
   ;;                         (awm/move-client-to-tag (:awesome.client/window client) "godot"))))))}

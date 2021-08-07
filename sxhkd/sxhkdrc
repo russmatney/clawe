@@ -4,9 +4,6 @@ super + period
 super + m
   clawe toggle-input-mute-kbd-modm
 
-super + d
-  clawe clean-workspaces-kbd-modd
-
 super + Return
   clawe toggle-terminal-kbd-modReturn
 
@@ -24,6 +21,9 @@ super + shift + a
 
 super + shift + t
   clawe toggle-all-titlebars-kbd-modshiftt
+
+super + d
+  clawe correct-clients-and-workspaces-kbd-modd
 
 super + s
   clawe toggle-workspace-spotify-kbd-mods
