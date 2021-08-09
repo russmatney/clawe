@@ -40,3 +40,10 @@
   {:git/check-status? true}
   defs.wrk/awesome-rules
   defs.wrk/workspace-repo)
+
+(defworkspace top-down-3d-shooter
+  "small top-down 3d shooter in godot"
+  {:workspace/directory "godot/top-down-3d-shooter"}
+  {:git/check-status? true}
+  defs.wrk/awesome-rules
+  defs.wrk/workspace-repo)
