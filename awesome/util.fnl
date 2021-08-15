@@ -8,7 +8,8 @@
    (for [i 1 #s]
      (let [char (s:sub i i)]
        (root.fake_input "key_press" char)
-       (root.fake_input "key_release" char))) (set client.focus old_c)))
+       (root.fake_input "key_release" char)))
+   (set client.focus old_c)))
 
 (local
  hostname

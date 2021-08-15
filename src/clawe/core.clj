@@ -7,6 +7,7 @@
    clawe.defs.workspaces
    clawe.doctor
    clawe.dwim
+   clawe.godot
    clawe.install
    clawe.restart
    clawe.rules
