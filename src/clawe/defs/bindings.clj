@@ -422,7 +422,7 @@
         nil))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; cycle workspaces
+;; cycle tags and clients
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defkbd cycle-prev-tag
@@ -433,17 +433,44 @@
   [[:mod] "Right"]
   (awm/awm-fnl '(awful.tag.viewnext)))
 
+(defkbd cycle-next-tag-2
+  [[:mod] "Tab"]
+  (awm/awm-fnl
+    '(do (awful.tag.viewnext)
+         (awful.spawn.easy_async "curl http://localhost:3334/dock/update" nil))))
+
 (defkbd cycle-prev-tag-2
-  [[:mod] "n"]
+  [[:mod :shift] "Tab"]
   (awm/awm-fnl
     '(do (awful.tag.viewprev)
          (awful.spawn.easy_async "curl http://localhost:3334/dock/update" nil))))
 
-(defkbd cycle-next-tag-2
+(defkbd cycle-focus-next
+  [[:mod] "n"]
+  (awm/awm-fnl '(awful.client.focus.byidx 1))
+  ;; (do
+  ;;   ;; TODO should be able to notify from sxhkd, but run this awm-fnl from awesome
+  ;;   (notify/notify "Client focus next!" (seq (awm/visible-clients))))
+  )
+
+(defkbd cycle-focus-prev
   [[:mod] "p"]
+  (awm/awm-fnl '(awful.client.focus.byidx -1))
+  ;; (do
+  ;;   (notify/notify "Client focus prev!" (seq (awm/visible-clients))))
+  )
+
+(defkbd cycle-layout-next
+  [[:mod] "e"]
   (awm/awm-fnl
-    '(do (awful.tag.viewnext)
-         (awful.spawn.easy_async "curl http://localhost:3334/dock/update" nil))))
+    '(let [scr (awful.screen.focused)]
+       (awful.layout.inc 1 scr _G.layouts))))
+
+(defkbd cycle-layout-prev
+  [[:mod :shift] "e"]
+  (awm/awm-fnl
+    '(let [scr (awful.screen.focused)]
+       (awful.layout.inc -1 scr _G.layouts))))
 
 (defkbd drag-workspace-prev
   [[:mod :shift] "Left"]
@@ -463,7 +490,6 @@
   [[:mod] "d"]
   "Applies clawe rules"
   (c.rules/correct-clients-and-workspaces))
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Brightness
@@ -586,35 +612,6 @@
   [[:mod :shift] "o"]
   ;; TODO add support for creating a new one
   (notify/notify "Creating new Workspace!"))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; cycle focus
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defkbd cycle-focus-next
-  [[:mod] "e"]
-  (do
-    ;; TODO should be able to notify from sxhkd, but run this awm-fnl from awesome
-    (notify/notify "Client focus next!" (seq (awm/visible-clients)))
-    (awm/awm-fnl '(awful.client.focus.byidx 1))))
-
-(defkbd cycle-focus-prev
-  [[:mod :shift] "e"]
-  (do
-    (notify/notify "Client focus prev!" (seq (awm/visible-clients)))
-    (awm/awm-fnl '(awful.client.focus.byidx -1))))
-
-(defkbd cycle-layout-next
-  [[:mod] "Tab"]
-  (awm/awm-fnl
-    '(let [scr (awful.screen.focused)]
-       (awful.layout.inc 1 scr _G.layouts))))
-
-(defkbd cycle-layout-prev
-  [[:mod :shift] "Tab"]
-  (awm/awm-fnl
-    '(let [scr (awful.screen.focused)]
-       (awful.layout.inc -1 scr _G.layouts))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Client bindings

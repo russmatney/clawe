@@ -64,17 +64,11 @@ super + shift + g
 super + alt + n
   clawe toggle-notifications-center-kbd-modaltn
 
-super + e
-  clawe cycle-focus-next-kbd-mode
-
 super + shift + s
   clawe screenshot-full-kbd-modshifts
 
 super + shift + Right
   clawe drag-workspace-next-kbd-modshiftRight
-
-super + shift + e
-  clawe cycle-focus-prev-kbd-modshifte
 
 super + w
   clawe clawe-rofi-sxhkd-kbd-modw
