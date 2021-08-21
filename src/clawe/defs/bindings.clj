@@ -538,30 +538,37 @@
 
 (defkbd volume-up
   [[] "XF86AudioRaiseVolume"]
-  ;; TODO impl sxhkd 'raw' support for firing right via SXHKD shell
   (do
     (notify/notify {:notify/id      "volume"
-                    :notify/subject "Raising volume"})
+                    :notify/subject "Raising volume"
+                    :notify/body    (r.pulseaudio/default-sink-volume-label)})
     (->
       ($ pactl set-sink-volume "@DEFAULT_SINK@" "+5%")
-      check :out slurp)))
+      check :out slurp)
+    (slurp "http://localhost:3334/dock/update")))
 
 (defkbd volume-down
   [[] "XF86AudioLowerVolume"]
   (do
     (notify/notify {:notify/id      "volume"
-                    :notify/subject "Lowering volume"})
+                    :notify/subject "Lowering volume"
+                    :notify/body    (r.pulseaudio/default-sink-volume-label)})
     (->
       ($ pactl set-sink-volume "@DEFAULT_SINK@" "-5%")
-      check :out slurp)))
+      check :out slurp)
+    (slurp "http://localhost:3334/dock/update")))
 
 (defkbd spotify-volume-up
   [[:mod] "XF86AudioRaiseVolume"]
-  (r.spotify/adjust-spotify-volume "up"))
+  (do
+    (r.spotify/adjust-spotify-volume "up")
+    (slurp "http://localhost:3334/dock/update")))
 
 (defkbd spotify-volume-down
   [[:mod] "XF86AudioLowerVolume"]
-  (r.spotify/adjust-spotify-volume "down"))
+  (do
+    (r.spotify/adjust-spotify-volume "down")
+    (slurp "http://localhost:3334/dock/update")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Open Workspace
@@ -572,8 +579,7 @@
   (do
     (notify/notify "Opening Workspace!")
     (workspaces/open-workspace)
-    (slurp "http://localhost:3334/dock/update")
-    ))
+    (slurp "http://localhost:3334/dock/update")))
 
 
 (defkbd create-new-workspace
