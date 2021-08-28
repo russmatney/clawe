@@ -13,6 +13,7 @@ theme.notification_font = "Noto Sans Bold 14"
 
 theme.bg_transparent   = "#00000000"
 theme.bg_normal   = "#141A1B"
+theme.bg_normal_semi   = "#141A1BBB"
 theme.bg_focus    = "#222B2E"
 theme.bg_urgent   = "#000000"
 theme.bg_minimize = "#101010"
@@ -81,8 +82,8 @@ theme.titlebar_maximized_button_normal_active   = themes_path .. "titlebar/maxim
 theme.titlebar_maximized_button_focus_active    = themes_path .. "titlebar/maximized_focus_active.png"
 
 -- theme.wallpaper = themes_path .. "wallpapers/0072.jpg" -- rainy street
--- theme.wallpaper = themes_path .. "wallpapers/0243.jpg" -- light tracks
-theme.wallpaper = themes_path .. "wallpapers/0240.jpg"
+theme.wallpaper = themes_path .. "wallpapers/0243.jpg" -- light tracks
+-- theme.wallpaper = themes_path .. "wallpapers/0240.jpg" -- tiny circuit city
 
 -- You can use your own layout icons like this:
 theme.layout_fairh      = themes_path .. "layouts/fairh.png"

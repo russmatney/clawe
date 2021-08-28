@@ -62,7 +62,9 @@
                 {:position "top"
                  :screen s
                  :height (if (util.is_vader) 30 50)
-                 :bg beautiful.bg_transparent})))
+                 ;; :bg beautiful.bg_transparent
+                 :bg beautiful.bg_normal_semi
+                 })))
 
          ;; Add widgets to the wibox
          (s.top-bar:setup
@@ -77,17 +79,18 @@
                  2 separator
                  3 (wibox.widget.textbox
                     (.. "<span>" (if (util.is_vader) "vader" "algo") "</span>"))
-                 4 separator
-                 5 (workrave)
-                 6 (workspace-meta)
+                 ;; 4 separator
+                 ;; 5 (workrave)
+                 ;; 6 (workspace-meta)
                  }}
-           3 {:layout wibox.container.place
-              :valign "center"
-              :halign "center"
-              1 (workspaces)}
-           4 {:layout wibox.layout.fixed.horizontal
+           ;; 3 {:layout wibox.container.place
+           ;;    :valign "center"
+           ;;    :halign "center"
+           ;;    1 (workspaces)}
+           3 {:layout wibox.layout.fixed.horizontal
               1 (spotify-widget)
-              2 (when (util.is_vader) (batteryarc-widget))}})
+              ;; 2 (when (util.is_vader) (batteryarc-widget))
+              }})
 
          ;; Create the wibox
          (set s.bottom-bar

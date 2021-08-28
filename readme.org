@@ -1,4 +1,5 @@
 #+TITLE: Clawe
+#+startup: overview
 
 #+begin_quote Toy Story
 Buzz: This is an intergalactic emergency. I need to commandeer your vessel to Sector 12. Who's in charge here?
