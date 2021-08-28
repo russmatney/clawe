@@ -1,7 +1,8 @@
 (ns clawe.defs.local.workspaces
   "Consider .gitignoring and syncing up/down with the db."
   (:require
-   [clawe.defs.workspaces :as defs.wrk :refer [defworkspace]]))
+   [clawe.defs.workspaces :as defs.wrk]
+   [defthing.defworkspace :refer [defworkspace]]))
 
 (defworkspace visual-scripting
   "Exploring godot and its visual-scripting features."

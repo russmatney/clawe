@@ -1,7 +1,7 @@
 (ns clawe.sxhkd.bindings
-  "Manages bindings for sxhkd derived from clawe.bindings."
+  "Manages bindings for sxhkd derived from defthing.defkbd."
   (:require
-   [clawe.bindings :as bindings]
+   [defthing.defkbd :as defkbd]
    [clojure.string :as string]
    [babashka.process :as proc]
    [ralphie.notify :as notify]
@@ -40,7 +40,7 @@
     (when-not (or raw-fnl awm)
       (str
         (string/join " + " mods) (when (seq mods) " + ") key
-        "\n  " (bindings/binding-cli-command bd)))))
+        "\n  " (defkbd/binding-cli-command bd)))))
 
 (comment
   (binding->sxhkd-key
@@ -51,7 +51,7 @@
 (defn raw-sxhkdrc
   "Returns an sxhkdrc config file."
   []
-  (->> (bindings/list-bindings)
+  (->> (defkbd/list-bindings)
        (map binding->sxhkd-key)
        (remove nil?)
        (string/join "\n\n")))

@@ -1,7 +1,7 @@
 (ns clawe.awesome.bindings
   "Manages awesomeWM bindings derived from clawe in-memory data structures."
   (:require
-   [clawe.bindings :as bindings]
+   [defthing.defkbd :as defkbd]
    [clojure.string :as string]))
 
 (def modifiers {:mod     "Mod4"
@@ -32,7 +32,7 @@
         (cond raw-fnl (str "(fn [] " raw-fnl " )")
 
               ;; these are now opt-in, unless you use raw-fnl
-              awm (str "(spawn-fn \"" (bindings/binding-cli-command bd) "\" )"))
+              awm (str "(spawn-fn \"" (defkbd/binding-cli-command bd) "\" )"))
         ")"))))
 
 (comment
@@ -47,7 +47,7 @@
   ;; TODO this adds a listener for each key, but does not clear any existing,
   ;; still need to restart awesome to prevent bindings from firing multiple
   ;; listeners
-  (let [awful-keys (->> (bindings/list-bindings)
+  (let [awful-keys (->> (defkbd/list-bindings)
                         (map binding->awful-key)
                         (remove nil?)
                         (string/join "\n"))]
@@ -122,7 +122,7 @@
     (spit "/home/russ/.config/awesome/clawe-bindings.fnl" file-contents)))
 
 (comment
-  (->> (bindings/list-bindings)
+  (->> (defkbd/list-bindings)
        (map binding->awful-key))
 
   (write-awesome-bindings))

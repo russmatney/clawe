@@ -1,13 +1,15 @@
 (ns clawe.workspaces
   (:require
    [defthing.defcom :refer [defcom] :as defcom]
+   [defthing.defworkspace :as defworkspace]
    [ralphie.awesome :as awm]
    [ralphie.rofi :as rofi]
    [ralphie.git :as r.git]
    [ralphie.notify :as notify]
 
-   ;; be sure to require all workspaces here, or (all-workspaces) will be incomplete
-   [clawe.defs.workspaces :as defs.wsp]
+   ;; be sure to require all workspaces here
+   ;; otherwise (all-workspaces) will be incomplete from consumers like doctor
+   clawe.defs.workspaces
    clawe.defs.local.workspaces
 
    [clawe.workspaces.create :as wsp.create]))
@@ -74,7 +76,7 @@
   which is usually what we want."
   []
   (some->> (awm/current-tag-names)
-           (map defs.wsp/get-workspace)
+           (map defworkspace/get-workspace)
            (sort-by :workspace/scratchpad)
            ;; (take 1)
            ;; merge-awm-tags
@@ -82,21 +84,21 @@
 
 (comment
   (->> (awm/current-tag-names)
-       (map defs.wsp/get-workspace)
+       (map defworkspace/get-workspace)
        (sort-by :workspace/scratchpad)))
 
 (defn all-workspaces-fast
   "Returns all defs.workspaces, merged with awesome tags."
   []
   (->>
-    (defs.wsp/list-workspaces)
+    (defworkspace/list-workspaces)
     ))
 
 (defn all-workspaces
   "Returns all defs.workspaces, merged with awesome tags."
   []
   (->>
-    (defs.wsp/list-workspaces)
+    (defworkspace/list-workspaces)
     merge-awm-tags
     ;; (map apply-git-status)
     ))

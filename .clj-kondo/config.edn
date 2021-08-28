@@ -3,7 +3,6 @@
            :defcom/missing    {:level :warning}}
  :lint-as {systemic.core/defsys               clojure.core/def
            defthing.defcom/defcom             clojure.core/def
-           clawe.defs.workspaces/defworkspace clojure.core/def
-           clawe.defs.apps/defapp             clojure.core/def
-           clawe.bindings/defkbd              clojure.core/def
-           clawe.defs.bindings/defkbd         clojure.core/def}}
+           defthing.defworkspace/defworkspace clojure.core/def
+           defthing.defapp/defapp             clojure.core/def
+           defthing.defkbd/defkbd             clojure.core/def}}

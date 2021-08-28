@@ -4,6 +4,7 @@
    [clojure.string :as string]
    [chess.core :as chess]
    [defthing.defcom :as defcom :refer [defcom]]
+   [defthing.defkbd :refer [defkbd]]
 
    [ralphie.notify :as notify]
    [ralphie.rofi :as rofi]
@@ -18,7 +19,6 @@
    [ralphie.browser :as r.browser]
 
    [clawe.awesome :as c.awm] ;; DEPRECATED
-   [clawe.bindings :refer [defkbd]]
    [clawe.defs.workspaces :as defs.workspaces]
    [clawe.defs.local.workspaces :as defs.local.workspaces]
    [clawe.dwim :as c.dwim]

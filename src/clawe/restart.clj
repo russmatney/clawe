@@ -2,6 +2,7 @@
   (:require
    [babashka.process :as proc]
    [defthing.defcom :as defcom :refer [defcom]]
+   [defthing.defkbd :refer [defkbd]]
    [ralphie.notify :as notify]
    [ralphie.awesome :as awm]
 
@@ -9,7 +10,6 @@
    [clawe.rules :as c.rules]
    [clawe.awesome.rules :as awm.rules]
    [clawe.awesome.bindings :as awm.bindings]
-   [clawe.bindings :refer [defkbd]]
    [clawe.sxhkd.bindings :as sxhkd.bindings]))
 
 (defn log [msg]

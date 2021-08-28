@@ -1,8 +1,6 @@
 (ns clawe.scratchpad
   (:require
-   [ralphie.notify :as notify]
    [ralphie.awesome :as awm]
-
    [clawe.awesome :as c.awm] ;; DEPRECATED
    [clawe.workspaces.create :as wsp.create]
    [clawe.db.scratchpad :as db.scratchpad]))
@@ -118,7 +116,7 @@
 (comment
   (println "hi")
   (-> "journal"
-      ;; defs.workspaces/get-workspace
+      ;; defworkspace/get-workspace
       ;; workspaces/merge-awm-tags
       toggle-scratchpad)
 

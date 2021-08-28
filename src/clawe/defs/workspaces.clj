@@ -1,23 +1,9 @@
 (ns clawe.defs.workspaces
   (:require
-   [defthing.core :as defthing]
+   [defthing.defworkspace :refer [defworkspace]]
    [ralphie.notify :as notify]
    [ralphie.awesome :as awm]
    [clojure.string :as string]))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Workspaces API
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn list-workspaces []
-  (defthing/list-things :clawe/workspaces))
-
-(defn get-workspace [wsp]
-  (defthing/get-thing :clawe/workspaces
-    (comp #{(if (map? wsp)
-              (some wsp [:workspace/title :awesome/tag-name :name])
-              wsp)}
-          :name)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Misc workspace builder helpers
@@ -49,60 +35,29 @@
   (awesome-rules "more" "andmore" {:name "my-thing-name"})
   )
 
-
-(comment
-  (awm/awm-fnl
-    '(if (awful.tag.find_by_name (awful.screen.focused) "clawe")
-       "true" "false"))
-
-  (awm/awm-fnl
-    "(awful.spawn.easy_async \"notify-send hi\")")
-  )
-
-(defn workspace-title
-  "Sets the workspace title using the :name (which defaults to the symbol).
-
-  This only happens to work b/c defthing sets the {:name blah} attr with
-  the passed symbol.
-  "
-  [{:keys [name]}]
-  {:workspace/title name})
-
-;; TODO rewrite to work on a {:workspace/directory ""} if it exists
 (defn local-repo
+  ([] (local-repo nil nil))
   ([repo-path]
    (local-repo repo-path nil))
   ([repo-path readme-path]
-   (let [readme-path (or readme-path "readme.org")]
-     {:git/repo               repo-path
-      :workspace/directory    (str "/home/russ/" repo-path)
-      :workspace/initial-file
-      (str "/home/russ/" repo-path "/" readme-path)})))
+   (fn [wsp]
+     (let [{:workspace/keys [directory initial-file]} wsp
+           repo-path                                  (or repo-path directory)
+           readme-path                                (or readme-path initial-file "readme.org")]
+       {:git/repo            repo-path
+        :workspace/directory (str "/home/russ/" repo-path)
+        :workspace/initial-file
+        (str "/home/russ/" repo-path "/" readme-path)}))))
 
 (defn workspace-repo
   [{:workspace/keys [directory initial-file]}]
   (local-repo directory initial-file))
-
-
-(defmacro defworkspace [title & args]
-  (apply defthing/defthing :clawe/workspaces title
-         (conj args `workspace-title)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; usage examples
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(comment
-  (defworkspace my-workspace
-    workspace-title
-    awesome-rules))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Slack, Spotify, Web, other app-workspaces
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defworkspace spotify
-  workspace-title
   {:awesome/rules
    (awm-workspace-rules "spotify"  "Spotify" "Pavucontrol" "pavucontrol")}
   {:workspace/directory        "/home/russ/"
@@ -116,10 +71,10 @@
      (let [matches
            #{"spotify" "Spotify"}
            {:awesome.client/keys [name class]} c]
-       (or (matches name) (matches class))))})
+       (or (matches name) (matches class))))}
+  (local-repo))
 
 (defworkspace slack
-  workspace-title
   {:awesome/rules
    (awm-workspace-rules "slack" "discord")}
   {:workspace/directory        "/home/russ/"
@@ -135,7 +90,6 @@
        (or (matches name) (matches class))))})
 
 (defworkspace web
-  workspace-title
   {:awesome/rules
    ;; TODO get other awm names from rules
    ;; TODO don't catch 'firefoxdeveloperedition' here
@@ -153,7 +107,6 @@
    })
 
 (defworkspace dev-browser
-  workspace-title
   {:awesome/rules
    (awm-workspace-rules "dev-browser" "chrome" "Chrome" "Firefox Developer Edition"
                         "firefoxdeveloperedition")}
@@ -182,12 +135,10 @@
          (awm/move-client-to-tag (:awesome.client/window x) "dev-browser"))))} )
 
 (defworkspace obs
-  workspace-title
   {:workspace/fa-icon-code "f130"
    :workspace/directory    "/home/russ/russmatney/obs-recordings"})
 
 (defworkspace pixels
-  workspace-title
   {:workspace/fa-icon-code       "f03e"
    :workspace/directory          "/home/russ/Dropbox/pixels"
    :workspace/initial-file       "/home/russ/Dropbox/pixels/readme.org"
@@ -201,13 +152,11 @@
                   )} )
 
 (defworkspace tiles
-  workspace-title
   {:workspace/fa-icon-code "f03e"
    :workspace/directory    "/home/russ/Dropbox/tiles"
    :workspace/initial-file "/home/russ/Dropbox/tiles/readme.org"})
 
 (defworkspace steam
-  workspace-title
   awesome-rules
   {:workspace/fa-icon-code "f03e"
    :rules/apply
@@ -221,12 +170,10 @@
          (awm/move-client-to-tag (:awesome.client/window steam-client) "steam"))))})
 
 (defworkspace audacity
-  awesome-rules
-  workspace-title)
+  awesome-rules)
 
 (defworkspace lichess
   awesome-rules
-  workspace-title
   {:workspace/exec "/usr/bin/gtk-launch firefox.desktop http://lichess.org"})
 
 (defworkspace zoom
@@ -245,7 +192,6 @@
            {:awesome.client/keys [name class]} c]
        (or (matches name) (matches class)
            (string/includes? name "Slack call"))))}
-  workspace-title
   {:workspace/scratchpad         true
    :workspace/scratchpad-classes #{"zoom" "Slack"}
    :workspace/key                "z"
@@ -266,7 +212,6 @@
                         c)
                       (awm/ensure-tag "one-password")
                       (awm/move-client-to-tag (:awesome.client/window c) "one-password"))))}
-  workspace-title
   {:workspace/scratchpad         true
    :workspace/scratchpad-classes #{"1Password"}
    :workspace/exec               "/usr/bin/gtk-launch 1password.desktop"
@@ -277,7 +222,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defworkspace journal
-  workspace-title
   awesome-rules
   {:workspace/directory        "/home/russ/Dropbox/todo"
    :workspace/initial-file     "/home/russ/Dropbox/todo/journal.org"
@@ -297,37 +241,32 @@
    })
 
 (defworkspace garden
-  workspace-title
   awesome-rules
-  {:workspace/directory        "/home/russ/Dropbox/todo/garden"
-   :workspace/initial-file     "/home/russ/Dropbox/todo/garden/readme.org"
-   :workspace/fa-icon-code     "f18c"
-   :workspace/key              "g"
+  {:workspace/directory    "/home/russ/Dropbox/todo/garden"
+   :workspace/initial-file "/home/russ/Dropbox/todo/garden/readme.org"
+   :workspace/fa-icon-code "f18c"
+   :workspace/key          "g"
    ;; :workspace/scratchpad       true
    ;; :workspace/scratchpad-class "Emacs"
    })
 
 (defworkspace todo
-  workspace-title
   awesome-rules
-  {:workspace/directory "/home/russ/Dropbox/todo"
+  {:workspace/directory    "/home/russ/Dropbox/todo"
    :workspace/initial-file "/home/russ/Dropbox/todo/projects.org"
    :workspace/fa-icon-code "f044"})
 
 (defworkspace blog
-  workspace-title
   awesome-rules
   {:workspace/directory    "/home/russ/russmatney/blog-gatsby"
    :workspace/initial-file "/home/russ/russmatney/blog-gatsby/readme.org"})
 
 (defworkspace writing
-  workspace-title
   awesome-rules
   {:workspace/directory    "/home/russ/Dropbox/Writing"
    :workspace/initial-file "/home/russ/Dropbox/Writing/readme.org"})
 
 (defworkspace ink
-  workspace-title
   awesome-rules
   {:workspace/directory    "/home/russ/Dropbox/todo/ink"
    :workspace/initial-file "/home/russ/Dropbox/todo/ink/readme.md"})
@@ -337,7 +276,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defworkspace clawe
-  workspace-title
   awesome-rules
   (fn [_] (local-repo "russmatney/clawe"))
   {:workspace/color        "#88aadd"
@@ -351,7 +289,6 @@
    :git/check-status?      true})
 
 (defworkspace ralphie
-  workspace-title
   awesome-rules
   (fn [_] (local-repo "russmatney/ralphie"))
   {:workspace/color       "#aa88ee"
@@ -360,13 +297,11 @@
 
 (defworkspace dotfiles
   awesome-rules
-  workspace-title
   (fn [_] (local-repo "russmatney/dotfiles"))
   {:git/check-status? true})
 
 (defworkspace emacs
   awesome-rules
-  workspace-title
   (fn [_] (local-repo ".doom.d"))
   {:workspace/directory    "/home/russ/.doom.d"
    :workspace/initial-file "/home/russ/.doom.d/init.el"
@@ -380,7 +315,6 @@
 
 (defworkspace bindings
   awesome-rules
-  workspace-title
   (fn [_] (local-repo "russmatney/clawe"))
   {:workspace/directory   "/home/russ/russmatney/clawe"
    :workspace/files
@@ -391,7 +325,6 @@
 
 (defworkspace workspaces
   awesome-rules
-  workspace-title
   (fn [_] (local-repo "russmatney/clawe"))
   {:workspace/directory   "/home/russ/russmatney/clawe"
    :workspace/files       "/home/russ/russmatney/clawe/src/clawe/defs/workspaces.clj"
@@ -403,22 +336,18 @@
 
 (defworkspace vapor
   awesome-rules
-  workspace-title
   (fn [_] (local-repo "russmatney/vapor")))
 
 (defworkspace platformer
   awesome-rules
-  workspace-title
   (fn [_] (local-repo "russmatney/platformer")))
 
 (defworkspace beatemup
   awesome-rules
-  workspace-title
   (fn [_] (local-repo "russmatney/beatemup")))
 
 (defworkspace lovejs
   awesome-rules
-  workspace-title
   (fn [_] (local-repo "Davidobot/love.js")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -428,93 +357,76 @@
 (defworkspace doctor
   "A plasma app that records logs and reports misc statuses."
   awesome-rules
-  workspace-title
   (fn [_] (local-repo "russmatney/doctor"))
   {:git/check-status? true})
 
 (defworkspace scratch
   awesome-rules
-  workspace-title
   (fn [_] (local-repo "russmatney/scratch")))
 
 (defworkspace yodo
   awesome-rules
-  workspace-title
   (fn [_] (local-repo "russmatney/yodo-two")))
 
 (defworkspace yodo-dev
   awesome-rules
-  workspace-title
   (fn [_] (local-repo "russmatney/yodo-two")))
 
 (defworkspace yodo-app
   awesome-rules
-  workspace-title
   {:workspace/exec "/usr/bin/gtk-launch google-chrome.desktop http://localhost:5600"})
 
 (defworkspace org-crud
   awesome-rules
-  workspace-title
   (fn [_] (local-repo "russmatney/org-crud"))
   {:git/check-status? true}
   )
 
 (defworkspace ink-mode
   awesome-rules
-  workspace-title
   (fn [_] (local-repo "russmatney/ink-mode")))
 
 (defworkspace advent
   awesome-rules
-  workspace-title
   (fn [_] (local-repo "russmatney/advent-of-code-2020")))
 
 (defworkspace chess
   awesome-rules
-  workspace-title
   (fn [_] (local-repo "russmatney/chess"))
   {:git/check-status? true})
 
 (defworkspace nix-pills
   awesome-rules
-  workspace-title
   (fn [_] (local-repo "russmatney/nix-pills")))
 
 (defworkspace spotty
   awesome-rules
-  workspace-title
   (fn [_] (local-repo "russmatney/spotty")))
 
 (defworkspace clover
   awesome-rules
-  workspace-title
   (fn [_] (local-repo "russmatney/clover"))
   {:git/check-status? true})
 
 (defworkspace expo
   awesome-rules
-  workspace-title
   (fn [_] (local-repo "russmatney/expo"))
   {:git/check-status? true})
 
 (defworkspace starters
   awesome-rules
-  workspace-title
   (fn [_] (local-repo "russmatney/starters")))
 
 (defworkspace company-css-classes
   awesome-rules
-  workspace-title
   (fn [_] (local-repo "russmatney/company-css-classes")))
 
 (defworkspace bb-task-completion
   awesome-rules
-  workspace-title
   (fn [_] (local-repo "russmatney/bb-task-completion")))
 
 (defworkspace defthing
   awesome-rules
-  workspace-title
   (fn [_] (local-repo "russmatney/defthing"))
   {:git/check-status? true})
 
@@ -524,25 +436,21 @@
 
 (defworkspace wing
   awesome-rules
-  workspace-title
   (fn [_] (local-repo "teknql/wing"))
   {:git/check-status? true})
 
 (defworkspace systemic
   awesome-rules
-  workspace-title
   (fn [_] (local-repo "teknql/systemic"))
   {:git/check-status? true})
 
 (defworkspace plasma
   awesome-rules
-  workspace-title
   (fn [_] (local-repo "teknql/plasma"))
   {:git/check-status? true})
 
 (defworkspace statik
   awesome-rules
-  workspace-title
   (fn [_] (local-repo "teknql/statik")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -551,22 +459,18 @@
 
 (defworkspace sci
   awesome-rules
-  workspace-title
   (fn [_] (local-repo "borkdude/sci")))
 
 (defworkspace carve
   awesome-rules
-  workspace-title
   (fn [_] (local-repo "borkdude/carve")))
 
 (defworkspace clj-kondo
   awesome-rules
-  workspace-title
   (fn [_] (local-repo "borkdude/clj-kondo")))
 
 (defworkspace babashka
   awesome-rules
-  workspace-title
   (fn [_] (local-repo "borkdude/babashka")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -575,7 +479,6 @@
 
 (defworkspace datalevin
   awesome-rules
-  workspace-title
   (fn [_] (local-repo "juji-io/datalevin")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -584,24 +487,20 @@
 
 (defworkspace grid
   awesome-rules
-  workspace-title
   (fn [_] (local-repo "urbint/grid" "README.md"))
   {:git/check-status? true})
 
 (defworkspace urbint
   awesome-rules
-  workspace-title
   (fn [_] (local-repo "urbint/grid" "README.md")))
 
 (defworkspace lens
   awesome-rules
-  workspace-title
   (fn [_] (local-repo "urbint/lens" "README.md"))
   {:git/check-status? true})
 
 (defworkspace gitops
   awesome-rules
-  workspace-title
   (fn [_] (local-repo "urbint/gitops" "README.md")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -609,7 +508,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defworkspace doom-emacs
-  workspace-title
   awesome-rules
   {:workspace/color        "#aaee88"
    :workspace/directory    "/home/russ/.emacs.d"
@@ -619,17 +517,14 @@
 
 (defworkspace treemacs
   awesome-rules
-  workspace-title
   (fn [_] (local-repo "Alexander-Miller/treemacs")))
 
 (defworkspace git-summary
   awesome-rules
-  workspace-title
   (fn [_] (local-repo  "MirkoLedda/git-summary")))
 
 (defworkspace clomacs
   awesome-rules
-  workspace-title
   (fn [_] (local-repo "clojure-emacs/clomacs")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -638,17 +533,14 @@
 
 (defworkspace org-roam
   awesome-rules
-  workspace-title
   (fn [_] (local-repo "org-roam/org-roam")))
 
 (defworkspace org-roam-server
   awesome-rules
-  workspace-title
   (fn [_] (local-repo "org-roam/org-roam-server")))
 
 (defworkspace md-roam
   awesome-rules
-  workspace-title
   (fn [_] (local-repo "nobiot/md-roam")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -657,7 +549,6 @@
 
 (defworkspace awesomewm
   awesome-rules
-  workspace-title
   (fn [_] (local-repo "awesomeWM/awesome" "README.md")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -1,18 +1,18 @@
 (ns user
   (:require
-   [wing.repl :as repl]
+   [defthing.defworkspace :as defworkspace]
+   [defthing.defkbd :as defkbd]
    [ralphie.awesome :as awm]
    [ralphie.notify :as notify]
-   [clawe.workspaces :as workspaces]
-   [clawe.bindings :as bindings]
-   [clawe.defs.workspaces :as defs.wsp]))
+   [wing.repl :as repl]
+   [clawe.workspaces :as workspaces]))
 
 (comment
   (repl/sync-libs!))
 
 (comment
-  (bindings/list-bindings)
-  (defs.wsp/list-workspaces)
+  (defkbd/list-bindings)
+  (defworkspace/list-workspaces)
   (workspaces/active-workspaces)
   (workspaces/update-workspaces)
   (awm/reload)
