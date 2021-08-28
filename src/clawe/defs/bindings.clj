@@ -125,9 +125,7 @@
   [[:mod] "f"]
   (awm/awm-fnl
     '(let [c _G.client.focus]
-       (if c.floating
-         (tset c :ontop false)
-         (tset c :ontop true))
+       (tset c :ontop c.floating)
        (awful.client.floating.toggle c))))
 
 (defkbd bury-all-windows
@@ -510,6 +508,16 @@
 ;; Play/Pause/Next/Prev
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; TODO support in sxhkd
+;; (defkbd spotify-pause
+;;   [[] "XF86AudioPause"]
+;;   (r.spotify/spotifycli "--playpause"))
+
+;; (defkbd spotify-play
+;;   [[] "XF86AudioPlay"]
+;;   (r.spotify/spotifycli "--playpause"))
+
+;; DEPRECATED support in sxhkd
 (defkbd spotify-pause
   [[] "XF86AudioPause"]
   (awm/awm-fnl

@@ -22,8 +22,10 @@
   (:workspace/title wsp))
 
 (defn workspace-repo [wsp]
-  (or (:workspace/directory wsp)
-      (:org.prop/directory wsp)))
+  (or
+    (:git/repo wsp)
+    (:workspace/directory wsp)
+    (:org.prop/directory wsp)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Workspace hydration

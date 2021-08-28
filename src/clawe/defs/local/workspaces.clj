@@ -16,9 +16,6 @@
   defs.wrk/awesome-rules
   {:workspace/directory        "/home/russ"
    :workspace/initial-file     "/home/russ"
-   :workspace/color            "#af42ff"
-   :workspace/fa-icon-code     "f044"
-   :workspace/key              "e"
    :workspace/scratchpad       true
    :workspace/scratchpad-class "Emacs"})
 
@@ -29,7 +26,7 @@
   defs.wrk/workspace-repo)
 
 (defworkspace beatemup-two
-  "beatemup rebuilt in godot"
+  "beatemup-one rebuilt in godot"
   {:workspace/directory "godot/beatemup-two"}
   {:git/check-status? true}
   defs.wrk/awesome-rules

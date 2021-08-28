@@ -16,6 +16,9 @@ super + shift + Return
 super + shift + p
   clawe toggle-workspace-pixels-kbd-modshiftp
 
+XF86AudioPlay
+  clawe spotify-play-kbd-XF86AudioPlay
+
 super + shift + a
   clawe screenshot-region-kbd-modshifta
 
@@ -36,6 +39,9 @@ super + ctrl + u
 
 super + a
   clawe toggle-workspace-slack-kbd-moda
+
+XF86AudioPause
+  clawe spotify-pause-kbd-XF86AudioPause
 
 super + XF86AudioLowerVolume
   clawe spotify-volume-down-kbd-modXF86AudioLowerVolume
