@@ -303,8 +303,8 @@
    :workspace/initial-file     "/home/russ/Dropbox/todo/garden/readme.org"
    :workspace/fa-icon-code     "f18c"
    :workspace/key              "g"
-   :workspace/scratchpad       true
-   :workspace/scratchpad-class "Emacs"
+   ;; :workspace/scratchpad       true
+   ;; :workspace/scratchpad-class "Emacs"
    })
 
 (defworkspace todo
