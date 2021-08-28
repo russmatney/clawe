@@ -182,7 +182,8 @@
        (tset c :floating true)
        (-> c
            ((+ awful.placement.scale
-               awful.placement.centered)
+               awful.placement.centered
+               awful.placement.maximize_vertically)
             {:honor_padding  true
              :honor_workarea true
              :to_percent     0.5})))))
