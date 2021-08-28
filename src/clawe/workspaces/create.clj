@@ -11,20 +11,22 @@
 
   TODO refactor to remove or otherwise use a :create.client/exec api
   "
-  [wsp]
-  (let [exec         (some wsp [:workspace/exec])
-        init-file    (some wsp [:workspace/initial-file])
+  [{:workspace/keys [exec initial-file readme] :as wsp}
+
+   ]
+  (let [
         first-client (cond
-                       exec      :create/exec
-                       init-file :create/emacs
-                       :else     (do
-                                   (notify/notify
-                                     "Could not determine first client for wsp" wsp)
-                                   :create/none))]
+                       exec         :create/exec
+                       readme       :create/emacs
+                       initial-file :create/emacs
+                       :else        (do
+                                      (notify/notify
+                                        "Could not determine first client for wsp" wsp)
+                                      :create/none))]
 
     (case first-client
       :create/emacs (emacs/open {:emacs.open/workspace (:workspace/title wsp)
-                                 :emacs.open/file      init-file})
+                                 :emacs.open/file      (or initial-file readme)})
       :create/exec  (-> exec
                         (string/split #" ")
                         process

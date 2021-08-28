@@ -236,7 +236,8 @@
    (fn [c]
      (let [matches                             #{"journal" "clover/doctor-dock"}
            {:awesome.client/keys [name class]} c]
-       (or (matches name) (matches class))))})
+       (or (matches name) (matches class))))}
+  workspace-repo)
 
 (defworkspace garden
   awesome-rules
