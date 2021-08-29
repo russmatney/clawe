@@ -343,13 +343,13 @@
   (toggle-client
     {:wsp->client
      (fn [{:workspace/keys [title] :awesome.tag/keys [clients]}]
-       (let [wsp-garden-title (str "garden-" title)]
+       (let [wsp-garden-title (str "grdn-" title)]
          (->> clients (filter (comp #{wsp-garden-title} :awesome.client/name))
               first)))
      :wsp->open-client
      ;; TODO support the nil workspace case?
      (fn [{:workspace/keys [title]}]
-       (let [wsp-garden-title (str "garden-" title)]
+       (let [wsp-garden-title (str "grdn-" title)]
          (r.emacs/open
            {:emacs.open/workspace wsp-garden-title
             :emacs.open/file
