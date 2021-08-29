@@ -433,19 +433,19 @@
   (awm/awm-fnl '(awful.tag.viewnext)))
 
 (defkbd cycle-next-tag-2
-  [[:mod] "Tab"]
+  [[:mod] "p"]
   (awm/awm-fnl
     '(do (awful.tag.viewnext)
          (awful.spawn.easy_async "curl http://localhost:3334/dock/update" nil))))
 
 (defkbd cycle-prev-tag-2
-  [[:mod :shift] "Tab"]
+  [[:mod] "n"]
   (awm/awm-fnl
     '(do (awful.tag.viewprev)
          (awful.spawn.easy_async "curl http://localhost:3334/dock/update" nil))))
 
 (defkbd cycle-focus-next
-  [[:mod] "n"]
+  [[:mod] "Tab"]
   (awm/awm-fnl '(awful.client.focus.byidx 1))
   ;; (do
   ;;   ;; TODO should be able to notify from sxhkd, but run this awm-fnl from awesome
@@ -453,7 +453,7 @@
   )
 
 (defkbd cycle-focus-prev
-  [[:mod] "p"]
+  [[:mod :shift] "Tab"]
   (awm/awm-fnl '(awful.client.focus.byidx -1))
   ;; (do
   ;;   (notify/notify "Client focus prev!" (seq (awm/visible-clients))))
