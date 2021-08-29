@@ -3,7 +3,7 @@
    [ralphie.emacs :as emacs]
    [ralphie.notify :as notify]
 
-   [babashka.process :refer [process check]]
+   [babashka.process :as process]
    [clojure.string :as string]))
 
 (defn create-client
@@ -11,11 +11,8 @@
 
   TODO refactor to remove or otherwise use a :create.client/exec api
   "
-  [{:workspace/keys [exec initial-file readme] :as wsp}
-
-   ]
-  (let [
-        first-client (cond
+  [{:workspace/keys [exec initial-file readme] :as wsp}]
+  (let [first-client (cond
                        exec         :create/exec
                        readme       :create/emacs
                        initial-file :create/emacs
@@ -29,8 +26,8 @@
                                  :emacs.open/file      (or initial-file readme)})
       :create/exec  (-> exec
                         (string/split #" ")
-                        process
-                        check)
+                        process/process
+                        process/check)
 
       :create/none
       ;; NOTE maybe detect a readme in directories as well
@@ -41,4 +38,4 @@
 (comment
   (create-client
     {:workspace/initial-file "/home/russ/russmatney/ralphie/readme.org"
-     :workspace/title "my-wsp"}))
+     :workspace/title        "my-wsp"}))

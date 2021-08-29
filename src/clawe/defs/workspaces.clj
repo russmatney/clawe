@@ -62,7 +62,7 @@
     {:git/repo               (str "/home/russ/" directory)
      :workspace/directory    (str "/home/russ/" directory)
      :workspace/readme       (str "/home/russ/" directory "/" readme-path)
-     :workspace/initial-file (str "/home/russ/" directory "/" initial-file)}))
+     :workspace/initial-file (str "/home/russ/" directory "/" (or initial-file readme-path))}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Slack, Spotify, Web, other app-workspaces
