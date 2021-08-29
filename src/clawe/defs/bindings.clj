@@ -294,131 +294,110 @@
 ;; App toggling
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; TODO express godot/aseprite as a quick app-toggle right here
-;; could be that it's a dried up version of the below toggle emacs/terminal
-;; maybe just an :app/open workspace
-(defkbd toggle-per-workspace-garden
-  [[:mod :shift] "g"]
-  (fn [_ _]
-    (notify/notify "Toggling per-workspace garden")
-    (let [{:workspace/keys   [title]
-           :awesome.tag/keys [clients]}
-          (some->> [(workspaces/current-workspace)]
-                   (workspaces/merge-awm-tags)
-                   first)
-          wsp-garden-title (str "garden-" title)
-          open-client
-          (->> clients (filter (comp #{wsp-garden-title} :awesome.client/name))
-               first)]
-      (cond
-        (and open-client (:awesome.client/focused open-client))
-        (awm/close-client open-client)
-        (and open-client (not (:awesome.client/focused open-client)))
-        ;; DEPRECATED
-        (c.awm/focus-client open-client)
-        (not open-client)
-        (r.emacs/open
-          {:emacs.open/workspace wsp-garden-title
-           :emacs.open/file
-           (r.zsh/expand (str "~/todo/garden/workspaces/" title ".org"))})))))
+(defn toggle-client
+  "Helper for toggling a client in the current workspace.
 
-(defkbd toggle-terminal
-  [[:mod] "Return"]
-  (let [{:workspace/keys   [title directory]
-         :git/keys         [repo]
-         :awesome.tag/keys [clients]}
-        (some->> (workspaces/current-workspace)
-                 workspaces/merge-awm-tags)
-        directory               (or directory repo (r.zsh/expand "~"))
-        terminal-client         (some->> clients
-                                         (filter (fn [c]
-                                                   (and
-                                                     (-> c :awesome.client/class #{"Alacritty"})
-                                                     (-> c :awesome.client/name #{title}))))
-                                         first)
-        terminal-client-focused (:awesome.client/focused terminal-client)
+  `:wsp->client` is a function that returns the client to-be-toggled from a list of
+  the current clients in the workspace.
 
-        opts {:tmux/name      title
-              :tmux/directory directory}]
-    (notify/notify "Toggling Terminal"
-                   (assoc opts
-                          :terminal-client terminal-client
-                          :already-focused terminal-client-focused))
+  `:wsp->open-client` is a function to call to create the client in the context
+  of the workspace. Note that this may be called in the context of no workspace
+  at all.
+  "
+  [{:keys [wsp->client wsp->open-client]}]
+  (let [wsp            (some->> (workspaces/current-workspace) workspaces/merge-awm-tags)
+        client         (wsp->client wsp)
+        client-focused (:awesome.client/focused client)]
     (cond
       ;; no tag
-      (not title)
+      (not wsp)
       (do
         (awm/create-tag! "temp-tag")
         (awm/focus-tag! "temp-tag")
-        (r.tmux/open-session))
+        (wsp->open-client nil))
 
-      (and terminal-client terminal-client-focused)
-      (awm/close-client terminal-client)
+      ;; client focused
+      (and client client-focused)
+      (awm/close-client client)
 
-      (and terminal-client (not terminal-client-focused))
+      ;; client not focused
+      (and client (not client-focused))
       ;; DEPRECATED
       (c.awm/focus-client {:center?   false
                            :float?    false
-                           :bury-all? false} terminal-client)
+                           :bury-all? false} client)
 
-      :else
-      (do (r.tmux/open-session opts)
-          nil))))
+      ;; tag but no client
+      (not client)
+      (do
+        (wsp->open-client wsp)
+        nil))))
+
+;; TODO express godot/aseprite as a quick app-toggle right here
+;; could be that it's a dried up version of the below toggle emacs/terminal
+;; maybe just an :app/open workspace
+
+(defkbd toggle-per-workspace-garden
+  ;; TODO get garden files from workspace defs directly (rather than build them in here)
+  [[:mod :shift] "g"]
+  (toggle-client
+    {:wsp->client
+     (fn [{:workspace/keys [title] :awesome.tag/keys [clients]}]
+       (let [wsp-garden-title (str "garden-" title)]
+         (->> clients (filter (comp #{wsp-garden-title} :awesome.client/name))
+              first)))
+     :wsp->open-client
+     ;; TODO support the nil workspace case?
+     (fn [{:workspace/keys [title]}]
+       (let [wsp-garden-title (str "garden-" title)]
+         (r.emacs/open
+           {:emacs.open/workspace wsp-garden-title
+            :emacs.open/file
+            (r.zsh/expand (str "~/todo/garden/workspaces/" title ".org"))})))}))
+
+(defkbd toggle-terminal
+  [[:mod] "Return"]
+  (toggle-client
+    {:wsp->client
+     (fn [{:workspace/keys   [title]
+           :awesome.tag/keys [clients]}]
+       (some->> clients
+                (filter (fn [c]
+                          (and
+                            (-> c :awesome.client/class #{"Alacritty"})
+                            (-> c :awesome.client/name #{title}))))
+                first))
+     :wsp->open-client
+     (fn [{:workspace/keys [title directory]
+           :git/keys       [repo]
+           :as             wsp}]
+       (if-not wsp
+         (r.tmux/open-session)
+         (let [directory (or directory repo (r.zsh/expand "~"))
+               opts      {:tmux/name title :tmux/directory directory}]
+           (r.tmux/open-session opts))))}))
 
 (defkbd toggle-emacs
   [[:mod :shift] "Return"]
-  (let [{:workspace/keys   [title initial-file directory]
-         :git/keys         [repo]
-         :awesome.tag/keys [clients]}
-        (some->> (workspaces/current-workspace)
-                 workspaces/merge-awm-tags)
-        emacs-client         (some->> clients
-                                      (filter (fn [c]
-                                                (and
-                                                  (-> c :awesome.client/class #{"Emacs"})
-                                                  (-> c :awesome.client/name #{title}))))
-                                      first)
-        emacs-client-focused (:awesome.client/focused emacs-client)
-        initial-file         (or
-                               ;; TODO detect if configured file exists
-                               initial-file
-                               repo
-                               directory)
-        opts
-        {:emacs.open/workspace title
-         ;; TODO only set the file for a new emacs workspaces
-         :emacs.open/file      initial-file}]
-    (notify/notify "Toggling Emacs"
-                   (assoc opts
-                          :emacs-client emacs-client
-                          :already-focused emacs-client-focused))
-    (cond
-      ;; no tag
-      (not title)
-      (do
-        (println "no tag, creating")
-        (awm/create-tag! "temp-tag")
-        (awm/focus-tag! "temp-tag")
-        (r.emacs/open))
-
-      (and emacs-client emacs-client-focused)
-      (do
-        (println "client is focused, closing")
-        (awm/close-client emacs-client))
-
-      (and emacs-client (not emacs-client-focused))
-      (do
-        (println "client not focused, focusing")
-        ;; DEPRECATED
-        (c.awm/focus-client {:center?   false
-                             :float?    false
-                             :bury-all? false} emacs-client))
-
-      :else
-      (do
-        (println "no emacs-client in current tag, opening new one")
-        (r.emacs/open opts)
-        nil))))
+  (toggle-client
+    {:wsp->client
+     (fn [{:workspace/keys   [title]
+           :awesome.tag/keys [clients]}]
+       (some->> clients
+                (filter (fn [c]
+                          (and
+                            (-> c :awesome.client/class #{"Emacs"})
+                            (-> c :awesome.client/name #{title}))))
+                first))
+     :wsp->open-client
+     (fn [{:workspace/keys [title initial-file directory]
+           :git/keys       [repo]
+           :as             wsp}]
+       (if-not wsp
+         (r.emacs/open)
+         (let [initial-file (or initial-file repo directory)
+               opts         {:emacs.open/workspace title :emacs.open/file initial-file}]
+           (r.emacs/open opts))))}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; cycle tags and clients
