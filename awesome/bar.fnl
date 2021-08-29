@@ -7,8 +7,8 @@
 (local workrave (require "widgets.workrave"))
 
 ;; (local pomodoro-widget (require "awesome-wm-widgets.pomodoroarc-widget.pomodoroarc"))
-(local batteryarc-widget (require"awesome-wm-widgets.batteryarc-widget.batteryarc"))
-(local spotify-widget (require"awesome-wm-widgets.spotify-widget.spotify"))
+(local batteryarc-widget (require "awesome-wm-widgets.batteryarc-widget.batteryarc"))
+(local spotify-widget (require "awesome-wm-widgets.spotify-widget.spotify"))
 
 (local awful (require "awful"))
 (local util (require "util"))
@@ -78,19 +78,9 @@
                  1 mytextclock
                  2 separator
                  3 (wibox.widget.textbox
-                    (.. "<span>" (if (util.is_vader) "vader" "algo") "</span>"))
-                 ;; 4 separator
-                 ;; 5 (workrave)
-                 ;; 6 (workspace-meta)
-                 }}
-           ;; 3 {:layout wibox.container.place
-           ;;    :valign "center"
-           ;;    :halign "center"
-           ;;    1 (workspaces)}
+                    (.. "<span>" (if (util.is_vader) "vader" "algo") "</span>"))}}
            3 {:layout wibox.layout.fixed.horizontal
-              1 (spotify-widget)
-              ;; 2 (when (util.is_vader) (batteryarc-widget))
-              }})
+              1 (spotify-widget)}})
 
          ;; Create the wibox
          (set s.bottom-bar
@@ -100,13 +90,5 @@
                 :height (if (util.is_vader) 90 100)
                 :bg beautiful.bg_transparent}))
 
-         ;; Add widgets to the wibox
-         ;; (s.bottom-bar:setup
-         ;;  {:layout wibox.layout.align.horizontal
-         ;;   1 nil
-         ;;   2 {:layout wibox.container.place
-         ;;      :valign "center"
-         ;;      :halign "center"
-         ;;      1 (workspaces)}
-         ;;   3 nil})
-         ))))))
+         ;; TODO support toggling this
+         (s.bottom-bar:setup)))))))

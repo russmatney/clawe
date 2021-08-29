@@ -45,3 +45,10 @@
   {:git/check-status? true}
   defs.wrk/awesome-rules
   defs.wrk/workspace-repo)
+
+(defworkspace defthing-godot-tool-scripts
+  "Trying to work out a nicer api here"
+  {:workspace/directory "russmatney/defthing-godot-tool-scripts"}
+  {:git/check-status? true}
+  defs.wrk/awesome-rules
+  defs.wrk/workspace-repo)
