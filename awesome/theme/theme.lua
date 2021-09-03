@@ -82,7 +82,7 @@ theme.titlebar_maximized_button_normal_active   = themes_path .. "titlebar/maxim
 theme.titlebar_maximized_button_focus_active    = themes_path .. "titlebar/maximized_focus_active.png"
 
 -- theme.wallpaper = themes_path .. "wallpapers/0072.jpg" -- rainy street
-theme.wallpaper = themes_path .. "wallpapers/0243.jpg" -- light tracks
+-- theme.wallpaper = themes_path .. "wallpapers/0243.jpg" -- light tracks
 -- theme.wallpaper = themes_path .. "wallpapers/0240.jpg" -- tiny circuit city
 
 -- You can use your own layout icons like this:
