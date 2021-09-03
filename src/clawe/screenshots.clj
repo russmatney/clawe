@@ -7,7 +7,7 @@
             [babashka.fs :as fs]))
 
 
-(defn local-screenshot-files []
+(defn local-screenshot-file-paths []
   (let [base-dir (zsh/expand "~/Screenshots/")]
     (->
       ^{:dir base-dir :out :string}
@@ -23,10 +23,10 @@
         reverse))))
 
 (defn all-screenshots []
-  (let [filenames (local-screenshot-files)]
+  (let [paths (local-screenshot-file-paths)]
     (->>
-      filenames
+      paths
       (map (fn [f]
-             {:file/filename       f
+             {:file/full-path      f
               :file/web-asset-path (str "/assets/screenshots/" (fs/file-name f))
               :name                (fs/file-name f)})))))
