@@ -99,6 +99,26 @@
            :valid false
            }}
 
+         ;; doctor-topbar
+         {:rule {:name "clover/doctor-topbar"}
+          :properties
+          {:tag "journal"
+           :border_width 0
+           :border_color 0
+           :maximized_horizontal true
+           :height 60
+           :y 0
+           :placement awful.placement.top
+           :ontop true
+           :above true
+           :sticky true
+           :focusable false
+           :type "dock"
+           :honor_padding false
+           :honor_workarea false
+           :valid false
+           }}
+
          ;; ff fix
          {:rule {:class "firefox"}
           :properties {:maximized false

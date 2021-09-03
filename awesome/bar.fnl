@@ -62,8 +62,8 @@
                 {:position "top"
                  :screen s
                  :height (if (util.is_vader) 30 50)
-                 ;; :bg beautiful.bg_transparent
-                 :bg beautiful.bg_normal_semi
+                 :bg beautiful.bg_transparent
+                 ;; :bg beautiful.bg_normal_semi
                  })))
 
          ;; Add widgets to the wibox
@@ -71,16 +71,17 @@
           {:layout wibox.layout.flex.horizontal
            1 {:layout wibox.layout.fixed.horizontal
               1 (wibox.widget.systray)}
-           2 {:layout wibox.container.place
-              :valign "center"
-              :halign "center"
-              1 {:layout wibox.layout.fixed.horizontal
-                 1 mytextclock
-                 2 separator
-                 3 (wibox.widget.textbox
-                    (.. "<span>" (if (util.is_vader) "vader" "algo") "</span>"))}}
-           3 {:layout wibox.layout.fixed.horizontal
-              1 (spotify-widget)}})
+           ;; 2 {:layout wibox.container.place
+           ;;    :valign "center"
+           ;;    :halign "center"
+           ;;    1 {:layout wibox.layout.fixed.horizontal
+           ;;       1 mytextclock
+           ;;       2 separator
+           ;;       3 (wibox.widget.textbox
+           ;;          (.. "<span>" (if (util.is_vader) "vader" "algo") "</span>"))}}
+           ;; 3 {:layout wibox.layout.fixed.horizontal
+           ;;    1 (spotify-widget)}
+           })
 
          ;; Create the wibox
          (set s.bottom-bar
