@@ -42,7 +42,14 @@
 (defn transact [txs]
   ;; TODO refactor into defsys conn ?
   (let [conn (d/get-conn clawe-db-filepath schema)
-        res (d/transact! conn txs)]
+        txs  (->> txs (map (fn [tx]
+                             (cond
+                               (map? tx)
+                               (->> tx
+                                    (remove (comp nil? second))
+                                    (into {}))
+                               :else tx))))
+        res  (d/transact! conn txs)]
     (d/close conn)
     res))
 
