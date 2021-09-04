@@ -5,7 +5,6 @@
 (local clawe (require "clawe"))
 (require "clawe-bindings")
 
-;; (local dashboard (require :dashboard.dashboard))
 (local helpers (require :dashboard.helpers))
 (local restart-helper (require "./restart"))
 
