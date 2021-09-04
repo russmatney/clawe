@@ -50,7 +50,7 @@
   (set beautiful.notification_max_height 100)
   (if (util.is_vader)
       (set beautiful.useless_gap 6)
-      (set beautiful.useless_gap 20)))
+      (set beautiful.useless_gap 16)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; External Functions
