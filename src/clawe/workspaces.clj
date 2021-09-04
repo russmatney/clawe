@@ -90,7 +90,7 @@
        (sort-by :workspace/scratchpad)))
 
 (defn all-workspaces-fast
-  "Returns all defs.workspaces, merged with awesome tags."
+  "Returns all defs.workspaces, without any awm data"
   []
   (->>
     (defworkspace/list-workspaces)
@@ -115,58 +115,56 @@
   (for-name "ralphie"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Awesoem workspaces widget
+;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn active-workspaces
-  "DEPRECATED
-  Pulls workspaces to show in the workspaces-widget.
-
-  supports the workspaces-widget."
+(defn workspaces-to-swap-indexes
   []
   (->> (all-workspaces)
        (filter :awesome.tag/name)
-       (map apply-git-status)
        (map (fn [spc]
-              {;; consider flags for is-scratchpad/is-app/is-repo
-               :name          (:awesome.tag/name spc)
-               :awesome_index (:awesome.tag/index spc)
-               :key           (:workspace/key spc)
-               :fa_icon_code  (when-let [code (:workspace/fa-icon-code spc)]
-                                (str "\\u{" code "}"))
-               :scratchpad    (:workspace/scratchpad spc)
-               :selected      (:awesome.tag/selected spc)
-               :empty         (:awesome.tag/empty spc)
-               :dirty         (:git/dirty? spc)
-               :needs_pull    (:git/needs-pull? spc)
-               :needs_push    (:git/needs-push? spc)
-               :color         (:workspace/color spc)
-               :title_pango   (:workspace/title-pango spc)}))
-       ;; TODO refactor the sorting/workspace-order, it should be a post-command hook
-       ;; this is where it gets sorted, and the update is in awesome widget
-       (map (fn [spc]
-              (assoc spc
-                     :sort-key (str (if (:scratchpad spc) "z" "a") "-"
-                                    (format "%03d" (or (:awesome_index spc)
-                                                       0))))))
+              (assoc spc :sort-key (str (if (:workspace/scratchpad spc) "z" "a") "-"
+                                        (format "%03d" (or (:awesome.tag/index spc)
+                                                           0))))))
        ;; sort and map-indexed to set new_indexes
        (sort-by :sort-key)
-       (map-indexed (fn [i wsp] (assoc wsp :new_index
+       (map-indexed (fn [i wsp] (assoc wsp :new-index
                                        ;; lua indexes start at 1
-                                       (+ i 1))))))
+                                       (+ i 1))))
+       (remove #(= (:new-index %) (:awesome.tag/index %)))))
 
-(defn update-workspaces-widget
+(comment
+  (workspaces-to-swap-indexes)
+  )
+
+(defn update-workspace-indexes
   []
-  (let [fname "update_workspaces_widget"]
-    (awm/awm-cli
-      {:quiet? true}
-      (awm/awm-fn fname (active-workspaces)))))
+  (loop [wsps (workspaces-to-swap-indexes)]
+    (let [wsp (some-> wsps first)]
+      (when wsp
+        (let [{:keys             [new-index]
+               :awesome.tag/keys [index]} (merge-awm-tags wsp)]
+          (when (not= new-index index)
+            (awm/awm-cli {:quiet? true}
+                         (str
+                           "local tags = awful.screen.focused().tags;"
+                           "local tag = tags[" index "];"
+                           "local tag2 = tags[" new-index "];"
+                           "tag:swap(tag2);")))
+          ;; could be optimized....
+          (recur (workspaces-to-swap-indexes)))))))
 
-(defcom update-workspaces
-  "updates the workspaces widget to reflect the current workspaces state."
-  "expects a function-name as an argument,
-which is called with a list of workspaces maps."
-  (update-workspaces-widget))
+(comment
+  (update-workspace-indexes)
+  (workspaces-to-swap-indexes)
+
+  (awm/awm-cli {:quiet? false}
+               (str
+                 "local tags = awful.screen.focused().tags;"
+                 "local tag = tags[" 2 "];"
+                 "local tag2 = tags[" 1 "];"
+                 "tag:swap(tag2);"))
+  )
 
 ;; TODO the rest of this should be refactored into ralphie.awesome or clawe.defs.bindings
 ;; maybe the workspace functions stay, but should dispatch to whatever window manager
@@ -181,17 +179,15 @@ which is called with a list of workspaces maps."
   (let [up?   (= dir "up")
         down? (= dir "down")]
     (if (or up? down?)
-      (do
-        (awm/awm-cli
-          {:quiet? true}
-          (str
-            "tags = awful.screen.focused().tags; "
-            "current_index = s.selected_tag.index; "
-            "new_index = current_index " (cond up? "+ 1" down? "- 1" ) "; "
-            "new_tag = tags[new_index]; "
-            "if new_tag then s.selected_tag:swap(new_tag) end; "
-            ))
-        (update-workspaces-widget))
+      (awm/awm-cli
+        {:quiet? true}
+        (str
+          "tags = awful.screen.focused().tags; "
+          "current_index = s.selected_tag.index; "
+          "new_index = current_index " (cond up? "+ 1" down? "- 1" ) "; "
+          "new_tag = tags[new_index]; "
+          "if new_tag then s.selected_tag:swap(new_tag) end; "
+          ))
       (notify/notify "drag-workspace called without 'up' or 'down'!"))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -223,7 +219,7 @@ which is called with a list of workspaces maps."
   "Moves active workspaces to the front of the list."
   (do
     (consolidate-workspaces)
-    (update-workspaces-widget)))
+    (update-workspace-indexes)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; clean up workspaces
@@ -332,7 +328,7 @@ which is called with a list of workspaces maps."
      (-> name for-name create-workspace)
      ;; no name passed, get from rofi
      (some-> (select-workspace) create-workspace))
-   (update-workspaces-widget)))
+   (update-workspace-indexes)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; toggle workspace names
@@ -341,4 +337,4 @@ which is called with a list of workspaces maps."
 (defcom toggle-scratchpad-names
   (do
     (awm/awm-cli "_G.toggle_show_scratchpad_names();")
-    (update-workspaces-widget)))
+    (update-workspace-indexes)))

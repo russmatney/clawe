@@ -4,8 +4,7 @@
    [defthing.defkbd :as defkbd]
    [ralphie.awesome :as awm]
    [ralphie.notify :as notify]
-   [wing.repl :as repl]
-   [clawe.workspaces :as workspaces]))
+   [wing.repl :as repl]))
 
 (comment
   (repl/sync-libs!))
@@ -13,8 +12,6 @@
 (comment
   (defkbd/list-bindings)
   (defworkspace/list-workspaces)
-  (workspaces/active-workspaces)
-  (workspaces/update-workspaces)
   (awm/reload)
 
   ;; reload widgets (re-runs connect_for_each_screen)
