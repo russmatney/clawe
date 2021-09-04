@@ -17,7 +17,7 @@
 
          ;; create some buffer at the top
          (set s.top-bar (awful.wibar {:position "top" :screen s
-                                      :height 20
+                                      :height 40
                                       :bg beautiful.bg_transparent
                                       ;; :bg beautiful.bg_normal_semi
                                       }))
