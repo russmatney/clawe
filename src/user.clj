@@ -4,12 +4,24 @@
    [defthing.defkbd :as defkbd]
    [ralphie.awesome :as awm]
    [ralphie.notify :as notify]
-   [wing.repl :as repl]))
+   [wing.repl :as repl]
+   [clawe.workspaces :as workspaces]))
 
 (comment
   (repl/sync-libs!))
 
 (comment
+
+
+  (->>
+    (workspaces/all-workspaces)
+    (filter :awesome.tag/name)
+    )
+
+  (awm/all-tags)
+
+
+
   (defkbd/list-bindings)
   (defworkspace/list-workspaces)
   (awm/reload)
