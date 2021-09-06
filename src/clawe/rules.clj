@@ -164,7 +164,9 @@ to the passed client obj."
       doall)
 
     (workspaces/clean-workspaces)
-    (workspaces/consolidate-workspaces)))
+    (workspaces/consolidate-workspaces)
+    (workspaces/update-workspace-indexes)
+    ))
 
 (comment
   (->>
