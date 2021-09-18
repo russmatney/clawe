@@ -26,7 +26,7 @@
                                                     "Or the time of day?"))}
 
           (when (and wsp (r.git/repo? (workspaces/workspace-repo wsp)))
-            {:rofi/label     "Fetch repo upstream"
+            {:rofi/label     (str "Fetch repo upstream: " (workspaces/workspace-repo wsp))
              :rofi/on-select (fn [_]
                                (r.notify/notify "Fetching upstream for workspace")
                                ;; TODO support fetching via ssh-agent
