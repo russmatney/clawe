@@ -106,7 +106,7 @@
            :border_width 0
            :border_color 0
            :maximized_horizontal true
-           :height 1000
+           :height (if (util.is_vader) 1400 1800)
            :y 0
            :placement awful.placement.top
            :ontop true
