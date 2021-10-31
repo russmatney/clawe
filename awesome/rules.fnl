@@ -130,6 +130,29 @@
          {:rule {:instance "exe"}
           :properties {:floating true}}
 
+         ;; godot fix?
+         {:rule_any {:name ["Godot Engine"]}
+          :properties
+          {:fullscreen false
+           :maximized false
+           :maximized_vertial false
+           :maximized_horizontal false}
+          :callback (fn [c]
+                      (print "godot editor hit!")
+                      (pp c)
+                      (set c.fullscreen false)
+                      (set c.maximized false)
+                      (set c.maximized_vertical false)
+                      (set c.maximized_horizontal false)
+                      ;; (-> c
+                      ;;     (tset :floating true)
+                      ;;     ((+ awful.placement.scale
+                      ;;         awful.placement.centered)
+                      ;;      {:honor_padding true
+                      ;;       :honor_workarea true
+                      ;;       :to_percent 0.9}))
+                      )}
+
          ;; fullscreen fix?
          {:rule_any {:instance ["_NET_WM_STATE_FULLSCREEN"]}
           :callback (fn [c]

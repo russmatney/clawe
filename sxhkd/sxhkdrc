@@ -28,9 +28,6 @@ super + d
 super + s
   clawe toggle-workspace-spotify-kbd-mods
 
-super + g
-  clawe toggle-workspace-godot-kbd-modg
-
 super + ctrl + u
   clawe uuid-on-clipboard-kbd-modctrlu
 

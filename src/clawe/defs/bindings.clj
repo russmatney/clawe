@@ -273,9 +273,9 @@
   [[:mod] "s"]
   (toggle-workspace defs.workspaces/spotify))
 
-(defkbd toggle-workspace-godot
-  [[:mod] "g"]
-  (toggle-workspace defs.workspaces/godot))
+;; (defkbd toggle-workspace-godot
+;;   [[:mod] "g"]
+;;   (toggle-workspace defs.workspaces/godot))
 
 (defkbd toggle-workspace-zoom
   [[:mod] "z"]

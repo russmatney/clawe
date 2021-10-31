@@ -587,20 +587,20 @@
 
 ;; TODO support creating a scratchpad workspace and keybinding completely from here
 ;; TODO support conflict alerts on keybindings via clj kondo helpers/the db? in-memory clj structures?
-(defworkspace godot
-  awesome-rules
-  ;; {:rules/apply (fn []
-  ;;                 ;; sometimes conflicts with the godot emacs/term sessions
-  ;;                 ;; TODO this grabs browsers with 'godot' window titles
-  ;;                 (let [clients (awm/clients-for-name "godot")]
-  ;;                   (when (seq clients)
-  ;;                     (awm/ensure-tag "godot")
-  ;;                     (doall
-  ;;                       (for [client clients]
-  ;;                         (awm/move-client-to-tag (:awesome.client/window client) "godot"))))))}
-  {:workspace/directory  "godot"
-   :workspace/scratchpad true}
-  workspace-repo)
+;; (defworkspace godot
+;;   awesome-rules
+;;   ;; {:rules/apply (fn []
+;;   ;;                 ;; sometimes conflicts with the godot emacs/term sessions
+;;   ;;                 ;; TODO this grabs browsers with 'godot' window titles
+;;   ;;                 (let [clients (awm/clients-for-name "godot")]
+;;   ;;                   (when (seq clients)
+;;   ;;                     (awm/ensure-tag "godot")
+;;   ;;                     (doall
+;;   ;;                       (for [client clients]
+;;   ;;                         (awm/move-client-to-tag (:awesome.client/window client) "godot"))))))}
+;;   {:workspace/directory  "godot"
+;;    :workspace/scratchpad true}
+;;   workspace-repo)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
