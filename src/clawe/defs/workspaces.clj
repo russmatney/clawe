@@ -117,25 +117,31 @@
   {:awesome/rules
    (awm-workspace-rules "dev-browser" "chrome" "Chrome" "Firefox Developer Edition"
                         "firefoxdeveloperedition")}
-  {:workspace/directory          "."
-   :workspace/exec               "/usr/bin/gtk-launch firefox-developer-edition.desktop"
-   :workspace/scratchpad         true
-   :workspace/scratchpad-classes #{"firefoxdeveloperedition"}}
+  {:workspace/directory  "."
+   :workspace/exec       "/usr/bin/gtk-launch firefox-developer-edition.desktop"
+   :workspace/scratchpad true
+   ;; TODO normalize classes (punctuation, spacing, etc)
+   :workspace/scratchpad-classes #{"Google-chrome" "firefoxdeveloperedition"}}
   {:rules/is-my-client?
    (fn [c]
      (let [matches
            #{"dev-browser" ;; emacs match? ;; include title by default?
              "chrome" "Chrome"
+             "google-chrome"
              "Firefox Developer Edition" "firefoxdeveloperedition" }
            {:awesome.client/keys [name class]} c]
        (or (matches name) (matches class))))
    :rules/apply
    (fn []
-     (let [x (awm/client-for-class "firefoxdeveloperedition")]
+     (let [x (awm/client-for-class "firefoxdeveloperedition")
+           y (awm/client-for-class "chrome")]
+       (when y
+         (notify/notify "Found chrome client, moving to dev-browser workspace" y)
+         ;; TODO create workspace if it doesn't exist
+         (awm/ensure-tag "dev-browser")
+         (awm/move-client-to-tag (:awesome.client/window y) "dev-browser"))
        (when x
-         (notify/notify
-           "Found firefoxdeveloper client, moving to dev-browser workspace"
-           x)
+         (notify/notify "Found firefoxdeveloper client, moving to dev-browser workspace" x)
          ;; TODO create workspace if it doesn't exist
          (awm/ensure-tag "dev-browser")
          (awm/move-client-to-tag (:awesome.client/window x) "dev-browser"))))}
@@ -274,6 +280,7 @@
   {:git/check-status?   true
    :workspace/directory "russmatney/clawe"}
   workspace-repo)
+
 
 (defworkspace ralphie
   awesome-rules
