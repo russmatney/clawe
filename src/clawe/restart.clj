@@ -98,6 +98,10 @@ uberjar. Otherwise this might need to be called twice."
     (log "reloading widgets")
     (awm/reload-bar-and-widgets)
 
+    ;; Doctor - Wallpaper
+    (log "reloading doctor")
+    (slurp "http://localhost:3334/reload")
+
     ;; considering...
     ;; (-> (proc/$ systemctl --user restart doctor-dock)
     ;;     (proc/check))

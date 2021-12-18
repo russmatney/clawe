@@ -52,17 +52,19 @@
     )
   )
 
-
 (defn set-wallpaper
   "Depends on `feh`."
-  [f]
-  (notify/notify "Setting wallpaper" f)
-  (def --f f)
-  (db/transact [(-> f
-                    (assoc :background/last-time-set (System/currentTimeMillis))
-                    (update :background/used-count (fnil inc 0)))])
-  (-> (process/$ feh --bg-fill ~(:file/full-path f))
-      process/check :out slurp))
+  ([w] (set-wallpaper w {}))
+  ([w {:keys [skip-count]}]
+   (notify/notify "Setting wallpaper" w)
+   (db/transact [(cond-> w
+                   true
+                   (assoc :background/last-time-set (System/currentTimeMillis))
+
+                   (not skip-count)
+                   (update :background/used-count (fnil inc 0)))])
+   (-> (process/$ feh --bg-fill ~(:file/full-path w))
+       process/check :out slurp)))
 
 (comment
   (get-wallpaper --f)
