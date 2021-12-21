@@ -15,7 +15,13 @@
 ;; Rules to apply to new clients (through the "manage" signal).
 (local global_rules
        (gears.table.join
-        [{:rule {}
+        [
+         ;; maybe
+         {:rule {}
+          ;; :except_any
+          ;; {:name ["tauri/doctor-topbar" "tauri/doctor-popup"
+          ;;         "tauri/doctor-main"
+          ;;         ]}
           :properties
           {:border_width beautiful.border_width
            :border_color beautiful.border_normal
@@ -80,24 +86,24 @@
                        :sticky true}}
 
          ;; doctor-dock
-         {:rule {:name "clover/doctor-dock"}
-          :properties
-          {:tag "journal"
-           :border_width 0
-           :border_color 0
-           :maximized_horizontal true
-           :height 300
-           :y (if (util.is_vader) 1140 1860)
-           :placement awful.placement.bottom
-           :ontop true
-           :above true
-           :sticky true
-           :focusable false
-           :type "dock"
-           :honor_padding false
-           :honor_workarea false
-           :valid false
-           }}
+         ;; {:rule {:name "clover/doctor-dock"}
+         ;;  :properties
+         ;;  {:tag "journal"
+         ;;   :border_width 0
+         ;;   :border_color 0
+         ;;   :maximized_horizontal true
+         ;;   :height 300
+         ;;   :y (if (util.is_vader) 1140 2860)
+         ;;   :placement awful.placement.bottom
+         ;;   :ontop true
+         ;;   :above true
+         ;;   :sticky true
+         ;;   :focusable false
+         ;;   :type "dock"
+         ;;   :honor_padding false
+         ;;   :honor_workarea false
+         ;;   :valid false
+         ;;   }}
 
          ;; doctor-topbar
          {:rule {:name "clover/doctor-topbar"}
@@ -106,7 +112,7 @@
            :border_width 0
            :border_color 0
            :maximized_horizontal true
-           :height (if (util.is_vader) 1400 1800)
+           :height 54
            :y 0
            :placement awful.placement.top
            :ontop true
@@ -118,6 +124,42 @@
            :honor_workarea false
            :valid false
            }}
+
+         {:rule
+          {:name "tauri/doctor-topbar"}
+          :properties
+          {:floating true
+           :maximized_horizontal true
+           :height 54
+           :y 0
+           :focusable false
+           :honor_padding false
+           :honor_workarea false
+           }}
+
+         {:rule
+          {:name "tauri/doctor-main"}
+          :properties
+          {:floating true
+           :height 1000
+           :y 260
+           :x 100
+           :honor_padding false
+           :honor_workarea false
+           :focusable true
+           }}
+
+         {:rule
+          {:name "tauri/doctor-popup"}
+          :properties
+          {:floating true
+           :height 200
+           :y 260
+           :x 800
+           :honor_padding false
+           :honor_workarea false
+           }}
+
 
          ;; ff fix
          {:rule {:class "firefox"}

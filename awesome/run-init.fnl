@@ -13,9 +13,9 @@
 (require "awful.autofocus")
 (require "steamfix")
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Global Helpers
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; ;; Global Helpers
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (global pp (fn [x] (print (view x))))
 (global ppi (fn [x] (print (inspect x))))
@@ -50,7 +50,7 @@
   (set beautiful.notification_max_height 100)
   (if (util.is_vader)
       (set beautiful.useless_gap 6)
-      (set beautiful.useless_gap 16)))
+      (set beautiful.useless_gap 12)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; External Functions
@@ -87,13 +87,14 @@
  (fn []
    (pp {:log :garbage-counts
         :count (collectgarbage "count")
-        :button (button.instances)
-        :client (client.instances)
-        :drawable (drawable.instances)
-        :drawin (drawin.instances)
-        :key (key.instances)
-        :screen (screen.instances)
-        :tag (tag.instances)})))
+        ;; :button (button.instances)
+        ;; :client (client.instances)
+        ;; :drawable (drawable.instances)
+        ;; :drawin (drawin.instances)
+        ;; :key (key.instances)
+        ;; :screen (screen.instances)
+        ;; :tag (tag.instances)
+        })))
 
 (set
  _G.handle_garbage

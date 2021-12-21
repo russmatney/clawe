@@ -159,6 +159,7 @@
              :honor_workarea true
              :to_percent     0.75})))))
 
+
 (defkbd center-window-large
   [[:mod :shift] "c"]
   (awm/awm-fnl
@@ -244,10 +245,10 @@
   (-> workspace
       workspaces/merge-awm-tags
       scratchpad/toggle-scratchpad)
-  (slurp "http://localhost:3334/dock/update")
-  )
+  (slurp "http://localhost:3334/dock/update"))
 
 (comment
+  (workspaces/merge-awm-tags defs.workspaces/dev-browser)
   (-> defs.local.workspaces/editor toggle-workspace))
 
 ;; these should come for free, with :binding/scratchpad options
