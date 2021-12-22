@@ -142,19 +142,19 @@
      (gears.table.join
 
       ;; focus movement
-      (key [:mod :shift] "l" (fn [c]
+      (key [:mod] "l" (fn [c]
                                (if c.floating
                                    (move-client c "right")
                                    (focus-move "right" "right" "up"))))
-      (key [:mod :shift] "h" (fn [c]
+      (key [:mod] "h" (fn [c]
                                (if c.floating
                                    (move-client c "left")
                                    (focus-move "left" "left" "down"))))
-      (key [:mod :shift] "j" (fn [c]
+      (key [:mod] "j" (fn [c]
                                (if c.floating
                                    (move-client c "down")
                                    (focus-move "down" "right" "down"))))
-      (key [:mod :shift] "k" (fn [c]
+      (key [:mod] "k" (fn [c]
                                (if c.floating
                                    (move-client c "up")
                                    (focus-move "up" "left" "up"))))
