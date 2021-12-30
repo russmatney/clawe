@@ -7,12 +7,24 @@
    [clawe.db.core :as db]
    [ralphie.notify :as notify]))
 
+(defn wp-dir->paths [root]
+  (-> (zsh/expand root)
+      (string/split #" /")
+      (->> (map #(str "/" %)))))
+
+(comment
+  (zsh/expand "~/AbdelrhmanNile/onedark-wallpapers/onedark\\ wallpapers/*"))
 
 (defn local-wallpapers-file-paths []
   (->
-    (zsh/expand "~/Dropbox/wallpapers/**/*")
-    (string/split #" ")
-    (->> (filter #(re-seq #"\.jpg$" %)))))
+    (concat
+      (wp-dir->paths "~/Dropbox/wallpapers/**/*")
+      ;; (wp-dir->paths "~/AbdelrhmanNile/onedark-wallpapers/onedark\\ wallpapers/*")
+      )
+    (->> (filter #(re-seq #"\.(jpg|png)$" %)))))
+
+(comment
+  (local-wallpapers-file-paths))
 
 (defn get-wallpaper
   "Assumes the first is the one we want"
@@ -38,7 +50,9 @@
              (let [common-path (str (-> f fs/parent fs/file-name) "/" (fs/file-name f))
                    initial-wp  {:file/full-path      f
                                 :file/common-path    common-path
-                                :file/web-asset-path (str "/assets/wallpapers/" (-> f fs/parent fs/file-name) "/" (fs/file-name f))
+                                :file/web-asset-path (str "/assets/wallpapers/"
+                                                          (-> f fs/parent fs/file-name)
+                                                          "/" (fs/file-name f))
                                 :name                (fs/file-name f)}
                    db-wp       (get-wallpaper initial-wp)]
                ;; db overwrites? or initial?
@@ -48,9 +62,7 @@
   (->>
     (all-wallpapers)
     (map :background/last-time-set)
-    (remove nil?)
-    )
-  )
+    (remove nil?)))
 
 (defn set-wallpaper
   "Depends on `feh`."
@@ -81,6 +93,4 @@
       '[:find (pull ?e [*])
         :in $ ?full-path
         :where [?e :file/full-path ?full-path]]
-      (:file/full-path --f)))
-
-  )
+      (:file/full-path --f))))
