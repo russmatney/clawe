@@ -86,7 +86,7 @@
 
       :else
       (do
-        (println "missing icon for client" client)
+        ;; (println "missing icon for client" client)
         {:icon octicons/question16}))))
 
 (defn icon-comp [{:keys [class src icon text]}]
