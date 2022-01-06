@@ -1,7 +1,7 @@
 {:paths ["src"]
- :deps  {russmatney/ralphie {:local/root "../ralphie"}}
+ :deps  {}
  :tasks
  {:requires ([babashka.process :as p])
-  install
-  (let [cp  (-> ^{:out :string} (p/$ clojure -Spath) p/check :out slurp)]
+  clawe-install
+  (let [cp (-> ^{:out :string} (p/$ clojure -A:remove-clojure -Spath) p/check :out)]
     (shell (str "bb -cp " cp " --uberjar clawe.jar -m clawe.core")))}}
