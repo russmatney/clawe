@@ -449,57 +449,35 @@
 
 #?(:cljs
    (comment
-     (let [w tauri/window.appWindow]
-       (js/Object.keys w)
-       )
+     (tauri/window.WebviewWindow
+       "popup"
+       (clj->js {"url"   "/popup"
+                 "title" "tauri/doctor-popup"}))
 
-     (println "\n\nHELLO\n\n")
-     (js/console.log "\n\nHELLO\n\n")
+     (def popup
+       (tauri/window.WebviewWindow.getByLabel "popup"))
 
-     (-> tauri/window.appWindow
+     (-> popup
          (.listen "tauri://focus"
                   (fn [data]
+                    (println "focused!")
                     (println "data" data)
                     (let [event   (.-event data)
                           payload (.-payload data)]
                       (println "event" event)
-                      (println "payload" payload)))))
+                      (println "payload" payload))))
+         (.then println))
 
-     (tauri/window.WebviewWindow "some-other-popover" {"url" "/popover"})
+     (.. popup -label)
+     (.. popup -listeners)
+     (-> popup (.hide) (.then println))
+     (-> popup (.show) (.then println))
+     (-> popup (.close) (.then println))
+     (-> popup (.setFocus) (.then println))
+     (-> popup (.setAlwaysOnTop true) (.then println))
+     (-> popup (.setAlwaysOnTop false) (.then println))
 
-     (tauri/window.WebviewWindow.getByLabel "some-popover")
-     (tauri/window.WebviewWindow.getByLabel "some-other-popover")
+     (tauri/window.WebviewWindow.getByLabel "popup")
      (tauri/window.WebviewWindow.getByLabel "topbar")
      (.. (tauri/window.WebviewWindow.getByLabel "topbar")
-         -label)
-     (tauri/window.WebviewWindow.getByLabel "other")
-
-     (-> tauri/window.appWindow
-         (.setFocus)
-         (.then println)
-         (.catch println)
-         (.finally println))
-
-     (-> tauri/window.appWindow
-         (.show)
-         (.then println)
-         (.catch println)
-         (.finally println))
-
-     (-> tauri/window.appWindow
-         (.innerSize)
-         (.then println)
-         (.catch println)
-         (.finally println))
-
-     (-> tauri/window.appWindow js/Object.keys)
-     (.. tauri/window.appWindow -label)
-
-     (->>
-       (.. tauri/window.appWindow -listeners)
-       (map js->clj)
-       println)
-
-     (.. js/window
-         -__TAURI__
-         -__windows)))
+         -label)))

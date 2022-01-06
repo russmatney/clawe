@@ -125,17 +125,22 @@
            :valid false
            }}
 
-         {:rule
-          {:name "tauri/doctor-topbar"}
+         {:rule {:name "Tauri App"}
+          :properties {:floating true
+                       :focus false}}
+
+         {:rule {:name "tauri/doctor-topbar"}
           :properties
-          {:floating true
+          {:tag "journal"
+           :sticky true
+           :above true
+           :ontop true
+           :focusable false
            :maximized_horizontal true
            :height 54
            :y 0
-           :focusable false
            :honor_padding false
-           :honor_workarea false
-           }}
+           :honor_workarea false}}
 
          {:rule
           {:name "tauri/doctor-main"}
@@ -153,6 +158,8 @@
           {:name "tauri/doctor-popup"}
           :properties
           {:floating true
+           :focus false
+           :focusable false
            :height 200
            :y 260
            :x 800
