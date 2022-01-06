@@ -2,7 +2,12 @@
            :clawe/missing     {:level :warning}
            :defcom/missing    {:level :warning}}
  :lint-as {systemic.core/defsys               clojure.core/def
+           defthing.core/defthing             clojure.core/def
            defthing.defcom/defcom             clojure.core/def
            defthing.defworkspace/defworkspace clojure.core/def
            defthing.defapp/defapp             clojure.core/def
-           defthing.defkbd/defkbd             clojure.core/def}}
+           defthing.defkbd/defkbd             clojure.core/def
+
+           defthing.core-test/defworkspace clojure.core/def
+           defthing.core-test/defsomething clojure.core/def
+           defthing.core-test/defx         clojure.core/def}}
