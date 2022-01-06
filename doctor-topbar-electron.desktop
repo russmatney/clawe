@@ -1,0 +1,8 @@
+[Desktop Entry]
+Version=0.1
+Name=Doctor Topbar Electron
+GenericName=Topbar
+Comment=Launch a new instance of the Doctor Topbar
+Exec=/home/russ/russmatney/doctor/start-doctor-topbar-electron.sh
+Terminal=false
+Type=Application

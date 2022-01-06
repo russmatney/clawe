@@ -52,7 +52,7 @@ back to a monorepo. There are several top-level namespaces:
 - Chess - originally here: [[https://github.com/russmatney/defthing][russmatney/defthing]]
 
   Pulls a list of recent games from lichess. Configured via
-  /resources/config.edn vars.
+  resources/config.edn or env vars.
 
 - Doctor
 - Expo

@@ -6,6 +6,7 @@ tmp/
 .cpcache
 .nrepl-port
 .clj-kondo/.cache
+log/
 
 awesome/**/.luacheckcache
 awesome/.luacheckcache
@@ -26,3 +27,13 @@ awesome/workspace-rules.fnl
 sxhkd/sxhkdrc
 
 clawedb
+
+.nrepl-port
+.shadow-cljs
+node_modules/
+yarn.lock
+public/js/
+public/css/main-built.css
+public/assets/candy-icons
+public/assets/screenshots
+public/assets/wallpapers

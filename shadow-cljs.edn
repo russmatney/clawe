@@ -1,0 +1,37 @@
+{:deps {:aliases [:nrepl :app]}
+
+ :nrepl {:port 3335
+         :middleware
+         [cider-nrepl.plugin/middleware
+          refactor-nrepl.middleware/wrap-refactor]}
+
+ :builds
+ {;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; app
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+  :app
+  {:target     :browser
+   :output-dir "public/js/compiled"
+   :asset-path "/js/compiled"
+   :modules    {:main {:entries [doctor.ui.core]}}
+
+   :build-hooks
+   [(plasma.uix.hot-reload/compile-prepare!)
+    (plasma.uix.hot-reload/compile-finish!)]
+
+   :dev {:closure-defines {:plasma.uix.hot-reload? true}}
+
+   :closure-defines
+   {doctor.ui.events.tubes/SERVER_HOST #shadow/env "SERVER_HOST"
+    doctor.ui.events.tubes/SERVER_PORT #shadow/env "SERVER_PORT"}
+
+   :js-options       {:entry-keys ["browser" "main" "module"]}
+   :compiler-options {:output-feature-set :es5}
+
+   :devtools
+   {:http-root   "public"
+    :http-port   3333
+    :loader-mode :eval
+    :after-load  doctor.ui/mount-root
+    :repl-pprint true}}}}

@@ -1,0 +1,127 @@
+#+TITLE: Readme
+#+STARTUP: overview
+
+* Jump in
+- [[file:src/user.clj][user.clj]]
+- [[file:deps.edn][deps.edn]]
+- [[file:.dir-locals.el][.dir-locals.el]]
+
+- UI/Core/Home:  [[file:src/doctor/ui/core.cljs][src/doctor/ui/core.cljs]]
+- Backend Server def: [[file:src/doctor/server.clj][src/doctor/server.clj]]
+
+Apps:
+
+- [[file:src/doctor/ui/views/topbar.cljc][Topbar]]
+- [[file:src/doctor/ui/views/todos.cljc][Todos]]
+- Dock file:src/doctor/ui/views/dock.cljc
+- Screenshots file:src/doctor/ui/views/screenshots.cljc
+- Wallpapers file:src/doctor/ui/views/wallpapers.cljc
+- Workspaces file:src/doctor/ui/views/workspaces.cljc
+
+Icon resources:
+
+- https://freesoft.dev/program/121518366
+- Octicons https://primer.style/octicons/
+- MDI https://materialdesignicons.com/
+- FA https://fontawesome.com/v5.15/icons?d=gallery&p=2&q=pencil
+- FA4 https://fontawesome.com/v4.7/icons/
+* Doctor
+
+An event driven db and plasma dashboard for the health and status of your work.
+
+Expects to be run locally on your machine.
+
+Supports misc widgets in a clover-based dashboard.
+
+Consumes clawe and ralphie as a clojure-backend, but also exposes an api for
+writing metadata to a database.
+
+Intended to support workflow while working on other tasks - marking rabbitholes
+and decision points so that you can replay and reexamine them later.
+
+Supports configuring health-checks and other automations for workflow problems.
+
+* Clojure Usage
+api could be something like
+
+#+begin_src clojure
+(doctor/log
+ {:log/subject "subject"
+  :log/body "body"
+ })
+#+end_src
+
+or
+
+#+begin_src clojure
+(doctor/checkup
+ {:checkup/id :checkup/awesomewm-health
+  :checkup/directory "~/.config/awesome"})
+#+end_src
+
+* Running locally
+** backend
+#+begin_src
+clj -M:dev:main
+#+end_src
+
+cider connect from there
+** frontend
+#+begin_src
+npx shadow-cljs watch app
+#+end_src
+
+cider connect from there
+** electron
+#+begin_src sh
+# from russmatney/clover
+yrun dev http://localhost:3333 doctor
+#+end_src
+
+You'll want to build the css: ~yrun build~ (in doctor root dir).
+*** Desktop App
+#+begin_src doctor-dock-electron.desktop
+[Desktop Entry]
+Version=0.1
+Name=Doctor Dock Electron
+GenericName=Dock
+Comment=Launch a new instance of the Doctor Dock
+Exec=/home/russ/russmatney/doctor/start-doctor-dock-electron.sh
+Terminal=false
+Type=Application
+#+end_src
+
+Note this depends directly on ~/russmatney/clover
+
+#+begin_src sh
+#!/usr/bin/env zsh
+set -euo pipefail
+
+cd ~/russmatney/clover
+yarn run dev http://localhost:3333/dock doctor-dock
+#+end_src
+
+Both of these files are ready to go in this repo, you'll just need a symlink:
+
+#+begin_src sh
+ln -s ~/russmatney/doctor/doctor-dock-electron.desktop ~/.local/share/applications/.
+#+end_src
+** tauri
+
+install tauri-cli
+
+#+begin_src sh
+cargo install tauri-cli --git https://github.com/tauri-apps/tauri
+#+end_src
+
+run dev:
+
+#+begin_src sh
+cargo tauri dev
+#+end_src
+
+build release:
+
+#+begin_src sh
+cargo tauri build
+#+end_src
