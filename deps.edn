@@ -38,6 +38,8 @@
     cider/cider-nrepl             {:mvn/version "0.27.4"}
     refactor-nrepl/refactor-nrepl {:mvn/version "3.1.0"}
 
+    datalevin/datalevin {:mvn/version "0.5.27"}
+
     ;; core
     org.clojure/core.async {:mvn/version "1.5.648"}
 

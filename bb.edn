@@ -4,4 +4,11 @@
  {:requires ([babashka.process :as p])
   clawe-install
   (let [cp (-> ^{:out :string} (p/$ clojure -A:remove-clojure -Spath) p/check :out)]
-    (shell (str "bb -cp " cp " --uberjar clawe.jar -m clawe.core")))}}
+    (shell (str "bb -cp " cp " --uberjar clawe.jar -m clawe.core")))
+
+  doctor-be (shell {:dir "/home/russ/russmatney/clawe"}
+                   "clj -M:dev:doctor-deps:doctor-server")
+  doctor-fe (shell {:dir "/home/russ/russmatney/clawe"}
+                   "npx shadow-cljs watch doctor-app")
+  topbar    (shell {:dir "/home/russ/russmatney/clover"}
+                   "yarn run dev http://localhost:3333/topbar doctor-topbar")}}
