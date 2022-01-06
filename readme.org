@@ -28,17 +28,34 @@ This repo contains a full awesome configuration in the ~awesome/~ directory. It
 is written almost entirely in [[https://fennel-lang.org/][Fennel]], which is a clojure-y lisp that compiles to
 lua.
 
-* Ralphie as a major dependency
-Ralphie is a collection of utilities I've been building up to handle various
-WM/OS scripting needs - it provides a rofi and cli interface into all of its
-commands, and is a nice way of working with your machine via clojure/babashka.
+* Monorepo
+I was breaking things out into separate repos for a bit, but have recently moved
+back to a monorepo. There are several top-level namespaces:
 
-Clawe leans heavily on [[https://github.com/russmatney/ralphie][Ralphie]] for miscellanenous namespaces and utilities, and
-chunks of ralphie will probably be pulled in over time.
+- Ralphie - originally here: [[https://github.com/russmatney/ralphie][russmatney/ralphie]]
 
-I debated about writing this entirely inside of Ralphie, but instead I hope it's
-the first successful consumer - this should help whip Ralphie/Ralph's namespaces
-into shape so that other projects can more easily consume them.
+  Ralphie is a collection of thin layers over misc tools (e.g. i3, awesomewm,
+  emacs, tmux, screenshots, browsers). It does not attempt to handle any state,
+  and instead provides pure apis for misc tools. When we want to reach for state
+  or some other logic, we elevate the function to a clawe namespace.
+
+  The goal is to allow other consumers to use ralphie as an independent library,
+  without requiring clawe's typical setup and dependencies.
+
+  Ralphie's old readme is here: [[file:docs/ralphie.md][Ralphie old readme]]
+
+- Defthing - originally here: [[https://github.com/russmatney/defthing][russmatney/defthing]]
+
+  A macro-helper supporting data-driven collections. See the defthing [[file:docs/defthing.org][docs]] or
+  [[file:test/defthing/core_test.clj][tests]] for more.
+
+- Chess - originally here: [[https://github.com/russmatney/defthing][russmatney/defthing]]
+
+  Pulls a list of recent games from lichess. Configured via
+  /resources/config.edn vars.
+
+- Doctor
+- Expo
 
 * Install
 To install the uberjar for the first time:
