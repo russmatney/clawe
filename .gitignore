@@ -19,7 +19,7 @@ clawe.jar
 src/clawe/temp.clj
 uberscripts/*
 
-resources/config.edn
+resources/secret.edn
 
 awesome/clawe-bindings.fnl
 awesome/workspace-rules.fnl

@@ -4,7 +4,7 @@
    [manifold.stream :as s]
    [org-crud.core :as org-crud]
    [ralphie.zsh :as r.zsh]
-   [tick.alpha.api :as t]
+   [tick.core :as t]
    [babashka.fs :as fs]
    [clojure.string :as string]
    [clawe.db.core :as db]

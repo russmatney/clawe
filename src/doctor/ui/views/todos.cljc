@@ -4,7 +4,7 @@
    #?@(:clj [[doctor.api.todos :as d.todos]]
        :cljs [[uix.core.alpha :as uix]
               [plasma.uix :refer [with-rpc with-stream]]
-              [tick.alpha.api :as t]
+              [tick.core :as t]
               [hiccup-icons.fa :as fa]
               [doctor.ui.components.todos :as todos]])))
 

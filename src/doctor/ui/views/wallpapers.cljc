@@ -8,7 +8,7 @@
        :cljs [[wing.core :as w]
               [uix.core.alpha :as uix]
               [plasma.uix :refer [with-rpc with-stream]]
-              [tick.alpha.api :as t]
+              [tick.core :as t]
               ])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

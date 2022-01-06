@@ -1,4 +1,4 @@
-{:deps {:aliases [:nrepl :app]}
+{:deps {:aliases [:doctor-deps]}
 
  :nrepl {:port 3335
          :middleware
@@ -6,11 +6,12 @@
           refactor-nrepl.middleware/wrap-refactor]}
 
  :builds
- {;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  ;; app
+ {
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; doctor
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-  :app
+  :doctor-app
   {:target     :browser
    :output-dir "public/js/compiled"
    :asset-path "/js/compiled"
@@ -26,8 +27,8 @@
    {doctor.ui.events.tubes/SERVER_HOST #shadow/env "SERVER_HOST"
     doctor.ui.events.tubes/SERVER_PORT #shadow/env "SERVER_PORT"}
 
-   :js-options       {:entry-keys ["browser" "main" "module"]}
-   :compiler-options {:output-feature-set :es5}
+   ;; :js-options       {:entry-keys ["browser" "main" "module"]}
+   ;; :compiler-options {:output-feature-set :es5}
 
    :devtools
    {:http-root   "public"

@@ -5,7 +5,7 @@
    [systemic.core :as sys :refer [defsys]]))
 
 (defn ->config []
-  (aero/read-config (io/resource "config.edn")))
+  (aero/read-config (io/resource "doctor.edn")))
 
 (comment
   (->config))

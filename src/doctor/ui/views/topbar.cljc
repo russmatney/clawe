@@ -12,8 +12,7 @@
               [plasma.uix :refer [with-rpc with-stream]]
               [hiccup-icons.fa :as fa]
               [hiccup-icons.mdi :as mdi]
-              [tick.alpha.api :as t]
-              [tick.format :as t.format]
+              [tick.core :as t]
               [doctor.ui.components.icons :as icons]
               [doctor.ui.components.charts :as charts]
               [doctor.ui.components.todos :as todos]
@@ -316,7 +315,7 @@
       {:class ["flex" "flex-row" "justify-center" "items-center"]}
 
       [:div.font-mono
-       (some->> time (t.format/format (t.format/formatter "MM/dd HH:mm")))]
+       (some->> time (t/format (t/formatter "MM/dd HH:mm")))]
 
       [sep]
       [:div

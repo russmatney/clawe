@@ -11,7 +11,7 @@
 (defonce lichess-username (atom nil))
 (defonce lichess-token (atom nil))
 
-(defn ->config [] (aero/read-config (io/resource "config.edn")) )
+(defn ->config [] (aero/read-config (io/resource "secret.edn")) )
 
 (defsys *lichess-env*
   :start
