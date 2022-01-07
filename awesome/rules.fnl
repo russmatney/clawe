@@ -85,46 +85,6 @@
                        :ontop true
                        :sticky true}}
 
-         ;; doctor-dock
-         ;; {:rule {:name "clover/doctor-dock"}
-         ;;  :properties
-         ;;  {:tag "journal"
-         ;;   :border_width 0
-         ;;   :border_color 0
-         ;;   :maximized_horizontal true
-         ;;   :height 300
-         ;;   :y (if (util.is_vader) 1140 2860)
-         ;;   :placement awful.placement.bottom
-         ;;   :ontop true
-         ;;   :above true
-         ;;   :sticky true
-         ;;   :focusable false
-         ;;   :type "dock"
-         ;;   :honor_padding false
-         ;;   :honor_workarea false
-         ;;   :valid false
-         ;;   }}
-
-         ;; doctor-topbar
-         {:rule {:name "clover/doctor-topbar"}
-          :properties
-          {:tag "journal"
-           :border_width 0
-           :border_color 0
-           :maximized_horizontal true
-           :height 54
-           :y 0
-           :placement awful.placement.top
-           :ontop true
-           :above true
-           :sticky true
-           :focusable false
-           :type "dock"
-           :honor_padding false
-           :honor_workarea false
-           :valid false
-           }}
-
          {:rule {:name "Tauri App"}
           :properties {:floating true
                        :focus false}}

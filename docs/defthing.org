@@ -222,7 +222,7 @@ For perusing/contributing to sxhkd.
    :workspace/scratchpad-class "Emacs"
    :rules/is-my-client?
    (fn [c]
-     (let [matches                             #{"journal" "clover/doctor-dock"}
+     (let [matches                             #{"journal" "tauri/doctor-topbar"}
            {:awesome.client/keys [name class]} c]
        (or (matches name) (matches class))))})
 #+end_src

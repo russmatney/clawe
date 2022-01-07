@@ -26,12 +26,6 @@
       (d.topbar/update-topbar-metadata)
       {:status 200 :body "updated topbar"})
 
-    (= uri "/dock/update")
-    (do
-      (d.workspaces/update-workspaces)
-      (d.topbar/update-topbar-metadata)
-      {:status 200 :body "updated topbar"})
-
     (= uri "/screenshots/update")
     (do
       (screenshots/update-screenshots)
@@ -43,6 +37,4 @@
       {:status 200 :body "updated todos"})))
 
 (comment
-  (route {:uri "/reload"})
-
-  (route {:uri "/dock/update"}))
+  (route {:uri "/reload"}))

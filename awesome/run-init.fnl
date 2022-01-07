@@ -13,6 +13,7 @@
 (require "awful.autofocus")
 (require "steamfix")
 
+
 ;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ;; Global Helpers
 ;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -30,6 +31,12 @@
          lain.layout.centerwork
          ;; lain.layout.centerwork.horizontal
          ])
+
+(global update-topbar
+        (fn [] (awful.spawn.easy_async "curl http://localhost:3334/topbar/update" nil)))
+
+(global reload-doctor
+        (fn reload-doctor [] (awful.spawn.easy_async "curl http://localhost:3334/reload" nil)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Theming
@@ -140,9 +147,6 @@
 ;; init
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(fn update-doctor-dock []
-  (awful.spawn.easy_async "curl http://localhost:3334/dock/update" nil))
-
 (fn to-client-data [c]
   {:name     c.name
    :ontop    c.ontop
@@ -198,11 +202,11 @@
    ;;  (fn [c]
    ;;    (pp {:signal "request::urgent"})
    ;;    (clawe.cmd-args "apply-rules-to-client" (to-client-data c))))
-   (client.connect_signal "focus" (fn [_] (update-doctor-dock)))
-   (tag.connect_signal "property::screen" (fn [_] (update-doctor-dock)))
-   (tag.connect_signal "tagged" (fn [_] (update-doctor-dock)))
-   (tag.connect_signal "untagged" (fn [_] (update-doctor-dock)))
-   (tag.connect_signal "property::urgent" (fn [_] (update-doctor-dock)))
+   (client.connect_signal "focus" (fn [_] (update-topbar)))
+   (tag.connect_signal "property::screen" (fn [_] (update-topbar)))
+   (tag.connect_signal "tagged" (fn [_] (update-topbar)))
+   (tag.connect_signal "untagged" (fn [_] (update-topbar)))
+   (tag.connect_signal "property::urgent" (fn [_] (update-topbar)))
 
    (print "init_rules")
    (rules.init_rules config)
@@ -220,6 +224,7 @@
    (print "reapplying rules")
    (_G.reapply_rules)
    (clawe.cmd "clawe-apply-rules")
+   (reload-doctor)
 
    (print "------------------Awesome Init Complete---------")))
 

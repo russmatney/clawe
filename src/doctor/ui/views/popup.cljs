@@ -10,10 +10,7 @@
 ;; TODO dry this up
 (defn is-bar-app? [client]
   (and
-    (-> client :awesome.client/name #{"clover/doctor-dock"
-                                      "clover/doctor-topbar"
-                                      "tauri/doctor-topbar"
-                                      "tauri/doctor-popup"})
+    (-> client :awesome.client/name #{"tauri/doctor-topbar" "tauri/doctor-popup"})
     (-> client :awesome.client/focused not)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

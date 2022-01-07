@@ -25,13 +25,13 @@
   Eg.
 
   (ralphie.awesome/awm-fnl '(do (-> (client.get) (lume.map (fn [t] {:name t.name})))))
-  => [{:name \"Mozilla Firefox\"} {:name \"ralphie\"} {:name \"Junior Boys - Dull To Pause\"} {:name \"clover/doctor-dock\"}]
+  => [{:name \"Mozilla Firefox\"} {:name \"ralphie\"} {:name \"Junior Boys - Dull To Pause\"} {:name \"tauri/doctor-topbar\"}]
 
   (ralphie.awesome/awm-cli
     (str
       \"return view(lume.map(client.get(), \"
       \"function (t) return {name= t.name} end))\"))
-  => [{:name \"Mozilla Firefox\"} {:name \"ralphie\"} {:name \"Junior Boys - Dull To Pause\"} {:name \"clover/doctor-dock\"}]
+  => [{:name \"Mozilla Firefox\"} {:name \"ralphie\"} {:name \"Junior Boys - Dull To Pause\"} {:name \"tauri/doctor-topbar\"}]
 
   These functions include a 'preamble' that requires a handful of convenient globals,
   such as `lume` (a lua functional lib), `client`, `awful`, `view` (aka `fennelview`,
@@ -508,7 +508,7 @@ function (c) return {
 
 (comment
   (->> (all-clients)
-       (filter (comp #(= % "clover/doctor-dock") :awesome.client/name))))
+       (filter (comp #(= % "tauri/doctor-topbar") :awesome.client/name))))
 
 (defn clients-for-class [nm]
   (some->>

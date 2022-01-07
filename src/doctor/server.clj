@@ -85,8 +85,4 @@
   (sys/stop!)
   (sys/start! `*server*)
   (sys/restart! `*server*)
-  *server*
-
-  (slurp "http://localhost:3334/dock/update")
-  (slurp "http://localhost:3334/dock/update")
-  (println "hi"))
+  *server*)

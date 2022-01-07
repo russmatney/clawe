@@ -3,9 +3,7 @@
   (:require
    [clawe.workspaces :as workspaces]
    [clojure.string :as string]
-   [clojure.walk :as walk]
-   [defthing.defcom :refer [defcom]]
-   [ralphie.notify :as notify]))
+   [clojure.walk :as walk]))
 
 (defn write-awesome-rules []
   (let [wsp-rules
@@ -24,22 +22,3 @@
 
 (comment
   (write-awesome-rules))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Apply rules to current awesome config
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn apply-rules
-  "Supports running :rules/apply hooks, which are 0-arg functions that usually
-  enforce client/workspace attachments."
-  []
-  (let [rule-fns
-        (->>
-          (workspaces/all-workspaces)
-          (keep :rules/apply))]
-    (notify/notify (str "Applying " (count rule-fns) " Clawe rule(s)"))
-    (->> rule-fns
-         (map (fn [f] (f)))
-         doall)))
-
-(defcom clawe-apply-rules apply-rules)

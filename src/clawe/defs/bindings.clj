@@ -26,6 +26,9 @@
    [clawe.workspaces :as workspaces]
    [clawe.rules :as c.rules]))
 
+(defn update-topbar []
+  (slurp "http://localhost:3334/topbar/update"))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; rofi, launchers, command selectors
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -245,7 +248,7 @@
   (-> workspace
       workspaces/merge-awm-tags
       scratchpad/toggle-scratchpad)
-  (slurp "http://localhost:3334/dock/update"))
+  (update-topbar))
 
 (comment
   (workspaces/merge-awm-tags defs.workspaces/dev-browser)
@@ -416,13 +419,13 @@
   [[:mod] "p"]
   (awm/awm-fnl
     '(do (awful.tag.viewnext)
-         (awful.spawn.easy_async "curl http://localhost:3334/dock/update" nil))))
+         (awful.spawn.easy_async "curl http://localhost:3334/topbar/update" nil))))
 
 (defkbd cycle-prev-tag-2
   [[:mod] "n"]
   (awm/awm-fnl
     '(do (awful.tag.viewprev)
-         (awful.spawn.easy_async "curl http://localhost:3334/dock/update" nil))))
+         (awful.spawn.easy_async "curl http://localhost:3334/topbar/update" nil))))
 
 (defkbd cycle-focus-next
   [[:mod] "Tab"]
@@ -455,14 +458,14 @@
   [[:mod :shift] "Left"]
   (do
     (workspaces/drag-workspace "down")
-    (slurp "http://localhost:3334/dock/update"))
+    (update-topbar))
   )
 
 (defkbd drag-workspace-next
   [[:mod :shift] "Right"]
   (do
     (workspaces/drag-workspace "up")
-    (slurp "http://localhost:3334/dock/update"))
+    (update-topbar))
   )
 
 (defkbd correct-clients-and-workspaces
@@ -535,7 +538,7 @@
        :notify/body    (if (r.pulseaudio/input-muted?)
                          "Muted!" "Unmuted!")
        :notify/id      "mute-notif"})
-    (slurp "http://localhost:3334/dock/update")))
+    (update-topbar)))
 
 (defkbd toggle-output-mute
   [[] "XF86AudioMute"]
@@ -560,7 +563,7 @@
     (->
       ($ pactl set-sink-volume "@DEFAULT_SINK@" "+5%")
       check :out slurp)
-    (slurp "http://localhost:3334/dock/update")))
+    (update-topbar)))
 
 (defkbd volume-down
   [[] "XF86AudioLowerVolume"]
@@ -571,19 +574,19 @@
     (->
       ($ pactl set-sink-volume "@DEFAULT_SINK@" "-5%")
       check :out slurp)
-    (slurp "http://localhost:3334/dock/update")))
+    (update-topbar)))
 
 (defkbd spotify-volume-up
   [[:mod] "XF86AudioRaiseVolume"]
   (do
     (r.spotify/adjust-spotify-volume "up")
-    (slurp "http://localhost:3334/dock/update")))
+    (update-topbar)))
 
 (defkbd spotify-volume-down
   [[:mod] "XF86AudioLowerVolume"]
   (do
     (r.spotify/adjust-spotify-volume "down")
-    (slurp "http://localhost:3334/dock/update")))
+    (update-topbar)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Open Workspace
@@ -594,7 +597,7 @@
   (do
     (notify/notify "Opening Workspace!")
     (workspaces/open-workspace)
-    (slurp "http://localhost:3334/dock/update")))
+    (update-topbar)))
 
 
 (defkbd create-new-workspace

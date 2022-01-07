@@ -161,8 +161,7 @@ to the passed client obj."
 
     (workspaces/clean-workspaces)
     (workspaces/consolidate-workspaces)
-    (workspaces/update-workspace-indexes)
-    ))
+    (workspaces/update-workspace-indexes)))
 
 (comment
   (->>

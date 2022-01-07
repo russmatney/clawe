@@ -90,7 +90,7 @@ uberjar. Otherwise this might need to be called twice."
     (log "reloading misc")
     (awm/reload-misc)
 
-    ;; Reload completions/aches
+    ;; Reload completions/caches
     (log "reloading zsh tab completion")
     (c.install/install-zsh-tab-completion)
 
@@ -103,7 +103,7 @@ uberjar. Otherwise this might need to be called twice."
     (slurp "http://localhost:3334/reload")
 
     ;; considering...
-    ;; (-> (proc/$ systemctl --user restart doctor-dock)
+    ;; (-> (proc/$ systemctl --user restart doctor-topbar)
     ;;     (proc/check))
 
     (log "completed.")))

@@ -15,8 +15,7 @@
   [{:keys [name]}]
   (or
     (string/includes? name "meet.google.com")
-    (string/includes? name "clover/doctor-dock")
-    ))
+    (string/includes? name "tauri/doctor-topbar")))
 
 (defn mark-buried-clients []
   (let [floating-clients
@@ -70,7 +69,7 @@
                (str
                  ;; set all ontops/floating false
                  "for c in awful.client.iterate(function (c) return c.ontop end) do\n"
-                 ;; TODO filter things to bury (no clover/doctor-dock)
+                 ;; TODO filter things to bury
                  "c.ontop = false; "
                  "c.floating = false; "
                  "end;\n"))

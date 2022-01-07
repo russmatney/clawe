@@ -13,7 +13,6 @@ Apps:
 
 - [[file:src/doctor/ui/views/topbar.cljc][Topbar]]
 - [[file:src/doctor/ui/views/todos.cljc][Todos]]
-- Dock file:src/doctor/ui/views/dock.cljc
 - Screenshots file:src/doctor/ui/views/screenshots.cljc
 - Wallpapers file:src/doctor/ui/views/wallpapers.cljc
 - Workspaces file:src/doctor/ui/views/workspaces.cljc
@@ -72,40 +71,6 @@ npx shadow-cljs watch app
 #+end_src
 
 cider connect from there
-** electron
-#+begin_src sh
-# from russmatney/clover
-yrun dev http://localhost:3333 doctor
-#+end_src
-
-You'll want to build the css: ~yrun build~ (in doctor root dir).
-*** Desktop App
-#+begin_src doctor-dock-electron.desktop
-[Desktop Entry]
-Version=0.1
-Name=Doctor Dock Electron
-GenericName=Dock
-Comment=Launch a new instance of the Doctor Dock
-Exec=/home/russ/russmatney/doctor/start-doctor-dock-electron.sh
-Terminal=false
-Type=Application
-#+end_src
-
-Note this depends directly on ~/russmatney/clover
-
-#+begin_src sh
-#!/usr/bin/env zsh
-set -euo pipefail
-
-cd ~/russmatney/clover
-yarn run dev http://localhost:3333/dock doctor-dock
-#+end_src
-
-Both of these files are ready to go in this repo, you'll just need a symlink:
-
-#+begin_src sh
-ln -s ~/russmatney/doctor/doctor-dock-electron.desktop ~/.local/share/applications/.
-#+end_src
 ** tauri
 
 install tauri-cli
