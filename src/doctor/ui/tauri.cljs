@@ -3,8 +3,7 @@
    [cljs.core.async :refer [go]]
    [cljs.core.async.interop :refer-macros [<p!]]
    [uix.core.alpha :as uix]
-   ["@tauri-apps/api" :as tauri]
-   ["@tauri-apps/api/window" :refer [primaryMonitor]]))
+   ["@tauri-apps/api" :as tauri]))
 
 ;; TODO support tauri backend api, so we don't need a tauri client to do things
 ;; i.e. it'd be nice to fire show/hide from a browser or keybinding
@@ -91,10 +90,11 @@
     ;; not sure what to depend on here...
     (uix/with-effect []
       (println "use-popup")
-      (when-let [popup (tauri/window.WebviewWindow.getByLabel "popup")]
-        (go
-          (let [visible (<p! (-> popup (.isVisible)))]
-            (reset! open? visible))))
+      (when (tauri?)
+        (when-let [popup (tauri/window.WebviewWindow.getByLabel "popup")]
+          (go
+            (let [visible (<p! (-> popup (.isVisible)))]
+              (reset! open? visible)))))
       ;; clean up?
       (fn []))
 
@@ -116,11 +116,11 @@
               "title" "tauri/doctor-popup"}))
 
   (def popup (tauri/window.WebviewWindow.getByLabel "popup"))
-  (def topbar (tauri/window.WebviewWindow.getByLabel "topbar"))
+  ;; (def topbar (tauri/window.WebviewWindow.getByLabel "topbar"))
 
-  (go
-    (let [m (<p! (primaryMonitor))]
-      (def --m m)))
+  ;; (go
+  ;;   (let [m (<p! (primaryMonitor))]
+  ;;     (def --m m)))
 
   (-> popup
       (.listen "tauri://focus"
