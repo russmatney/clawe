@@ -65,10 +65,6 @@ to the passed client obj."
   "Runs over all open clients, rearranging according to workspace rules.
 
   Selects clients with callbacks to handle
-
-  TODO: move clients from one tag to another.
-  TODO: open workspaces.
-  TODO: Close workspaces with no tags.
   "
   []
   (let [workspaces        (->>

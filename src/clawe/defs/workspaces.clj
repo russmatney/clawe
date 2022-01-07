@@ -240,7 +240,7 @@
    :workspace/scratchpad-class "Emacs"
    :rules/is-my-client?
    (fn [c]
-     (let [matches                             #{"journal" "clover/doctor-dock" "clover/doctor-topbar"}
+     (let [matches                             #{"journal" "tauri/doctor-topbar"}
            {:awesome.client/keys [name class]} c]
        (or (matches name) (matches class))))}
   workspace-repo)
