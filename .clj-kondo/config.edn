@@ -1,6 +1,10 @@
-{:linters {:unresolved-symbol {:exclude [(babashka.process/$)]}
-           :clawe/missing     {:level :warning}
-           :defcom/missing    {:level :warning}}
+{:linters {:unresolved-symbol
+           {:exclude [(clojure.core.match/match) (wing.test/assert-match) match?]}
+           :clawe/missing  {:level :warning}
+           :defcom/missing {:level :warning}}
+ :hooks
+ {:analyze-call {plasma.core/defhandler hooks.plasma/defhandler
+                 plasma.core/defstream  hooks.plasma/defhandler}}
  :lint-as {systemic.core/defsys               clojure.core/def
            defthing.core/defthing             clojure.core/def
            defthing.defcom/defcom             clojure.core/def
