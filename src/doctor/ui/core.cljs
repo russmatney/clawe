@@ -11,9 +11,10 @@
    [uix.core.alpha :as uix]
    [uix.dom.alpha :as uix.dom]
 
+   [doctor.ui.tauri :as tauri]
    [doctor.ui.views.todos :as views.todos]
    [doctor.ui.views.topbar :as views.topbar]
-   [doctor.ui.views.popover :as views.popover]
+   [doctor.ui.views.popup :as views.popup]
    [doctor.ui.views.screenshots :as views.screenshots]
    [doctor.ui.views.wallpapers :as views.wallpapers]
    [doctor.ui.views.workspaces :as views.workspaces]))
@@ -37,9 +38,7 @@
   [:div
    [:p.text-city-pink-100.p-4
     "No app selected, defaulting..."]
-   [views.screenshots/widget]
-   ])
-
+   [views.screenshots/widget]])
 
 (defn home [main]
   (let [params            (router/use-route-parameters)
@@ -75,7 +74,16 @@
       [:div {:class ["flex" "flex-col" "p-6"
                      "text-city-pink-100" "text-xl"]}
        [:p (str "Router:" (clj->js (uix/context router/*router*)))]
-       [:p (str "Match: "  @params)]]]
+       [:p (str "Match: "  @params)]]
+      (let [{:keys [tauri? open?] :as popup} (tauri/use-popup)]
+        [:div {:class ["ml-auto"
+                       "flex" "flex-col" "p-6"
+                       "text-city-pink-100" "text-xl"]}
+         (when (and tauri? @open?)
+           [:button {:on-click (fn [_] ((:hide popup)))} "Hide Popup"])
+         (when (and tauri? (not @open?))
+           [:button {:on-click (fn [_] ((:show popup)))} "Show Popup"])])]
+
      (when main [main])]))
 
 (defn counter []
@@ -89,9 +97,9 @@
   []
   (let [page-name (-> router/*match* uix/context :data :name)]
     (case page-name
-      :page/home        [home views.popover/tabs]
+      :page/home        [home views.popup/tabs]
       :page/todos       [home views.todos/widget]
-      :page/popup       [views.popover/popup]
+      :page/popup       [home views.popup/popup]
       :page/topbar      [views.topbar/widget]
       :page/topbar-bg   [home views.topbar/widget]
       :page/counter     [home counter]

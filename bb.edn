@@ -10,5 +10,5 @@
                    "clj -M:dev:doctor-deps:doctor-server")
   doctor-fe (shell {:dir "/home/russ/russmatney/clawe"}
                    "npx shadow-cljs watch doctor-app")
-  topbar    (shell {:dir "/home/russ/russmatney/clover"}
-                   "yarn run dev http://localhost:3333/topbar doctor-topbar")}}
+  topbar    (shell {:dir "/home/russ/russmatney/clawe"}
+                   "cargo tauri dev")}}

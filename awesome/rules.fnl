@@ -143,29 +143,11 @@
            :honor_workarea false}}
 
          {:rule
-          {:name "tauri/doctor-main"}
-          :properties
-          {:floating true
-           :height 1000
-           :y 260
-           :x 100
-           :honor_padding false
-           :honor_workarea false
-           :focusable true
-           }}
-
-         {:rule
           {:name "tauri/doctor-popup"}
           :properties
           {:floating true
-           :focus false
-           :focusable false
-           :height 200
-           :y 260
-           :x 800
-           :honor_padding false
-           :honor_workarea false
-           }}
+           :sticky true
+           :focusable false}}
 
 
          ;; ff fix

@@ -7,7 +7,8 @@
     "distDir": "../public",
     "devPath": "http://localhost:3333",
     "beforeDevCommand": "",
-    "beforeBuildCommand": ""
+    "beforeBuildCommand": "",
+    "withGlobalTauri": true
   },
   "tauri": {
     "bundle": {
@@ -71,7 +72,8 @@
         "width": 400,
         "height": 400,
         "resizable": true,
-        "fullscreen": false
+        "fullscreen": false,
+        "visible": false
       }
     ],
     "security": {
