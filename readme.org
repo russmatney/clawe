@@ -67,6 +67,22 @@ bb -cp $(clojure -Spath) --uberjar clawe.jar -m clawe.core
 bb install
 #+END_SRC
 
+See `bb.edn` for tasks related to installing and running clawe services
+
+** local symlinking
+several local dirs are symlinked into public/assets/
+
+#+begin_src
+l ~/russmatney/doctor/public/assets/
+Name
+candy-icons -> /home/russ/EliverLara/candy-icons/apps/scalable/
+screenshots -> /home/russ/Screenshots/
+wallpapers -> /home/russ/Dropbox/wallpapers/
+#+end_src
+
+This is a quick hack to let the web apps reference images on the machine
+(avoids a local image host).
+
 * Development
 ** Clojure dev
 Visit any clojure file in the repo, then ~M-x cider-jack-in-clj~, which might be
