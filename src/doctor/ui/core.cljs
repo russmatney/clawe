@@ -97,7 +97,7 @@
   []
   (let [page-name (-> router/*match* uix/context :data :name)]
     (case page-name
-      :page/home        [home views.popup/tabs]
+      :page/home        [home views.popup/popup]
       :page/todos       [home views.todos/widget]
       :page/popup       [home views.popup/popup]
       :page/topbar      [views.topbar/widget]
