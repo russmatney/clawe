@@ -1,29 +1,53 @@
 {:paths ["src"]
  :deps  {}
  :tasks
- {:requires ([babashka.process :as p])
+ {:requires ([clojure.string :as string]
+             [clojure.pprint :as pprint]
+             [clojure.tools.logging :as log]
+             [babashka.fs :as fs]
+             [babashka.process :as p])
+  :init
+  (do
+    (defn pp [x]
+      (binding [pprint/*print-right-margin* 130]
+        (pprint/pprint x))))
+
   clawe-install
-  (let [cp (-> ^{:out :string} (p/$ clojure -A:remove-clojure -Spath) p/check :out)]
-    (shell (str "bb -cp " cp " --uberjar clawe.jar -m clawe.core")))
+  {:doc  "Rebuild the clawe uberjar"
+   :task (let [cp (-> ^{:out :string} (p/$ clojure -A:remove-clojure -Spath) p/check :out)]
+           (shell (str "bb -cp " cp " --uberjar clawe.jar -m clawe.core")))}
+
+  dev-doctor
+  {:doc "Assess the local environment for any issues"
+   :task
+   (do
+     (shell "systemctl --no-pager --user status doctor-be doctor-fe doctor-topbar")
+     (pp "TODO impl ensure local symlinks"))}
 
   dev-deps
-  ;; build towards a dev-env doctor command
-  (do
-    (shell "systemctl --no-pager --user status doctor-be doctor-fe doctor-topbar")
+  {:doc "Perform any install and build steps required for development"
+   :task
+   ;; build towards a dev-env doctor command
+   (do
+     ;; install yarn deps
+     (shell "yarn install")
 
-    ;; install yarn deps
-    (shell "yarn install")
+     ;; build tailwind styles
+     (log/info "TODO Consider bb/fs modified since for caching/faster re-builds")
+     (shell "yarn build")
 
-    ;; build tailwind styles
-    (println "TODO consider bb/fs modified since for caching/faster re-builds")
-    (shell "yarn build")
-
-    ;; local symlinks
-    (println "TODO impl ensure local symlinks"))
+     ;; local symlinks
+     (log/info "TODO impl ensure local symlinks"))}
 
   doctor-be (shell {:dir "/home/russ/russmatney/clawe"}
                    "clj -M:dev:doctor-deps:doctor-server")
   doctor-fe (shell {:dir "/home/russ/russmatney/clawe"}
                    "npx shadow-cljs watch doctor-app")
   topbar    (shell {:dir "/home/russ/russmatney/clawe"}
-                   "cargo tauri dev")}}
+                   "cargo tauri dev")
+
+  restart-doctor (do
+                   (shell "systemctl --user daemon-reload")
+                   (shell "systemctl --user restart doctor-be doctor-fe doctor-topbar"))
+
+  log-doctor (shell "journalctl --user -n 100 -f -u doctor-be -u doctor-fe -u doctor-topbar")}}
