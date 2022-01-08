@@ -44,7 +44,7 @@
   doctor-fe (shell {:dir "/home/russ/russmatney/clawe"}
                    "npx shadow-cljs watch doctor-app")
   topbar    (shell {:dir "/home/russ/russmatney/clawe"}
-                   "cargo tauri dev")
+                   "yarn tauri dev")
 
   restart-doctor (do
                    (shell "systemctl --user daemon-reload")
