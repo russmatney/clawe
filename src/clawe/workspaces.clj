@@ -44,29 +44,62 @@
         wsp))
     wsp))
 
+(defn tag->pseudo-workspace
+  [{:as tag :keys [awesome.tag/name
+                   awesome.tag/index
+                   ]}]
+  (let [n (str name "-" index)]
+    (-> tag
+        (assoc :name n)
+        (assoc :workspace/title n))))
+
 (defn merge-awm-tags
   "Fetches all awm tags and merges those with matching
   `tag-name == :workspace/title` into the passed workspaces.
 
   Fetching awm tags one at a time can be a bit slow,
-  so we just get them all up-front."
-  [wsps]
-  (let [awm-all-tags (awm/all-tags)
-        is-map?      (map? wsps)
-        wsps         (if is-map? [wsps] wsps)]
-    (cond->> wsps
-      true
-      (map (fn [wsp]
-             ;; depends on the :workspace/title matching the awm tag name
-             ;; could also just be a unique id stored from open-workspace
-             (merge (awm/tag-for-name
-                      (workspace-name wsp)
-                      awm-all-tags)
-                    wsp)))
+  so we just get them all up-front.
 
-      ;; unwrap if only one was passed
-      is-map?
-      first)))
+  If :include-unmatched? is truthy, tags without matching workspaces
+  will have basic workspaces created and included.
+  Note that this only applies if a list of wsps is passed.
+  "
+  ([wsps]
+   (merge-awm-tags {} wsps))
+  ([{:keys [include-unmatched?]} wsps]
+   (let [awm-all-tags       (awm/all-tags)
+         is-map?            (map? wsps)
+         include-unmatched? (if is-map? false include-unmatched?)
+         wsps               (if is-map? [wsps] wsps)]
+     (cond->> wsps
+       true
+       (map (fn [wsp]
+              ;; depends on the :workspace/title matching the awm tag name
+              ;; could also just be a unique id stored from open-workspace
+              (merge (awm/tag-for-name
+                       (workspace-name wsp)
+                       awm-all-tags)
+                     wsp)))
+
+       include-unmatched?
+       ((fn [wsps]
+          (let [matched-tag-names (->> wsps (map :awesome.tag/name) (into #{}))
+                unmatched-tags    (->> awm-all-tags
+                                       (remove (comp matched-tag-names :awesome.tag/name)))
+                pseudo-wsps       (->> unmatched-tags
+                                       (map tag->pseudo-workspace))]
+            (concat wsps pseudo-wsps))))
+
+       ;; unwrap if only one was passed
+       is-map?
+       first))))
+
+(comment
+  (->>
+    (defworkspace/list-workspaces)
+    (merge-awm-tags {:include-unmatched? true})
+    (filter :awesome.tag/name))
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Workspaces fetchers
@@ -101,7 +134,7 @@
   []
   (->>
     (defworkspace/list-workspaces)
-    merge-awm-tags
+    (merge-awm-tags {:include-unmatched? true})
     ;; (map apply-git-status)
     ))
 

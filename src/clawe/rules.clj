@@ -161,7 +161,8 @@ to the passed client obj."
 
     (workspaces/clean-workspaces)
     (workspaces/consolidate-workspaces)
-    (workspaces/update-workspace-indexes)))
+    (workspaces/update-workspace-indexes)
+    (slurp "http://localhost:3334/topbar/update")))
 
 (comment
   (->>
