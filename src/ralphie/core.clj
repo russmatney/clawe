@@ -1,22 +1,23 @@
 (ns ralphie.core
   (:require
    [defthing.defcom :as defcom]
-   [ralphie.awesome]
-   [ralphie.browser]
-   [ralphie.emacs]
-   [ralphie.fzf]
-   [ralphie.git]
-   [ralphie.install]
-   [ralphie.monitor]
-   [ralphie.notify]
-   [ralphie.org]
-   [ralphie.outdated]
-   [ralphie.picom]
+   ralphie.awesome
+   ralphie.browser
+   ralphie.emacs
+   ralphie.fzf
+   ralphie.git
+   ralphie.install
+   ralphie.monitor
+   ralphie.notify
+   ralphie.org
+   ralphie.outdated
+   ralphie.picom
    [ralphie.rofi :as rofi]
-   [ralphie.screenshot]
-   [ralphie.spotify]
-   [ralphie.tmux]
-   [ralphie.zsh]))
+   ralphie.screenshot
+   ralphie.spotify
+   ralphie.systemd
+   ralphie.tmux
+   ralphie.zsh))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; defcom->rofi
