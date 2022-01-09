@@ -9,16 +9,22 @@
 (def expand r.sh/expand)
 
 (defn ->timestamp+duration [str]
-  (let [[ts dur]
-        (some-> str
-                (string/replace ": " "")
-                (string/split #":" 2))]
-    (when (and ts dur)
-      [(some-> ts edn/read-string)
-       (some-> dur edn/read-string)])))
+  (try
+    (let [[ts dur]
+          (some-> str
+                  (string/replace ": " "")
+                  (string/split #":" 2))]
+      (when (and ts dur)
+        [(some-> ts edn/read-string)
+         (some-> dur edn/read-string)]))
+    (catch Exception ex
+      (println "error parsing" str)
+      (println ex))))
 
 (comment
   (->timestamp+duration "")
+  (->timestamp+duration nil)
+  (->timestamp+duration ":::")
   (->timestamp+duration ": 1576616542:0")
   (->timestamp+duration ": 1576616542:234"))
 
@@ -33,23 +39,25 @@
   *NOTE :duration is likely not useful unless you've configured Zsh to record it.
   See: https://stackoverflow.com/questions/37961165/how-zsh-stores-history-history-file-format
   "
-  ([] (history (history-file)))
+  ([] (history nil))
   ([path]
-   (if-not (fs/exists? path)
-     (println (str "Warning: path does not exist " path ", no history found."))
-     (->> path
-          slurp
-          string/split-lines
-          (map (fn [l]
-                 (let [entry (some-> l (string/split #";" 2))
-                       line  (some-> entry second)
-                       [timestamp duration]
-                       (some-> entry first ->timestamp+duration)]
-                   (when (and line (not (= "" line)))
-                     {:line      line
-                      :duration  duration
-                      :timestamp timestamp}))))
-          (remove nil?)))))
+   (if-let [path (or path (history-file))]
+     (if-not (fs/exists? path)
+       (println (str "Warning: path does not exist " path ", no history found."))
+       (->> path
+            slurp
+            string/split-lines
+            (map (fn [l]
+                   (let [entry (some-> l (string/split #";" 2))
+                         line  (some-> entry second)
+                         [timestamp duration]
+                         (some-> entry first ->timestamp+duration)]
+                     (when (and line (not (= "" line)))
+                       {:line      line
+                        :duration  duration
+                        :timestamp timestamp}))))
+            (remove nil?)))
+     (println (str "Warning, no (history-file) found")))))
 
 (comment
   (->>
@@ -57,7 +65,22 @@
     (sort-by :duration >))
   (->>
     (history)
-    (sort-by :timestamp >)))
+    (sort-by :timestamp >))
+
+  (->> (history-file)
+       slurp
+       string/split-lines
+       (map (fn [l]
+              (let [entry (some-> l (string/split #";" 2))
+                    line  (some-> entry second)
+                    [timestamp duration]
+                    (some-> entry first ->timestamp+duration)]
+                (when (and line (not (= "" line)))
+                  {:line      line
+                   :duration  duration
+                   :timestamp timestamp}))))
+       (remove nil?))
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Write history
