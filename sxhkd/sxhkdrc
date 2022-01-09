@@ -10,6 +10,9 @@ super + Return
 super + u
   clawe toggle-workspace-journal-kbd-modu
 
+super + c
+  clawe center-window-kbd-modc
+
 super + shift + Return
   clawe toggle-emacs-kbd-modshiftReturn
 

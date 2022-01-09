@@ -151,17 +151,36 @@
 
 (defkbd center-window
   [[:mod] "c"]
-  (awm/awm-fnl
-    '(let [c _G.client.focus]
-       (tset c :ontop true)
-       (tset c :floating true)
-       (-> c
-           ((+ awful.placement.scale
-               awful.placement.centered)
-            {:honor_padding  true
-             :honor_workarea true
-             :to_percent     0.75})))))
 
+  ;; note that this is less performant than before
+  ;; - it will now fire via sxhkd and use three awm/awm-fnl calls,
+  ;; rather than being caught by awesome itself
+  (do
+    (let [current-window (awm/awm-fnl '(view _G.client.focus.window))
+          current-client {:awesome.client/window current-window}]
+      ;; using this to take advantage of focus-client's :bury-all? option
+      ;; that function could use a refactor
+      ;; - maybe it's just an update-client-state function
+      (c.awm/focus-client {:center?   true
+                           :float?    true
+                           :bury-all? true} current-client))
+    (awm/awm-fnl
+      '(let [c _G.client.focus]
+         (tset c :ontop true)
+         (tset c :floating true)
+         (-> c
+             ((+ awful.placement.scale
+                 awful.placement.centered)
+              {:honor_padding  true
+               :honor_workarea true
+               :to_percent     0.75}))))))
+
+(comment
+  (let [current-window (awm/awm-fnl '(view _G.client.focus.window))
+        current-client {:awesome.client/window current-window}]
+    (c.awm/focus-client {:center?   true
+                         :float?    true
+                         :bury-all? true} current-client)))
 
 (defkbd center-window-large
   [[:mod :shift] "c"]
