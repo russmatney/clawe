@@ -10,7 +10,11 @@
    [clawe.rules :as c.rules]
    [clawe.awesome.rules :as awm.rules]
    [clawe.awesome.bindings :as awm.bindings]
-   [clawe.sxhkd.bindings :as sxhkd.bindings]))
+   [clawe.sxhkd.bindings :as sxhkd.bindings]
+   [ralphie.zsh :as r.zsh]
+   [ralphie.sh :as r.sh]
+   [ralphie.tmux :as r.tmux]
+   [ralphie.emacs :as r.emacs]))
 
 (defn log [msg]
   (let [msg (str "[CLAWE] " msg)]
@@ -95,8 +99,13 @@ uberjar. Otherwise this might need to be called twice."
     (c.install/install-zsh-tab-completion)
 
     ;; Widgets
-    (log "reloading widgets")
-    (awm/reload-bar-and-widgets)
+    ;; DEPRECATED
+    ;; (log "reloading widgets")
+    ;; (awm/reload-bar-and-widgets)
+
+    ;; Doom env refresh - probably a race-case here....
+    (r.tmux/fire "doom env")
+    (r.emacs/fire "(doom/reload-env)")
 
     ;; Doctor - Wallpaper
     (log "reloading doctor")
