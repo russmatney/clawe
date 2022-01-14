@@ -3,9 +3,21 @@
    [plasma.core :refer [defhandler defstream]]
    #?@(:clj [[clawe.workspaces :as clawe.workspaces]
              [clawe.scratchpad :as scratchpad]
+             [clawe.db.core :as db]
              [doctor.api.workspaces :as d.workspaces]]
        :cljs [[wing.core :as w]
               [plasma.uix :refer [with-rpc with-stream]]])))
+
+(defn workspace-name [wsp]
+  ((some-fn :workspace/display-name :workspace/title :name) wsp))
+
+#?(:clj
+   (comment
+     (->>
+       (d.workspaces/active-workspaces)
+       (map workspace-name)
+       )
+     ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Workspaces
@@ -63,3 +75,36 @@
     clawe.workspaces/merge-awm-tags
     scratchpad/toggle-scratchpad)
   (d.workspaces/update-workspaces))
+
+(defhandler update-workspace [item]
+  (clawe.workspaces/update-db-workspace item))
+
+#?(:clj
+   (comment
+     (def --w (->> (d.workspaces/active-workspaces)
+                   (filter (comp #{"clawe"} :workspace/title))
+                   first))
+     (clawe.workspaces/get-db-workspace --w)
+     (update-workspace (-> --w
+                           (assoc :workspace/directory "/home/russ/russmatney/doctor")
+                           ))
+
+     (def --p )
+     (->> (d.workspaces/active-workspaces))
+
+     (update-workspace (-> --w
+                           (assoc :workspace/display-name "ClAwE")
+                           ))
+
+     (db/query
+       '[:find (pull ?e [*])
+         :in $ ?workspace-title
+         :where
+         [?e :workspace/title ?workspace-title]]
+       "clawe")
+
+     (db/query
+       '[:find (pull ?e [*])
+         :where
+         [?e :workspace/title ?workspace-title]])
+     ))

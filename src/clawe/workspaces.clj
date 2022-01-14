@@ -7,12 +7,15 @@
    [ralphie.git :as r.git]
    [ralphie.notify :as notify]
 
+   [clawe.db.core :as db]
+
    ;; be sure to require all workspaces here
    ;; otherwise (all-workspaces) will be incomplete from consumers like doctor
    clawe.defs.workspaces
    clawe.defs.local.workspaces
 
-   [clawe.workspaces.create :as wsp.create]))
+   [clawe.workspaces.create :as wsp.create]
+   [wing.core :as w]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Workspace helpers
@@ -49,6 +52,7 @@
                    awesome.tag/index
                    ]}]
   (let [n (str name "-" index)]
+    ;; NOTE this :workspace/title is used to get/find the key in the clawe-db
     (-> tag
         (assoc :name n)
         (assoc :workspace/title n))))
@@ -102,6 +106,100 @@
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; db workspaces
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn get-db-workspace
+  "Assumes the first match is the one we want.
+  TODO May one day need to fetch latest by sorting, if we end with multiple ents somehow
+  "
+  [w]
+  (some->>
+    (db/query
+      '[:find (pull ?e [*])
+        :in $ ?workspace-title
+        :where
+        [?e :workspace/title ?workspace-title]]
+      (:workspace/title w))
+    ffirst))
+
+(defn latest-db-workspaces []
+  (let [wsps
+        (->>
+          (db/query
+            '[:find (pull ?e [*])
+              :where
+              [?e :workspace/title ?workspace-title]])
+          (map first))]
+    (->> wsps
+         (group-by :workspace/title)
+         (map (fn [[_k vs]]
+                (->> vs
+                     (sort-by :workspace/updated-at)
+                     first)))))
+  )
+
+(comment
+  (->>
+    (latest-db-workspaces)
+    )
+  )
+
+
+(defn update-db-workspace [w]
+  (let [existing (get-db-workspace w)
+        db-id    (:db/id existing)]
+    (db/transact [(cond-> w
+                    true
+                    (select-keys [:name
+                                  :workspace/title
+                                  :workspace/display-name
+                                  :workspace/directory
+                                  :workspace/initial-file
+                                  :git/repo
+                                  :db/id])
+
+                    true
+                    (assoc :workspace/updated-at (System/currentTimeMillis))
+
+                    (and db-id (not (:db/id w)))
+                    (assoc :db/id db-id))])))
+
+(defn merge-db-workspaces
+  ([wsps]
+   (merge-db-workspaces {} wsps))
+  ([_opts wsps]
+   (let [is-map?          (map? wsps)
+         wsps             (if is-map? [wsps] wsps)
+         db-wsps-by-title (->> (latest-db-workspaces)
+                               (map (fn [w]
+                                      [(:workspace/title w) w]))
+                               (into {}))]
+     (def --db-ws db-wsps-by-title)
+     (cond->> wsps
+       true (map (fn [wsp]
+                   (if-let [db-wsp (db-wsps-by-title (:workspace/title wsp))]
+                     ;; TODO who should overwrite?
+                     (merge db-wsp wsp)
+                     wsp)))
+
+       is-map?
+       first))))
+
+(comment
+  (select-keys --w #{:workspace/title})
+  (def --w
+    (->>
+      (defworkspace/list-workspaces)
+      (filter (comp #{"clawe"} :name))
+      first))
+
+  (get-db-workspace --w)
+  (update-db-workspace --w)
+  (merge-db-workspaces --w)
+  )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Workspaces fetchers
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -135,8 +233,22 @@
   (->>
     (defworkspace/list-workspaces)
     (merge-awm-tags {:include-unmatched? true})
+    merge-db-workspaces
     ;; (map apply-git-status)
     ))
+
+(comment
+  (set! *print-length* 10)
+  (->>
+    (all-workspaces)
+    count)
+  (->>
+    (defworkspace/list-workspaces)
+    (merge-awm-tags {:include-unmatched? true})
+    merge-db-workspaces
+    count
+    )
+  )
 
 (defn for-name [name]
   (some->>
@@ -347,8 +459,9 @@
     {:msg "New Workspace Name?"}
     (->>
       (all-workspaces)
-      (map apply-git-status)
-      (sort-by (comp not (some-fn :git/dirty? :git/needs-push? :git/needs-pull?)))
+      ;; TODO get git statuses cached and keep this performant
+      ;; (map apply-git-status)
+      ;; (sort-by (comp not (some-fn :git/dirty? :git/needs-push? :git/needs-pull?)))
       ;; TODO create :rofi/label multimethod
       (map #(assoc % :rofi/label (wsp->repo-and-status-label %)))
       seq)))

@@ -26,6 +26,14 @@
 ;; (defn ms-ago [ms-timestamp]
 ;;   (- (js/Date.now) ms-timestamp))
 
+(defn update-display-name [wsp n]
+  (when (and wsp n)
+    (-> wsp
+        (assoc :workspace/display-name n)
+        workspaces/update-workspace)
+    ;; TODO trigger re-fetch? eventually pull the new data? update in a frontend store?
+    ))
+
 (defn ->actions
   ([wsp] (->actions nil wsp))
   ([{:keys [hovering?]} wsp]
@@ -140,13 +148,16 @@
   [{:as   topbar-state
     :keys [hovered-workspace on-hover-workspace on-unhover-workspace]}
    {:as               wsp
-    :workspace/keys   [title scratchpad]
+    :workspace/keys   [scratchpad]
     :awesome.tag/keys [index clients selected urgent]}]
-  (let [hovering? (= hovered-workspace wsp)]
+  (let [hovering?     (= hovered-workspace wsp)
+        editing-name? (uix/state false)
+        temp-name     (uix/state (workspaces/workspace-name wsp))]
     [:div
-     {:class          (conj cell-classes (cond selected "bg-opacity-60" :else "bg-opacity-10"))
-      :on-mouse-enter #(on-hover-workspace wsp)
-      :on-mouse-leave #(on-unhover-workspace wsp)}
+     {:class (conj cell-classes (cond selected "bg-opacity-60" :else "bg-opacity-10"))
+      ;; :on-mouse-enter #(on-hover-workspace wsp)
+      ;; :on-mouse-leave #(on-unhover-workspace wsp)
+      }
      (let [show-name (or hovering? (not scratchpad) urgent selected (#{0} (count clients)))]
        [:div {:class ["flex" "flex-row" "items-center" "justify-center"]}
         ;; name/number
@@ -163,7 +174,21 @@
              (when show
                (str "(" index ")"))])
           ;; name/title
-          (when show-name title)]]
+          (when (and show-name (not @editing-name?))
+            [:span
+             {:on-click (fn [_e]
+                          (reset! editing-name? true))}
+             (workspaces/workspace-name wsp)])
+          (when @editing-name?
+            [:div
+             [:input {:type      :text
+                      :value     @temp-name
+                      :on-blur   (fn [_e]
+                                   (when-let [n @temp-name]
+                                     (update-display-name wsp n))
+                                   (reset! editing-name? false))
+                      :on-change (fn [e] (reset! temp-name
+                                                 (-> e (.-target) (.-value))))}]])]]
 
         ;; clients
         [client-icon-list (assoc topbar-state :workspace wsp) clients]
@@ -264,12 +289,6 @@
         last-hovered-client    (uix/state nil)
         last-hovered-workspace (uix/state nil)
         topbar-above           (uix/state true)
-        pull-above             (fn []
-                                 (-> (topbar/toggle-topbar-above true)
-                                     (.then (fn [v] (reset! topbar-above v)))))
-        push-below             (fn []
-                                 (-> (topbar/toggle-topbar-above false)
-                                     (.then (fn [v] (reset! topbar-above v)))))
         toggle-above-below     (fn []
                                  (-> (topbar/toggle-topbar-above (not @topbar-above))
                                      (.then (fn [v] (reset! topbar-above v)))))
@@ -290,16 +309,16 @@
      :on-hover-workspace     (fn [w]
                                (reset! last-hovered-workspace w)
                                (reset! hovered-workspace w)
-                               (pull-above))
+                               ;; (pull-above)
+                               )
      :on-unhover-workspace   (fn [_] (reset! hovered-workspace nil))
      :on-hover-client        (fn [c]
                                (reset! last-hovered-client c)
                                (reset! hovered-client c)
-                               (pull-above))
+                               ;; (pull-above)
+                               )
      :on-unhover-client      (fn [_] (reset! hovered-client nil))
      :topbar-above           @topbar-above
-     :pull-above             pull-above
-     :push-below             push-below
      :toggle-above-below     toggle-above-below
      :time                   @time}))
 
@@ -308,10 +327,10 @@
         {:keys [workspaces active-clients]} (workspaces/use-workspaces)
         topbar-state                        (use-topbar-state)
         {:keys [tauri? open?] :as popup}    (tauri/use-popup)]
-    (println
-      (->> workspaces (remove :workspace/scratchpad)
-           (filter :awesome.tag/selected)
-           (map :name)))
+    ;; (println
+    ;;   (->> workspaces (remove :workspace/scratchpad)
+    ;;        (filter :awesome.tag/selected)
+    ;;        (map :name)))
 
     [:div
      {:class ["h-screen" "overflow-hidden" "text-city-pink-200"]}

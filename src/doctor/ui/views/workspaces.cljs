@@ -19,6 +19,20 @@
     (-> client :awesome.client/name #{"tauri/doctor-topbar" "tauri/doctor-popup"})
     (-> client :awesome.client/focused not)))
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; actions
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn ->actions [w]
+  [{:action/label    "Update workspace display name"
+    :action/on-click #(-> w
+                          (assoc :workspace/display-name %)
+                          (workspaces/update-workspace))}
+   ]
+  )
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Detail window
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -66,7 +80,7 @@
           {:class ["text-left"]}
           [:div
            {:class ["flex flex-row justify-between items-center"]}
-           [:span.text-xl.font-nes title]
+           [:span.text-xl.font-nes (workspaces/workspace-name wsp)]
 
            [:span.ml-auto
             (str
@@ -117,7 +131,7 @@
                "text-white"]}
       [:div
        (when color {:style {:color color}})
-       (str title " (" index ")")]
+       (str (workspaces/workspace-name wsp) " (" index ")")]
 
       [:div
        (when scratchpad
