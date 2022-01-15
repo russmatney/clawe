@@ -57,35 +57,77 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn parse-created-at [x]
-  x)
-
+  (when x
+    (try
+      (->>
+        x
+        (re-seq #"^(\d\d\d\d)-?(\d\d)-?(\d\d)T?:?(\d\d):?(\d\d):?(\d\d)$")
+        first rest
+        (map read-string)
+        ((fn [[year month day hour min sec]]
+           (if (and year month day hour min sec)
+             (->
+               (t/new-date year month day)
+               (t/at
+                 (t/new-time hour min sec)))
+             (println "Strange date parse"
+                      x year month day hour min sec)))))
+      (catch Exception e
+        (println "Parse created-at error" e)
+        x))))
 
 (comment
   (parse-created-at "20210712:163730")
-  (t/parse "20210712:163730" (t/format "yyyyMMdd:hhmmss")))
+  (parse-created-at "2022-01-05T17:39:20")
+  (re-seq #"^(\d\d\d\d)(\d\d)(\d\d):(\d\d)(\d\d)(\d\d)" "20210712:163730")
+  (println "hi"))
 
 (defn org-item->todo
   [{:org/keys      [name source-file status]
     :org.prop/keys [created-at]
     :as            item}]
+  ;; TODO :todo/scheduled
+  ;; TODO :todo/deadline
   (->
     item
     (assoc :todo/name name
            :todo/file-name (str (-> source-file fs/parent fs/file-name) "/" (fs/file-name source-file))
-           :todo/created-at (parse-created-at created-at)
+           ;; TODO transit failing to transfer tick local date times? str for now
+           :todo/created-at (str (parse-created-at created-at))
            :todo/status status)))
 
-(defn org-file-paths []
-  (concat
-    (->>
-      ["~/russmatney/{doctor,clawe,org-crud}/{readme,todo}.org"
-       "~/todo/{journal,projects}.org"]
-      (mapcat #(-> %
-                   r.zsh/expand
-                   (string/split #" "))))))
+(def zsh-org-roots
+  ["~/todo/{journal,projects}.org"])
+
+(defn org-file-paths
+  ([] (org-file-paths {}))
+  ([{:keys [additional-roots]}]
+   (let [additional-roots (or additional-roots [])]
+     (->> zsh-org-roots
+          (concat additional-roots)
+          (mapcat #(-> %
+                       r.zsh/expand
+                       (string/split #" ")))
+          concat))))
+
+(defn daily-path [day]
+  (str "~/todo/daily/" day ".org"))
+
+(defn days [] [(t/today)
+               (t/yesterday)])
+
+(comment
+  (org-file-paths)
+  (org-file-paths
+    {:additional-roots ["~/russmatney/{doctor,clawe,org-crud}/{readme,todo}.org"]})
+
+  (org-file-paths
+    {:additional-roots (->> (days) (map daily-path))})
+  )
 
 (defn build-org-todos []
-  (->> (org-file-paths)
+  (->> (org-file-paths
+         {:additional-roots (->> (days) (map daily-path))})
        (map fs/file)
        (filter fs/exists?)
        (mapcat org-crud/path->flattened-items)
@@ -99,6 +141,8 @@
        (group-by :todo/status)
        (map (fn [[s xs]]
               [s (count xs)])))
+
+  (build-org-todos)
 
   (some->>
     (db/query

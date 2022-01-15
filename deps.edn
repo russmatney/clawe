@@ -35,8 +35,8 @@
   :doctor-deps
   {:extra-deps
    {;; dev
-    cider/cider-nrepl             {:mvn/version "0.27.4"}
-    refactor-nrepl/refactor-nrepl {:mvn/version "3.1.0"}
+    cider/cider-nrepl             {:mvn/version "0.28.0"}
+    refactor-nrepl/refactor-nrepl {:mvn/version "3.2.0"}
 
     datalevin/datalevin {:mvn/version "0.5.27"}
 
@@ -53,10 +53,12 @@
     hawk/hawk {:mvn/version "0.2.11"}
 
     ;; time
-    tick/tick                 {:mvn/version "0.5.0-RC5"}
-    com.cognitect/transit-clj {:mvn/version "1.0.324"}
+    time-literals/time-literals {:mvn/version "0.1.5"}
+    tick/tick                   {:mvn/version "0.5.0-RC5"}
+    com.cognitect/transit-clj   {:mvn/version "1.0.324"}
+    ;; com.cognitect/transit-cljs  {:mvn/version "1.0.324"}
     ;; required (along with joda npm deps) for tick to work in cljs
-    thheller/shadow-cljsjs    {:mvn/version "0.0.22"}
+    thheller/shadow-cljsjs      {:mvn/version "0.0.22"}
 
     teknql/plasma {;; :git/url "https://github.com/teknql/plasma.git"
                    ;; :sha     "f1ae782d6bfc50fc33d065dca0ecf9e432a98ffe"

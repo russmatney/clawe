@@ -2,10 +2,7 @@
   (:require
    [plasma.core :refer [defhandler defstream]]
    #?@(:clj [[doctor.api.todos :as d.todos]]
-       :cljs [[uix.core.alpha :as uix]
-              [plasma.uix :refer [with-rpc with-stream]]
-              [tick.core :as t]
-              [hiccup-icons.fa :as fa]])))
+       :cljs [[plasma.uix :refer [with-rpc with-stream]]])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Todos data api
@@ -27,3 +24,9 @@
                         (filter :db/id))
         :org-todos (->> @items
                         (remove :db/id))})))
+
+#?(:clj
+   (comment
+     (set! *print-length* 100)
+     (d.todos/get-todos)
+     ))
