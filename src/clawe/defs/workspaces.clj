@@ -148,7 +148,10 @@
   workspace-repo)
 
 (defworkspace obs
-  {:workspace/directory "/home/russ/russmatney/obs-recordings"}
+  {:workspace/directory "russmatney/obs-recordings"}
+  {:rules/is-my-client?
+   (fn [c]
+     (-> c :awesome.client/class #{"obs"}))}
   workspace-repo)
 
 (defworkspace pixels
