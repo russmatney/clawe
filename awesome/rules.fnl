@@ -77,13 +77,18 @@
                        :tag "workrave"
                        :new_tag "workrave"}}
 
-         {:rule_any {:class ["clover/twitch-chat"]
+         {:rule_any {:class ["clover/twitch-chat"
+                             "tauri/twitch-chat"]
                      :name ["Chat Box Widget"
-                            "clover/twitch-chat"]}
-          :properties {:width 600
+                            "clover/twitch-chat"
+                            "tauri/twitch-chat"]}
+          :properties {:tag "journal"
+                       :width 600
                        :height 1000
+                       :above true
                        :ontop true
-                       :sticky true}}
+                       :sticky true
+                       :floating true}}
 
          {:rule {:name "Tauri App"}
           :properties {:floating true

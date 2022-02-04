@@ -166,10 +166,10 @@
                  (do
                    (awful.placement.scale
                     c {:direction "right"
-                       :by_percent 1.1})
+                       :by_percent 1.05})
                    (awful.placement.scale
                     c {:direction "left"
-                       :by_percent 1.1})
+                       :by_percent 1.05})
                    )
                  (awful.tag.incmwfact 0.05))))
       (key [:ctrl :shift] "h"
@@ -178,10 +178,10 @@
                  (do
                    (awful.placement.scale
                     c {:direction "left"
-                       :by_percent 0.9})
+                       :by_percent 0.95})
                    (awful.placement.scale
                     c {:direction "right"
-                       :by_percent 0.9})
+                       :by_percent 0.95})
                    )
                  (awful.tag.incmwfact -0.05))))
       (key [:ctrl :shift] "j"

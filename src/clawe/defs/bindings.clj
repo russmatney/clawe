@@ -129,7 +129,10 @@
   (awm/awm-fnl
     '(let [c _G.client.focus]
        (tset c :ontop c.floating)
-       (awful.client.floating.toggle c))))
+       (tset c :above c.floating)
+       (awful.client.floating.toggle c)
+       (if c.floating
+         (c:raise)))))
 
 (defkbd bury-all-windows
   [[:mod :shift] "f"]

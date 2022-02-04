@@ -85,6 +85,14 @@
       {:color "text-city-green-400"
        :src   "/assets/candy-icons/winds.svg"}
 
+      (= "Steam" class)
+      {:color "text-city-green-400"
+       :src   "/assets/candy-icons/steam.svg"}
+
+      (= "obs" class)
+      {:color "text-city-green-400"
+       :src   "/assets/candy-icons/obs.svg"}
+
       :else
       (do
         ;; (println "missing icon for client" client)

@@ -15,7 +15,8 @@
   [{:keys [name]}]
   (or
     (string/includes? name "meet.google.com")
-    (string/includes? name "tauri/doctor-topbar")))
+    (string/includes? name "tauri/doctor-topbar")
+    (string/includes? name "tauri/twitch-chat")))
 
 (defn mark-buried-clients []
   (let [floating-clients

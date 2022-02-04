@@ -74,6 +74,17 @@
         "resizable": true,
         "fullscreen": false,
         "visible": false
+      },
+      {
+        "title": "tauri/twitch-chat",
+        "label": "twitch-chat",
+        "url": "https://streamlabs.com/widgets/chat-box/v1/6722F540E27FF39C71BE",
+        "width": 600,
+        "height": 1000,
+        "resizable": true,
+        "fullscreen": false,
+        "visible": true,
+        "transparent": true
       }
     ],
     "security": {
