@@ -88,7 +88,9 @@
                        :above true
                        :ontop true
                        :sticky true
-                       :floating true}}
+                       :floating true
+                       :focusable false
+                       }}
 
          {:rule {:name "Tauri App"}
           :properties {:floating true

@@ -101,3 +101,21 @@ briefly in their FAQ: https://awesomewm.org/apidoc/documentation/90-FAQ.md.html
 (search `logs`).
 
 You can also [[file:~/.cache/awesome/logs][visit this file in emacs]].
+
+* tauri conf
+
+if only json supported comments....
+
+#+begin_src json
+      {
+        "title": "tauri/twitch-chat",
+        "label": "twitch-chat",
+        "url": "https://streamlabs.com/widgets/chat-box/v1/6722F540E27FF39C71BE",
+        "width": 600,
+        "height": 1000,
+        "resizable": true,
+        "fullscreen": false,
+        "visible": true,
+        "transparent": true
+      }
+#+end_src
