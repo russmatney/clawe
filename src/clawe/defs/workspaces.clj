@@ -101,7 +101,7 @@
 
 (defworkspace web
   {:awesome/rules
-   (awm-workspace-rules "web" "firefox")}
+   (awm-workspace-rules "firefox")}
   {:workspace/directory        "."
    :workspace/exec             "/usr/bin/gtk-launch firefox.desktop"
    :workspace/scratchpad       true

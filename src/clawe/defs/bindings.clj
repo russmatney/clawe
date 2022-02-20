@@ -21,7 +21,7 @@
    [clawe.awesome :as c.awm] ;; DEPRECATED
    [clawe.defs.workspaces :as defs.workspaces]
    [clawe.defs.local.workspaces :as defs.local.workspaces]
-   [clawe.dwim :as c.dwim]
+   [clawe.m-x :as c.m-x]
    [clawe.scratchpad :as scratchpad]
    [clawe.workspaces :as workspaces]
    [clawe.rules :as c.rules]))
@@ -35,14 +35,13 @@
 
 (defkbd clawe-rofi-sxhkd
   [[:mod] "w"]
-  ;; {:binding/sxhkd true}
-  (defcom/exec c.dwim/dwim))
+  (defcom/exec c.m-x/m-x))
 
 (defkbd clawe-rofi-awm
   [[:mod] "x"]
   {:binding/awm true}
   ;; {:binding/awm true}
-  (defcom/exec c.dwim/dwim))
+  (defcom/exec c.m-x/m-x))
 
 (defkbd rofi-launcher
   [[:mod] "space"]

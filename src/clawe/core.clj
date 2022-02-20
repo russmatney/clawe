@@ -11,6 +11,7 @@
    clawe.install
    clawe.restart
    clawe.rules
+   clawe.m-x
    clawe.workrave
    clawe.workspaces
    clawe.workspaces.create

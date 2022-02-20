@@ -8,12 +8,38 @@
 ;; Getters
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn defkbd? [bd]
+  (#{:clawe/binding} (:type bd)))
+
 (defn list-bindings []
   (defthing/list-things :clawe/binding))
+
+(comment
+  (let [kbd
+        (->>
+          (list-bindings)
+          (filter (fn [bd]
+                    (#{"spotify-pause"}
+                      (:name bd))))
+          first)]
+
+
+    (defcom/find-command #(#{(:binding/command-name kbd)} (:name %)))
+    )
+
+  (defcom/list-commands)
+
+
+  )
 
 (defn get-binding [bd]
   (defthing/get-thing :clawe/binding
     (comp #{(:name bd bd)} :name)))
+
+(defn get-command
+  "Returns the defcom entry for the passed defkbd"
+  [bd]
+  (defcom/find-command #(#{(:binding/command-name bd)} (:name %))))
 
 (defn binding-cli-command
   "Returns a string that can be called on the command line to execute the
@@ -23,6 +49,22 @@
   "
   [{:binding/keys [command-name]}]
   (str "clawe " command-name))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Rofi
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn ->rofi [{:keys [doc name] :as bd}]
+  {:rofi/label
+   (str "<span>" name " </span> "
+        (when doc (str "<span color='gray'>" doc "</span> "))
+        (when :binding/key
+          (apply
+            str "<span color='gray'>" (:binding/key bd) "</span> ")))
+   :rofi/on-select
+   (fn [_]
+     (defcom/exec (get-command bd)))})
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; defkbd

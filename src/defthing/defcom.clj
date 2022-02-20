@@ -66,6 +66,7 @@
 (defn exec
   "Executes a passed defcom, passing the command in as the first argument."
   [cmd & args]
+  ;; TODO support firing defkbd's
   (apply (:defcom/fn cmd) cmd args))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
