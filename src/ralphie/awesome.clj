@@ -295,12 +295,13 @@ util = require 'util';
   "
   ([fnl] (awm-fnl {} fnl))
   ([opts fnl]
+   (println "\nfnl:" fnl "\n")
    (let [fnl     (-> fnl
                      (string/replace "," ""))
          ;; TODO consider removing line-breaks, commas
          lua-str (str
-                   "local fennel = require('fennel'); "
-                   "local compiled_lua = fennel.compileString('" fnl "'); "
+                   "local fennel = require('fennel'); \n"
+                   "local compiled_lua = fennel.compileString('" fnl "'); \n"
                    "local run = fennel.loadCode(compiled_lua); "
                    "return run(); ") ]
      (awm-cli opts lua-str))))
@@ -322,6 +323,87 @@ util = require 'util';
     {:quiet? false}
     '(view {:name     client.focus.name
             :instance client.focus.instance})))
+
+;; (defn process-unquote [env form]
+;;   (def env env)
+;;   (def form form)
+;;   (println form)
+;;   form)
+
+(defn- process-unquote [form]
+  (let [f (first form)]
+    (println f)
+    (if (and (symbol? f) (= "unquote" (name f)))
+      (second form)
+      form)))
+
+(defn- format-form [env form]
+  (def env env)
+  (def form form)
+  (cond
+    (seq? form) (process-unquote form)
+    :else       (list 'quote form)))
+
+(comment
+  (format-form env form))
+
+(defmacro awm-$ [& fnl-forms]
+  (println "\n")
+  (println &form)
+  (println (meta &form))
+  (println &env)
+  (println fnl-forms)
+  (let [opts (meta &form)
+        ;; fnl-forms (map (partial format-form &env) fnl-forms)
+        ]
+    `(awm-fnl ~opts '(do ~@fnl-forms))
+    ;; (list 'awm-fnl opts '`(do ~@fnl-forms))
+    ))
+
+(comment
+
+  ;; basic with metadata
+
+  ^{:quiet? true}
+  (awm-$
+    (print "hello")
+    (print "friend")
+    (view {:some-val "stuff"})
+    )
+
+  ;; more complex awm calls
+  (awm-$ (do
+           (local naughty (require :naughty))
+           (naughty.notify
+             {:title "Test notif"
+              :text  (.. "some sub head: " "with info")})
+
+           (print "hellooooooooo friend")
+
+           ;; return the current focused client's name
+           _G.client.focus.name))
+
+  ;; interpolate some symbol/var
+  (let [val "some-val"]
+    ^{:quiet? false}
+    (awm-$
+      (do
+        (print "hello")
+        ;; (print ~'val)
+        {:some-return "world"}
+        ~val)))
+
+  ;; interpolate a nested symbol/var
+  (let [val "some-val"]
+    (awm-$
+      (do
+        (do
+          (let [my-v val]
+            (print my-v)
+            my-v
+            )))))
+
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Call a named awm function with a passed clojure data structure
@@ -587,8 +669,8 @@ function (c) return {
 
 (defn focus-tag-2! [tag-name]
   (awm-fnl {:quiet? false}
-           `(let [tag (awful.tag.find_by_name nil ~tag-name)]
-              (tag:view_only)))
+           `(~'let [~'tag (awful.tag.find_by_name nil ~tag-name)]
+             (~'tag:view_only)))
   tag-name)
 
 (comment
