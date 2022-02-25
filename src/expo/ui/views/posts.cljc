@@ -11,7 +11,7 @@
               [uix.core.alpha :as uix]
               [plasma.uix :refer [with-rpc with-stream]]])
    [clojure.string :as string]
-   [tick.alpha.api :as t]
+   [tick.core :as t]
    ))
 
 
@@ -25,15 +25,9 @@
    )
 
 #?(:clj
-   (comment
-     (parse-created-at "20210712:163730")
-     (t/parse "20210712:163730" (t/format "yyyyMMdd:hhmmss"))
-     )
-   )
-
-#?(:clj
    (defn get-last-modified
      [item]
+     (def i item)
      (-> item :org/source-file fs/last-modified-time str t/parse t/date-time
          (t/in "America/New_York"))))
 

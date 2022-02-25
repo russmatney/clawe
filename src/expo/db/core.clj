@@ -5,7 +5,7 @@
    [datahike.core :as d.core]
    [datahike.migrate :as d.mig]
    [systemic.core :as sys :refer [defsys]]
-   [tick.alpha.api :as t]
+   [tick.core :as t]
    [expo.config :as config]
    [expo.db.schema :as db.schema]
    [expo.db.serial :as db.serial]))

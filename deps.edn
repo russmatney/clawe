@@ -79,4 +79,9 @@
                   :sha       "fc98f57a01d16228e709fb1ad4c2a504c65964d3"}
 
     ;; ui icons
-    hiccup-icons/hiccup-icons {:mvn/version "0.4.4"}}}}}
+    hiccup-icons/hiccup-icons {:mvn/version "0.4.4"}
+
+
+    ;; temporary, for expo
+    io.replikativ/datahike {:mvn/version "0.3.3"}
+    }}}}

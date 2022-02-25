@@ -5,12 +5,10 @@
              [manifold.stream :as s]
              [org-crud.core :as org-crud]
              [ralphie.zsh :as r.zsh]
-             [tick.alpha.api :as t]
-             [babashka.fs :as fs]]
-       :cljs [[wing.core :as w]
-              [uix.core.alpha :as uix]
-              [plasma.uix :refer [with-rpc with-stream]]])
-   [clojure.string :as string]))
+             [babashka.fs :as fs]
+             [clojure.string :as string]]
+       :cljs [[uix.core.alpha :as uix]
+              [plasma.uix :refer [with-rpc with-stream]]])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; org helpers
@@ -19,13 +17,6 @@
 #?(:clj
    (defn parse-created-at [x]
      x)
-   )
-
-#?(:clj
-   (comment
-     (parse-created-at "20210712:163730")
-     (t/parse "20210712:163730" (t/format "yyyyMMdd:hhmmss"))
-     )
    )
 
 #?(:clj

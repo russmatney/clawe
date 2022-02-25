@@ -1,6 +1,6 @@
 (ns expo.db.serial
   (:require
-   [tick.alpha.api :as t]
+   [tick.core :as t]
    [expo.db.schema :as db.schema]))
 
 
