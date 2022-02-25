@@ -396,14 +396,10 @@
   [wsp]
   (let [name (workspace-name wsp)]
 
-    (println "create-workspace")
-
     ;; create tag if none is found
     (when (not (awm/tag-for-name name))
-      (println "create-tag")
       (awm/create-tag! name))
 
-    (println "focus-tag")
     ;; focus the tag
     (awm/focus-tag! name)
 

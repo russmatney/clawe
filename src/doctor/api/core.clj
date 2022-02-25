@@ -1,7 +1,6 @@
 (ns doctor.api.core
   (:require
    [taoensso.timbre :as log]
-   [doctor.api.core :as api]
    [doctor.api.workspaces :as d.workspaces]
    [doctor.api.topbar :as d.topbar]
    [doctor.api.todos :as d.todos]

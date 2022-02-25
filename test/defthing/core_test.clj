@@ -7,19 +7,19 @@
 ;; Example from the doc string
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defmacro defworkspace [title & args]
-  (apply sut/defthing :clawe/workspaces title args))
+(defmacro deftestworkspace [title & args]
+  (apply sut/defthing :clawe/test-workspaces title args))
 
-(defworkspace my-web-workspace
+(deftestworkspace my-web-workspace
   "Definition of my-web-workspace"
-  {:workspace/title "web"}
+  {:workspace/title "test-web"}
   (fn [x] (assoc x :some/key "some value")))
 
 (t/deftest basic-consumer
   ;; :name is set automatically to a string of the first arg
   (t/is (-> my-web-workspace :name (= "my-web-workspace")))
   ;; maps merge automatically
-  (t/is (-> my-web-workspace :workspace/title (= "web")))
+  (t/is (-> my-web-workspace :workspace/title (= "test-web")))
   ;; anonymous function
   (t/is (-> my-web-workspace :some/key (= "some value"))))
 

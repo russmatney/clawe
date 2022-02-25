@@ -12,6 +12,6 @@
            defthing.defapp/defapp             clojure.core/def
            defthing.defkbd/defkbd             clojure.core/def
 
-           defthing.core-test/defworkspace clojure.core/def
-           defthing.core-test/defsomething clojure.core/def
-           defthing.core-test/defx         clojure.core/def}}
+           defthing.core-test/deftestworkspace clojure.core/def
+           defthing.core-test/defsomething     clojure.core/def
+           defthing.core-test/defx             clojure.core/def}}
