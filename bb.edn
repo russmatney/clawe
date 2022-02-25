@@ -51,4 +51,7 @@
                    (shell "systemctl --user restart doctor-be doctor-fe doctor-topbar"))
 
   stop-doctor (shell "systemctl --user stop doctor-be doctor-fe doctor-topbar")
-  log-doctor  (shell "journalctl --user -n 100 -f -u doctor-be -u doctor-fe -u doctor-topbar")}}
+  log-doctor  (shell "journalctl --user -n 100 -f -u doctor-be -u doctor-fe -u doctor-topbar")
+
+  log-awesome (shell "tail -f /home/russ/.cache/awesome/logs")
+  }}
