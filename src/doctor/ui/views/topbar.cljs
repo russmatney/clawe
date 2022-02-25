@@ -326,14 +326,21 @@
   (let [metadata                            (topbar/use-topbar-metadata)
         {:keys [workspaces active-clients]} (workspaces/use-workspaces)
         topbar-state                        (use-topbar-state)
-        {:keys [tauri? open?] :as popup}    (tauri/use-popup)]
+        {:keys [tauri? open?] :as popup}    (tauri/use-popup)
+        dark-bg?
+        (uix/state
+          ;; TODO remember it's last setting?
+          ;; TODO set from wallpapers view? correlated with a wallpaper?
+          false)]
     ;; (println
     ;;   (->> workspaces (remove :workspace/scratchpad)
     ;;        (filter :awesome.tag/selected)
     ;;        (map :name)))
 
     [:div
-     {:class ["h-screen" "overflow-hidden" "text-city-pink-200"]}
+     {:class ["h-screen" "overflow-hidden" "text-city-pink-200"
+              (when @dark-bg? "bg-gray-700")
+              (when @dark-bg? "bg-opacity-50")]}
      [:div
       {:class ["flex" "flex-row" "justify-between" "pr-3"]}
 
@@ -344,12 +351,16 @@
       ;; active-clients
       (when (seq active-clients) [clients-cell topbar-state active-clients])
 
-      ;; popup toggle
-      [:div {:class ["flex" "flex-col" "p-2" "text-city-pink-100"]}
+      [:div {:class ["flex" "flex-row" "space-x-2" "p-2" "text-city-pink-100"]}
+       ;; popup toggle
        (when (and tauri? @open?)
          [:button {:on-click (fn [_] ((:hide popup)))} "Hide Popup"])
        (when (and tauri? (not @open?))
-         [:button {:on-click (fn [_] ((:show popup)))} "Show Popup"])]
+         [:button {:on-click (fn [_] ((:show popup)))} "Show Popup"])
+
+       ;; bg toggle
+       [:button {:on-click (fn [_] (swap! dark-bg? not))} "Bg Toggle"]
+       ]
 
       ;; clock/host/metadata
       [clock-host-metadata topbar-state metadata]
