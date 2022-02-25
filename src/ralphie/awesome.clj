@@ -568,37 +568,33 @@ function (c) return {
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; common awm tag functions
-;; TODO rewrite with awm-fnl
 
-(defn awful-tag-add [& args]
-  (apply (partial awm-fn "awful.tag.add") args))
-
-;; Test to ensure that these all pass tag-name through
 (defn create-tag! [tag-name]
-  ;; (notify/notify (str "creating new awesome tag: " tag-name))
-  (awm-cli {:quiet? true}
-           (str "awful.tag.add(\"" tag-name "\"," "{layout=awful.layout.suit.tile});"))
-  tag-name)
+  (awm-fnl {:quiet? true}
+           `(awful.tag.add ~tag-name {:layout awful.layout.suit.tile})))
 
 (defn ensure-tag [tag-name]
-  (awm-fnl
-    {:quiet? true}
-    (str
-      "(if (awful.tag.find_by_name (awful.screen.focused) \"" tag-name "\")"
-      " nil (awful.tag.add \"" tag-name "\" {:layout awful.layout.suit.tile}))")))
-
-(comment
-  (ensure-tag "web"))
-
-
-(comment (create-tag! "new-tag"))
+  (awm-fnl {:quiet? true}
+           `(if (awful.tag.find_by_name (awful.screen.focused) ~tag-name)
+              nil
+              (awful.tag.add ~tag-name {:layout awful.layout.suit.tile}))))
 
 (defn focus-tag! [tag-name]
-  ;; (notify/notify (str "focusing awesome tag: " tag-name))
   (awm-cli {:quiet? true}
            (str "local tag = awful.tag.find_by_name(nil, \"" tag-name "\");
-tag:view_only(); "))
+  tag:view_only(); "))
   tag-name)
+
+(defn focus-tag-2! [tag-name]
+  (awm-fnl {:quiet? false}
+           `(let [tag (awful.tag.find_by_name nil ~tag-name)]
+              (tag:view_only)))
+  tag-name)
+
+(comment
+  (focus-tag! "web")
+  (focus-tag-2! "web")
+  )
 
 (defn toggle-tag [tag-name]
   ;; viewtoggle tag
