@@ -52,6 +52,7 @@
   "
   (:require
    [babashka.process :as process :refer [check]]
+   ;; [backtick]
    [clojure.pprint]
    [clojure.string :as string]
    [defthing.defcom :refer [defcom] :as defcom]
@@ -318,75 +319,50 @@ util = require 'util';
              ;; call that function
              (hi)])
 
+  ;; (backtick/template-fn)
+
+  ;; (awm-fnl (backtick/template
+  ;;            (do
+  ;;              (print "hi")
+  ;;              (view "gibberish"))))
+
   ;; TODO not sure why this fails to parse
   (awm-fnl
     {:quiet? false}
     '(view {:name     client.focus.name
             :instance client.focus.instance})))
 
-;; (defn process-unquote [env form]
-;;   (def env env)
-;;   (def form form)
-;;   (println form)
-;;   form)
-
-(defn- process-unquote [form]
-  (let [f (first form)]
-    (println f)
-    (if (and (symbol? f) (= "unquote" (name f)))
-      (second form)
-      form)))
-
-(defn- format-form [env form]
-  (def env env)
-  (def form form)
-  (cond
-    (seq? form) (process-unquote form)
-    :else       (list 'quote form)))
-
-(comment
-  (format-form env form))
-
-(defmacro awm-$ [& fnl-forms]
-  (println "\n")
-  (println &form)
-  (println (meta &form))
-  (println &env)
-  (println fnl-forms)
-  (let [opts (meta &form)
-        ;; fnl-forms (map (partial format-form &env) fnl-forms)
-        ]
-    `(awm-fnl ~opts '(do ~@fnl-forms))
-    ;; (list 'awm-fnl opts '`(do ~@fnl-forms))
-    ))
+;; (defmacro fnl [& fnl-forms]
+;;   (let [opts (meta &form)]
+;;     `(awm-fnl ~opts (backtick/template (do ~@fnl-forms)))))
 
 (comment
 
   ;; basic with metadata
 
   ^{:quiet? true}
-  (awm-$
+  (fnl
     (print "hello")
     (print "friend")
     (view {:some-val "stuff"})
     )
 
   ;; more complex awm calls
-  (awm-$ (do
-           (local naughty (require :naughty))
-           (naughty.notify
-             {:title "Test notif"
-              :text  (.. "some sub head: " "with info")})
+  (fnl (do
+         (local naughty (require :naughty))
+         (naughty.notify
+           {:title "Test notif"
+            :text  (.. "some sub head: " "with info")})
 
-           (print "hellooooooooo friend")
+         (print "hellooooooooo friend")
 
-           ;; return the current focused client's name
-           _G.client.focus.name))
+         ;; return the current focused client's name
+         _G.client.focus.name))
 
   ;; interpolate some symbol/var
   (let [val "some-val"]
     ^{:quiet? false}
-    (awm-$
+    (fnl
       (do
         (print "hello")
         ;; (print ~'val)
@@ -395,13 +371,11 @@ util = require 'util';
 
   ;; interpolate a nested symbol/var
   (let [val "some-val"]
-    (awm-$
-      (do
-        (do
-          (let [my-v val]
-            (print my-v)
-            my-v
-            )))))
+    (fnl
+      (let [my-v ~val]
+        (print my-v)
+        my-v
+        )))
 
   )
 
@@ -655,11 +629,23 @@ function (c) return {
   (awm-fnl {:quiet? true}
            `(~'awful.tag.add ~tag-name {:layout ~'awful.layout.suit.tile})))
 
+;; (defn create-tag! [tag-name]
+;;   ^{:quiet? true}
+;;   (fnl (awful.tag.add ~tag-name {:layout awful.layout.suit.tile})))
+
 (defn ensure-tag [tag-name]
   (awm-fnl {:quiet? true}
            `(if (~'awful.tag.find_by_name (~'awful.screen.focused) ~tag-name)
               nil
               (~'awful.tag.add ~tag-name {:layout ~'awful.layout.suit.tile}))))
+
+;; (defn ensure-tag [tag-name]
+;;   ^{:quiet? true}
+;;   (fnl
+;;     (if (awful.tag.find_by_name (awful.screen.focused) ~tag-name)
+;;       nil
+;;       (awful.tag.add ~tag-name {:layout awful.layout.suit.tile})))
+;;   )
 
 (defn focus-tag! [tag-name]
   (awm-cli {:quiet? true}
@@ -667,11 +653,11 @@ function (c) return {
   tag:view_only(); "))
   tag-name)
 
-(defn focus-tag-2! [tag-name]
-  (awm-fnl {:quiet? false}
-           `(~'let [~'tag (awful.tag.find_by_name nil ~tag-name)]
-             (~'tag:view_only)))
-  tag-name)
+;; (defn focus-tag! [tag-name]
+;;   ^{:quiet? true}
+;;   (fnl (let [tag (awful.tag.find_by_name nil ~tag-name)]
+;;          (tag:view_only)))
+;;   tag-name)
 
 (comment
   (focus-tag! "web")
@@ -905,7 +891,7 @@ _G.client.focus.above = true;")))
 ;; Awesome-$ (shell command)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn $
+(defn shell
   "Intended to allow for a cheap shelling out from awesome.
   Was quickly replaced by sxhkd usage.
   A performance comparsion of the two would be interesting.
@@ -919,6 +905,6 @@ _G.client.focus.above = true;")))
              "(awful.spawn.easy_async \"" arg "\")")))
 
 (comment
-  ($ "notify-send hi")
-  ($ "pactl set-sink-volume @DEFAULT_SINK@ +5%")
-  ($ "pactl set-sink-volume @DEFAULT_SINK@ -5%"))
+  (shell "notify-send hi")
+  (shell "pactl set-sink-volume @DEFAULT_SINK@ +5%")
+  (shell "pactl set-sink-volume @DEFAULT_SINK@ -5%"))
