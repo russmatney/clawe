@@ -653,13 +653,13 @@ function (c) return {
 
 (defn create-tag! [tag-name]
   (awm-fnl {:quiet? true}
-           `(awful.tag.add ~tag-name {:layout awful.layout.suit.tile})))
+           `(~'awful.tag.add ~tag-name {:layout ~'awful.layout.suit.tile})))
 
 (defn ensure-tag [tag-name]
   (awm-fnl {:quiet? true}
-           `(if (awful.tag.find_by_name (awful.screen.focused) ~tag-name)
+           `(if (~'awful.tag.find_by_name (~'awful.screen.focused) ~tag-name)
               nil
-              (awful.tag.add ~tag-name {:layout awful.layout.suit.tile}))))
+              (~'awful.tag.add ~tag-name {:layout ~'awful.layout.suit.tile}))))
 
 (defn focus-tag! [tag-name]
   (awm-cli {:quiet? true}
