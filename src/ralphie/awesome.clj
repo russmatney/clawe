@@ -52,7 +52,7 @@
   "
   (:require
    [babashka.process :as process :refer [check]]
-   ;; [backtick]
+   [backtick]
    [clojure.pprint]
    [clojure.string :as string]
    [defthing.defcom :refer [defcom] :as defcom]
@@ -332,15 +332,14 @@ util = require 'util';
     '(view {:name     client.focus.name
             :instance client.focus.instance})))
 
-;; (defmacro fnl [& fnl-forms]
-;;   (let [opts (meta &form)]
-;;     `(awm-fnl ~opts (backtick/template (do ~@fnl-forms)))))
+(defmacro fnl [& fnl-forms]
+  (let [opts (meta &form)
+        opts (assoc opts :quiet? (:quiet? opts true))]
+    `(awm-fnl ~opts (backtick/template (do ~@fnl-forms)))))
 
 (comment
 
   ;; basic with metadata
-
-  ^{:quiet? true}
   (fnl
     (print "hello")
     (print "friend")
@@ -361,7 +360,6 @@ util = require 'util';
 
   ;; interpolate some symbol/var
   (let [val "some-val"]
-    ^{:quiet? false}
     (fnl
       (do
         (print "hello")
@@ -375,9 +373,7 @@ util = require 'util';
       (let [my-v ~val]
         (print my-v)
         my-v
-        )))
-
-  )
+        ))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Call a named awm function with a passed clojure data structure
@@ -626,58 +622,31 @@ function (c) return {
 ;; common awm tag functions
 
 (defn create-tag! [tag-name]
-  (awm-fnl {:quiet? true}
-           `(~'awful.tag.add ~tag-name {:layout ~'awful.layout.suit.tile})))
-
-;; (defn create-tag! [tag-name]
-;;   ^{:quiet? true}
-;;   (fnl (awful.tag.add ~tag-name {:layout awful.layout.suit.tile})))
+  (fnl (awful.tag.add ~tag-name {:layout awful.layout.suit.tile})))
 
 (defn ensure-tag [tag-name]
-  (awm-fnl {:quiet? true}
-           `(if (~'awful.tag.find_by_name (~'awful.screen.focused) ~tag-name)
-              nil
-              (~'awful.tag.add ~tag-name {:layout ~'awful.layout.suit.tile}))))
-
-;; (defn ensure-tag [tag-name]
-;;   ^{:quiet? true}
-;;   (fnl
-;;     (if (awful.tag.find_by_name (awful.screen.focused) ~tag-name)
-;;       nil
-;;       (awful.tag.add ~tag-name {:layout awful.layout.suit.tile})))
-;;   )
+  (fnl
+    (if (awful.tag.find_by_name (awful.screen.focused) ~tag-name)
+      nil
+      (awful.tag.add ~tag-name {:layout awful.layout.suit.tile}))))
 
 (defn focus-tag! [tag-name]
-  (awm-cli {:quiet? true}
-           (str "local tag = awful.tag.find_by_name(nil, \"" tag-name "\");
-  tag:view_only(); "))
-  tag-name)
-
-;; (defn focus-tag! [tag-name]
-;;   ^{:quiet? true}
-;;   (fnl (let [tag (awful.tag.find_by_name nil ~tag-name)]
-;;          (tag:view_only)))
-;;   tag-name)
-
-(comment
-  (focus-tag! "web")
-  (focus-tag-2! "web")
-  )
+  (fnl
+    #_{:clj-kondo/ignore [:unused-binding]}
+    (let [tag (awful.tag.find_by_name nil ~tag-name)]
+      (tag:view_only))))
 
 (defn toggle-tag [tag-name]
-  ;; viewtoggle tag
-  (awm-cli {:quiet? true}
-           (str "awful.tag.viewtoggle(awful.tag.find_by_name(s, \"" tag-name "\"));"))
-  tag-name)
+  (fnl (awful.tag.viewtoggle (awful.tag.find_by_name s ~tag-name))))
 
 (defn delete-tag! [tag-name]
-  (awm-cli {:quiet? true}
-           (str "local tag = awful.tag.find_by_name(nil, \"" tag-name "\");
-tag:delete(); ")))
+  (fnl
+    #_{:clj-kondo/ignore [:unused-binding]}
+    (let [tag (awful.tag.find_by_name nil ~tag-name)]
+      (tag:delete))))
 
 (defn delete-current-tag! []
-  (awm-cli {:quiet? true}
-           "s.selected_tag:delete()"))
+  (fnl (s.selected_tag:delete)))
 
 ;; this feels like it could be a clojure-function as rofi-defcom over babashka tool
 ;; just expose every function in the app to defcom/rofi

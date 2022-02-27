@@ -1,5 +1,6 @@
 {:linters {:unresolved-symbol
-           {:exclude [(clojure.core.match/match) (wing.test/assert-match) match?]}
+           {:exclude [(clojure.core.match/match) (wing.test/assert-match) match?
+                      (ralphie.awesome/fnl)]}
            :clawe/missing  {:level :warning}
            :defcom/missing {:level :warning}}
  :hooks
