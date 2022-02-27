@@ -25,6 +25,35 @@
        :notify/body    :clawe.restart})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; check if unit tests pass, throw/notify otherwise
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn check-unit-tests
+  "Run the unit tests, raising and notifying if they fail."
+  []
+  (let [proc               ^{:out :string
+                             ;; TODO use clawe-dir (config?)
+                             :dir "/home/russ/russmatney/clawe"
+                             } (proc/$ bb test-unit)
+        {:keys [exit out]} @proc]
+
+    (if (#{0} exit)
+      (do
+        (notify/notify "Unit Test PASS :)")
+        out)
+      (do
+        (notify/notify "Unit Test FAIL :(")
+        (notify/notify out)
+        (notify/notify exit)
+        (throw (Exception. "Unit test fail! Stopping."))))))
+
+(comment
+  (do
+    (log "unit test run")
+    (check-unit-tests)
+    (log "things continued!")))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; restart
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -36,6 +65,10 @@ Fires `clawe reload`, which is implemented below.
 We want to make sure the new config is written with the updated
 uberjar. Otherwise this might need to be called twice."
   (do
+    ;; make sure the unit tests pass before reinstalling
+    (log "checking unit tests...")
+    (check-unit-tests)
+
     (log "restarting...")
     ;; maybe detect if the current uberjar is out of date?
     ;; might not always need to rebuild here

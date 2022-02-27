@@ -1,4 +1,4 @@
-{:paths ["src"]
+{:paths ["src" "test"]
  :deps  {}
  :tasks
  {:requires ([clojure.string :as string]
@@ -11,6 +11,10 @@
     (defn pp [x]
       (binding [pprint/*print-right-margin* 130]
         (pprint/pprint x))))
+
+  test-unit
+  {:doc  "Run clawe unit tests."
+   :task (shell "./test_runner.clj")}
 
   clawe-install
   {:doc  "Rebuild the clawe uberjar"

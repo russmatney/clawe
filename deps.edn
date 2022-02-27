@@ -4,6 +4,7 @@
  :deps
  {teknql/systemic          {:local/root "../../teknql/systemic"}
   aero/aero                {:mvn/version "1.1.6"}
+  babashka/babashka        {:mvn/version "0.7.6"}
   babashka/babashka.pods   {:mvn/version "0.1.0"}
   babashka/babashka.curl   {:mvn/version "0.1.1"}
   babashka/process         {:mvn/version "0.1.0"}
