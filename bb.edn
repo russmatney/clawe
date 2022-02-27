@@ -12,6 +12,9 @@
       (binding [pprint/*print-right-margin* 130]
         (pprint/pprint x))))
 
+  clj-kondo      (shell "clj-kondo --lint src")
+  clj-kondo-test (shell "clj-kondo --lint test")
+
   test-unit
   {:doc  "Run clawe unit tests."
    :task (shell "./test_runner.clj")}

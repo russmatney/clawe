@@ -1,11 +1,13 @@
 (ns ralphie.awesome-test
-  (:require [ralphie.awesome :as sut]
-            [clojure.test :as t]))
+  (:require
+   [clojure.test :as t]
+   [ralphie.awesome :as sut]
+   [clojure.string :as string]))
 
 
 (t/deftest fnl-test
   ;; These tests expect to be run against a working awesome runtime
-  ;; TODO impl a strategy for mocking or testing against awesome
+  ;; TODO impl a strategy for mocking or testing against awesome in ci
 
   (t/testing "fnl unquotes and returns a `view`ed value"
     (let [rets ["val"
@@ -21,5 +23,15 @@
                                     (view ~ret)))))
             (t/is (= ret (sut/fnl
                            (print ~ret)
-                           (view ~ret))))
-            ))))))
+                           (view ~ret)))))))))
+
+  (t/testing "fnl supports :quiet? opt via metadata."
+    (let [output (with-out-str
+                   ^{:quiet? true}
+                   (sut/fnl (view {:val "hi"})))]
+      (t/is (= output "")))
+    (let [output (with-out-str
+                   ^{:quiet? false}
+                   (sut/fnl (view {:val "hi"})))]
+      (t/is (string/includes? output "fennel code"))
+      (t/is (string/includes? output "awesome-client")))))

@@ -46,9 +46,6 @@ super + b
 super + shift + Left
   clawe drag-workspace-prev-kbd-modshiftLeft
 
-super + i
-  clawe godot-reload-scene-kbd-modi
-
 super + XF86AudioRaiseVolume
   clawe spotify-volume-up-kbd-modXF86AudioRaiseVolume
 

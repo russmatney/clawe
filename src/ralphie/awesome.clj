@@ -59,80 +59,6 @@
       "function (t) return {name= t.name} end))")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; bags of data from awesome
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(declare all-tags)
-(declare screen)
-(declare ->namespaced-tag)
-
-(defn ->namespaced-client
-  "Recieves a raw-awm `client`, and moves data to namespaced keywords."
-  [client]
-  (let [tags (->> client :tags (map ->namespaced-tag))]
-    {:awesome/client          (dissoc client :name :urgent :instance :type :pid :class :ontop :master :window :focused :tags)
-     :awesome.client/name     (:name client)
-     :awesome.client/class    (:class client)
-     :awesome.client/instance (:instance client)
-     :awesome.client/window   (:window client)
-     :awesome.client/pid      (:pid client)
-
-     :awesome.client/tags tags
-     :awesome.client/type (:type client)
-
-     :awesome.client/focused  (:focused client)
-     :awesome.client/urgent   (:urgent client)
-     :awesome.client/ontop    (:ontop client)
-     :awesome.client/master   (:master client)
-     :awesome.screen/geometry (:geometry client)}))
-
-(comment
-  (->>
-    (all-tags)
-    first
-    :awesome.tag/clients
-    first))
-
-(defn ->namespaced-tag
-  "Recieves a raw-awm-tag `tag`, and moves all data to a namespaced keyword.
-
-  If the tag has `:clients`, they are passed to `->namespaced-client`.
-  "
-  [tag]
-  (let [clients (->> tag :clients (map ->namespaced-client))
-        empty   (zero? (count clients))]
-    {:awesome/tag         (dissoc tag :clients :name :index :selected :urgent :layout)
-     :awesome.tag/index   (:index tag)
-     :awesome.tag/name    (:name tag)
-     :awesome.tag/clients clients
-
-     :awesome.tag/layout (:layout tag)
-
-     :awesome.tag/selected (:selected tag)
-     :awesome.tag/urgent   (:urgent tag)
-     :awesome.tag/empty    empty}))
-
-(comment
-  (->>
-    (all-tags)
-    first
-    :awesome/tag))
-
-(defn ->namespaced-screen
-  "Recieves a raw-awm-screen `screen`, and moves all data to a namespaced keyword.
-
-  `:tags` are passed to `->namespaced-tag`, `:clients` to `->namespaced-client`."
-  [screen]
-  (let [tags (->> screen :tags (map ->namespaced-tag))]
-    {:awesome/screen          (dissoc screen :tags :geometry)
-     :awesome.screen/tags     tags
-     :awesome.screen/geometry (:geometry screen)
-     }))
-
-(comment
-  (screen))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; awm-cli preamble
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -362,6 +288,84 @@ util = require 'util';
 
       ;; return the current focused client's name
       _G.client.focus.name)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; bags of data from awesome
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; TODO rework these with malli
+
+(declare all-tags)
+(declare screen)
+(declare ->namespaced-tag)
+
+(defn ->namespaced-client
+  "Recieves a raw-awm `client`, and moves data to namespaced keywords."
+  [client]
+  (let [tags (->> client :tags (map ->namespaced-tag))]
+    {:awesome/client          (dissoc client :name :urgent :instance :type :pid :class :ontop :master :window :focused :tags)
+     :awesome.client/name     (:name client)
+     :awesome.client/class    (:class client)
+     :awesome.client/instance (:instance client)
+     :awesome.client/window   (:window client)
+     :awesome.client/pid      (:pid client)
+
+     :awesome.client/tags tags
+     :awesome.client/type (:type client)
+
+     :awesome.client/focused  (:focused client)
+     :awesome.client/urgent   (:urgent client)
+     :awesome.client/ontop    (:ontop client)
+     :awesome.client/master   (:master client)
+     :awesome.screen/geometry (:geometry client)}))
+
+(comment
+  (->>
+    (all-tags)
+    first
+    :awesome.tag/clients
+    first))
+
+(defn ->namespaced-tag
+  "Recieves a raw-awm-tag `tag`, and moves all data to a namespaced keyword.
+
+  If the tag has `:clients`, they are passed to `->namespaced-client`.
+  "
+  [tag]
+  (let [clients (->> tag :clients (map ->namespaced-client))
+        empty   (zero? (count clients))]
+    {:awesome/tag         (dissoc tag :clients :name :index :selected :urgent :layout)
+     :awesome.tag/index   (:index tag)
+     :awesome.tag/name    (:name tag)
+     :awesome.tag/clients clients
+
+     :awesome.tag/layout (:layout tag)
+
+     :awesome.tag/selected (:selected tag)
+     :awesome.tag/urgent   (:urgent tag)
+     :awesome.tag/empty    empty}))
+
+(comment
+  (->>
+    (all-tags)
+    first
+    :awesome/tag))
+
+(defn ->namespaced-screen
+  "Recieves a raw-awm-screen `screen`, and moves all data to a namespaced keyword.
+
+  `:tags` are passed to `->namespaced-tag`, `:clients` to `->namespaced-client`."
+  [screen]
+  (let [tags (->> screen :tags (map ->namespaced-tag))]
+    {:awesome/screen          (dissoc screen :tags :geometry)
+     :awesome.screen/tags     tags
+     :awesome.screen/geometry (:geometry screen)
+     }))
+
+(comment
+  (screen))
+
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; AwesomeWM data fetchers
