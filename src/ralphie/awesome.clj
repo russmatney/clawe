@@ -4,27 +4,20 @@
   It depends heavily on a working `awesome-client` command for firing commands
   or gathering data from awesome. Alot of this is made simple (or more complex?)
   by using fennel as the intermediary, because fennel datastructures can be
-  directly consumed by clojure's `load-string` function. See `russmatney/clawe`
-  for a full clojure/fennel/awesomewm configuration.
+  directly consumed by clojure's `load-string` function.
 
-  TODO write an AwesomeWM pod (or library) for Babashka.
-  (\"clawesome\"? \"jawesome\"? \"jawes\"?)
-  TODO pull more of clawe/awesome back into here, or pull both of these into a
-  lower-level awesome library.
+  Most of the functions build on the `awm-fnl` or `awm-lua` functions
+  which expect fennel or lua as a string (or a quoted list to be passed to `str`).
+  Both pass the expression to `awesome-client` via babashka.process and return
+  the output as a clojure data structure (i.e. a map or list of values), to the
+  extent that it can be parsed.
 
-  --
-
-  Many of these are public functions, but almost all stem from `awm-fnl` or `awm-cli`,
-  which expect quoted-fennel or raw lua, respectively. Both call the passed
-  expression over `awesome-client` (via babashka.process) and return the output as
-  a clojure data structure (i.e. a map or list of values).
-
-  TODO rename `awm-cli` to `awm-lua`, and write a shared `awm-cli` base. or just
-  support `awm-cli` and check for a leading `(`.
+  The `fnl` macro is a helper for writing fennel directly, and supports unquoting
+  for interpolating a value.
 
   Eg.
 
-  (ralphie.awesome/awm-fnl '(do (-> (client.get) (lume.map (fn [t] {:name t.name})))))
+  (ralphie.awesome/fnl (-> (client.get) (lume.map (fn [t] {:name t.name}))))
   => [{:name \"Mozilla Firefox\"} {:name \"ralphie\"} {:name \"Junior Boys - Dull To Pause\"} {:name \"tauri/doctor-topbar\"}]
 
   (ralphie.awesome/awm-cli
@@ -36,19 +29,6 @@
   These functions include a 'preamble' that requires a handful of convenient globals,
   such as `lume` (a lua functional lib), `client`, `awful`, `view` (aka `fennelview`,
   which prettyprints to clojure-`load-string`-readable structures). See `lua-preamble`.
-
-  TODO support a dynamic awm/*preamble* context for `awm-cli` functions.
-
-  --
-
-  Other useful core functions include helpers for fetching tags and clients in a variety of cases:
-
-  (ralphie.awesome/all-tags)
-  (ralphie.awesome/all-clients)
-  (ralphie.awesome/visible-clients)
-  (ralphie.awesome/tag-for-name)
-  (ralphie.awesome/client-for-name)
-  TODO clean up this sporadic fetch api
   "
   (:require
    [babashka.process :as process :refer [check]]
@@ -60,10 +40,20 @@
    [ralphie.notify :as notify]
    [ralphie.sh :as sh]))
 
-(comment
-  (ralphie.awesome/awm-fnl '(do (-> (client.get) (lume.map (fn [t] {:name t.name})) view)))
+;;  TODO rename `awm-cli` to `awm-lua`, and write a shared `awm-cli` base. or just
+;;  support `awm-cli` and check for a leading `(`.
 
-  (ralphie.awesome/awm-cli
+;; TODO support a dynamic awm/*preamble* context for `awm-cli` functions.
+
+(comment
+  (ralphie.awesome/fnl
+    #_{:clj-kondo/ignore [:unused-binding]}
+    (-> (client.get) (lume.map (fn [t] {:name t.name})) view))
+
+  (ralphie.awesome/awm-fnl
+    '(do (-> (client.get) (lume.map (fn [t] {:name t.name})) view)))
+
+  (ralphie.awesome/awm-lua
     (str
       "return view(lume.map(client.get(), "
       "function (t) return {name= t.name} end))")))
@@ -77,7 +67,7 @@
 (declare ->namespaced-tag)
 
 (defn ->namespaced-client
-  "Recieves a raw-awm `client`, and moves all data to a namespaced keyword."
+  "Recieves a raw-awm `client`, and moves data to namespaced keywords."
   [client]
   (let [tags (->> client :tags (map ->namespaced-tag))]
     {:awesome/client          (dissoc client :name :urgent :instance :type :pid :class :ontop :master :window :focused :tags)
@@ -94,8 +84,7 @@
      :awesome.client/urgent   (:urgent client)
      :awesome.client/ontop    (:ontop client)
      :awesome.client/master   (:master client)
-     :awesome.screen/geometry (:geometry client)
-     }))
+     :awesome.screen/geometry (:geometry client)}))
 
 (comment
   (->>
@@ -163,9 +152,14 @@ util = require 'util';
 ;; Eval lua in awesome-context
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn parse-output
+(defn- parse-output
   "Parses the output of awm-cli, with assumptions not worth baking into the root
-  command."
+  command.
+
+  Handles parsing `view` (fennelview) output back into clojure structures.
+  If parsing fails (e.g. b/c a table or some unsupported structure is returned),
+  an exception is printed and the raw string is returned.
+  "
   [str]
   (->>
     ;; remove leading `string` label
@@ -191,24 +185,22 @@ util = require 'util';
   "Expects `lua-str`, a literal string of lua.
   Adds a preamble that sets common variables and requires common modules."
   ([lua-str] (awm-cli nil lua-str))
-  ([{:keys [quiet?
-            pp?
-            parse?
-            ]} lua-str]
-   (when pp? (print "pp? not yet supported"))
-   (when parse? (print "parse? not yet suparseorted"))
-   (->>
-     (str lua-preamble "\n\n-- Passed command:\n" lua-str)
-     ((fn [lua-str]
-        (when-not quiet?
-          (println "Running lua via awesome-client!:\n\n" lua-str))
-        lua-str))
-     ((fn [lua-str]
-        ^{:out :string}
-        (process/$ awesome-client ~lua-str)))
-     check
-     :out
-     parse-output)))
+  ([opts lua-str]
+   (let [quiet? (:quiet? opts true)]
+     (->>
+       (str lua-preamble "\n\n-- Passed command:\n" lua-str)
+       ((fn [lua-str]
+          (when-not quiet?
+            (println "Running lua via awesome-client!:\n\n" lua-str))
+          lua-str))
+       ((fn [lua-str]
+          ^{:out :string}
+          (process/$ awesome-client ~lua-str)))
+       check
+       :out
+       parse-output))))
+
+(def awm-lua awm-cli)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; converts a clojure map to a lua table
@@ -290,22 +282,19 @@ util = require 'util';
              ;; call that function
              (hi)])
 
-  TODO get this closer to a `awm/$` syntax, like `bb.process/$`.
-  even if it just means interpolating values better.
-  lack of passing vals to quotes is a big missing feature
+  See: `ralphie.awesome/fnl` for simpler fennel + interpolation/unquoting
   "
-  ([fnl] (awm-fnl {} fnl))
-  ([opts fnl]
-   (println "\nfnl:" fnl "\n")
-   (let [fnl     (-> fnl
-                     (string/replace "," ""))
-         ;; TODO consider removing line-breaks, commas
-         lua-str (str
-                   "local fennel = require('fennel'); \n"
-                   "local compiled_lua = fennel.compileString('" fnl "'); \n"
-                   "local run = fennel.loadCode(compiled_lua); "
-                   "return run(); ") ]
-     (awm-cli opts lua-str))))
+  ([fennel] (awm-fnl {} fennel))
+  ([opts fennel]
+   (let [quiet? (:quiet? opts true)]
+     (when-not quiet? (println "\nfennel code:" fennel "\n"))
+     (let [fennel  (-> fennel (string/replace "," ""))
+           lua-str (str
+                     "local fennel = require('fennel'); \n"
+                     "local compiled_lua = fennel.compileString('" fennel "'); \n"
+                     "local run = fennel.loadCode(compiled_lua); "
+                     "return run(); ") ]
+       (awm-lua opts lua-str)))))
 
 (comment
   (awm-fnl '(do
@@ -319,93 +308,60 @@ util = require 'util';
              ;; call that function
              (hi)])
 
-  ;; (backtick/template-fn)
-
-  ;; (awm-fnl (backtick/template
-  ;;            (do
-  ;;              (print "hi")
-  ;;              (view "gibberish"))))
-
-  ;; TODO not sure why this fails to parse
   (awm-fnl
-    {:quiet? false}
     '(view {:name     client.focus.name
             :instance client.focus.instance})))
 
-(defmacro fnl [& fnl-forms]
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; fnl macro
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defmacro fnl
+  "The main public interface to awesomeWM.
+
+  Expects one or more fennel forms as arguments, which are eventually
+  stringified and passed to `awm-fnl`.
+
+  Uses `backtick/template` to prevent namespace-qualification of the forms while
+  still supporting `~` for unquoting, i.e. interpolating values in fennel code.
+
+  Exs.
+
+  (let [val \"some-val\"]
+    (fnl
+      ;; require naughty
+      (local naughty (require :naughty))
+
+      ;; fire a notification via awesome
+      (naughty.notify
+        {:title \"Test notif\"
+         :text  (.. \"some sub head: \" ~val)}) ;; `~` unquotes `val`
+
+      ;; return the current focused client's name
+      _G.client.focus.name))
+
+  Options can be passed via metadata:
+
+  ^{:quiet? false} (fnl (print \"hello\"))
+  "
+  [& fnl-forms]
   (let [opts (meta &form)
         opts (assoc opts :quiet? (:quiet? opts true))]
     `(awm-fnl ~opts (backtick/template (do ~@fnl-forms)))))
 
 (comment
-
-  ;; basic with metadata
-  (fnl
-    (print "hello")
-    (print "friend")
-    (view {:some-val "stuff"})
-    )
-
-  ;; more complex awm calls
-  (fnl (do
-         (local naughty (require :naughty))
-         (naughty.notify
-           {:title "Test notif"
-            :text  (.. "some sub head: " "with info")})
-
-         (print "hellooooooooo friend")
-
-         ;; return the current focused client's name
-         _G.client.focus.name))
-
-  ;; interpolate some symbol/var
   (let [val "some-val"]
     (fnl
-      (do
-        (print "hello")
-        ;; (print ~'val)
-        {:some-return "world"}
-        ~val)))
+      ;; require naughty
+      (local naughty (require :naughty))
 
-  ;; interpolate a nested symbol/var
-  (let [val "some-val"]
-    (fnl
-      (let [my-v ~val]
-        (print my-v)
-        my-v
-        ))))
+      ;; fire a notification via awesome
+      (naughty.notify
+        {:title "Test notif"
+         :text  (.. "some sub head: " ~val)})
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Call a named awm function with a passed clojure data structure
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn awm-fn
-  "Not sure if there's more potential here - it'd be easily subsumed by awm-fnl
-  if it could handle passed arguments."
-  [fn & args]
-  (str fn "("
-       (->> args
-            (map ->lua-arg)
-            (string/join ", ")
-            (apply str))
-       ")"))
-
-(comment
-  (awm-fn "awful.tag.add"
-          "ralphie"
-          {:screen "s"
-           :layout "awful.layout.suit.floating"})
-
-  (awm-fn "awful.layout.set" :lain.layout.centerwork)
-  (= (awm-fn "awful.layout.set" :lain.layout.centerwork)
-     "awful.layout.set(lain.layout.centerwork)")
-
-  (let [args {:some-clojure "map"
-              :with         :global.keywords
-              :and          [{:nested  1
-                              :numbers 2}]}]
-    (println (awm-fn "my-fn" args))))
-
+      ;; return the current focused client's name
+      _G.client.focus.name)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; AwesomeWM data fetchers
@@ -417,14 +373,14 @@ util = require 'util';
 local focusedwindow = false;
 
 if client.focus then
-  focusedwindow = client.focus.window;
+focusedwindow = client.focus.window;
 end;
 
 local masterwindow = false;
 local mclient = awful.client.getmaster();
 
 if mclient then
-  masterwindow = mclient.window;
+masterwindow = mclient.window;
 end;
 \n")
 
@@ -438,7 +394,7 @@ end;
       (str
         awm-state-preamble
         "return view({
-tags= lume.map(s.tags, function (t) return
+tags=     lume.map (s.tags, function (t) return
 {name= t.name,
 index= t.index,
 } end),
@@ -459,28 +415,28 @@ geometry= s.geometry})"))
 local l = t.layout;
 local lname = false;
 if l then
-  lname = l.name
+lname = l.name
 end;\n
-           return {
-                   name=     t.name,
-                   selected= t.selected,
-                   layout=   lname,
-                   index=    t.index,
-                   urgent=   t.urgent,
-                   clients=  lume.map (t:clients(),
+return {
+name=     t.name,
+selected= t.selected,
+layout=   lname,
+index=    t.index,
+urgent=   t.urgent,
+clients=  lume.map (t:clients(),
 function (c) return {
-   name=     c.name,
-   ontop=    c.ontop,
-   window=   c.window,
-   master=   masterwindow  == c.window,
-   focused=  focusedwindow == c.window,
-   urgent=   c.urgent,
-   type=     c.type,
-   class=    c.class,
-   instance= c.instance,
-   pid=      c.pid,
-   role=     c.role,
-  } end),
+                     name=     c.name,
+                     ontop=    c.ontop,
+                     window=   c.window,
+                     master=   masterwindow  == c.window,
+                     focused=  focusedwindow == c.window,
+                     urgent=   c.urgent,
+                     type=     c.type,
+                     class=    c.class,
+                     instance= c.instance,
+                     pid=      c.pid,
+                     role=     c.role,
+                     } end),
 } end))"))
        (map (fn [t]
               (-> t
@@ -499,7 +455,7 @@ function (c) return {
   "Same as tag-for-name."
   tag-for-name)
 
-(comment (workspace-for-name "clawe"))
+  (comment (workspace-for-name "clawe"))
 
 (defn current-tag-name []
   (-> (awm-cli "return view({name=s.selected_tag.name})") :name))
@@ -524,19 +480,19 @@ function (c) return {
          {:quiet? true}
          (str "return view(lume.map(awful.screen.focused().clients, "
               "function (c) return {
-   name=     c.name,
-   ontop=    c.ontop,
-   window=   c.window,
-   master=   masterwindow  == c.window,
-   focused=  focusedwindow == c.window,
-   urgent=   c.urgent,
-   geometry= c:geometry(),
-   type=     c.type,
-   class=    c.class,
-   instance= c.instance,
-   pid=      c.pid,
-   role=     c.role,
-  } end)) "))
+name=                                         c.name,
+ontop=                                        c.ontop,
+                                    window=   c.window,
+                                    master=   masterwindow  == c.window,
+                                    focused=  focusedwindow == c.window,
+                                    urgent=   c.urgent,
+                                    geometry= c:geometry    (),
+                                    type=     c.type,
+                                    class=    c.class,
+                                    instance= c.instance,
+                                    pid=      c.pid,
+                                    role=     c.role,
+                                    } end)) "))
        (map ->namespaced-client)))
 
 (defn all-clients []
@@ -545,17 +501,17 @@ function (c) return {
       {:quiet? true}
       (str "return view(lume.map(client.get(), "
            "function (c) return {
-                               name=      c.name,
-                               geometry=  c:geometry(),
-                               window=    c.window,
-                               type=      c.type,
-                               class=     c.class,
-                               instance=  c.instance,
-                               pid=       c.pid,
-                               role=      c.role,
-                               tags=      lume.map   (c:tags(), function (t) return {name= t.name} end),
-                               first_tag= c.first_tag.name,
-                               } end))"))
+                                 name=      c.name,
+                                 geometry=  c:geometry (),
+                                 window=    c.window,
+                                 type=      c.type,
+                                 class=     c.class,
+                                 instance=  c.instance,
+                                 pid=       c.pid,
+                                 role=      c.role,
+                                 tags=      lume.map   (c:tags(), function (t) return {name= t.name} end),
+                                 first_tag= c.first_tag.name,
+                                 } end))"))
     (map ->namespaced-client)))
 
 (comment
@@ -661,11 +617,11 @@ function (c) return {
 
 (defn lua-over-client
   "Reduces boilerplate for operating over a client.
-  Expects to match on the client's window id.
-  Expects to be a `c` in context.
+Expects to match on the client's window id.
+Expects to be a `c` in context.
 
-  ;; TODO can this be used to dry up the awm data fetchers?
-  "
+;; TODO can this be used to dry up the awm data fetchers?
+"
   [window-id cmd-str]
   (awm-cli
     {:quiet? true}
@@ -821,40 +777,8 @@ _G.client.focus.above = true;")))
        (string/join "\n")
        (awm-cli {:quiet? true})))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Bar and Widgets
-
-(defn rebuild-bar []
-  (awm-cli
-    {:quiet? true}
-    "require('bar'); init_bar();"))
-
-(defn reload-bar-and-widgets []
-  (assert (= (check-for-errors) "No Errors."))
-  (hotswap-module-names ["bar"])
-  (rebuild-bar))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; misc
-
 (defn reload-misc []
   (hotswap-module-names ["clawe" "util" "icons"]))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; clawe bar
-
-(defn build-top-bar []
-  '{:position "top"
-    :screen   s
-    :height   (if (util.is_vader) 30 50)
-    :bg       beautiful.bg_transparent})
-
-(defn rebuild-bar-2 []
-  (awm-cli
-    {:quiet? true}
-    (str "require('bar'); "
-         (awm-fn "init_bar"
-                 {:top-bar (build-top-bar)}))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Awesome-$ (shell command)
@@ -863,15 +787,13 @@ _G.client.focus.above = true;")))
 (defn shell
   "Intended to allow for a cheap shelling out from awesome.
   Was quickly replaced by sxhkd usage.
-  A performance comparsion of the two would be interesting.
+  A performance comparsion of the two might be interesting.
 
-  One relevant detail - awm key-repeats much faster than sxhkd,
-  which could be an issue - i've spammed awesomewm to death multiple times by
-  holding keybindings..."
-  [arg]
-  (awm-fnl (str
-             ;; TODO async or not? maybe `$!` is async?
-             "(awful.spawn.easy_async \"" arg "\")")))
+  One detail - awm key-repeats much faster than sxhkd, which is an issue -
+  i've spammed awesomewm to death multiple times by holding keybindings...
+  "
+  [arg] (awm-fnl (str ;; TODO async or not? maybe `shell!` is async?
+  "(awful.spawn.easy_async \"" arg "\")")))
 
 (comment
   (shell "notify-send hi")

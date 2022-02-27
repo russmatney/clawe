@@ -48,11 +48,11 @@
     :workrave/micro
     (let [secs (workrave-dbus "GetTimerRemaining" "microbreak")
           mins (int (/ secs 60))]
-      (awm/awm-cli (awm/awm-fn "update_micro_break" mins)))
+      (awm/fnl (update_micro_break ~mins)))
     :workrave/rest
     (let [secs (workrave-dbus "GetTimerRemaining" "restbreak")
           mins (int (/ secs 60))]
-      (awm/awm-cli (awm/awm-fn "update_rest_break" mins)))))
+      (awm/fnl (update_rest_break ~mins)))))
 
 (defcom update-rest-break
   (update-workrave-widget :workrave/rest))

@@ -630,24 +630,6 @@
 ;; Client bindings
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; NOTE not completely working
-(defkbd godot-reload-scene
-  [[:mod] "i"]
-  (let [godot-client                    (awm/client-for-class "Godot")
-        {:awesome.client/keys [window]} godot-client]
-    (notify/notify "sending keys to godot")
-    (awm/lua-over-client window
-                         (str "
-local old_c = client.focus;
-client.focus = c;
-
-root.fake_input('key_press'  , 'Mod1');
-root.fake_input('key_press'  , 'r');
-root.fake_input('key_release', 'r');
-root.fake_input('key_release', 'Mod1');
-
-client.focus = old_c;
-"))))
 
 ;; (set exp.clientkeys
 ;;      (gears.table.join
