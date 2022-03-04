@@ -47,11 +47,10 @@
 
 (comment
   (ralphie.awesome/fnl
-    #_{:clj-kondo/ignore [:unused-binding]}
-    (-> (client.get) (lume.map (fn [t] {:name t.name})) view))
+    (-> (client.get) (lume.map (fn [t] {:name (. t :name)})) view))
 
   (ralphie.awesome/awm-fnl
-    '(do (-> (client.get) (lume.map (fn [t] {:name t.name})) view)))
+    '(-> (client.get) (lume.map (fn [t] {:name t.name})) view))
 
   (ralphie.awesome/awm-lua
     (str
@@ -269,10 +268,25 @@ util = require 'util';
   Options can be passed via metadata:
 
   ^{:quiet? false} (fnl (print \"hello\"))
+
+  ;; TODO support this at runtime, not just macro time
+  If the first form is a `do` expression, the rest of the forms will be included
+  in the same `do`. This supports setting some state for later fnl expressions
+  via lua/fennel's `local`, which is more or less a `let` for setting vars in
+  the current scope.
   "
   [& fnl-forms]
-  (let [opts (meta &form)
-        opts (assoc opts :quiet? (:quiet? opts true))]
+  (let [opts       (meta &form)
+        opts       (assoc opts :quiet? (:quiet? opts true))
+        first-form (first fnl-forms)
+        rest-forms (rest fnl-forms)
+
+        first-form-starts-with-do (#{'do} (first first-form))
+        fnl-forms                 (if first-form-starts-with-do
+                                    (concat
+                                      ;; drop the do, we'll use the one in the template below
+                                      (rest first-form) rest-forms)
+                                    fnl-forms)]
     `(awm-fnl ~opts (backtick/template (do ~@fnl-forms)))))
 
 (comment
@@ -388,6 +402,32 @@ masterwindow = mclient.window;
 end;
 \n")
 
+(def awm-state-preamble-2
+  "Sets up some state/context for screen, tag, and client data fetching.
+
+  Could get messy here - using globals for these might be problemmatic.
+  Ideally we'd scope these to the fnl call - maybe local will do that for us?
+  "
+  '(do
+     (local focused-window (if client.focus client.focus.window))
+     (local ml-client (awful.client.getmaster))
+     (local m-window (if ml-client ml-client.window))))
+
+(comment
+  ^{:quiet? false}
+  (fnl ~awm-state-preamble-2)
+
+  ^{:quiet? false}
+  (fnl (view ml-client))
+
+  ^{:quiet? false}
+  (fnl
+    ~awm-state-preamble-2
+    (view ml-client))
+
+
+  )
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; screen fetchers
 
@@ -459,7 +499,7 @@ function (c) return {
   "Same as tag-for-name."
   tag-for-name)
 
-  (comment (workspace-for-name "clawe"))
+(comment (workspace-for-name "clawe"))
 
 (defn current-tag-name []
   (-> (awm-cli "return view({name=s.selected_tag.name})") :name))
@@ -621,11 +661,11 @@ ontop=                                        c.ontop,
 
 (defn lua-over-client
   "Reduces boilerplate for operating over a client.
-Expects to match on the client's window id.
-Expects to be a `c` in context.
+  Expects to match on the client's window id.
+  Expects to be a `c` in context.
 
-;; TODO can this be used to dry up the awm data fetchers?
-"
+  ;; TODO can this be used to dry up the awm data fetchers?
+  "
   [window-id cmd-str]
   (awm-cli
     {:quiet? true}
@@ -797,9 +837,33 @@ _G.client.focus.above = true;")))
   i've spammed awesomewm to death multiple times by holding keybindings...
   "
   [arg] (awm-fnl (str ;; TODO async or not? maybe `shell!` is async?
-  "(awful.spawn.easy_async \"" arg "\")")))
+                   "(awful.spawn.easy_async \"" arg "\")")))
 
 (comment
   (shell "notify-send hi")
   (shell "pactl set-sink-volume @DEFAULT_SINK@ +5%")
   (shell "pactl set-sink-volume @DEFAULT_SINK@ -5%"))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Sandbox
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(comment
+  ;; calling global functions impled in awesome/run-init.fnl
+  (fnl (update-topbar))
+  (fnl (reload-doctor))
+
+  ;; set some global
+  (fnl (global my-global "some-val"))
+  ;; later eval that global
+  (fnl (view my-global))
+
+  ;; topbar update
+  (fnl (awful.spawn.easy_async "curl http://localhost:3334/topbar/update" nil))
+
+
+  ;; handling awesome garbage
+  (fnl (log_garbage))
+  (fnl (handle_garbage))
+  )

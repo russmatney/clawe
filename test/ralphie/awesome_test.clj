@@ -25,6 +25,22 @@
                            (print ~ret)
                            (view ~ret)))))))))
 
+  (t/testing "pushes do-blocks together to share fennel/lua locals"
+    (t/is (= "val" (sut/fnl (do
+                              (local my-val "val")
+                              (local my-other-val "val"))
+                            (view my-val)))))
+
+  ;; TODO how to support this `do` feature on eval, not just at macro time?
+  ;; (t/testing "supports preambles for setting locals"
+  ;;   (let [preamble '(do
+  ;;                     (local some-val "some-val")
+  ;;                     (local some-other-val "other-val"))]
+  ;;     (t/is (= "val"
+  ;;              ^{:quiet? false}
+  ;;              (sut/fnl ~preamble
+  ;;                       (view (.. some-val some-other-val)))))))
+
   (t/testing "fnl supports :quiet? opt via metadata."
     (let [output (with-out-str
                    ^{:quiet? true}

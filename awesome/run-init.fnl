@@ -106,7 +106,6 @@
 (set
  _G.handle_garbage
  (fn []
-   (pp "handling garbage?")
    (local before (collectgarbage "count"))
    (collectgarbage)
    (local after (collectgarbage "count"))
