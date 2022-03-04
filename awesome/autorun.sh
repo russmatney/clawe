@@ -35,3 +35,4 @@ run pamac-tray
 run blueman-applet
 run msm_notifier
 run dropbox
+run picom

@@ -33,10 +33,10 @@
          ])
 
 (global update-topbar
-        (fn [] (awful.spawn.easy_async "curl http://localhost:3334/topbar/update" nil)))
+        (fn [] (awful.spawn.easy_async "curl http://localhost:3334/topbar/update" (fn []))))
 
 (global reload-doctor
-        (fn reload-doctor [] (awful.spawn.easy_async "curl http://localhost:3334/reload" nil)))
+        (fn reload-doctor [] (awful.spawn.easy_async "curl http://localhost:3334/reload" (fn []))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Theming
@@ -106,6 +106,7 @@
 (set
  _G.handle_garbage
  (fn []
+   (pp "handling garbage?")
    (local before (collectgarbage "count"))
    (collectgarbage)
    (local after (collectgarbage "count"))
@@ -119,9 +120,8 @@
        (_G.handle_garbage)
        (do
          (_G.log_garbage)
-         ;; (naughty.notify {:title "Remaining Garbage"
-         ;;                  :text (.. "Count: " after)})
-         ))))
+         (naughty.notify {:title "Remaining Garbage"
+                          :text (.. "Count: " after)})))))
 
 ;; garbage timer
 (gears.timer
@@ -202,11 +202,11 @@
    ;;  (fn [c]
    ;;    (pp {:signal "request::urgent"})
    ;;    (clawe.cmd-args "apply-rules-to-client" (to-client-data c))))
-   (client.connect_signal "focus" (fn [_] (update-topbar)))
-   (tag.connect_signal "property::screen" (fn [_] (update-topbar)))
-   (tag.connect_signal "tagged" (fn [_] (update-topbar)))
-   (tag.connect_signal "untagged" (fn [_] (update-topbar)))
-   (tag.connect_signal "property::urgent" (fn [_] (update-topbar)))
+   ;; (client.connect_signal "focus" (fn [_] (update-topbar)))
+   ;; (tag.connect_signal "property::screen" (fn [_] (update-topbar)))
+   ;; (tag.connect_signal "tagged" (fn [_] (update-topbar)))
+   ;; (tag.connect_signal "untagged" (fn [_] (update-topbar)))
+   ;; (tag.connect_signal "property::urgent" (fn [_] (update-topbar)))
 
    (print "init_rules")
    (rules.init_rules config)
@@ -218,7 +218,6 @@
    (print "init_spawns")
    (awful.spawn "~/.config/awesome/autorun.sh" false)
    (awful.spawn "xset r rate 170 60" false)
-   (awful.spawn.once "picom" false)
 
    ;; reapply rules after restoring state of clients/tags
    (print "reapplying rules")

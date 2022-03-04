@@ -2,11 +2,13 @@
 (local awful (require "awful"))
 
 (local fun (require "fun"))
-(local clawe (require "clawe"))
 (require "clawe-bindings")
 
 (local helpers (require :dashboard.helpers))
 (local restart-helper (require "./restart"))
+
+(set _G.update_topbar
+     (fn [] (awful.spawn.easy_async "curl http://localhost:3334/topbar/update" (fn []))))
 
 (local exp {})
 
@@ -65,14 +67,14 @@
                 (if keyed-tag
                     (do
                       (helpers.tag_back_and_forth keyed-tag.index)
-                      (clawe.update-workspaces))
+                      (_G.update_topbar))
                     (let []
                       ;; create tag
                       ;; TODO fetch name  from config for index
                       ;; include other tag config?
                       (awful.tag.add (.. "num" it) {:layout (. layouts 1)
                                                     :selected true})))
-                (_G.update-topbar))))
+                (_G.update_topbar))))
 
        ;; add tag to current perspective
        (key [:mod :ctrl] (.. "#" (+ 9 it))
@@ -80,7 +82,7 @@
               (let [scr (awful.screen.focused)
                     scr-tag (. scr.tags it)]
                 (when scr-tag (awful.tag.viewtoggle scr-tag)))
-              (clawe.update-workspaces)))
+              (_G.update_topbar)))
 
        ;; move current focus to tag (workspace)
        (key [:mod :shift] (.. "#" (+ 9 it))
@@ -89,8 +91,7 @@
                 (let [scr-tag (. _G.client.focus.screen.tags it)]
                   (when scr-tag
                     (_G.client.focus:move_to_tag scr-tag)
-                    (clawe.update-workspaces)
-                    (_G.update-topbar))
+                    (_G.update_topbar))
                   ))))
 
        ;; add/remove focused client on tag
@@ -100,7 +101,7 @@
                 (let [scr-tag (. _G.client.focus.screen.tags it)]
                   (when scr-tag
                     (_G.client.focus:toggle_tag scr-tag)
-                    (clawe.update-workspaces))))))]))))
+                    (_G.update-topbar))))))]))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Client Keybindings

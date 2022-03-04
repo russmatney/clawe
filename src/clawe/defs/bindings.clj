@@ -45,7 +45,7 @@
 
 (defkbd rofi-launcher
   [[:mod] "space"]
-  (awm/awm-fnl '(awful.spawn.easy_async "rofi -show combi")))
+  (awm/awm-fnl '(awful.spawn.easy_async "rofi -show combi" (fn []))))
 
 (defkbd kill-client
   [[:mod] "q"]
@@ -440,13 +440,13 @@
   [[:mod] "p"]
   (awm/awm-fnl
     '(do (awful.tag.viewnext)
-         (awful.spawn.easy_async "curl http://localhost:3334/topbar/update" nil))))
+         (awful.spawn.easy_async "curl http://localhost:3334/topbar/update" (fn [])))))
 
 (defkbd cycle-prev-tag-2
   [[:mod] "n"]
   (awm/awm-fnl
     '(do (awful.tag.viewprev)
-         (awful.spawn.easy_async "curl http://localhost:3334/topbar/update" nil))))
+         (awful.spawn.easy_async "curl http://localhost:3334/topbar/update" (fn [])))))
 
 (defkbd cycle-focus-next
   [[:mod] "Tab"]
@@ -501,12 +501,12 @@
 (defkbd brightness-up
   [[] "XF86MonBrightnessUp"]
   (awm/awm-fnl
-    '(awful.spawn.easy_async "light -A 5")))
+    '(awful.spawn.easy_async "light -A 5" (fn []))))
 
 (defkbd brightness-down
   [[] "XF86MonBrightnessDown"]
   (awm/awm-fnl
-    '(awful.spawn.easy_async "light -U 5")))
+    '(awful.spawn.easy_async "light -U 5" (fn []))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Play/Pause/Next/Prev
@@ -525,22 +525,22 @@
 (defkbd spotify-pause
   [[] "XF86AudioPause"]
   (awm/awm-fnl
-    '(awful.spawn.easy_async "spotifycli --playpause")))
+    '(awful.spawn.easy_async "spotifycli --playpause" (fn []))))
 
 (defkbd spotify-play
   [[] "XF86AudioPlay"]
   (awm/awm-fnl
-    '(awful.spawn.easy_async "spotifycli --playpause")))
+    '(awful.spawn.easy_async "spotifycli --playpause" (fn []))))
 
 (defkbd audio-next
   [[] "XF86AudioNext"]
   (awm/awm-fnl
-    '(awful.spawn.easy_async "playerctl next")))
+    '(awful.spawn.easy_async "playerctl next" (fn []))))
 
 (defkbd audio-prev
   [[] "XF86AudioPrev"]
   (awm/awm-fnl
-    '(awful.spawn.easy_async "playerctl previous")))
+    '(awful.spawn.easy_async "playerctl previous" (fn []))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Muting input/output
@@ -564,7 +564,7 @@
 (defkbd toggle-output-mute
   [[] "XF86AudioMute"]
   (awm/awm-fnl
-    '(awful.spawn.easy_async "pactl set-sink-mute @DEFAULT_SINK@ toggle")))
+    '(awful.spawn.easy_async "pactl set-sink-mute @DEFAULT_SINK@ toggle" (fn []))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Volume up/down
