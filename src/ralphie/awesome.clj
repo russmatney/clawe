@@ -86,25 +86,40 @@ util = require 'util';
   an exception is printed and the raw string is returned.
   "
   [str]
-  (->>
-    ;; remove leading `string` label
-    (-> str string/trim (string/replace #"^string " ""))
+  (let [trimmed (string/trim str)
+        to-load (cond
+                  ;; remove leading `string` label
+                  (re-seq #"^string" trimmed)
+                  (->>
+                    (string/replace trimmed #"^string " "")
 
-    ;; drop quotes
-    (drop 1) reverse
-    (drop 1) reverse
+                    ;; drop quotes
+                    (drop 1) reverse
+                    (drop 1) reverse
 
-    ;; rebuild string
-    string/join
+                    ;; rebuild string
+                    string/join)
 
-    ((fn [s]
-       (try
-         ;; convert to clojure data structure
-         ;; TODO: use edn/read-string?
-         (load-string s)
-         (catch Exception _e
-           (println "Exception while parsing output:" s)
-           s))))))
+                  (re-seq #"^boolean" trimmed)
+                  (string/replace trimmed #"^boolean " "")
+
+                  (re-seq #"^double" trimmed)
+                  (string/replace trimmed #"^double " ""))]
+    (try
+      ;; convert to clojure data structure
+      ;; TODO: use edn/read-string?
+      (load-string to-load)
+      (catch Exception _e
+        (println "Exception while parsing output:" trimmed to-load)
+        to-load))
+    ))
+
+
+(comment
+  (ralphie.awesome/awm-lua "return 'hi'")
+  (ralphie.awesome/awm-lua "return false")
+  (ralphie.awesome/awm-lua "return true")
+  )
 
 (defn awm-cli
   "Expects `lua-str`, a literal string of lua.
@@ -281,6 +296,8 @@ util = require 'util';
         first-form (first fnl-forms)
         rest-forms (rest fnl-forms)
 
+        ;; syntax eval first-form early to see if it's a do block? not sure that's possible
+
         first-form-starts-with-do (#{'do} (first first-form))
         fnl-forms                 (if first-form-starts-with-do
                                     (concat
@@ -309,9 +326,43 @@ util = require 'util';
 
 ;; TODO rework these with malli
 
-(declare all-tags)
-(declare screen)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; AwesomeWM data fetchers
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (declare ->namespaced-tag)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; screen fetcher
+
+(defn ->namespaced-screen
+  "Recieves a raw-awm-screen `screen`, and moves all data to a namespaced keyword.
+
+  `:tags` are passed to `->namespaced-tag`, `:clients` to `->namespaced-client`."
+  [screen]
+  (let [tags (->> screen :tags (map ->namespaced-tag))]
+    {:awesome/screen          (dissoc screen :tags :geometry)
+     :awesome.screen/tags     tags
+     :awesome.screen/geometry (:geometry screen)}))
+
+(defn screen []
+  (-> (fnl
+        (view
+          {:geometry (. s :geometry)
+           :tags     (lume.map
+                       s.tags
+                       (fn [t]
+                         ;; could fetch more tag details here...
+                         {:name  (. t :name)
+                          :index (. t :index)}))}))
+      ->namespaced-screen))
+
+(comment
+  (screen))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; tag fetchers
 
 (defn ->namespaced-client
   "Recieves a raw-awm `client`, and moves data to namespaced keywords."
@@ -333,12 +384,6 @@ util = require 'util';
      :awesome.client/master   (:master client)
      :awesome.screen/geometry (:geometry client)}))
 
-(comment
-  (->>
-    (all-tags)
-    first
-    :awesome.tag/clients
-    first))
 
 (defn ->namespaced-tag
   "Recieves a raw-awm-tag `tag`, and moves all data to a namespaced keyword.
@@ -359,139 +404,57 @@ util = require 'util';
      :awesome.tag/urgent   (:urgent tag)
      :awesome.tag/empty    empty}))
 
-(comment
-  (->>
-    (all-tags)
-    first
-    :awesome/tag))
 
-(defn ->namespaced-screen
-  "Recieves a raw-awm-screen `screen`, and moves all data to a namespaced keyword.
+(defn fetch-tags
+  "Returns all awm tags as clojure maps, namespaced with :awesome.tag and :awesome.client keys."
+  ([] (fetch-tags {}))
+  ([opts]
+   ;; TODO consider filtering on passed tag names, current tag
+   (->>
+     ^{:quiet? false}
+     (fnl
+       (local focused-window (if client.focus client.focus.window nil))
+       (local m-client (awful.client.getmaster))
+       (local m-window (if m-client m-client.window nil))
 
-  `:tags` are passed to `->namespaced-tag`, `:clients` to `->namespaced-client`."
-  [screen]
-  (let [tags (->> screen :tags (map ->namespaced-tag))]
-    {:awesome/screen          (dissoc screen :tags :geometry)
-     :awesome.screen/tags     tags
-     :awesome.screen/geometry (:geometry screen)
-     }))
+       (view
+         (lume.map
+           (root.tags)
+           (fn [t]
+             {:name     t.name
+              :selected t.selected
+              :index    t.index
+              :urgent   t.urgent
+              :layout   (-?> t (. :layout) (. :name))
+              :clients
+              (lume.map
+                (t:clients)
+                (fn [c]
+                  {:name     c.name
+                   :ontop    c.ontop
+                   :window   c.window
+                   :urgent   c.urgent
+                   :type     c.type
+                   :class    c.class
+                   :instance c.instance
+                   :pid      c.pid
+                   :role     c.role
+                   :master   (= m-window c.window)
+                   :focused  (= focused-window c.window)}))}))))
+     (map ->namespaced-tag))))
 
-(comment
-  (screen))
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; AwesomeWM data fetchers
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(def awm-state-preamble
-  "Sets up some state/context for screen, tag, and client data fetching."
-  "\n
-local focusedwindow = false;
-
-if client.focus then
-focusedwindow = client.focus.window;
-end;
-
-local masterwindow = false;
-local mclient = awful.client.getmaster();
-
-if mclient then
-masterwindow = mclient.window;
-end;
-\n")
-
-(def awm-state-preamble-2
-  "Sets up some state/context for screen, tag, and client data fetching.
-
-  Could get messy here - using globals for these might be problemmatic.
-  Ideally we'd scope these to the fnl call - maybe local will do that for us?
-  "
-  '(do
-     (local focused-window (if client.focus client.focus.window))
-     (local ml-client (awful.client.getmaster))
-     (local m-window (if ml-client ml-client.window))))
-
-(comment
-  ^{:quiet? false}
-  (fnl ~awm-state-preamble-2)
-
-  ^{:quiet? false}
-  (fnl (view ml-client))
-
-  ^{:quiet? false}
-  (fnl
-    ~awm-state-preamble-2
-    (view ml-client))
-
-
-  )
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; screen fetchers
-
-(defn screen []
-  ;; TODO rewrite with awm-fnl
-  (->
-    (awm-cli
-      (str
-        awm-state-preamble
-        "return view({
-tags=     lume.map (s.tags, function (t) return
-{name= t.name,
-index= t.index,
-} end),
-geometry= s.geometry})"))
-    ->namespaced-screen))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; tag fetchers
-
-(defn all-tags []
-  ;; TODO rewrite with awm-fnl
-  (->> (awm-cli
-         {:quiet? true}
-         (str
-           awm-state-preamble
-           "return view(lume.map(root.tags(), "
-           "function (t)
-local l = t.layout;
-local lname = false;
-if l then
-lname = l.name
-end;\n
-return {
-name=     t.name,
-selected= t.selected,
-layout=   lname,
-index=    t.index,
-urgent=   t.urgent,
-clients=  lume.map (t:clients(),
-function (c) return {
-                     name=     c.name,
-                     ontop=    c.ontop,
-                     window=   c.window,
-                     master=   masterwindow  == c.window,
-                     focused=  focusedwindow == c.window,
-                     urgent=   c.urgent,
-                     type=     c.type,
-                     class=    c.class,
-                     instance= c.instance,
-                     pid=      c.pid,
-                     role=     c.role,
-                     } end),
-} end))"))
-       (map (fn [t]
-              (-> t
-                  (update :clients #(into [] %))
-                  ->namespaced-tag)))))
 
 (defn tag-for-name
-  ([name] (tag-for-name name (all-tags)))
-  ([name all-tags]
+  "Returns a namespaced tag matching the passed name.
+  Supports a passed `fetch-tags`, which is helpful when running for multiple tags
+  at once - in that case, fetch-tags should be calculated and passed to each call.
+
+  May benefit from a smarter base case, if serialization/fetch-tags is expensive.
+  "
+  ([name] (tag-for-name name (fetch-tags)))
+  ([name fetch-tags]
    (some->>
-     all-tags
+     fetch-tags
      (filter (comp #{name} :awesome.tag/name))
      first)))
 
@@ -501,8 +464,19 @@ function (c) return {
 
 (comment (workspace-for-name "clawe"))
 
+;; TODO benchmark these - the fennel version may have more overhead, or it could be negligible
 (defn current-tag-name []
-  (-> (awm-cli "return view({name=s.selected_tag.name})") :name))
+  (awm-cli "return s.selected_tag.name"))
+(defn current-tag-name-2 []
+  ;; interesting that i couldn't just `s.selected-tag.name`
+  (fnl (. s.selected_tag :name)))
+
+(comment
+  ;; TODO benchmark
+  (current-tag-name)
+  (current-tag-name-2)
+
+  )
 
 (defn current-tag-names []
   (->> (awm-cli (str "return view(lume.map(s.selected_tags, function (t) return {name= t.name} end))"))
@@ -514,6 +488,17 @@ function (c) return {
   ;; context api to glue awm functions together like sqlalchemy sessions on a
   ;; database...
   (tag-for-name (current-tag-name)))
+
+(defn tag-exists? [tag-name]
+  (fnl (-> (root.tags)
+           (lume.filter (fn [t] (= t.name ~tag-name)))
+           lume.count
+           (> 0))))
+
+(comment
+  (tag-exists? "clawe")
+  (tag-exists? "joker")
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; client fetchers

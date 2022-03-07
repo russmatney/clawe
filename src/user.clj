@@ -18,7 +18,7 @@
     (filter :awesome.tag/name)
     )
 
-  (awm/all-tags)
+  (awm/fetch-tags)
 
 
 

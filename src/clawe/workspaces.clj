@@ -71,7 +71,7 @@
   ([wsps]
    (merge-awm-tags {} wsps))
   ([{:keys [include-unmatched?]} wsps]
-   (let [awm-all-tags       (awm/all-tags)
+   (let [awm-all-tags       (awm/fetch-tags)
          is-map?            (map? wsps)
          include-unmatched? (if is-map? false include-unmatched?)
          wsps               (if is-map? [wsps] wsps)]
@@ -397,7 +397,7 @@
   (let [name (workspace-name wsp)]
 
     ;; create tag if none is found
-    (when (not (awm/tag-for-name name))
+    (when (not (awm/tag-exists? name))
       (awm/create-tag! name))
 
     ;; focus the tag
