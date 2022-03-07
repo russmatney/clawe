@@ -58,11 +58,13 @@
       "function (t) return {name= t.name} end))")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; awm-cli preamble
+;; awm-lua preamble
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def lua-preamble
-  "Passed ahead of awm-cli commands to provide commonly used globals."
+  "Passed ahead of awm-lua commands to provide commonly used globals."
+  ;; TODO couldn't these be globals, declared once?
+  ;; maybe it's not expensive to re-require these?
   "-- Preamble
 awful = require('awful');
 lume = require('lume');
@@ -78,7 +80,7 @@ util = require 'util';
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn- parse-output
-  "Parses the output of awm-cli, with assumptions not worth baking into the root
+  "Parses the output of awm-lua, with assumptions not worth baking into the root
   command.
 
   Handles parsing `view` (fennelview) output back into clojure structures.
@@ -417,9 +419,9 @@ util = require 'util';
        (local m-client (awful.client.getmaster))
        (local m-window (if m-client m-client.window nil))
 
-       (view
+       (->
+         (root.tags)
          (lume.map
-           (root.tags)
            (fn [t]
              {:name     t.name
               :selected t.selected
@@ -427,20 +429,22 @@ util = require 'util';
               :urgent   t.urgent
               :layout   (-?> t (. :layout) (. :name))
               :clients
-              (lume.map
+              (->
                 (t:clients)
-                (fn [c]
-                  {:name     c.name
-                   :ontop    c.ontop
-                   :window   c.window
-                   :urgent   c.urgent
-                   :type     c.type
-                   :class    c.class
-                   :instance c.instance
-                   :pid      c.pid
-                   :role     c.role
-                   :master   (= m-window c.window)
-                   :focused  (= focused-window c.window)}))}))))
+                (lume.map
+                  (fn [c]
+                    {:name     c.name
+                     :ontop    c.ontop
+                     :window   c.window
+                     :urgent   c.urgent
+                     :type     c.type
+                     :class    c.class
+                     :instance c.instance
+                     :pid      c.pid
+                     :role     c.role
+                     :master   (= m-window c.window)
+                     :focused  (= focused-window c.window)})))}))
+         view))
      (map ->namespaced-tag))))
 
 
@@ -458,15 +462,9 @@ util = require 'util';
      (filter (comp #{name} :awesome.tag/name))
      first)))
 
-(def workspace-for-name
-  "Same as tag-for-name."
-  tag-for-name)
-
-(comment (workspace-for-name "clawe"))
-
 ;; TODO benchmark these - the fennel version may have more overhead, or it could be negligible
 (defn current-tag-name []
-  (awm-cli "return s.selected_tag.name"))
+  (awm-lua "return s.selected_tag.name"))
 (defn current-tag-name-2 []
   ;; interesting that i couldn't just `s.selected-tag.name`
   (fnl (. s.selected_tag :name)))
@@ -474,20 +472,11 @@ util = require 'util';
 (comment
   ;; TODO benchmark
   (current-tag-name)
-  (current-tag-name-2)
-
-  )
+  (current-tag-name-2))
 
 (defn current-tag-names []
-  (->> (awm-cli (str "return view(lume.map(s.selected_tags, function (t) return {name= t.name} end))"))
+  (->> (awm-lua (str "return view(lume.map(s.selected_tags, function (t) return {name= t.name} end))"))
        (map :name)))
-
-(defn current-tag []
-  ;; could be impled alot cheaper if this slow... right now this fetches and
-  ;; parses all tags... too bad that doesn't happen auto-magically. Maybe a
-  ;; context api to glue awm functions together like sqlalchemy sessions on a
-  ;; database...
-  (tag-for-name (current-tag-name)))
 
 (defn tag-exists? [tag-name]
   (fnl (-> (root.tags)
@@ -497,50 +486,29 @@ util = require 'util';
 
 (comment
   (tag-exists? "clawe")
-  (tag-exists? "joker")
-  )
+  (tag-exists? "joker"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; client fetchers
 
-(defn visible-clients []
-  ;; TODO rewrite with awm-fnl
-  (->> (awm-cli
-         {:quiet? true}
-         (str "return view(lume.map(awful.screen.focused().clients, "
-              "function (c) return {
-name=                                         c.name,
-ontop=                                        c.ontop,
-                                    window=   c.window,
-                                    master=   masterwindow  == c.window,
-                                    focused=  focusedwindow == c.window,
-                                    urgent=   c.urgent,
-                                    geometry= c:geometry    (),
-                                    type=     c.type,
-                                    class=    c.class,
-                                    instance= c.instance,
-                                    pid=      c.pid,
-                                    role=     c.role,
-                                    } end)) "))
-       (map ->namespaced-client)))
-
-(defn all-clients []
+(defn all-clients
+  "Returns all currently running clients."
+  []
   (->>
-    (awm-cli
-      {:quiet? true}
-      (str "return view(lume.map(client.get(), "
-           "function (c) return {
-                                 name=      c.name,
-                                 geometry=  c:geometry (),
-                                 window=    c.window,
-                                 type=      c.type,
-                                 class=     c.class,
-                                 instance=  c.instance,
-                                 pid=       c.pid,
-                                 role=      c.role,
-                                 tags=      lume.map   (c:tags(), function (t) return {name= t.name} end),
-                                 first_tag= c.first_tag.name,
-                                 } end))"))
+    (fnl
+      (-> (client.get)
+          (lume.map (fn [c]
+                      {:name      c.name
+                       :geometry  (c:geometry)
+                       :window    c.window
+                       :type      c.type
+                       :class     c.class
+                       :instance  c.instance
+                       :pid       c.pid
+                       :role      c.role
+                       :tags      (lume.map (c:tags) (fn [t] {:name t.name}))
+                       :first_tag c.first_tag.name}))
+          view))
     (map ->namespaced-client)))
 
 (comment
@@ -580,7 +548,13 @@ ontop=                                        c.ontop,
 (comment (client-for-id (read-string "58720263")))
 
 (defn client-on-tag? [client tag-name]
-  ;; curious to see if this is cheaper in pure awm or not
+  ;; TODO benchmark - is this cheaper via awm?
+  ;; in most cases we probably already have the data via fetch-tags
+  ;; fetch-tags could build a quick lookup index for this
+  ;; or a client could be used to use an awm func for this (like `(c:tags)`)
+  ;; - that's the benchmark to compare: awm via clojure overhead vs clojure data manip
+
+  ;; the reality might be that we delete this func in a scratchpad-impl refactor
   (let [tag-names (->> client
                        :awesome.client/window
                        client-for-id
@@ -652,7 +626,7 @@ ontop=                                        c.ontop,
   ;; TODO can this be used to dry up the awm data fetchers?
   "
   [window-id cmd-str]
-  (awm-cli
+  (awm-lua
     {:quiet? true}
     (str
       "for c in awful.client.iterate(function (c) return c.window == "
@@ -662,7 +636,7 @@ ontop=                                        c.ontop,
 (defcom set-above-and-ontop
   (do
     (notify/notify "Setting above and ontop")
-    (awm-cli {:quiet? true}
+    (awm-lua {:quiet? true}
              "
 _G.client.focus.ontop = true;
 _G.client.focus.above = true;")))
@@ -708,7 +682,7 @@ _G.client.focus.above = true;")))
 
 (defcom set-layout
   "Sets the awesome layout"
-  (awm-cli {:quiet? true} "awful.layout.set(awful.layout.suit.tile);"
+  (awm-lua {:quiet? true} "awful.layout.set(awful.layout.suit.tile);"
            ;; "awful.layout.set(lain.layout.centerwork);"
            ))
 
@@ -804,7 +778,7 @@ _G.client.focus.above = true;")))
        ;; might not be necessary
        ;; reverse ;; move 'bar' hotswap to last
        (string/join "\n")
-       (awm-cli {:quiet? true})))
+       (awm-lua {:quiet? true})))
 
 (defn reload-misc []
   (hotswap-module-names ["clawe" "util" "icons"]))

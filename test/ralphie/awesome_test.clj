@@ -107,6 +107,7 @@
   (t/testing "returns namespaced clients"
     (let [client-keys (some-> (sut/fetch-tags) first :awesome.tag/clients first
                               keys set)]
+      ;; for now, we don't care if there are no clients
       (when client-keys
         (t/is (= client-keys
                  #{:awesome.client/urgent :awesome.screen/geometry
@@ -115,3 +116,14 @@
                    :awesome.client/type :awesome.client/name
                    :awesome.client/instance :awesome.client/focused
                    :awesome.client/pid :awesome.client/ontop}))))))
+
+(t/deftest fetch-clients-test
+  (t/testing "returns expected keys"
+    (t/is (= (-> (sut/all-clients) first keys set)
+             #{:awesome.client/urgent :awesome.screen/geometry
+               :awesome.client/window :awesome.client/master
+               :awesome.client/class :awesome/client :awesome.client/tags
+               :awesome.client/type :awesome.client/name :awesome.client/instance
+               :awesome.client/focused :awesome.client/pid :awesome.client/ontop}))
+    )
+  )

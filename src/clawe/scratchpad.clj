@@ -61,6 +61,7 @@
             ;; restore last buried client
             (let [to-restore (db.scratchpad/next-restore)]
               (when (and to-restore
+                         ;; TODO shouldn't we already be able to answer this via fetch-tags ?
                          (awm/client-on-tag?
                            to-restore
                            (awm/awm-fnl
