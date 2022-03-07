@@ -607,16 +607,43 @@ util = require 'util';
 (defn delete-current-tag! []
   (fnl (s.selected_tag:delete)))
 
-;; this feels like it could be a clojure-function as rofi-defcom over babashka tool
-;; just expose every function in the app to defcom/rofi
-;; and build an api for walking namespaces (or M-x-ing/hydra-ing the tree of namespaces)
 (defcom awesome-delete-current-tag
   "Deletes the current focused tag."
   delete-current-tag!)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; common awm client functions
-;; TODO rewrite with awm-fnl
+
+(defcom set-above-and-ontop
+  (do
+    (notify/notify "Setting above and ontop")
+    (fnl
+      (tset _G.client.focus :ontop true)
+      (tset _G.client.focus :above true))))
+
+(defn bury-all-clients []
+  (fnl
+    (let [s (awful.screen.focused)]
+      (lume.each s.clients
+                 (fn [c]
+                   (tset c :floating false))))))
+
+(defcom bury-all-clients-cmd bury-all-clients)
+
+(defn move-client-to-tag
+  "TODO create tag if it doesn't exist?"
+  [window-id tag-name]
+  (fnl
+    (let [t (awful.tag.find_by_name nil ~tag-name)]
+      (if t
+        (each [c (awful.client.iterate (fn [c] (= c.window ~window-id)))]
+              (c:tags [t]))
+        nil))))
+
+(comment
+  (awm-fnl '(awful.tag.find_by_name nil "datalevin"))
+  (def -c (client-for-name "journal"))
+  (move-client-to-tag (:awesome.client/window -c) "clawe"))
 
 (defn lua-over-client
   "Reduces boilerplate for operating over a client.
@@ -632,39 +659,6 @@ util = require 'util';
       "for c in awful.client.iterate(function (c) return c.window == "
       window-id
       " end) do\n" cmd-str "\nend; ")))
-
-(defcom set-above-and-ontop
-  (do
-    (notify/notify "Setting above and ontop")
-    (awm-lua {:quiet? true}
-             "
-_G.client.focus.ontop = true;
-_G.client.focus.above = true;")))
-
-(defn bury-all-clients []
-  (awm-fnl
-    {:quiet? true}
-    '(let [s (awful.screen.focused)]
-       (lume.each s.clients
-                  (fn [c]
-                    (set c.floating false))))))
-
-(defcom bury-all-clients-cmd bury-all-clients)
-
-(defn move-client-to-tag
-  "TODO create tag if it doesn't exist?"
-  [window-id tag-name]
-  (lua-over-client
-    window-id
-    (str
-      "local t = awful.tag.find_by_name(nil, \"" tag-name "\");\n"
-      "if t then\n"
-      "c:tags({t})\nend\n")))
-
-(comment
-  (awm-fnl '(awful.tag.find_by_name nil "datalevin"))
-  (def -c (client-for-name "clawe"))
-  (move-client-to-tag (:window -c) "clawe"))
 
 (defn close-client
   "Closes the passed client.
@@ -682,9 +676,7 @@ _G.client.focus.above = true;")))
 
 (defcom set-layout
   "Sets the awesome layout"
-  (awm-lua {:quiet? true} "awful.layout.set(awful.layout.suit.tile);"
-           ;; "awful.layout.set(lain.layout.centerwork);"
-           ))
+  (fnl (awful.layout.set awful.layout.suit.tile)))
 
 ;; The rest of this file should probably live elsewhere
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
