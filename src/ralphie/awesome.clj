@@ -387,6 +387,7 @@ util = require 'util';
      :awesome.screen/geometry (:geometry client)}))
 
 
+;; TODO replace this with a malli docoder
 (defn ->namespaced-tag
   "Recieves a raw-awm-tag `tag`, and moves all data to a namespaced keyword.
 
@@ -410,7 +411,7 @@ util = require 'util';
 (defn fetch-tags
   "Returns all awm tags as clojure maps, namespaced with :awesome.tag and :awesome.client keys."
   ([] (fetch-tags {}))
-  ([opts]
+  ([_opts]
    ;; TODO consider filtering on passed tag names, current tag
    (->>
      ^{:quiet? false}
@@ -433,7 +434,7 @@ util = require 'util';
                 (t:clients)
                 (lume.map
                   (fn [c]
-                    {:name     c.name
+                    {:name     (. c :name)
                      :ontop    c.ontop
                      :window   c.window
                      :urgent   c.urgent
@@ -475,12 +476,14 @@ util = require 'util';
   (current-tag-name-2))
 
 (defn current-tag-names []
-  (->> (awm-lua (str "return view(lume.map(s.selected_tags, function (t) return {name= t.name} end))"))
-       (map :name)))
+  (fnl (->
+         s.selected_tags
+         (lume.map (fn [t] (. t :name)))
+         view)))
 
 (defn tag-exists? [tag-name]
   (fnl (-> (root.tags)
-           (lume.filter (fn [t] (= t.name ~tag-name)))
+           (lume.filter (fn [t] (= (. t :name) ~tag-name)))
            lume.count
            (> 0))))
 
@@ -498,7 +501,7 @@ util = require 'util';
     (fnl
       (-> (client.get)
           (lume.map (fn [c]
-                      {:name      c.name
+                      {:name      (. c :name)
                        :geometry  (c:geometry)
                        :window    c.window
                        :type      c.type
@@ -506,7 +509,7 @@ util = require 'util';
                        :instance  c.instance
                        :pid       c.pid
                        :role      c.role
-                       :tags      (lume.map (c:tags) (fn [t] {:name t.name}))
+                       :tags      (lume.map (c:tags) (fn [t] {:name (. t :name)}))
                        :first_tag c.first_tag.name}))
           view))
     (map ->namespaced-client)))
@@ -624,7 +627,7 @@ util = require 'util';
 (defn bury-all-clients []
   (fnl
     (let [s (awful.screen.focused)]
-      (lume.each s.clients
+      (lume.each (. s :clients)
                  (fn [c]
                    (tset c :floating false))))))
 
@@ -636,7 +639,7 @@ util = require 'util';
   (fnl
     (let [t (awful.tag.find_by_name nil ~tag-name)]
       (if t
-        (each [c (awful.client.iterate (fn [c] (= c.window ~window-id)))]
+        (each [c (awful.client.iterate (fn [c] (= (. c :window) ~window-id)))]
               (c:tags [t]))
         nil))))
 
@@ -644,21 +647,6 @@ util = require 'util';
   (awm-fnl '(awful.tag.find_by_name nil "datalevin"))
   (def -c (client-for-name "journal"))
   (move-client-to-tag (:awesome.client/window -c) "clawe"))
-
-(defn lua-over-client
-  "Reduces boilerplate for operating over a client.
-  Expects to match on the client's window id.
-  Expects to be a `c` in context.
-
-  ;; TODO can this be used to dry up the awm data fetchers?
-  "
-  [window-id cmd-str]
-  (awm-lua
-    {:quiet? true}
-    (str
-      "for c in awful.client.iterate(function (c) return c.window == "
-      window-id
-      " end) do\n" cmd-str "\nend; ")))
 
 (defn close-client
   "Closes the passed client.
@@ -672,7 +660,9 @@ util = require 'util';
 
       (do
         (println "closing window" window)
-        (lua-over-client window "c:kill();")))))
+        (fnl
+          (each [c (awful.client.iterate (fn [c] (= (. c :window) ~window)))]
+                (c:kill)))))))
 
 (defcom set-layout
   "Sets the awesome layout"
@@ -787,10 +777,13 @@ util = require 'util';
   One detail - awm key-repeats much faster than sxhkd, which is an issue -
   i've spammed awesomewm to death multiple times by holding keybindings...
   "
-  [arg] (awm-fnl (str ;; TODO async or not? maybe `shell!` is async?
-                   "(awful.spawn.easy_async \"" arg "\")")))
+ ;; TODO async or not? maybe `shell!` is async?
+  [arg] (fnl (awful.spawn.easy_async ~arg (fn []))))
 
 (comment
+  (let [arg "notify-send hi"]
+    ^{:quiet? false}
+    (fnl (awful.spawn.easy_async ~arg)))
   (shell "notify-send hi")
   (shell "pactl set-sink-volume @DEFAULT_SINK@ +5%")
   (shell "pactl set-sink-volume @DEFAULT_SINK@ -5%"))

@@ -27,9 +27,7 @@
 
   ;; TODO ways to improve this? a follow up 'view' call?
   (t/testing "returns tables"
-    (t/is (string/includes? (sut/awm-lua "return {}") "table:"))
-    )
-  )
+    (t/is (string/includes? (sut/awm-lua "return {}") "table:"))))
 
 
 (t/deftest fnl-test
@@ -124,6 +122,4 @@
                :awesome.client/window :awesome.client/master
                :awesome.client/class :awesome/client :awesome.client/tags
                :awesome.client/type :awesome.client/name :awesome.client/instance
-               :awesome.client/focused :awesome.client/pid :awesome.client/ontop}))
-    )
-  )
+               :awesome.client/focused :awesome.client/pid :awesome.client/ontop}))))
