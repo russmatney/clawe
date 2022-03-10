@@ -36,7 +36,6 @@
    [clojure.pprint]
    [clojure.string :as string]
    [defthing.defcom :refer [defcom] :as defcom]
-
    [ralphie.notify :as notify]
    [ralphie.sh :as sh]))
 
@@ -115,13 +114,6 @@ util = require 'util';
         (println "Exception while parsing output:" trimmed to-load)
         to-load))
     ))
-
-
-(comment
-  (ralphie.awesome/awm-lua "return 'hi'")
-  (ralphie.awesome/awm-lua "return false")
-  (ralphie.awesome/awm-lua "return true")
-  )
 
 (defn awm-cli
   "Expects `lua-str`, a literal string of lua.

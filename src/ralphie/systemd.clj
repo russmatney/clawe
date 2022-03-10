@@ -3,7 +3,7 @@
             [clojure.string :as string]
             [ralphie.rofi :as rofi]
             [ralphie.tmux :as tmux]
-            [defthing.defcom :refer [defcom]]))
+            [defthing.defcom :refer [defcom] :as defcom]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -43,9 +43,6 @@
     (list-units-raw)
     (map line->unit)))
 
-(defn doctor-unit? [u]
-  (comp #(string/includes? % "doctor") :name))
-
 (defn select-unit
   ([] (select-unit nil))
   ([msg]
@@ -62,11 +59,11 @@
 
 (defcom systemctl-restart-unit
   "Restart a systemctl --user unit."
-  (fn [_cmd & args]
+  (fn [_cmd & _args]
     (restart-unit)))
 
 (comment
-  (defcom/exec systemctl-restart-unit)
+  ;; (defcom/exec systemctl-restart-unit)
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

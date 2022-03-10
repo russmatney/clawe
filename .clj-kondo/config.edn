@@ -1,14 +1,22 @@
-{:linters {:unresolved-symbol
-           {:exclude [(clojure.core.match/match) (wing.test/assert-match) match?
-                      (ralphie.awesome/fnl)]}
-           :clawe/missing  {:level :warning}
-           :defcom/missing {:level :warning}}
+{:config-paths ["babashka/fs"]
+ :linters
+ {:unresolved-symbol
+  {:exclude [(clojure.core.match/match) (wing.test/assert-match) match?
+             (ralphie.awesome/fnl)
+             (defthing.defcom/defcom)]}
+  :clawe/missing  {:level :warning}
+  :defcom/missing {:level :warning}
+
+  :clojure-lsp/unused-public-var
+  {:level                   :warning
+   :exclude-when-defined-by #{defthing.defcom/defcom}}}
  :hooks
  {:analyze-call {plasma.core/defhandler hooks.plasma/defhandler
                  plasma.core/defstream  hooks.plasma/defhandler}}
  :lint-as {systemic.core/defsys               clojure.core/def
            defthing.core/defthing             clojure.core/def
-           defthing.defcom/defcom             clojure.core/def
+           ;; preferred to exclude unresolved-symbol and unused-public-var
+           ;; defthing.defcom/defcom             clojure.core/def
            defthing.defworkspace/defworkspace clojure.core/def
            defthing.defapp/defapp             clojure.core/def
            defthing.defkbd/defkbd             clojure.core/def
