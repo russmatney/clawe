@@ -9,6 +9,9 @@
    [clojure.string :as string]
    [ralphie.awesome :as awm]))
 
+
+;; TODO sync with defs/workspaces - similar to awm tags and emacs workspaces
+
 (defn list-windows
   "Parses `tmux list-windows -a` output into clojure maps.
 
@@ -164,28 +167,38 @@
   - the workspace's session is usually in the expected directory already
   - commands can be fired from multiple places (emacs, a keybinding), and 'land'
   in the same place."
-  ([cmd-str]
-   (fire cmd-str nil))
+  ;; TODO support :dir as an option for running in a directory
+  ([opts-or-str]
+   (cond
+     (map? opts-or-str)
+     (fire nil opts-or-str)
+
+     (string? opts-or-str)
+     (fire opts-or-str nil)))
   ([cmd-str opts]
    (let [opts         (or opts {})
+         cmd-str      (or cmd-str (:tmux/fire opts))
          ;; should be a safe, default wm fallback
          current-tag  (awm/current-tag-name)
          session-name (or (some opts [:tmux/session-name]) current-tag)
          window-name  (or (some opts [:tmux/window-name]) current-tag)]
-     (notify "ralphie/fire!" {:tmux/session-name session-name
-                              :tmux/window-name  window-name
-                              :tmux/cmd-str      cmd-str})
+     (if-not cmd-str
+       (notify "invalid tmux/fire! called" cmd-str opts)
+       (do
+         (notify "tmux/fire!" {:tmux/session-name session-name
+                               :tmux/window-name  window-name
+                               :tmux/cmd-str      cmd-str})
 
-     ;; TODO not sure if this actually focuses the session before firing
-     (ensure-window {:tmux/session-name session-name
-                     :tmux/window-name  window-name})
-     (->
-       ;; could specify the directory here
-       ($ tmux send-keys
-          ;; .0 specifies the first pane in the window
-          -t ~(str session-name ":" window-name ".0")
-          ~cmd-str C-m)
-       check))))
+         ;; TODO not sure if this actually focuses the session before firing
+         (ensure-window {:tmux/session-name session-name
+                         :tmux/window-name  window-name})
+         (->
+           ;; could specify the directory here
+           ($ tmux send-keys
+              ;; .0 specifies the first pane in the window
+              -t ~(str session-name ":" window-name ".0")
+              ~cmd-str C-m)
+           check))))))
 
 (comment
   (fire "echo sup")
