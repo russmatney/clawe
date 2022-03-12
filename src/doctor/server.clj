@@ -34,8 +34,9 @@
      :send-fn      #(undertow.ws/send %2 %1)
      :on-error     #(log/warn (:error %) "Error in plasma handler" {:request %})
      :transit-read-handlers
-     (merge transit/default-read-handlers
-            tlt/read-handlers)
+     (merge transit/default-read-handlers tlt/read-handlers)
+     :transit-write-handlers
+     (merge transit/default-write-handlers tlt/write-handlers)
      :interceptors [(plasma.interceptors/auto-require
                       #(do (log/info "Auto requiring namespace" {:namespace %})
                            (systemic.core/start!)))

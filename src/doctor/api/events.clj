@@ -39,7 +39,7 @@
   (println "collecting recent events")
   (let [scrs (c.screenshots/all-screenshots)]
     (->> (concat (->> scrs (take 30)))
-         ;; (map ->event)
+         (map ->event)
          (into []))))
 
 (comment
