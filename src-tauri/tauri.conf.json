@@ -54,28 +54,41 @@
     },
     "windows": [
       {
-        "title": "tauri/doctor-topbar",
-        "label": "topbar",
-        "url": "/topbar",
-        "x": 0,
-        "y": 0,
-        "width": 1800,
-        "height": 600,
-        "resizable": true,
-        "fullscreen": false,
-        "transparent": true
-      },
-      {
-        "title": "tauri/doctor-popup",
-        "label": "popup",
-        "url": "/popup",
+        "title": "tauri/helper",
+        "url": "/",
         "width": 400,
         "height": 400,
         "resizable": true,
         "fullscreen": false,
+        "transparent": true,
         "visible": false
       }
     ],
+    "cli": {
+      "description": "Tauri Doctor cli handler",
+      "args": [],
+      "subcommands": {
+        "create-window": {
+          "args": [
+            {
+              "name": "label",
+              "short": "l",
+              "takesValue": true
+            },
+            {
+              "name": "title",
+              "short": "t",
+              "takesValue": true
+            },
+            {
+              "name": "url",
+              "short": "u",
+              "takesValue": true
+            }
+          ]
+        }
+      }
+    },
     "security": {
       "csp": "default-src blob: data: filesystem: ws: wss: http: https: tauri: 'unsafe-eval' 'unsafe-inline' 'self' img-src: 'self'"
     }

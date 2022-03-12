@@ -147,7 +147,11 @@
 
   (println (js->clj (tauri/window.LogicalSize. 600 500)))
 
+  (.all tauri/window)
+  (tauri/window.WebviewWindow.)
   (tauri/window.WebviewWindow.getByLabel "popup")
+  (tauri/window.WebviewWindow.getByLabel "popup2")
+  (tauri/window.WebviewWindow.getByLabel "main")
   (tauri/window.WebviewWindow.getByLabel "topbar")
   (.. (tauri/window.WebviewWindow.getByLabel "topbar")
       -label))
