@@ -29,7 +29,10 @@
    :task
    (do
      (shell "systemctl --no-pager --user status doctor-be doctor-fe doctor-topbar")
-     (pp "TODO impl ensure local symlinks"))}
+     (pp "TODO impl ensure local symlinks")
+     (let [tauri-doctor-executable "./src-tauri/target/debug/doctor"]
+       (when-not (fs/file-exists? tauri-doctor-executable)
+         (pp (str "Missing tauri doctor executable! " tauri-doctor-executable)))))}
 
   dev-deps
   {:doc "Perform any install and build steps required for development"
@@ -44,21 +47,45 @@
      (shell "yarn build")
 
      ;; local symlinks
-     (log/info "TODO impl ensure local symlinks"))}
+     (log/info "TODO impl ensure local symlinks")
 
-  doctor-be (shell {:dir "/home/russ/russmatney/clawe"}
-                   "clj -M:dev:doctor-deps:doctor-server")
-  doctor-fe (shell {:dir "/home/russ/russmatney/clawe"}
-                   "npx shadow-cljs watch doctor-app")
+     ;; tauri
+     (shell {:dir "./src-tauri"}
+            "cargo install tauri-cli --git https://github.com/tauri-apps/tauri")
+     )}
+
+  tauri-dev
+  {:doc "Run tauri in dev mode, rebuilding the exec on local rust changes."
+   :task
+   (shell
+     {:dir "/home/russ/russmatney/clawe/src-tauri"}
+     "cargo tauri dev")}
+
+
+  doctor-be {:doc
+             "Run the doctor backend. Consumed from systemd service."
+             :task
+             (shell {:dir "/home/russ/russmatney/clawe"}
+                    "clj -M:dev:doctor-deps:doctor-server")
+             }
+  doctor-fe {:doc
+             "Run the doctor frontend shadowcljs server. Consumed from systemd service."
+             :task
+             (shell {:dir "/home/russ/russmatney/clawe"}
+                    "npx shadow-cljs watch doctor-app")}
   topbar
-  (shell
-    {:dir "/home/russ/russmatney/clawe"}
-    "./src-tauri/target/debug/doctor create-window --title tauri/doctor-topbar --label topbar --url http://localhost:3333/topbar")
+  {:doc "Run the doctor topbar via tauri. Consumed from systemd service."
+   :task
+   (shell
+     {:dir "/home/russ/russmatney/clawe"}
+     "./src-tauri/target/debug/doctor create-window --title tauri/doctor-topbar --label topbar --url http://localhost:3333/topbar")}
 
   popup
-  (shell
-    {:dir "/home/russ/russmatney/clawe"}
-    "./src-tauri/target/debug/doctor create-window --title tauri/doctor-popup --label popup --url http://localhost:3333/popup")
+  {:doc "Run the doctor popup window via tauri."
+   :task
+   (shell
+     {:dir "/home/russ/russmatney/clawe"}
+     "./src-tauri/target/debug/doctor create-window --title tauri/doctor-popup --label popup --url http://localhost:3333/popup")}
 
   restart-doctor (do
                    (shell "systemctl --user daemon-reload")
