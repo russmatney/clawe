@@ -8,6 +8,7 @@
    [ring.adapter.undertow :as undertow]
    [ring.adapter.undertow.websocket :as undertow.ws]
 
+   [ralphie.notify :as notify]
    [doctor.config :as config]
    [doctor.time-literals-transit :as tlt]
    [doctor.api.core :as api]
@@ -54,6 +55,8 @@
   :start
   (let [port (:server/port config/*config*)]
     (log/info "Starting *server* on port" port)
+    (notify/notify {:notify/subject "Started doctor backend server!"
+                    :notify/id      :doctor/server})
     (undertow/run-undertow
       (fn [{:keys [uri] :as req}]
         (log/info "request" uri (System/currentTimeMillis))
