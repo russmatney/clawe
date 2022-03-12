@@ -50,8 +50,15 @@
                    "clj -M:dev:doctor-deps:doctor-server")
   doctor-fe (shell {:dir "/home/russ/russmatney/clawe"}
                    "npx shadow-cljs watch doctor-app")
-  topbar    (shell {:dir "/home/russ/russmatney/clawe"}
-                   "yarn tauri dev")
+  topbar
+  (shell
+    {:dir "/home/russ/russmatney/clawe"}
+    "./src-tauri/target/debug/doctor create-window --title tauri/doctor-topbar --label topbar --url http://localhost:3333/topbar")
+
+  popup
+  (shell
+    {:dir "/home/russ/russmatney/clawe"}
+    "./src-tauri/target/debug/doctor create-window --title tauri/doctor-popup --label popup --url http://localhost:3333/popup")
 
   restart-doctor (do
                    (shell "systemctl --user daemon-reload")

@@ -9,8 +9,6 @@ use tauri::Manager;
 use url::Url;
 
 fn main() {
-  let context = tauri::generate_context!();
-
   tauri::Builder::default()
     .setup(|app| {
       let mut window = app.get_window("main").unwrap();
@@ -75,7 +73,7 @@ fn main() {
 
       Ok(())
     })
-    .run(context)
+    .run(tauri::generate_context!())
     .expect("error while running tauri application");
 
   println!("end of main fn");

@@ -1,15 +1,17 @@
 [package]
-name = "app"
+name = "doctor"
 version = "0.1.0"
 description = "A Tauri App"
 authors = ["you"]
 license = ""
 repository = ""
-default-run = "app"
+default-run = "doctor"
 edition = "2018"
 build = "src/build.rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[patch.crates-io]
+tauri = { git = "https://github.com/tauri-apps/tauri", branch = "next" }
 
 [build-dependencies]
 tauri-build = { version = "1.0.0-rc.4", features = [] }
@@ -17,7 +19,7 @@ tauri-build = { version = "1.0.0-rc.4", features = [] }
 [dependencies]
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
-tauri = { version = "1.0.0-rc.4", features = ["api-all", "cli"] }
+tauri = {version = "1.0.0-rc.4", features = ["api-all", "cli", "system-tray"] }
 url = "2.2.2"
 
 [features]
