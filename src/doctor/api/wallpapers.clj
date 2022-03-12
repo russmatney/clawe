@@ -1,6 +1,8 @@
 (ns doctor.api.wallpapers
   (:require
-   [clawe.wallpapers :as c.wallpapers]))
+   [clawe.wallpapers :as c.wallpapers]
+   [systemic.core :refer [defsys] :as sys]
+   [manifold.stream :as s]))
 
 (defn last-used-wallpaper []
   (->>
@@ -27,3 +29,11 @@
 (comment
   (def y (last-used-wallpaper))
   (def x (last-used-wallpaper)))
+
+(defsys *wallpapers-stream*
+  :start (s/stream)
+  :stop (s/close! *wallpapers-stream*))
+
+(defn update-wallpapers []
+  (println "pushing to wallpapers stream (updating wallpapers)!")
+  (s/put! *wallpapers-stream* (active-wallpapers)))

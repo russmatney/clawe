@@ -12,11 +12,12 @@
    [doctor.config :as config]
    [doctor.time-literals-transit :as tlt]
    [doctor.api.core :as api]
-   [doctor.api.workspaces :as d.workspaces]
-   [doctor.api.topbar :as d.topbar]
-   [doctor.api.todos :as d.todos]
+   [doctor.api.events :as events]
+   [doctor.api.topbar :as topbar]
+   [doctor.api.todos :as todos]
    [doctor.api.screenshots :as screenshots]
-   [doctor.ui.views.wallpapers :as wallpapers]))
+   [doctor.api.wallpapers :as wallpapers]
+   [doctor.api.workspaces :as workspaces]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Plasma config
@@ -47,10 +48,11 @@
 (defsys *server*
   "Doctor webserver"
   :extra-deps
-  [d.workspaces/*workspaces-stream*
-   d.topbar/*topbar-metadata-stream*
-   d.todos/*todos-stream*
+  [workspaces/*workspaces-stream*
+   topbar/*topbar-metadata-stream*
+   todos/*todos-stream*
    screenshots/*screenshots-stream*
+   events/*events-stream*
    wallpapers/*wallpapers-stream*]
   :start
   (let [port (:server/port config/*config*)]
