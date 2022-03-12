@@ -4,7 +4,6 @@
    [manifold.stream :as s]
    [clawe.screenshots :as c.screenshots]
    [tick.core :as t]
-   [clojure.string :as string]
    [ralphie.notify :as notify]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -44,16 +43,16 @@
          (map ->event) (into []))))
 
 (comment
-  (recent-events)
-  )
+  (recent-events))
 
 (defsys *events-stream*
   :start (s/stream)
   :stop (s/close! *events-stream*))
 
 (defn re-push-events []
-  (println "pushing to events stream (updating events)!")
-  (s/put! *events-stream* (recent-events)))
+  (let [evts (recent-events)]
+    (println "pushing to events stream!" (count evts))
+    (s/put! *events-stream* evts)))
 
 (comment
   (re-push-events))

@@ -100,10 +100,10 @@
   []
   (let [page-name (-> router/*match* uix/context :data :name)]
     (case page-name
-      :page/home        [home views.events/events]
+      :page/home        [home views.events/event-page]
       :page/todos       [home views.todos/widget]
       :page/popup       [home views.popup/popup]
-      :page/events      [home views.events/events]
+      :page/events      [home views.events/event-page]
       :page/topbar      [views.topbar/widget]
       :page/topbar-bg   [home views.topbar/widget]
       :page/counter     [home counter]
