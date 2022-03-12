@@ -3,6 +3,7 @@
    [defthing.defworkspace :refer [defworkspace]]
    [ralphie.notify :as notify]
    [ralphie.awesome :as awm]
+   [ralphie.tmux :as tmux]
    [clojure.string :as string]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -375,6 +376,27 @@
 (defworkspace yodo-app
   awesome-rules
   {:workspace/exec "/usr/bin/gtk-launch google-chrome.desktop http://localhost:5600"})
+
+(defworkspace doctor-popup
+  awesome-rules
+  {:workspace/directory "russmatney/clawe"
+   :workspace/exec      {:tmux/fire         "bb --config /home/russ/russmatney/clawe/bb.edn popup"
+                         :tmux/session-name "doctor-popup"
+                         :tmux/window-name  "doctor-popup"}
+
+   :workspace/initial-file    "bb.edn"
+   :workspace/scratchpad      true
+   :workspace/scratchpad-name "tauri/doctor-popup"
+   :rules/is-my-client?
+   (fn [c]
+     (let [matches                             #{"tauri/doctor-popup"}
+           {:awesome.client/keys [name class]} c]
+       (or (matches name) (matches class))))
+   })
+
+(comment
+  (tmux/fire (:workspace/exec doctor-popup))
+  )
 
 (defworkspace org-crud
   awesome-rules

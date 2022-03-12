@@ -16,9 +16,6 @@ super + c
 super + shift + Return
   clawe toggle-emacs-kbd-modshiftReturn
 
-super + shift + p
-  clawe toggle-workspace-pixels-kbd-modshiftp
-
 super + shift + a
   clawe screenshot-region-kbd-modshifta
 
@@ -63,6 +60,9 @@ super + alt + n
 
 super + shift + s
   clawe screenshot-full-kbd-modshifts
+
+super + shift + p
+  clawe toggle-workspace-doctor-popup-kbd-modshiftp
 
 super + shift + Right
   clawe drag-workspace-next-kbd-modshiftRight

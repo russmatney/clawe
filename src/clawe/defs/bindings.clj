@@ -310,10 +310,13 @@
   [[:mod] "."]
   (fn [_ _] (toggle-workspace defs.workspaces/one-password)))
 
-(defkbd toggle-workspace-pixels
-  [[:mod :shift] "p"]
-  (fn [_ _] (toggle-workspace defs.workspaces/pixels)))
+;; (defkbd toggle-workspace-pixels
+;;   [[:mod :shift] "p"]
+;;   (fn [_ _] (toggle-workspace defs.workspaces/pixels)))
 
+(defkbd toggle-workspace-doctor-popup
+  [[:mod :shift] "p"]
+  (fn [_ _] (toggle-workspace defs.workspaces/doctor-popup)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; App toggling
