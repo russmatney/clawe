@@ -406,7 +406,6 @@ util = require 'util';
   ([_opts]
    ;; TODO consider filtering on passed tag names, current tag
    (->>
-     ^{:quiet? false}
      (fnl
        (local focused-window (if client.focus client.focus.window nil))
        (local m-client (awful.client.getmaster))

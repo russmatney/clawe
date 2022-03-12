@@ -18,10 +18,6 @@
         [
          ;; maybe
          {:rule {}
-          ;; :except_any
-          ;; {:name ["tauri/doctor-topbar" "tauri/doctor-popup"
-          ;;         "tauri/doctor-main"
-          ;;         ]}
           :properties
           {:border_width beautiful.border_width
            :border_color beautiful.border_normal
@@ -108,14 +104,6 @@
            :y 0
            :honor_padding false
            :honor_workarea false}}
-
-         {:rule
-          {:name "tauri/doctor-popup"}
-          :properties
-          {:floating true
-           :sticky true
-           :focusable false}}
-
 
          ;; ff fix
          {:rule {:class "firefox"}

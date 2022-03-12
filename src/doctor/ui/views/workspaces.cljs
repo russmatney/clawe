@@ -16,7 +16,7 @@
 ;; TODO dry this up across views
 (defn is-bar-app? [client]
   (and
-    (-> client :awesome.client/name #{"tauri/doctor-topbar" "tauri/doctor-popup"})
+    (-> client :awesome.client/name #{"tauri/doctor-topbar"})
     (-> client :awesome.client/focused not)))
 
 
