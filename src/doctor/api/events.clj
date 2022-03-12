@@ -4,7 +4,9 @@
    [manifold.stream :as s]
    [clawe.screenshots :as c.screenshots]
    [tick.core :as t]
-   [ralphie.notify :as notify]))
+   [ralphie.notify :as notify]
+   [doctor.api.todos :as todos]
+   ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; API
@@ -37,8 +39,12 @@
 
 (defn recent-events []
   (println "collecting recent events")
-  (let [scrs (c.screenshots/all-screenshots)]
-    (->> (concat (->> scrs (take 30)))
+  (let [scrs      (c.screenshots/all-screenshots)
+        org-todos (todos/build-org-todos)]
+    (->> (concat (->> scrs (take 30))
+                 (->> org-todos (take 30))
+
+                 )
          (map ->event)
          (into []))))
 
