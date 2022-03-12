@@ -2,8 +2,6 @@
   (:require [babashka.process :as proc]
             [ralphie.zsh :as zsh]
             [clojure.string :as string]
-
-
             [babashka.fs :as fs]))
 
 
@@ -22,11 +20,17 @@
         ;; could just renamed the ones in the wrong pattern to match the new ones
         reverse))))
 
+
+(defn fname->screenshot [f]
+  (let [fname (fs/file-name f)]
+    {:file/full-path         f
+     :file/web-asset-path    (str "/assets/screenshots/" fname)
+     :name                   fname
+     :screenshot/time-string (-> fname
+                                 (string/replace #"screenshot_" "")
+                                 (string/replace #".jpg" ""))}))
+
+
 (defn all-screenshots []
-  (let [paths (local-screenshot-file-paths)]
-    (->>
-      paths
-      (map (fn [f]
-             {:file/full-path      f
-              :file/web-asset-path (str "/assets/screenshots/" (fs/file-name f))
-              :name                (fs/file-name f)})))))
+  (->> (local-screenshot-file-paths)
+       (map fname->screenshot)))
