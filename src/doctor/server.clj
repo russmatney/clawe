@@ -15,7 +15,7 @@
    [doctor.api.workspaces :as d.workspaces]
    [doctor.api.topbar :as d.topbar]
    [doctor.api.todos :as d.todos]
-   [doctor.ui.views.screenshots :as screenshots]
+   [doctor.api.screenshots :as screenshots]
    [doctor.ui.views.wallpapers :as wallpapers]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
