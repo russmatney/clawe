@@ -360,7 +360,7 @@
 
        ;; bg toggle
        [:button {:on-click (fn [_] (swap! dark-bg? not))} "Bg Toggle"]
-       ]
+       [:button {:on-click (fn [_] (js/location.reload))} "Reload"]]
 
       ;; clock/host/metadata
       [clock-host-metadata topbar-state metadata]
