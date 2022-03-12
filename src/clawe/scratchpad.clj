@@ -31,6 +31,12 @@
     (let [wsp-name              (some wsp [:workspace/title])
           tag?                  (-> wsp :awesome.tag/name seq)
           clients               (-> wsp :awesome.tag/clients seq)
+          client-names          (-> wsp
+                                    :workspace/scratchpad-names
+                                    (conj (:workspace/scratchpad-name wsp))
+                                    (->>
+                                      (remove nil?)
+                                      (into #{})))
           client-classes        (-> wsp
                                     :workspace/scratchpad-classes
                                     (conj (:workspace/scratchpad-class wsp))
@@ -38,7 +44,11 @@
                                       (remove nil?)
                                       (into #{})))
           client                (if (seq client-classes)
-                                  (some->> clients (filter (comp client-classes :awesome.client/class)) first)
+                                  (some->> clients (filter
+                                                     #(or
+                                                        ((comp client-classes :awesome.client/class) %)
+                                                        ((comp client-names :awesome.client/name) %))
+                                                     ) first)
                                   (some->> clients first))
           rules-fn              (-> wsp :rules/apply)
           client-in-another-wsp (when (and (not client) (seq client-classes))
