@@ -318,6 +318,10 @@
   [[:mod :shift] "p"]
   (fn [_ _] (toggle-workspace defs.workspaces/doctor-popup)))
 
+(defkbd toggle-workspace-doctor-todo
+  [[:mod] "y"]
+  (fn [_ _] (toggle-workspace defs.workspaces/doctor-todo)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; App toggling
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

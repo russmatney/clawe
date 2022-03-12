@@ -25,7 +25,7 @@
 
 (def routes
   [["/" {:name :page/home}]
-   ["/todos" {:name :page/todos}]
+   ["/todo" {:name :page/todos}]
    ["/popup" {:name :page/popup}]
    ["/topbar" {:name :page/topbar}]
    ["/topbar-bg" {:name :page/topbar-bg}]

@@ -377,13 +377,27 @@
   awesome-rules
   {:workspace/exec "/usr/bin/gtk-launch google-chrome.desktop http://localhost:5600"})
 
+(defworkspace doctor-todo
+  awesome-rules
+  {:workspace/directory       "russmatney/clawe"
+   :workspace/exec            {:tmux/fire         "bb --config /home/russ/russmatney/clawe/bb.edn todo"
+                               :tmux/session-name "doctor-todo"
+                               :tmux/window-name  "doctor-todo"}
+   :workspace/initial-file    "bb.edn"
+   :workspace/scratchpad      true
+   :workspace/scratchpad-name "tauri/doctor-todo"
+   :rules/is-my-client?
+   (fn [c]
+     (let [matches                             #{"tauri/doctor-todo"}
+           {:awesome.client/keys [name class]} c]
+       (or (matches name) (matches class))))})
+
 (defworkspace doctor-popup
   awesome-rules
-  {:workspace/directory "russmatney/clawe"
-   :workspace/exec      {:tmux/fire         "bb --config /home/russ/russmatney/clawe/bb.edn popup"
-                         :tmux/session-name "doctor-popup"
-                         :tmux/window-name  "doctor-popup"}
-
+  {:workspace/directory       "russmatney/clawe"
+   :workspace/exec            {:tmux/fire         "bb --config /home/russ/russmatney/clawe/bb.edn popup"
+                               :tmux/session-name "doctor-popup"
+                               :tmux/window-name  "doctor-popup"}
    :workspace/initial-file    "bb.edn"
    :workspace/scratchpad      true
    :workspace/scratchpad-name "tauri/doctor-popup"
@@ -391,8 +405,7 @@
    (fn [c]
      (let [matches                             #{"tauri/doctor-popup"}
            {:awesome.client/keys [name class]} c]
-       (or (matches name) (matches class))))
-   })
+       (or (matches name) (matches class))))})
 
 (comment
   (tmux/fire (:workspace/exec doctor-popup))

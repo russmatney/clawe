@@ -68,7 +68,9 @@
       {:color "text-city-green-400"
        :src   "/assets/candy-icons/Zoom.svg"}
 
-      (#{"tauri/doctor-topbar" "tauri/doctor-popup"
+      (#{"tauri/doctor-topbar"
+         "tauri/doctor-popup"
+         "tauri/doctor-todo"
          "Tauri App"} name)
       {:color "text-city-blue-600"
        :icon  mdi/doctor}
