@@ -7,6 +7,7 @@
    ralphie.fzf
    ralphie.git
    ralphie.install
+   ralphie.lock
    ralphie.monitor
    ralphie.notify
    ralphie.org
