@@ -4,7 +4,8 @@
    [ralphie.notify :as notify]
 
    [babashka.process :as process]
-   [clojure.string :as string]))
+   [clojure.string :as string]
+   [ralphie.tmux :as tmux]))
 
 (defn create-client
   "Creates clients for a given workspace
@@ -24,10 +25,18 @@
     (case first-client
       :create/emacs (emacs/open {:emacs.open/workspace (:workspace/title wsp)
                                  :emacs.open/file      (or initial-file readme)})
-      :create/exec  (-> exec
-                        (string/split #" ")
-                        process/process
-                        process/check)
+      :create/exec
+      (cond
+        (and (map? exec) (:tmux/fire exec))
+        (tmux/fire exec)
+
+        (string? exec) (-> exec
+                           (string/split #" ")
+                           process/process
+                           process/check)
+
+        :else
+        (notify/notify "Unhandled workspace/exec:" exec))
 
       :create/none
       ;; NOTE maybe detect a readme in directories as well
