@@ -11,7 +11,9 @@
 
 (defhandler get-events []
   (println "get-events handler firing")
-  (api.events/recent-events))
+  (let [evts (api.events/recent-events)]
+    (println "returning evts in handler" (count evts))
+    evts))
 
 (defstream events-stream [] api.events/*events-stream*)
 
@@ -33,7 +35,8 @@
                                 (fn [_]
                                   (->> new-items
                                        ;; TODO this is not right
-                                       (w/distinct-by :events/timestamp)))))]
+                                       ;; (w/distinct-by :events/timestamp)
+                                       ))))]
 
        (with-rpc [] (get-events) handle-resp)
        (with-stream [] (events-stream) handle-resp)

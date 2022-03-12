@@ -36,14 +36,15 @@
     ))
 
 (defn recent-events []
-  (let [scrs (c.screenshots/all-screenshots)
-        ]
-    (->> (concat (->> scrs (take 30))
-                 )
-         (map ->event) (into []))))
+  (println "collecting recent events")
+  (let [scrs (c.screenshots/all-screenshots)]
+    (->> (concat (->> scrs (take 30)))
+         ;; (map ->event)
+         (into []))))
 
 (comment
   (recent-events))
+
 
 (defsys *events-stream*
   :start (s/stream)

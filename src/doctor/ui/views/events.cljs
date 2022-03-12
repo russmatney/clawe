@@ -1,9 +1,10 @@
 (ns doctor.ui.views.events
   (:require
    [doctor.ui.events :as events]
-   [uix.core.alpha :as uix]))
+   ;; [uix.core.alpha :as uix]
+   ))
 
-(defn event-comp [opts it]
+(defn event-comp [_opts it]
   [:div "event" (str it)])
 
 
@@ -21,7 +22,6 @@
      [:div
       [:h1 (->> items count)]]
 
-     (doall
-       (for [[i it] (->> items (map-indexed vector))]
-         ^{:key i}
-         [event-comp nil it]))]))
+     (for [[i it] (->> items (map-indexed vector))]
+       ^{:key i}
+       [event-comp nil it])]))

@@ -40,7 +40,7 @@
   [:div
    [:p.text-city-pink-100.p-4
     "No app selected, defaulting..."]
-   [views.screenshots/widget]])
+   [views.events/event-page]])
 
 (defn home [main]
   (let [params            (router/use-route-parameters)
