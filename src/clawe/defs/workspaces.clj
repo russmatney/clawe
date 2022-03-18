@@ -583,11 +583,21 @@
   ([user repos]
    (->> (zsh/expand-many (str "~/" user "/*"))
         (map path->repo-desc)
-        (filter (comp repos :repo/name)))))
+        ((fn [xs]
+           (if repos
+             (filter (comp repos :repo/name) xs)
+             xs))))))
 
 (comment
   (git-user->repo-descs "russmatney" #{"dotfiles" "clawe"})
-  (git-user->repo-descs "teknql"))
+  (git-user->repo-descs "teknql")
+
+  (->> (zsh/expand-many (str "~/" "teknql" "/*"))
+       (map path->repo-desc)
+       (filter (comp repos :repo/name)))
+
+  (git-user->repo-descs "teknql")
+  )
 
 
 ;; :git/check-status?   true
@@ -602,28 +612,43 @@
     (-> desc
         ((fn [x]
            (merge x
-                  (awesome-rules desc))))
+                  (defthing/initial-thing :clawe/workspaces name))))
+        ((fn [x]
+           (merge x
+                  (defworkspace/workspace-title x))))
+        ((fn [x]
+           (merge x
+                  (awesome-rules x))))
         ((fn [x]
            (merge x
                   {:workspace/directory (str user-name "/" name)
                    :workspace/readme    "README.md"})))
         ((fn [x]
            (merge x
-                  (workspace-repo x))))
-        ((fn [x]
-           (merge x
-                  (defthing/initial-thing :clawe/workspaces name))))
-        ((fn [x]
-           (merge x
-                  (defworkspace/workspace-title x)))))
+                  (workspace-repo x)))))
     (do
-      (println "Missing name or user-name")
-      (throw Exception))))
+      (println "Missing name or user-name" desc)
+      ;; (throw Exception)
+      )))
 
 (comment
+
+  (map git-user->repo-descs ["russmatney"
+                             "teknql"
+                             "borkdude"
+                             "godot"
+                             ])
+
+  (git-user->repo-descs "teknql")
+  (->
+    (git-user->repo-descs "teknql")
+    first
+    repo-desc->workspace)
+
+
   (def r
     (->>
-      (git-user->repo-descs "urbint")
+      (git-user->repo-descs "teknql")
       ;; (filter (comp #{"grid"} :repo-name))
       first
       ))
@@ -676,7 +701,9 @@
   ([user repos]
    (->>
      (git-user->repo-descs user repos)
-     (map repo-desc->workspace))))
+     (map repo-desc->workspace)
+     (remove nil?)
+     )))
 
 (comment
   (->>
@@ -685,6 +712,7 @@
     )
 
   (build-workspaces-for-git-user "urbint")
+  (build-workspaces-for-git-user "teknql")
   )
 
 (defn load-workspaces
@@ -692,14 +720,26 @@
   [repo-users-and-names]
 
   (notify/notify "loading-workspaces" repo-users-and-names)
+
   (->> repo-users-and-names
        (map (fn [arg]
+              (notify/notify "loading from arg" arg)
               (cond
-                (string? arg) (build-workspaces-for-git-user arg)
-                (vector? arg) (apply build-workspaces-for-git-user arg))))
-       (map defthing/add-thing)))
+                (string? arg)
+                (do
+                  (notify/notify "found string" arg)
+                  (build-workspaces-for-git-user arg))
+                (vector? arg)
+                (do
+                  (notify/notify "found filter" arg)
+                  (apply build-workspaces-for-git-user arg)))))
+       flatten
+       (map defthing/add-thing)
+       (map #(notify/notify "loaded" %))))
 
 (comment
+  (load-workspaces ["teknql"])
+
   (load-workspaces
     [["russmatney" #{"dotfiles"}]]
     )
@@ -713,12 +753,11 @@
                  "worker-safety-service"
                  "worker-safety-client"}]
      "borkdude"])
-  )
 
-(load-workspaces
-  [["urbint" #{"grid" "lens" "gitops"
-               "worker-safety-service"
-               "worker-safety-client"}]])
+  (load-workspaces
+    [["urbint" #{"grid" "lens" "gitops"
+                 "worker-safety-service"
+                 "worker-safety-client"}]]))
 
 (comment
   (->>

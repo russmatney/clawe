@@ -11,10 +11,11 @@
 
    ;; be sure to require all workspaces here
    ;; otherwise (all-workspaces) will be incomplete from consumers like doctor
-   clawe.defs.workspaces
+   [clawe.defs.workspaces :as defs.workspaces]
    clawe.defs.local.workspaces
 
-   [clawe.workspaces.create :as wsp.create]))
+   [clawe.workspaces.create :as wsp.create]
+   [clojure.string :as string]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Workspace helpers
@@ -141,10 +142,15 @@
 (comment
   (->>
     (latest-db-workspaces)
+    count
     )
+  (->>
+    (defworkspace/list-workspaces)
+    count)
   )
 
 
+;; TODO roundtrip test these
 (defn update-db-workspace [w]
   (let [existing (get-db-workspace w)
         db-id    (:db/id existing)]
@@ -156,13 +162,70 @@
                                   :workspace/directory
                                   :workspace/initial-file
                                   :git/repo
-                                  :db/id])
+                                  :db/id
+                                  :awesome/rules
+                                  ])
 
                     true
                     (assoc :workspace/updated-at (System/currentTimeMillis))
 
                     (and db-id (not (:db/id w)))
                     (assoc :db/id db-id))])))
+
+(comment
+
+  ;; load workspaces into memory
+  (defs.workspaces/load-workspaces
+    [["russmatney" #{"dotfiles"}]]
+    )
+
+  (def w
+    (->>
+      (defworkspace/list-workspaces)
+      (filter (comp (fnil #(string/includes? % "aave") "") :workspace/title))
+      first
+      ))
+
+  (->>
+    (latest-db-workspaces)
+    ;; (filter (comp (fnil #(string/includes? % "aave") "") :workspace/title))
+    (map :workspace/title)
+    )
+
+  (get-db-workspace w)
+
+  (defs.workspaces/load-workspaces ["teknql"])
+  (defs.workspaces/load-workspaces
+    ["russmatney"
+     "teknql"
+     "borkdude"
+     "godot"
+     ])
+
+  [["russmatney" #{"dotfiles" "protomoon"}]
+   "teknql"
+   ["urbint" #{"grid" "lens" "gitops"
+               "worker-safety-service"
+               "worker-safety-client"}]
+   "borkdude"]
+
+  (defs.workspaces/load-workspaces
+    [["urbint" #{"grid" "lens" "gitops"
+                 "worker-safety-service"
+                 "worker-safety-client"}]])
+
+  (->>
+    (defworkspace/list-workspaces)
+    (filter (comp (fnil #(string/includes? % "urbint") "") :workspace/directory))
+    count
+    )
+
+  ;; write in-memory workspaces to the db
+  (->>
+    (defworkspace/list-workspaces)
+    (map update-db-workspace)
+    )
+  )
 
 (defn merge-db-workspaces
   ([wsps]
@@ -198,6 +261,53 @@
   (merge-db-workspaces --w)
   )
 
+(comment
+  ({:a "a" :b "b"} {:b "b" :c "c"})
+  )
+
+
+;; TODO tests for this
+(defn db-with-merged-in-memory-workspaces []
+  (let [db-workspaces   (latest-db-workspaces)
+        ->title         (fn [wsp] (:workspace/title wsp))
+        by-title        (fn [wsps] (->> wsps
+                                        (map (fn [wsp] [(->title wsp) wsp]))
+                                        (into {})))
+        in-mem-wspcs    (defworkspace/list-workspaces)
+        in-mem-by-title (by-title in-mem-wspcs)
+        db-by-title     (by-title db-workspaces)
+
+        db-only (->> db-workspaces
+                     (remove (comp in-mem-by-title ->title)))
+
+        in-mem-only (->> in-mem-wspcs
+                         (remove (comp db-by-title ->title)))
+
+        merged (->> db-workspaces
+                    (filter (comp in-mem-by-title ->title))
+                    (map (fn [db-wsp]
+                           (let [in-mem-wsp (in-mem-by-title (->title db-wsp))]
+                             (merge db-wsp in-mem-wsp)))))
+        ]
+    (concat
+      merged
+      db-only
+      in-mem-only)))
+
+(comment
+  (->>
+    (db-with-merged-in-memory-workspaces)
+    count
+    )
+
+
+  (->>
+    (db-with-merged-in-memory-workspaces)
+    (filter (comp (fnil #(string/includes? % "urbint") "") :workspace/directory))
+    count
+    )
+  )
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Workspaces fetchers
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -230,9 +340,9 @@
   []
   ;; TODO why don't `load-workspaces` wsps get included here? can it be tested?
   (->>
-    (defworkspace/list-workspaces)
+    (db-with-merged-in-memory-workspaces)
     (merge-awm-tags {:include-unmatched? true})
-    merge-db-workspaces
+    ;; merge-db-workspaces
     ;; (map apply-git-status)
     ))
 
@@ -240,6 +350,14 @@
   (set! *print-length* 10)
   (->>
     (all-workspaces)
+    count)
+  (->>
+    (db-with-merged-in-memory-workspaces)
+    (merge-awm-tags {:include-unmatched? true}))
+  (->>
+    (defworkspace/list-workspaces)
+    (merge-awm-tags {:include-unmatched? true})
+    merge-db-workspaces
     count)
   (->>
     (defworkspace/list-workspaces)

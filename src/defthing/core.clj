@@ -24,7 +24,8 @@
      [:error :missing-type]))
   ([thing-key x]
    (swap! registry* assoc-in
-          [thing-key (::registry-key x)] x)))
+          [thing-key (::registry-key x)] x)
+   x))
 
 (defn list-things
   "Helper for building a `list-thing` function."

@@ -19,7 +19,7 @@
          [(when wsp {:rofi/label     "Create Workspace Client"
                      :rofi/on-select (fn [_]
                                        ;; TODO detect if workspace client is already open
-                                       ;; wrap these nil-punning actions-list api
+                                       ;; wrap these in a nil-punning actions-list api
                                        (r.notify/notify "Creating client for workspace")
                                        (wsp.create/create-client wsp))})
 
@@ -27,12 +27,16 @@
            :rofi/on-select (fn [_] (r.notify/notify "A quick doctor checkup?"
                                                     "Or the time of day?"))}
 
+          ;; TODO get more current-workspace suggestions going
+          ;; TODO sourcing bb-tasks and owning tmux sessions comes to mind
+
           (when (and wsp (r.git/repo? (workspaces/workspace-repo wsp)))
             {:rofi/label     (str "Fetch repo upstream: " (workspaces/workspace-repo wsp))
              :rofi/on-select (fn [_]
                                (r.notify/notify "Fetching upstream for workspace")
                                ;; TODO support fetching via ssh-agent
                                (r.git/fetch (workspaces/workspace-repo wsp)))})]
+         ;; add clone suggestions for open tabs and the clipboard
          (r.git/rofi-clone-suggestions-fast)
          (->>
            (defkbd/list-bindings)
