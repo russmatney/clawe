@@ -43,7 +43,9 @@
            (map defkbd/->rofi))
          (->>
            (defcom/list-commands)
-           (map r.core/defcom->rofi)))
+           (map r.core/defcom->rofi))
+         (->> (workspaces/open-workspace-rofi-options)
+              (map #(assoc % :rofi/label (str "Open wsp: " (:rofi/label %))))))
        (remove nil?)))))
 
 (comment
@@ -71,3 +73,7 @@
     (->> (m-x-commands {:wsp wsp})
          (r.rofi/rofi {:require-match? true
                        :msg            "Clawe commands"}))))
+
+(comment
+  (defcom/exec m-x)
+  )
