@@ -300,11 +300,6 @@
                       (awm/move-client-to-tag (:awesome.client/window client) "pixels"))))}
   workspace-repo)
 
-(defworkspace tiles
-  {:workspace/directory    "/home/russ/Dropbox/tiles"
-   :workspace/initial-file "/home/russ/Dropbox/tiles/readme.org"}
-  workspace-repo)
-
 (defworkspace steam
   {:rules/apply
    (fn []
@@ -315,11 +310,6 @@
            steam-client)
          (awm/ensure-tag "steam")
          (awm/move-client-to-tag (:awesome.client/window steam-client) "steam"))))})
-
-(defworkspace audacity)
-
-(defworkspace lichess
-  {:workspace/exec "/usr/bin/gtk-launch firefox.desktop http://lichess.org"})
 
 (defworkspace zoom
   {:awesome/rules (awm-workspace-rules "zoom" "Zoom" "Slack call")}
@@ -381,116 +371,20 @@
   {:workspace/directory "Dropbox/todo/garden"}
   workspace-repo)
 
-(defworkspace todo
-  {:workspace/directory    "Dropbox/todo"
-   :workspace/initial-file "projects.org"}
-  workspace-repo)
-
-(defworkspace blog
-  {:workspace/directory "russmatney/blog-gatsby"}
-  workspace-repo)
-
-(defworkspace writing
-  {:workspace/directory "/home/russ/Dropbox/Writing"}
-  workspace-repo)
-
 (defworkspace ink
   {:workspace/directory "/home/russ/Dropbox/todo/ink"}
   workspace-repo)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Ralphie, Clawe, Dotfiles, Emacs config
+;; Doctor apps
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defworkspace clawe
-  {:git/check-status?   true
-   :workspace/directory "russmatney/clawe"}
-  workspace-repo)
-
-
-(defworkspace ralphie
-  {:git/check-status?   true
-   :workspace/directory "russmatney/ralphie"}
-  workspace-repo)
-
-(defworkspace dotfiles
-  {:git/check-status?   true
-   :workspace/directory "russmatney/dotfiles"}
-  workspace-repo)
-
-(defworkspace emacs
-  {:workspace/directory    ".doom.d"
-   :workspace/initial-file "init.el"
-   :git/check-status?      true}
-  workspace-repo)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Bindings, Workspaces, Util
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defworkspace bindings
-  {:workspace/directory "russmatney/clawe"
-   :workspace/files
-   ["/home/russ/.doom.d/+bindings.el"
-    "/home/russ/russmatney/clawe/src/clawe/defs/bindings.clj"
-    "/home/russ/russmatney/clawe/awesome/bindings.fnl"]}
-  workspace-repo)
-
-(defworkspace workspaces
-  {:workspace/directory "russmatney/clawe"
-   :workspace/files     ["/home/russ/russmatney/clawe/src/clawe/defs/workspaces.clj"]}
-  workspace-repo)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Vapor, game repos, lovejs tools
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defworkspace vapor
-  {:workspace/directory "russmatney/vapor"}
-  workspace-repo)
-
-(defworkspace platformer
-  {:workspace/directory "russmatney/platformer"}
-  workspace-repo)
-
-(defworkspace beatemup
-  {:workspace/directory "russmatney/beatemup"}
-  workspace-repo)
-
-(defworkspace lovejs
-  {:workspace/directory "Davidobot/love.js"})
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; misc ~/russmatney/ repos
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defworkspace doctor
-  "A plasma app that records logs and reports misc statuses."
-  {:workspace/directory "russmatney/doctor"
-   :git/check-status?   true}
-  workspace-repo)
-
-(defworkspace scratch
-  {:workspace/directory "russmatney/scratch"}
-  workspace-repo)
-
-(defworkspace yodo
-  {:workspace/directory "russmatney/yodo-two"}
-  workspace-repo)
-
-(defworkspace yodo-dev
-  {:workspace/directory "russmatney/yodo-two"}
-  workspace-repo)
-
-(defworkspace yodo-app
-  {:workspace/exec "/usr/bin/gtk-launch google-chrome.desktop http://localhost:5600"})
 
 (defworkspace doctor-todo
-  {:workspace/directory       "russmatney/clawe"
+  {:workspace/directory       "Dropbox/todo"
    :workspace/exec            {:tmux/fire         "bb --config /home/russ/russmatney/clawe/bb.edn todo"
                                :tmux/session-name "doctor-todo"
                                :tmux/window-name  "doctor-todo"}
-   :workspace/initial-file    "bb.edn"
+   :workspace/initial-file    "projects.org"
    :workspace/scratchpad      true
    :workspace/scratchpad-name "tauri/doctor-todo"
    :rules/is-my-client?
@@ -518,127 +412,17 @@
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Borkdude repos
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defworkspace sci
-  {:workspace/directory "borkdude/sci"}
-  workspace-repo)
-
-(defworkspace carve
-  {:workspace/directory "borkdude/carve"}
-  workspace-repo)
-
-(defworkspace clj-kondo
-  {:workspace/directory "borkdude/clj-kondo"}
-  workspace-repo)
-
-(defworkspace babashka
-  {:workspace/directory "borkdude/babashka"}
-  workspace-repo)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Clojure repos
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defworkspace datalevin
-  {:workspace/directory "juji-io/datalevin"}
-  workspace-repo)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Emacs repos
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defworkspace emacs
+  {:workspace/directory    ".doom.d"
+   :workspace/initial-file "init.el"
+   :git/check-status?      true}
+  workspace-repo)
 
 (defworkspace doom-emacs
   {:workspace/color        "#aaee88"
    :workspace/directory    ".emacs.d"
    :workspace/initial-file "docs/index.org"}
-  workspace-repo)
-
-(defworkspace treemacs
-  {:workspace/directory "Alexander-Miller/treemacs"}
-  workspace-repo)
-
-(defworkspace git-summary
-  {:workspace/directory "MirkoLedda/git-summary"}
-  workspace-repo)
-
-(defworkspace clomacs
-  {:workspace/directory "clojure-emacs/clomacs"}
-  workspace-repo)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Org roam dev
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defworkspace org-roam
-  {:workspace/directory "org-roam/org-roam"}
-  workspace-repo)
-
-(defworkspace org-roam-server
-  {:workspace/directory "org-roam/org-roam-server"}
-  workspace-repo)
-
-(defworkspace md-roam
-  {:workspace/directory "nobiot/md-roam"}
-  workspace-repo)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Lua Repos
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defworkspace awesomewm
-  {:workspace/directory "awesomeWM/awesome"
-   :workspace/readme    "README.md"}
-  workspace-repo)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Misc
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defworkspace aseprite
-  {:workspace/directory "aseprite/aseprite"}
-  workspace-repo)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Camsbury
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; TODO this should be generated by my ralphie-clone command
-(defworkspace camsbury-config
-  {:workspace/directory "Camsbury/config"}
-  workspace-repo)
-
-(defworkspace camsbury-xndr
-  {:workspace/directory "Camsbury/xndr"}
-  workspace-repo)
-
-(defworkspace camsbury-bobby
-  {:workspace/directory "Camsbury/bobby"}
-  workspace-repo)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; abo-abo
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defworkspace abo-abo-hydra
-  "A tool for chaining key presses in emacs."
-  {:workspace/directory "abo-abo/hydra"}
-  workspace-repo)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; baskerville
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defworkspace baskerville-sxhkd
-  "A keybinding daemon."
-  {:workspace/directory "baskerville/sxhkd"}
-  workspace-repo)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; apache
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defworkspace apache-superset
-  {:workspace/directory "apache/superset"}
   workspace-repo)

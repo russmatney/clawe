@@ -12,7 +12,6 @@
    ;; be sure to require all workspaces here
    ;; otherwise (all-workspaces) will be incomplete from consumers like doctor
    [clawe.defs.workspaces :as defs.workspaces]
-   clawe.defs.local.workspaces
 
    [clawe.workspaces.create :as wsp.create]
    [clojure.string :as string]

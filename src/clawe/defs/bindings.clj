@@ -20,7 +20,6 @@
 
    [clawe.awesome :as c.awm] ;; DEPRECATED
    [clawe.defs.workspaces :as defs.workspaces]
-   [clawe.defs.local.workspaces :as defs.local.workspaces]
    [clawe.m-x :as c.m-x]
    [clawe.scratchpad :as scratchpad]
    [clawe.workspaces :as workspaces]
@@ -272,8 +271,7 @@
   (update-topbar))
 
 (comment
-  (workspaces/merge-awm-tags defs.workspaces/dev-browser)
-  (-> defs.local.workspaces/editor toggle-workspace))
+  (workspaces/merge-awm-tags defs.workspaces/dev-browser))
 
 ;; these should come for free, with :binding/scratchpad options
 (defkbd toggle-workspace-journal
