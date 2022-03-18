@@ -32,10 +32,7 @@
 
 (comment
   (->> (bb-tasks-for-wsp (workspaces/current-workspace))
-       (r.rofi/rofi "hi")
-       )
-  )
-
+       (r.rofi/rofi "hi")))
 
 (defn m-x-commands
   ([] (m-x-commands nil))

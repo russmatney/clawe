@@ -15,7 +15,8 @@
    clawe.defs.local.workspaces
 
    [clawe.workspaces.create :as wsp.create]
-   [clojure.string :as string]))
+   [clojure.string :as string]
+   [ralphie.zsh :as zsh]))
 
 (defn update-topbar []
   (slurp "http://localhost:3334/topbar/update"))
@@ -191,7 +192,46 @@
                     (and db-id (not (:db/id w)))
                     (assoc :db/id db-id))])))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Interactive workspace creation
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn local-git-users []
+  (->>
+    (zsh/expand-many "~/*")
+    (filter #(string/starts-with? % "/home/russ/"))
+    (map #(string/replace % "/home/russ/" ""))))
+
+(defn select-local-git-user []
+  (rofi/rofi {:msg "Select git user"} (local-git-users)))
+
+(defcom install-workspaces
+  "Walks through selecting one or more repos, converts them to workspaces,
+  and add them to the db."
+
+  (let [git-user   (select-local-git-user)
+        wsps       (defs.workspaces/build-workspaces-for-git-user git-user)
+        all-option {:rofi/label (str "Install all " git-user " workspaces")}
+        selected   (->> (concat [all-option]
+                                (->> wsps
+                                     (map (fn [wsp]
+                                            (assoc wsp :rofi/label
+                                                   (str "Install " git-user "/" (:workspace/title wsp)))))))
+                        (rofi/rofi {:msg "Install workspace for which repo?"}))]
+    (if (= all-option selected)
+      (do
+        (notify/notify "installing all workspaces for" git-user)
+        (map update-db-workspace wsps))
+      (do
+        (notify/notify "installing workspace" (str git-user "/" (:workspace/title selected)))
+        (update-db-workspace selected)))
+
+    (notify/notify "Installed workspaces.")))
+
 (comment
+
+  (defcom/exec install-workspaces)
+
   (def w
     (->>
       (defworkspace/list-workspaces)
@@ -234,6 +274,9 @@
 
   (->> (defworkspace/list-workspaces) count)
   )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn merge-db-workspaces
   ([wsps]
