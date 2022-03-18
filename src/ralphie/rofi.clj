@@ -13,6 +13,25 @@
 (defn escape-rofi-label [label]
   (string/escape label {\& "&amp;"}))
 
+(defn build-label
+  "Builds a better looking label when :rofi/label and :rofi/description are set.
+
+  If no :rofi/label, or if the existing one starts with a `<` (i.e. `<span>`),
+  it is left as is."
+  [{:rofi/keys [label description] :as x}]
+  (cond
+    (not label)           x
+    (#{\<} (first label)) x
+    :else
+    (assoc x :rofi/label
+           (str "<span>" label "</span>"
+                (when description (str " <span color='gray'>" description "</span>"))))))
+
+(comment
+  (build-label {:rofi/label "hi"})
+  (build-label {:rofi/label "hi" :rofi/description "desc"})
+  )
+
 ;; TODO Tests for this,especially that ensure the result is returned
 (defn rofi
   "Expects `xs` to be a coll of maps with a `:label` key.
@@ -43,10 +62,12 @@
        "end;"))
 
    (let [maps?  (-> xs first map?)
+         xs     (if maps? (->> xs (map build-label)) xs)
          labels (if maps? (->> xs
                                (map (some-fn :label :rofi/label))
                                (map escape-rofi-label)
-                               ) xs)
+                               )
+                    xs)
          msg    (or msg message)
 
          selected-label
