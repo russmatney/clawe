@@ -7,7 +7,34 @@
    [ralphie.rofi :as r.rofi]
    [ralphie.core :as r.core]
    [ralphie.git :as r.git]
-   [defthing.defkbd :as defkbd]))
+   [ralphie.bb :as r.bb]
+   [defthing.defkbd :as defkbd]
+   [ralphie.tmux :as tmux]))
+
+(defn bb-tasks-for-wsp [wsp]
+  (let [dir      (:workspace/directory wsp)
+        bb-tasks (r.bb/tasks dir)]
+    (->> bb-tasks
+         (map (fn [{:bb.task/keys [cmd description] :as task}]
+                (println task)
+                (assoc
+                  task
+                  :rofi/label (str "bb task: " cmd)
+                  :rofi/description description
+                  :rofi/on-select (fn [_]
+                                    (println "bb task on-select" task wsp)
+                                    (tmux/fire
+                                      {:tmux/fire         (str "bb " cmd)
+                                       :tmux/session-name (:workspace/title wsp)
+                                       :tmux/window-name  (:workspace/title wsp)
+                                       ;; TODO support killing whatevers running
+                                       }))))))))
+
+(comment
+  (->> (bb-tasks-for-wsp (workspaces/current-workspace))
+       (r.rofi/rofi "hi")
+       )
+  )
 
 
 (defn m-x-commands
@@ -23,27 +50,32 @@
                                        (r.notify/notify "Creating client for workspace")
                                        (wsp.create/create-client wsp))})
 
-          {:rofi/label     "Suggest more things here! <small> but don't get distracted </small>"
-           :rofi/on-select (fn [_] (r.notify/notify "A quick doctor checkup?"
-                                                    "Or the time of day?"))}
-
-          ;; TODO get more current-workspace suggestions going
-          ;; TODO sourcing bb-tasks and owning tmux sessions comes to mind
-
           (when (and wsp (r.git/repo? (workspaces/workspace-repo wsp)))
             {:rofi/label     (str "Fetch repo upstream: " (workspaces/workspace-repo wsp))
              :rofi/on-select (fn [_]
                                (r.notify/notify "Fetching upstream for workspace")
                                ;; TODO support fetching via ssh-agent
                                (r.git/fetch (workspaces/workspace-repo wsp)))})]
-         ;; add clone suggestions for open tabs and the clipboard
-         (r.git/rofi-clone-suggestions-fast)
+
+         ;; clone suggestions from open tabs and the clipboard
+         (->>
+           (r.git/rofi-clone-suggestions-fast)
+           (map (fn [x] (assoc x :rofi/label (str "Clone: " (:rofi/label x))))))
+
+         ;; run bb tasks for the current workspace
+         (bb-tasks-for-wsp wsp)
+
+         ;; all bindings
          (->>
            (defkbd/list-bindings)
            (map defkbd/->rofi))
+
+         ;; all defcoms
          (->>
            (defcom/list-commands)
            (map r.core/defcom->rofi))
+
+         ;; open a known workspace
          (->> (workspaces/open-workspace-rofi-options)
               (map #(assoc % :rofi/label (str "Open wsp: " (:rofi/label %))))))
        (remove nil?)))))
