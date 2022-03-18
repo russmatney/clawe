@@ -218,12 +218,16 @@
    (print "init_spawns")
    (awful.spawn "~/.config/awesome/autorun.sh" false)
    (awful.spawn "xset r rate 170 60" false)
+   (awful.spawn "picom" false)
 
    ;; reapply rules after restoring state of clients/tags
    (print "reapplying rules")
    (_G.reapply_rules)
    (clawe.cmd "clawe-apply-rules")
    (reload-doctor)
+
+   (print "restarting topbar")
+   (awful.spawn "systemctl --user restart doctor-topbar" false)
 
    (print "------------------Awesome Init Complete---------")))
 

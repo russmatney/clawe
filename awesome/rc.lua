@@ -1,5 +1,5 @@
-print("\n\n\nWelcome to a new awesome lifespan!\n")
--- TODO add the date/some timestamp/a random quote
+print("\n\n-------------------------------------------------\nWelcome to a new awesome lifespan!")
+print(os.date())
 
 -- If LuaRocks is installed, make sure that packages installed through it are
 -- found (e.g. lgi). If LuaRocks is not installed, do nothing.
