@@ -59,16 +59,17 @@
 
 ;; TODO there's probably some better way, like just parsing bb.edn directly...
 (defn tasks [dir]
-  (let [dir (zsh/expand dir)]
-    (->
-      ^{:dir dir :out :string}
-      ($ bb tasks)
-      process/check
-      :out
-      string/split-lines
-      (->>
-        (drop 2)
-        (map parse-task)))))
+  (when dir
+    (let [dir (zsh/expand dir)]
+      (->
+        ^{:dir dir :out :string}
+        ($ bb tasks)
+        process/check
+        :out
+        string/split-lines
+        (->>
+          (drop 2)
+          (map parse-task))))))
 
 (comment
   (tasks "~/russmatney/clawe")

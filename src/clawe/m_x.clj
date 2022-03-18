@@ -12,11 +12,9 @@
    [ralphie.tmux :as tmux]))
 
 (defn bb-tasks-for-wsp [wsp]
-  (let [dir      (:workspace/directory wsp)
-        bb-tasks (r.bb/tasks dir)]
-    (->> bb-tasks
+  (when-let [dir (:workspace/directory wsp)]
+    (->> (r.bb/tasks dir)
          (map (fn [{:bb.task/keys [cmd description] :as task}]
-                (println task)
                 (assoc
                   task
                   :rofi/label (str "bb task: " cmd)
