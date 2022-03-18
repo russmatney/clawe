@@ -25,6 +25,7 @@
   ([thing-key x]
    (swap! registry* assoc-in
           [thing-key (::registry-key x)] x)
+   ;; return x
    x))
 
 (defn list-things

@@ -17,6 +17,9 @@
    [clawe.workspaces.create :as wsp.create]
    [clojure.string :as string]))
 
+(defn update-topbar []
+  (slurp "http://localhost:3334/topbar/update"))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Workspace helpers
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -147,24 +150,40 @@
   (->>
     (defworkspace/list-workspaces)
     count)
+
+
+  (type 6)
+  (type "B")
+  (type true)
   )
 
+(def supported-types (->> [6 "hi" true]
+                          (map type)
+                          (into #{})))
+
+(defn supported-type-keys [m]
+  (->>
+    m
+    (filter (fn [[_k v]]
+              (supported-types (type v))))
+    (map first)))
+
+(comment
+  (supported-type-keys {:hello     "goodbye"
+                        :some-int  5
+                        :some-bool false
+                        :some-fn   (fn [] (print "complexity!"))
+                        })
+  )
 
 ;; TODO roundtrip test these
 (defn update-db-workspace [w]
-  (let [existing (get-db-workspace w)
-        db-id    (:db/id existing)]
+  (let [existing   (get-db-workspace w)
+        db-id      (:db/id existing)
+        basic-keys (supported-type-keys w)]
     (db/transact [(cond-> w
                     true
-                    (select-keys [:name
-                                  :workspace/title
-                                  :workspace/display-name
-                                  :workspace/directory
-                                  :workspace/initial-file
-                                  :git/repo
-                                  :db/id
-                                  :awesome/rules
-                                  ])
+                    (select-keys basic-keys)
 
                     true
                     (assoc :workspace/updated-at (System/currentTimeMillis))
@@ -173,18 +192,13 @@
                     (assoc :db/id db-id))])))
 
 (comment
-
-  ;; load workspaces into memory
-  (defs.workspaces/load-workspaces
-    [["russmatney" #{"dotfiles"}]]
-    )
-
   (def w
     (->>
       (defworkspace/list-workspaces)
       (filter (comp (fnil #(string/includes? % "aave") "") :workspace/title))
       first
       ))
+  (update-db-workspace w)
 
   (->>
     (latest-db-workspaces)
@@ -199,15 +213,7 @@
     ["russmatney"
      "teknql"
      "borkdude"
-     "godot"
-     ])
-
-  [["russmatney" #{"dotfiles" "protomoon"}]
-   "teknql"
-   ["urbint" #{"grid" "lens" "gitops"
-               "worker-safety-service"
-               "worker-safety-client"}]
-   "borkdude"]
+     "godot"])
 
   (defs.workspaces/load-workspaces
     [["urbint" #{"grid" "lens" "gitops"
@@ -217,14 +223,16 @@
   (->>
     (defworkspace/list-workspaces)
     (filter (comp (fnil #(string/includes? % "urbint") "") :workspace/directory))
-    count
-    )
+    count)
+
+  ;; load workspaces into memory
+  (defs.workspaces/load-workspaces [["russmatney" #{"dotfiles"}]])
+  (defs.workspaces/load-workspaces ["teknql"])
 
   ;; write in-memory workspaces to the db
-  (->>
-    (defworkspace/list-workspaces)
-    (map update-db-workspace)
-    )
+  (->> (defworkspace/list-workspaces) (map update-db-workspace))
+
+  (->> (defworkspace/list-workspaces) count)
   )
 
 (defn merge-db-workspaces
@@ -237,7 +245,6 @@
                                (map (fn [w]
                                       [(:workspace/title w) w]))
                                (into {}))]
-     (def --db-ws db-wsps-by-title)
      (cond->> wsps
        true (map (fn [wsp]
                    (if-let [db-wsp (db-wsps-by-title (:workspace/title wsp))]
@@ -287,8 +294,7 @@
                     (filter (comp in-mem-by-title ->title))
                     (map (fn [db-wsp]
                            (let [in-mem-wsp (in-mem-by-title (->title db-wsp))]
-                             (merge db-wsp in-mem-wsp)))))
-        ]
+                             (merge db-wsp in-mem-wsp)))))]
     (concat
       merged
       db-only
@@ -297,9 +303,7 @@
 (comment
   (->>
     (db-with-merged-in-memory-workspaces)
-    count
-    )
-
+    count)
 
   (->>
     (db-with-merged-in-memory-workspaces)
@@ -509,7 +513,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn create-workspace
-  "Creates a new tag, focuses it, and run the workspace's on-create hook."
+  "Creates a new tag and focuses it, and run the workspace's on-create hook."
   [wsp]
   (let [name (workspace-name wsp)]
 
@@ -536,6 +540,12 @@
             ;; or had no tag
             (not (:awesome.tag/name wsp)))
       (wsp.create/create-client wsp))
+
+    ;; update workspace indexes
+    (update-workspace-indexes)
+
+    ;; update topbar
+    (update-topbar)
 
     ;; return the workspace
     wsp))
@@ -564,20 +574,34 @@
       (when needs-push? (str "<span color='#aa88ee' size='small'>" "#needs-push" "</span> "))
       (when needs-pull? (str "<span color='#38b98a' size='small'>" "#needs-pull" "</span> ")))))
 
+(defn workspace-rofi-options []
+  (->> (all-workspaces)
+       (map #(assoc % :rofi/label (wsp->repo-and-status-label %)))))
+
+(defn open-workspace-rofi-options []
+  (->>
+    (workspace-rofi-options)
+    (map #(assoc % :rofi/on-select (fn [wsp]
+                                     (create-workspace wsp)
+                                     )))))
+
+
 (defn select-workspace
   "Opens a list of workspaces in rofi.
   Returns the selected workspace."
   []
   (rofi/rofi
     {:msg "New Workspace Name?"}
-    (->>
-      (all-workspaces)
-      ;; TODO get git statuses cached and keep this performant
-      ;; (map apply-git-status)
-      ;; (sort-by (comp not (some-fn :git/dirty? :git/needs-push? :git/needs-pull?)))
-      ;; TODO create :rofi/label multimethod
-      (map #(assoc % :rofi/label (wsp->repo-and-status-label %)))
-      seq)))
+    (workspace-rofi-options)))
+
+(comment
+  (select-workspace)
+
+  (repeat 100)
+
+  (workspace-rofi-options)
+
+  )
 
 (defn open-workspace
   ([] (open-workspace nil))
@@ -586,8 +610,7 @@
    (if name
      (-> name for-name create-workspace)
      ;; no name passed, get from rofi
-     (some-> (select-workspace) create-workspace))
-   (update-workspace-indexes)))
+     (some-> (select-workspace) create-workspace))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; toggle workspace names

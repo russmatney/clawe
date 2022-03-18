@@ -1,7 +1,6 @@
 (ns clawe.defs.workspaces
   (:require
    [clojure.string :as string]
-   [clojure.set :as set]
 
    [defthing.defworkspace :as defworkspace :refer [defworkspace]]
    [defthing.core :as defthing]
@@ -69,6 +68,135 @@
      :workspace/directory    (str "/home/russ/" directory)
      :workspace/readme       (str "/home/russ/" directory "/" readme-path)
      :workspace/initial-file (str "/home/russ/" directory "/" (or initial-file readme-path))}))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Dynamic workspace helpers
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn path->repo-desc [path]
+  (let [reversed (-> path (string/split #"/") reverse)]
+    {:repo/name      (first reversed)
+     :repo/user-name (second reversed)
+     :repo/path      path}))
+
+(defn git-user->repo-descs
+  "Expects a user or org (a repo prefix).
+  Expands `~/<user>/*` via zsh and describes repos in there,
+  via `path->repo-desc`
+
+  (git-user->repo-descs \"russmatney\")
+
+  => { :repo/name \"bb-cli\", :repo/user-name \"russmatney\", :repo/path \"/home/russ/russmatney/bb-cli\" }
+  ...etc.
+  "
+  ([user] (git-user->repo-descs user nil))
+  ([user repos]
+   (->> (zsh/expand-many (str "~/" user "/*"))
+        (map path->repo-desc)
+        ((fn [xs]
+           (if repos
+             (filter (comp repos :repo/name) xs)
+             xs))))))
+
+;; :git/check-status?   true
+;; TODO minimal way to opt-in to expensive git status checks?
+;;  maybe db toggles via rofi
+;;  or a git dashboard across all these
+
+;; TODO rewrite to be less crazy
+(defn repo-desc->workspace
+  [{:repo/keys [name user-name _path] :as desc}]
+  (if (and name user-name)
+    (-> desc
+        ((fn [x]
+           (merge x
+                  (defthing/initial-thing :clawe/workspaces name))))
+        ((fn [x]
+           (merge x
+                  (defworkspace/workspace-title x))))
+        ((fn [x]
+           (merge x
+                  {:workspace/directory (str user-name "/" name)
+                   :workspace/readme    "README.md"})))
+        ((fn [x]
+           (merge x
+                  (workspace-repo x)))))
+    (do
+      (println "Missing name or user-name" desc)
+      ;; (throw Exception)
+      )))
+
+(comment
+  (git-user->repo-descs "teknql")
+  (->
+    (git-user->repo-descs "teknql")
+    first
+    repo-desc->workspace))
+
+
+(defn build-workspaces-for-git-user
+  ([user] (build-workspaces-for-git-user user nil))
+  ([user repos]
+   (->>
+     (git-user->repo-descs user repos)
+     (map repo-desc->workspace)
+     (remove nil?))))
+
+(comment
+  (->>
+    (defworkspace/list-workspaces)
+    (filter (comp (fnil #(string/includes? % "urbint") "") :repo/user-name))
+    )
+
+  (build-workspaces-for-git-user "urbint")
+  (build-workspaces-for-git-user "teknql")
+  )
+
+(defn load-workspaces
+  "Loads current workspace state into the clawe db, from whence it shall be read.
+
+  Expects a list of git user names or vectors with a set of repos to filter by.
+
+  Ex: (load-workspaces [\"teknql\" [\"russmatney\" #{\"dotfiles\" \"clawe\"}]])
+  This will load all `~/teknql/*` repos, `~/russmatney/dotfiles`, `~/russmatney/clawe`."
+  [repo-users-and-names]
+  (notify/notify "loading-workspaces" repo-users-and-names)
+
+  (->> repo-users-and-names
+       (map (fn [arg]
+              (cond
+                (string? arg)
+                (build-workspaces-for-git-user arg)
+                (vector? arg)
+                (apply build-workspaces-for-git-user arg))))
+       flatten
+       (map defthing/add-thing)
+       (map #(notify/notify "loaded" (:repo/path %)))))
+
+(comment
+  (load-workspaces ["teknql"])
+
+  (load-workspaces [["russmatney" #{"dotfiles"}]])
+
+  (load-workspaces
+    ;; maybe this comes from a config.edn? or deps.edn?
+    ;; or just set in the db/via rofi?
+    [["russmatney" #{"dotfiles" "protomoon"}]
+     "teknql"
+     ["urbint" #{"grid" "lens" "gitops"
+                 "worker-safety-service"
+                 "worker-safety-client"}]
+     "borkdude"])
+
+  (load-workspaces
+    [["urbint" #{"grid" "lens" "gitops"
+                 "worker-safety-service"
+                 "worker-safety-client"}]])
+
+  (->>
+    (defworkspace/list-workspaces)
+    (filter (comp (fnil #(string/includes? % "urbint") "") :repo/user-name))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Slack, Spotify, Web, other app-workspaces
@@ -169,8 +297,7 @@
                   (let [client (awm/client-for-name "Aseprite")]
                     (when client
                       (awm/ensure-tag "pixels")
-                      (awm/move-client-to-tag (:awesome.client/window client) "pixels")))
-                  )}
+                      (awm/move-client-to-tag (:awesome.client/window client) "pixels"))))}
   workspace-repo)
 
 (defworkspace tiles
@@ -179,7 +306,6 @@
   workspace-repo)
 
 (defworkspace steam
-  awesome-rules
   {:rules/apply
    (fn []
      (let [steam-client (awm/client-for-name "Steam")]
@@ -190,11 +316,9 @@
          (awm/ensure-tag "steam")
          (awm/move-client-to-tag (:awesome.client/window steam-client) "steam"))))})
 
-(defworkspace audacity
-  awesome-rules)
+(defworkspace audacity)
 
 (defworkspace lichess
-  awesome-rules
   {:workspace/exec "/usr/bin/gtk-launch firefox.desktop http://lichess.org"})
 
 (defworkspace zoom
@@ -242,7 +366,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defworkspace journal
-  awesome-rules
   {:workspace/directory        "Dropbox/todo"
    :workspace/initial-file     "journal.org"
    :workspace/scratchpad       true
@@ -255,28 +378,23 @@
   workspace-repo)
 
 (defworkspace garden
-  awesome-rules
   {:workspace/directory "Dropbox/todo/garden"}
   workspace-repo)
 
 (defworkspace todo
-  awesome-rules
   {:workspace/directory    "Dropbox/todo"
    :workspace/initial-file "projects.org"}
   workspace-repo)
 
 (defworkspace blog
-  awesome-rules
   {:workspace/directory "russmatney/blog-gatsby"}
   workspace-repo)
 
 (defworkspace writing
-  awesome-rules
   {:workspace/directory "/home/russ/Dropbox/Writing"}
   workspace-repo)
 
 (defworkspace ink
-  awesome-rules
   {:workspace/directory "/home/russ/Dropbox/todo/ink"}
   workspace-repo)
 
@@ -285,26 +403,22 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defworkspace clawe
-  awesome-rules
   {:git/check-status?   true
    :workspace/directory "russmatney/clawe"}
   workspace-repo)
 
 
 (defworkspace ralphie
-  awesome-rules
   {:git/check-status?   true
    :workspace/directory "russmatney/ralphie"}
   workspace-repo)
 
 (defworkspace dotfiles
-  awesome-rules
   {:git/check-status?   true
    :workspace/directory "russmatney/dotfiles"}
   workspace-repo)
 
 (defworkspace emacs
-  awesome-rules
   {:workspace/directory    ".doom.d"
    :workspace/initial-file "init.el"
    :git/check-status?      true}
@@ -315,7 +429,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defworkspace bindings
-  awesome-rules
   {:workspace/directory "russmatney/clawe"
    :workspace/files
    ["/home/russ/.doom.d/+bindings.el"
@@ -324,7 +437,6 @@
   workspace-repo)
 
 (defworkspace workspaces
-  awesome-rules
   {:workspace/directory "russmatney/clawe"
    :workspace/files     ["/home/russ/russmatney/clawe/src/clawe/defs/workspaces.clj"]}
   workspace-repo)
@@ -334,22 +446,18 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defworkspace vapor
-  awesome-rules
   {:workspace/directory "russmatney/vapor"}
   workspace-repo)
 
 (defworkspace platformer
-  awesome-rules
   {:workspace/directory "russmatney/platformer"}
   workspace-repo)
 
 (defworkspace beatemup
-  awesome-rules
   {:workspace/directory "russmatney/beatemup"}
   workspace-repo)
 
 (defworkspace lovejs
-  awesome-rules
   {:workspace/directory "Davidobot/love.js"})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -358,32 +466,26 @@
 
 (defworkspace doctor
   "A plasma app that records logs and reports misc statuses."
-  awesome-rules
   {:workspace/directory "russmatney/doctor"
    :git/check-status?   true}
   workspace-repo)
 
 (defworkspace scratch
-  awesome-rules
   {:workspace/directory "russmatney/scratch"}
   workspace-repo)
 
 (defworkspace yodo
-  awesome-rules
   {:workspace/directory "russmatney/yodo-two"}
   workspace-repo)
 
 (defworkspace yodo-dev
-  awesome-rules
   {:workspace/directory "russmatney/yodo-two"}
   workspace-repo)
 
 (defworkspace yodo-app
-  awesome-rules
   {:workspace/exec "/usr/bin/gtk-launch google-chrome.desktop http://localhost:5600"})
 
 (defworkspace doctor-todo
-  awesome-rules
   {:workspace/directory       "russmatney/clawe"
    :workspace/exec            {:tmux/fire         "bb --config /home/russ/russmatney/clawe/bb.edn todo"
                                :tmux/session-name "doctor-todo"
@@ -398,7 +500,6 @@
        (or (matches name) (matches class))))})
 
 (defworkspace doctor-popup
-  awesome-rules
   {:workspace/directory       "russmatney/clawe"
    :workspace/exec            {:tmux/fire         "bb --config /home/russ/russmatney/clawe/bb.edn popup"
                                :tmux/session-name "doctor-popup"
@@ -416,121 +517,25 @@
   (tmux/fire (:workspace/exec doctor-popup))
   )
 
-(defworkspace org-crud
-  awesome-rules
-  {:workspace/directory "russmatney/org-crud"
-   :git/check-status?   true}
-  workspace-repo)
-
-(defworkspace ink-mode
-  awesome-rules
-  {:workspace/directory "russmatney/ink-mode"}
-  workspace-repo)
-
-(defworkspace advent
-  {:workspace/directory "russmatney/advent-of-code-2020"}
-  workspace-repo
-  awesome-rules)
-
-(defworkspace chess
-  {:workspace/directory "russmatney/chess"
-   :git/check-status?   true}
-  workspace-repo
-  awesome-rules)
-
-(defworkspace nix-pills
-  {:workspace/directory "russmatney/nix-pills"}
-  workspace-repo
-  awesome-rules)
-
-(defworkspace spotty
-  {:workspace/directory "russmatney/spotty"}
-  workspace-repo
-  awesome-rules)
-
-(defworkspace clover
-  {:workspace/directory "russmatney/clover"}
-  workspace-repo
-  awesome-rules
-  {:git/check-status? true})
-
-(defworkspace expo
-  awesome-rules
-  {:workspace/directory "russmatney/expo"}
-  workspace-repo
-  {:git/check-status? true})
-
-(defworkspace starters
-  {:workspace/directory "russmatney/starters"}
-  workspace-repo
-  awesome-rules)
-
-(defworkspace company-css-classes
-  {:workspace/directory "russmatney/company-css-classes"}
-  workspace-repo
-  awesome-rules)
-
-(defworkspace bb-task-completion
-  {:workspace/directory "russmatney/bb-task-completion"}
-  workspace-repo
-  awesome-rules)
-
-(defworkspace defthing
-  awesome-rules
-  {:workspace/directory "russmatney/defthing"}
-  workspace-repo
-  {:git/check-status? true})
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Teknql repos
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defworkspace wing
-  awesome-rules
-  {:workspace/directory "teknql/wing"}
-  workspace-repo
-  {:git/check-status? true})
-
-(defworkspace systemic
-  awesome-rules
-  {:workspace/directory "teknql/systemic"}
-  workspace-repo
-  {:git/check-status? true})
-
-(defworkspace plasma
-  awesome-rules
-  {:workspace/directory "teknql/plasma"}
-  workspace-repo
-  {:git/check-status? true})
-
-(defworkspace statik
-  awesome-rules
-  {:workspace/directory "teknql/statik"}
-  workspace-repo)
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Borkdude repos
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defworkspace sci
   {:workspace/directory "borkdude/sci"}
-  workspace-repo
-  awesome-rules)
+  workspace-repo)
 
 (defworkspace carve
   {:workspace/directory "borkdude/carve"}
-  workspace-repo
-  awesome-rules)
+  workspace-repo)
 
 (defworkspace clj-kondo
   {:workspace/directory "borkdude/clj-kondo"}
-  workspace-repo
-  awesome-rules)
+  workspace-repo)
 
 (defworkspace babashka
   {:workspace/directory "borkdude/babashka"}
-  workspace-repo
-  awesome-rules)
+  workspace-repo)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Clojure repos
@@ -538,284 +543,13 @@
 
 (defworkspace datalevin
   {:workspace/directory "juji-io/datalevin"}
-  workspace-repo
-  awesome-rules)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Urbint repos
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(def git-user-names
-  ["russmatney" "teknql" "urbint" "borkdude"])
-
-(defn path->repo-desc [path]
-  (let [reversed (-> path (string/split #"/") reverse)]
-    {:repo/name      (first reversed)
-     :repo/user-name (second reversed)
-     :repo/path      path}))
-
-(comment
-  (-> (zsh/expand "~/russmatney/*")
-      (string/split #" ")
-      (->> (map path->repo-desc)))
-
-  (path->repo-desc "/home/russ/russmatney/clawe")
-
-  (-> "/home/russ/russmatney/clawe"
-      (string/split #"/")
-      reverse))
-
-(defn git-user->repo-descs
-  "Expects a user or org (a repo prefix).
-  Expands `~/<user>/*` via zsh and describes repos in there,
-  via `path->repo-desc`
-
-  (git-user->repo-descs \"russmatney\")
-
-  => { :repo/name \"advent-of-code-2019\", :repo/user-name \"russmatney\", :repo/path \"/home/russ/russmatney/advent-of-code-2019\" }
-  { :repo/name \"advent-of-code-2020\", :repo/user-name \"russmatney\", :repo/path \"/home/russ/russmatney/advent-of-code-2020\" }
-  { :repo/name \"bb-cli\", :repo/user-name \"russmatney\", :repo/path \"/home/russ/russmatney/bb-cli\" }
-
-  ...etc.
-
-  "
-  ([user] (git-user->repo-descs user nil))
-  ([user repos]
-   (->> (zsh/expand-many (str "~/" user "/*"))
-        (map path->repo-desc)
-        ((fn [xs]
-           (if repos
-             (filter (comp repos :repo/name) xs)
-             xs))))))
-
-(comment
-  (git-user->repo-descs "russmatney" #{"dotfiles" "clawe"})
-  (git-user->repo-descs "teknql")
-
-  (->> (zsh/expand-many (str "~/" "teknql" "/*"))
-       (map path->repo-desc)
-       (filter (comp repos :repo/name)))
-
-  (git-user->repo-descs "teknql")
-  )
-
-
-;; :git/check-status?   true
-;; TODO minimal way to opt-in to expensive git status checks?
-;;  maybe db toggles via rofi
-;;  or a git dashboard across all these
-
-;; TODO rewrite to be less crazy
-(defn repo-desc->workspace
-  [{:repo/keys [name user-name _path] :as desc}]
-  (if (and name user-name)
-    (-> desc
-        ((fn [x]
-           (merge x
-                  (defthing/initial-thing :clawe/workspaces name))))
-        ((fn [x]
-           (merge x
-                  (defworkspace/workspace-title x))))
-        ((fn [x]
-           (merge x
-                  (awesome-rules x))))
-        ((fn [x]
-           (merge x
-                  {:workspace/directory (str user-name "/" name)
-                   :workspace/readme    "README.md"})))
-        ((fn [x]
-           (merge x
-                  (workspace-repo x)))))
-    (do
-      (println "Missing name or user-name" desc)
-      ;; (throw Exception)
-      )))
-
-(comment
-
-  (map git-user->repo-descs ["russmatney"
-                             "teknql"
-                             "borkdude"
-                             "godot"
-                             ])
-
-  (git-user->repo-descs "teknql")
-  (->
-    (git-user->repo-descs "teknql")
-    first
-    repo-desc->workspace)
-
-
-  (def r
-    (->>
-      (git-user->repo-descs "teknql")
-      ;; (filter (comp #{"grid"} :repo-name))
-      first
-      ))
-
-  r
-
-  (def r2
-    (let [x (merge
-              r
-              (awesome-rules r)
-              {:workspace/directory (str (:user-name r) "/" (:repo-name r))
-               :workspace/readme    "README.md"
-               ;; :git/check-status?   true
-               ;; TODO minimal way to opt-in to expensive git status checks?
-               ;;  maybe db toggles via rofi
-               ;;  or a git dashboard across all these
-               })]
-      (merge x (workspace-repo x))
-      ))
-
-  (set/difference (set (keys grid)) (set (keys r2)))
-
-  (name "hi")
-
-  (def r3
-    (merge
-      r2
-      (defthing/initial-thing :clawe/workspaces (:repo-name r2))))
-
-  (set/difference (set (keys grid)) (set (keys r3)))
-
-  (def r4
-    (merge
-      r3
-      (defworkspace/workspace-title r3)))
-
-  (set/difference (set (keys grid)) (set (keys r4)))
-  (set/difference (set (keys r4)) (set (keys grid)))
-
-  (defthing/add-thing r4)
-
-  (->>
-    (defworkspace/list-workspaces)
-    (filter (comp #{"acris-emitter"} :name))
-    ))
-
-
-(defn build-workspaces-for-git-user
-  ([user] (build-workspaces-for-git-user user nil))
-  ([user repos]
-   (->>
-     (git-user->repo-descs user repos)
-     (map repo-desc->workspace)
-     (remove nil?)
-     )))
-
-(comment
-  (->>
-    (defworkspace/list-workspaces)
-    (filter (comp (fnil #(string/includes? % "urbint") "") :repo/user-name))
-    )
-
-  (build-workspaces-for-git-user "urbint")
-  (build-workspaces-for-git-user "teknql")
-  )
-
-(defn load-workspaces
-  "Loads current workspace state into the clawe db, from whence it shall be read."
-  [repo-users-and-names]
-
-  (notify/notify "loading-workspaces" repo-users-and-names)
-
-  (->> repo-users-and-names
-       (map (fn [arg]
-              (notify/notify "loading from arg" arg)
-              (cond
-                (string? arg)
-                (do
-                  (notify/notify "found string" arg)
-                  (build-workspaces-for-git-user arg))
-                (vector? arg)
-                (do
-                  (notify/notify "found filter" arg)
-                  (apply build-workspaces-for-git-user arg)))))
-       flatten
-       (map defthing/add-thing)
-       (map #(notify/notify "loaded" %))))
-
-(comment
-  (load-workspaces ["teknql"])
-
-  (load-workspaces
-    [["russmatney" #{"dotfiles"}]]
-    )
-
-  (load-workspaces
-    ;; maybe this comes from a config.edn? or deps.edn?
-    ;; or just set in the db/via rofi?
-    [["russmatney" #{"dotfiles" "protomoon"}]
-     "teknql"
-     ["urbint" #{"grid" "lens" "gitops"
-                 "worker-safety-service"
-                 "worker-safety-client"}]
-     "borkdude"])
-
-  (load-workspaces
-    [["urbint" #{"grid" "lens" "gitops"
-                 "worker-safety-service"
-                 "worker-safety-client"}]]))
-
-(comment
-  (->>
-    (defworkspace/list-workspaces)
-    (filter (comp (fnil #(string/includes? % "urbint") "") :repo/user-name))
-    )
-  )
-
-(defworkspace grid
-  awesome-rules
-  {:workspace/directory "urbint/grid"
-   :workspace/readme    "README.md"}
-  workspace-repo
-  {:git/check-status? true})
-
-;; (defworkspace urbint
-;;   awesome-rules
-;;   {:workspace/directory "urbint/grid"
-;;    :workspace/readme    "README.md"}
-;;   workspace-repo)
-
-;; (defworkspace lens
-;;   awesome-rules
-;;   {:workspace/directory "urbint/lens"
-;;    :workspace/readme    "README.md"}
-;;   workspace-repo
-;;   {:git/check-status? true})
-
-;; (defworkspace gitops
-;;   {:workspace/directory "urbint/gitops"
-;;    :workspace/readme    "README.md"}
-;;   workspace-repo
-;;   awesome-rules)
-
-;; (defworkspace worker-safety-service
-;;   {:workspace/directory "urbint/worker-safety-service"
-;;    :workspace/readme    "README.md"}
-;;   workspace-repo
-;;   awesome-rules)
-
-;; (defworkspace worker-safety-client
-;;   {:workspace/directory "urbint/worker-safety-client"
-;;    :workspace/readme    "README.md"}
-;;   workspace-repo
-;;   awesome-rules)
-
-;; (defworkspace silica
-;;   {:workspace/directory "urbint/silica"
-;;    :workspace/readme    "README.md"}
-;;   workspace-repo
-;;   awesome-rules)
+  workspace-repo)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Emacs repos
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defworkspace doom-emacs
-  awesome-rules
   {:workspace/color        "#aaee88"
    :workspace/directory    ".emacs.d"
    :workspace/initial-file "docs/index.org"}
@@ -823,18 +557,15 @@
 
 (defworkspace treemacs
   {:workspace/directory "Alexander-Miller/treemacs"}
-  workspace-repo
-  awesome-rules)
+  workspace-repo)
 
 (defworkspace git-summary
   {:workspace/directory "MirkoLedda/git-summary"}
-  workspace-repo
-  awesome-rules)
+  workspace-repo)
 
 (defworkspace clomacs
   {:workspace/directory "clojure-emacs/clomacs"}
-  workspace-repo
-  awesome-rules)
+  workspace-repo)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Org roam dev
@@ -842,18 +573,15 @@
 
 (defworkspace org-roam
   {:workspace/directory "org-roam/org-roam"}
-  workspace-repo
-  awesome-rules)
+  workspace-repo)
 
 (defworkspace org-roam-server
   {:workspace/directory "org-roam/org-roam-server"}
-  workspace-repo
-  awesome-rules)
+  workspace-repo)
 
 (defworkspace md-roam
   {:workspace/directory "nobiot/md-roam"}
-  workspace-repo
-  awesome-rules)
+  workspace-repo)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Lua Repos
@@ -862,8 +590,7 @@
 (defworkspace awesomewm
   {:workspace/directory "awesomeWM/awesome"
    :workspace/readme    "README.md"}
-  workspace-repo
-  awesome-rules)
+  workspace-repo)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Misc
@@ -871,26 +598,7 @@
 
 (defworkspace aseprite
   {:workspace/directory "aseprite/aseprite"}
-  workspace-repo
-  awesome-rules)
-
-;; TODO support creating a scratchpad workspace and keybinding completely from here
-;; TODO support conflict alerts on keybindings via clj kondo helpers/the db? in-memory clj structures?
-;; (defworkspace godot
-;;   awesome-rules
-;;   ;; {:rules/apply (fn []
-;;   ;;                 ;; sometimes conflicts with the godot emacs/term sessions
-;;   ;;                 ;; TODO this grabs browsers with 'godot' window titles
-;;   ;;                 (let [clients (awm/clients-for-name "godot")]
-;;   ;;                   (when (seq clients)
-;;   ;;                     (awm/ensure-tag "godot")
-;;   ;;                     (doall
-;;   ;;                       (for [client clients]
-;;   ;;                         (awm/move-client-to-tag (:awesome.client/window client) "godot"))))))}
-;;   {:workspace/directory  "godot"
-;;    :workspace/scratchpad true}
-;;   workspace-repo)
-
+  workspace-repo)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Camsbury
@@ -899,18 +607,15 @@
 ;; TODO this should be generated by my ralphie-clone command
 (defworkspace camsbury-config
   {:workspace/directory "Camsbury/config"}
-  workspace-repo
-  awesome-rules)
+  workspace-repo)
 
 (defworkspace camsbury-xndr
   {:workspace/directory "Camsbury/xndr"}
-  workspace-repo
-  awesome-rules)
+  workspace-repo)
 
 (defworkspace camsbury-bobby
   {:workspace/directory "Camsbury/bobby"}
-  workspace-repo
-  awesome-rules)
+  workspace-repo)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; abo-abo
@@ -919,8 +624,7 @@
 (defworkspace abo-abo-hydra
   "A tool for chaining key presses in emacs."
   {:workspace/directory "abo-abo/hydra"}
-  workspace-repo
-  awesome-rules)
+  workspace-repo)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; baskerville
@@ -929,8 +633,7 @@
 (defworkspace baskerville-sxhkd
   "A keybinding daemon."
   {:workspace/directory "baskerville/sxhkd"}
-  workspace-repo
-  awesome-rules)
+  workspace-repo)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; apache
@@ -938,5 +641,4 @@
 
 (defworkspace apache-superset
   {:workspace/directory "apache/superset"}
-  workspace-repo
-  awesome-rules)
+  workspace-repo)
