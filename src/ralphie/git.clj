@@ -86,7 +86,7 @@
 (defn clone [{:keys [repo-id]}]
   (notify (str "Clone attempt: " repo-id))
   (try
-    (->> ($ hub clone ~repo-id ~(str (config/home-dir) "/" repo-id))
+    (->> ($ gh repo clone ~(str "https://github.com/" repo-id) ~(str (config/home-dir) "/" repo-id))
          check
          :out
          slurp
@@ -146,7 +146,7 @@
 (defcom clone-cmd
   "Clone from your Github Stars"
   "When passed a repo-id, copies it into ~/repo-id."
-  "Depends on `hub` on the command line."
+  "Depends on `gh` on the command line."
   "Does not support private repos."
   "If no repo-id is passed, fetches stars from github."
   (fn [_cmd & args]
