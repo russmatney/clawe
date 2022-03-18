@@ -10,7 +10,6 @@
    [defthing.defkbd :as defkbd]))
 
 
-
 (defn m-x-commands
   ([] (m-x-commands nil))
   ([{:keys [wsp]}]
@@ -23,6 +22,7 @@
                                        ;; wrap these nil-punning actions-list api
                                        (r.notify/notify "Creating client for workspace")
                                        (wsp.create/create-client wsp))})
+
           {:rofi/label     "Suggest more things here! <small> but don't get distracted </small>"
            :rofi/on-select (fn [_] (r.notify/notify "A quick doctor checkup?"
                                                     "Or the time of day?"))}
@@ -33,6 +33,7 @@
                                (r.notify/notify "Fetching upstream for workspace")
                                ;; TODO support fetching via ssh-agent
                                (r.git/fetch (workspaces/workspace-repo wsp)))})]
+         (r.git/rofi-clone-suggestions-fast)
          (->>
            (defkbd/list-bindings)
            (map defkbd/->rofi))

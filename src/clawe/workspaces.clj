@@ -14,8 +14,7 @@
    clawe.defs.workspaces
    clawe.defs.local.workspaces
 
-   [clawe.workspaces.create :as wsp.create]
-   [wing.core :as w]))
+   [clawe.workspaces.create :as wsp.create]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Workspace helpers
@@ -224,12 +223,12 @@
   "Returns all defs.workspaces, without any awm data"
   []
   (->>
-    (defworkspace/list-workspaces)
-    ))
+    (defworkspace/list-workspaces)))
 
 (defn all-workspaces
   "Returns all defs.workspaces, merged with awesome tags."
   []
+  ;; TODO why don't `load-workspaces` wsps get included here? can it be tested?
   (->>
     (defworkspace/list-workspaces)
     (merge-awm-tags {:include-unmatched? true})

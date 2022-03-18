@@ -27,6 +27,7 @@
   Supports :require-match? in `opts`.
   "
   ;; TODO move opts and xs over to :rofi/prefixed keys
+  ;; TODO support `:rofi/tag` and `:rofi/tags` for including search terms (like "clone")
   ([opts] (rofi opts (:xs opts)))
   ([{:keys [msg message on-select require-match?]} xs]
    (doctor/log "Rofi called with" (count xs) "xs.")

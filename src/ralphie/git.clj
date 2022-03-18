@@ -49,7 +49,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn repo->rofi-x [{:keys [repo-id language description] :as repo}]
-  (assoc repo :rofi/label (str repo-id " | " language " | " description)))
+  (assoc repo :rofi/label (str repo-id " (recent star) | " language " | " description)))
 
 (defn star->repo [star]
   (let [owner     (get-in star ["owner" "login"])
@@ -66,11 +66,13 @@
 ;; fetch github stars
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; TODO cache and delimit this to 5/10 mins, and support a cache bust with a
+;; webhook for new stars
 (defn fetch-stars
   "Returns the 30 most recent github stars for the user.
   TODO: support sorting by :updated-at (repo last updated)
-  might be better to pull both
-  consider caching as well, and a seperate command to cache-burst."
+  might be better to pull both here, and update a local db with whatever we get,
+  probably during the cache bust."
   []
   (->> (config/github-username)
        (#(str "https://api.github.com/users/" % "/starred"))
@@ -97,28 +99,45 @@
   (clone {:repo-id "metosin/eines"})
   (clone {:repo-id "russmatney/ink-mode"}))
 
-(defn clone-from-stars []
-  (->> (fetch-stars)
-       (map star->repo)
-       (map repo->rofi-x)
-       (concat (->> (clipboard/values)
-                    (map (fn [v]
-                           (when-let [repo-id (re/url->repo-id v)]
-                             {:repo-id    repo-id
-                              ;; TODO pango markup describing source (clipboard)
-                              :rofi/label repo-id})))
-                    (filter :repo-id))
-               (->> (browser/tabs)
-                    (map (fn [t]
-                           (when-let [repo-id (re/url->repo-id (:tab/url t))]
-                             {:repo-id    repo-id
-                              ;; TODO pango markup describing source (open tab)
-                              :rofi/label repo-id})))
-                    (filter :repo-id)))
-       (rofi/rofi {:message "Select repo to clone" :on-select clone})))
+
+(defn rofi-clone-suggestions-fast []
+  (concat
+    (->> (clipboard/values)
+         (map (fn [v]
+                (when-let [repo-id (re/url->repo-id v)]
+                  {:repo-id        repo-id
+                   :rofi/label     (str repo-id " (from clipboard)")
+                   :rofi/tag       "clone"
+                   :rofi/on-select clone
+                   })))
+         (filter :repo-id))
+    (->> (browser/tabs)
+         (map (fn [t]
+                (when-let [repo-id (re/url->repo-id (:tab/url t))]
+                  {:repo-id        repo-id
+                   :rofi/label     (str repo-id " (from open tabs)")
+                   :rofi/tag       "clone"
+                   :rofi/on-select clone})))
+         (filter :repo-id))))
+
+(defn rofi-clone-suggestions []
+  (concat
+    (rofi-clone-suggestions-fast)
+    (->> (fetch-stars)
+         ;; TODO pango markup describing source (recent star)
+         (map star->repo)
+         (map repo->rofi-x)
+         (map (fn [s] (merge s {:rofi/on-select clone
+                                :rofi/tag       "clone"}))))))
+
+(defn clone-from-suggestions []
+  (->> (rofi-clone-suggestions)
+       (rofi/rofi {:message        "Select repo to clone"
+                   ;; if it ever comes to that
+                   :rofi/on-select clone})))
 
 (comment
-  (dorun (map println (clone-from-stars))))
+  (dorun (map println (clone-from-suggestions))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; clone cmd, handler
@@ -133,7 +152,7 @@
   (fn [_cmd & args]
     (if-let [repo-id (some-> args first)]
       (clone {:repo-id repo-id})
-      (clone-from-stars))))
+      (clone-from-suggestions))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; repo?
