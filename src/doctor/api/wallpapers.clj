@@ -18,6 +18,7 @@
       all
       (sort-by :background/last-time-set)
       reverse
+      (take 30)
       (into []))))
 
 (defn reload

@@ -216,6 +216,13 @@
   (is-clean? "~/russmatney/ralphie")
   (dirty? "~/russmatney/ralphie")
 
+  (let [repo-path "~/russmatney/ralphie"]
+    (-> {:error-message
+         (str "RALPHIE ERROR for " repo-path " in git/dirty?")}
+        (bb/run-proc
+          ^{:dir (zsh/expand repo-path)}
+          ($ git status --porcelain))))
+
   (-> ^{:dir "/home/russ/russmatney/ralphie"}
       ($ git diff HEAD)
       check :out slurp
