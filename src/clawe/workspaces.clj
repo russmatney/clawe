@@ -118,14 +118,16 @@
   TODO May one day need to fetch latest by sorting, if we end with multiple ents somehow
   "
   [w]
-  (some->>
-    (db/query
-      '[:find (pull ?e [*])
-        :in $ ?workspace-title
-        :where
-        [?e :workspace/title ?workspace-title]]
-      (:workspace/title w))
-    ffirst))
+  (let [title (cond (string? w) w
+                    (map? w)    (:workspace/title w))]
+    (some->>
+      (db/query
+        '[:find (pull ?e [*])
+          :in $ ?workspace-title
+          :where
+          [?e :workspace/title ?workspace-title]]
+        title)
+      ffirst)))
 
 (defn latest-db-workspaces []
   (let [wsps
@@ -211,22 +213,28 @@
 
   (let [git-user   (select-local-git-user)
         wsps       (defs.workspaces/build-workspaces-for-git-user git-user)
-        all-option {:rofi/label (str "Install all " git-user " workspaces")}
+        all-option {:rofi/label (str "Install all " git-user " workspaces")
+                    :some/id    "all-option"}
         selected   (->> (concat [all-option]
                                 (->> wsps
                                      (map (fn [wsp]
                                             (assoc wsp :rofi/label
                                                    (str "Install " git-user "/" (:workspace/title wsp)))))))
                         (rofi/rofi {:msg "Install workspace for which repo?"}))]
-    (if (= all-option selected)
+    (if (= (:some/id all-option) (:some/id selected))
       (do
         (notify/notify "installing all workspaces for" git-user)
-        (map update-db-workspace wsps))
+        (let [ct (count (map update-db-workspace wsps))]
+          (notify/notify (str "Installed " ct " workspaces"))))
       (do
-        (notify/notify "installing workspace" (str git-user "/" (:workspace/title selected)))
-        (update-db-workspace selected)))
+        (notify/notify "installing workspace"
+                       (str git-user "/" (:workspace/title selected)))
+        (update-db-workspace selected)
+        (notify/notify "Installed workspace")))
 
-    (notify/notify "Installed workspaces.")))
+    ;; TODO maybe rewrite/update awm rules?
+
+    ))
 
 (comment
 
@@ -365,7 +373,9 @@
   which is usually what we want."
   []
   (some->> (awm/current-tag-names)
-           (map defworkspace/get-workspace)
+           (map get-db-workspace)
+           ;; assumes local overwrites have hit db already
+           ;; otherwise we may need to merge the static wsps in here
            (sort-by :workspace/scratchpad)
            ;; (take 1)
            ;; merge-awm-tags
@@ -374,7 +384,18 @@
 (comment
   (->> (awm/current-tag-names)
        (map defworkspace/get-workspace)
-       (sort-by :workspace/scratchpad)))
+       (sort-by :workspace/scratchpad))
+  (current-workspace)
+
+  (some->> (awm/current-tag-names)
+           (map get-db-workspace)
+           ;; assumes local overwrites have hit db already
+           ;; otherwise we may need to merge the static wsps in here
+           (sort-by :workspace/scratchpad)
+           ;; (take 1)
+           ;; merge-awm-tags
+           first)
+  )
 
 (defn all-workspaces-fast
   "Returns all defs.workspaces, without any awm data"
