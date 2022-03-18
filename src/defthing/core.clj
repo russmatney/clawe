@@ -18,9 +18,13 @@
   "Adds an x to the registry using the `thing-key`.
 
   Not expected to be used publicly - consumed by the `defthing` helper fn."
-  [thing-key x]
-  (swap! registry* assoc-in
-         [thing-key (::registry-key x)] x))
+  ([x]
+   (if (:type x)
+     (add-thing (:type x) x)
+     [:error :missing-type]))
+  ([thing-key x]
+   (swap! registry* assoc-in
+          [thing-key (::registry-key x)] x)))
 
 (defn list-things
   "Helper for building a `list-thing` function."
@@ -83,7 +87,7 @@
               :and  :keys}
              (reduce eval-xorf [{} '"my" '{:and :keys} "docs"]))))
 
-(defn- initial-thing
+(defn initial-thing
   "Helper for creating an initial thing.
   Sets some important keys.
 
@@ -102,6 +106,7 @@
 ;; Public defthing macro helper
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; TODO rename thing-key to `thing-type`, thing-sym to `thing-name`
 (defn defthing
   "Creates a map defined as the passed symbol.
 

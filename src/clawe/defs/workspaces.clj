@@ -1,10 +1,15 @@
 (ns clawe.defs.workspaces
   (:require
-   [defthing.defworkspace :refer [defworkspace]]
+   [clojure.string :as string]
+   [clojure.set :as set]
+
+   [defthing.defworkspace :as defworkspace :refer [defworkspace]]
+   [defthing.core :as defthing]
+
    [ralphie.notify :as notify]
    [ralphie.awesome :as awm]
    [ralphie.tmux :as tmux]
-   [clojure.string :as string]))
+   [ralphie.zsh :as zsh]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Misc workspace builder helpers
@@ -540,6 +545,188 @@
 ;; Urbint repos
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(def git-user-names
+  ["russmatney" "teknql" "urbint" "borkdude"])
+
+(defn path->repo-desc [path]
+  (let [reversed (-> path (string/split #"/") reverse)]
+    {:repo/name      (first reversed)
+     :repo/user-name (second reversed)
+     :repo/path      path}))
+
+(comment
+  (-> (zsh/expand "~/russmatney/*")
+      (string/split #" ")
+      (->> (map path->repo-desc)))
+
+  (path->repo-desc "/home/russ/russmatney/clawe")
+
+  (-> "/home/russ/russmatney/clawe"
+      (string/split #"/")
+      reverse))
+
+(defn git-user->repo-descs
+  "Expects a user or org (a repo prefix).
+  Expands `~/<user>/*` via zsh and describes repos in there,
+  via `path->repo-desc`
+
+  (git-user->repo-descs \"russmatney\")
+
+  => { :repo/name \"advent-of-code-2019\", :repo/user-name \"russmatney\", :repo/path \"/home/russ/russmatney/advent-of-code-2019\" }
+  { :repo/name \"advent-of-code-2020\", :repo/user-name \"russmatney\", :repo/path \"/home/russ/russmatney/advent-of-code-2020\" }
+  { :repo/name \"bb-cli\", :repo/user-name \"russmatney\", :repo/path \"/home/russ/russmatney/bb-cli\" }
+
+  ...etc.
+
+  "
+  ([user] (git-user->repo-descs user nil))
+  ([user repos]
+   (->> (zsh/expand-many (str "~/" user "/*"))
+        (map path->repo-desc)
+        (filter (comp repos :repo/name)))))
+
+(comment
+  (git-user->repo-descs "russmatney" #{"dotfiles" "clawe"})
+  (git-user->repo-descs "teknql"))
+
+
+;; :git/check-status?   true
+;; TODO minimal way to opt-in to expensive git status checks?
+;;  maybe db toggles via rofi
+;;  or a git dashboard across all these
+
+;; TODO rewrite to be less crazy
+(defn repo-desc->workspace
+  [{:repo/keys [name user-name _path] :as desc}]
+  (if (and name user-name)
+    (-> desc
+        ((fn [x]
+           (merge x
+                  (awesome-rules desc))))
+        ((fn [x]
+           (merge x
+                  {:workspace/directory (str user-name "/" name)
+                   :workspace/readme    "README.md"})))
+        ((fn [x]
+           (merge x
+                  (workspace-repo x))))
+        ((fn [x]
+           (merge x
+                  (defthing/initial-thing :clawe/workspaces name))))
+        ((fn [x]
+           (merge x
+                  (defworkspace/workspace-title x)))))
+    (do
+      (println "Missing name or user-name")
+      (throw Exception))))
+
+(comment
+  (def r
+    (->>
+      (git-user->repo-descs "urbint")
+      ;; (filter (comp #{"grid"} :repo-name))
+      first
+      ))
+
+  r
+
+  (def r2
+    (let [x (merge
+              r
+              (awesome-rules r)
+              {:workspace/directory (str (:user-name r) "/" (:repo-name r))
+               :workspace/readme    "README.md"
+               ;; :git/check-status?   true
+               ;; TODO minimal way to opt-in to expensive git status checks?
+               ;;  maybe db toggles via rofi
+               ;;  or a git dashboard across all these
+               })]
+      (merge x (workspace-repo x))
+      ))
+
+  (set/difference (set (keys grid)) (set (keys r2)))
+
+  (name "hi")
+
+  (def r3
+    (merge
+      r2
+      (defthing/initial-thing :clawe/workspaces (:repo-name r2))))
+
+  (set/difference (set (keys grid)) (set (keys r3)))
+
+  (def r4
+    (merge
+      r3
+      (defworkspace/workspace-title r3)))
+
+  (set/difference (set (keys grid)) (set (keys r4)))
+  (set/difference (set (keys r4)) (set (keys grid)))
+
+  (defthing/add-thing r4)
+
+  (->>
+    (defworkspace/list-workspaces)
+    (filter (comp #{"acris-emitter"} :name))
+    ))
+
+
+(defn build-workspaces-for-git-user
+  ([user] (build-workspaces-for-git-user user nil))
+  ([user repos]
+   (->>
+     (git-user->repo-descs user repos)
+     (map repo-desc->workspace))))
+
+(comment
+  (->>
+    (defworkspace/list-workspaces)
+    (filter (comp (fnil #(string/includes? % "urbint") "") :repo/user-name))
+    )
+
+  (build-workspaces-for-git-user "urbint")
+  )
+
+(defn load-workspaces
+  "Loads current workspace state into the clawe db, from whence it shall be read."
+  [repo-users-and-names]
+
+  (notify/notify "loading-workspaces" repo-users-and-names)
+  (->> repo-users-and-names
+       (map (fn [arg]
+              (cond
+                (string? arg) (build-workspaces-for-git-user arg)
+                (vector? arg) (apply build-workspaces-for-git-user arg))))
+       (map defthing/add-thing)))
+
+(comment
+  (load-workspaces
+    [["russmatney" #{"dotfiles"}]]
+    )
+
+  (load-workspaces
+    ;; maybe this comes from a config.edn? or deps.edn?
+    ;; or just set in the db/via rofi?
+    [["russmatney" #{"dotfiles" "protomoon"}]
+     "teknql"
+     ["urbint" #{"grid" "lens" "gitops"
+                 "worker-safety-service"
+                 "worker-safety-client"}]
+     "borkdude"])
+  )
+
+(load-workspaces
+  [["urbint" #{"grid" "lens" "gitops"
+               "worker-safety-service"
+               "worker-safety-client"}]])
+
+(comment
+  (->>
+    (defworkspace/list-workspaces)
+    (filter (comp (fnil #(string/includes? % "urbint") "") :repo/user-name))
+    )
+  )
+
 (defworkspace grid
   awesome-rules
   {:workspace/directory "urbint/grid"
@@ -547,24 +734,42 @@
   workspace-repo
   {:git/check-status? true})
 
-(defworkspace urbint
-  awesome-rules
-  {:workspace/directory "urbint/grid"
-   :workspace/readme    "README.md"}
-  workspace-repo)
+;; (defworkspace urbint
+;;   awesome-rules
+;;   {:workspace/directory "urbint/grid"
+;;    :workspace/readme    "README.md"}
+;;   workspace-repo)
 
-(defworkspace lens
-  awesome-rules
-  {:workspace/directory "urbint/lens"
-   :workspace/readme    "README.md"}
-  workspace-repo
-  {:git/check-status? true})
+;; (defworkspace lens
+;;   awesome-rules
+;;   {:workspace/directory "urbint/lens"
+;;    :workspace/readme    "README.md"}
+;;   workspace-repo
+;;   {:git/check-status? true})
 
-(defworkspace gitops
-  {:workspace/directory "urbint/gitops"
-   :workspace/readme    "README.md"}
-  workspace-repo
-  awesome-rules)
+;; (defworkspace gitops
+;;   {:workspace/directory "urbint/gitops"
+;;    :workspace/readme    "README.md"}
+;;   workspace-repo
+;;   awesome-rules)
+
+;; (defworkspace worker-safety-service
+;;   {:workspace/directory "urbint/worker-safety-service"
+;;    :workspace/readme    "README.md"}
+;;   workspace-repo
+;;   awesome-rules)
+
+;; (defworkspace worker-safety-client
+;;   {:workspace/directory "urbint/worker-safety-client"
+;;    :workspace/readme    "README.md"}
+;;   workspace-repo
+;;   awesome-rules)
+
+;; (defworkspace silica
+;;   {:workspace/directory "urbint/silica"
+;;    :workspace/readme    "README.md"}
+;;   workspace-repo
+;;   awesome-rules)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Emacs repos
