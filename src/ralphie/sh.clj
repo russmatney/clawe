@@ -56,3 +56,11 @@
 (comment
   (-> ($ echo -n "~")
       check :out slurp))
+
+(defn expand-many [path]
+  (->
+    (expand path)
+    (string/split #" ")))
+
+(comment
+  (expand-many "~/russmatney/clawe/*"))

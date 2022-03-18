@@ -7,6 +7,7 @@
    [babashka.fs :as fs]))
 
 (def expand r.sh/expand)
+(def expand-many r.sh/expand-many)
 
 (defn ->timestamp+duration [str]
   (try
