@@ -36,3 +36,41 @@
             ($ git "fetch" --verbose))
   (run-proc ^{:dir (zsh/expand "~/dotfiles")} ($ git status))
   )
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; tasks
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn parse-task [line]
+  (let [split       (string/split line #" +")
+        cmd         (first split)
+        description (apply str (string/join " " (rest split)))
+        parsed      {:bb.task/cmd cmd}]
+    (if (seq description)
+      (assoc parsed :bb.task/description description)
+      parsed)))
+
+(comment
+  (parse-task "clj-kondo")
+  (parse-task "run-tests     Runs all the tests")
+  (string/split "run-tests     Runs all the tests" #" +"))
+
+;; TODO there's probably some better way, like just parsing bb.edn directly...
+(defn tasks [dir]
+  (let [dir (zsh/expand dir)]
+    (->
+      ^{:dir dir :out :string}
+      ($ bb tasks)
+      process/check
+      :out
+      string/split-lines
+      (->>
+        (drop 2)
+        (map parse-task)))))
+
+(comment
+  (tasks "~/russmatney/clawe")
+  (tasks "~/teknql/aave")
+  )
