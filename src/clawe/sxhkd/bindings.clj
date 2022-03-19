@@ -57,7 +57,8 @@
        (string/join "\n\n")))
 
 (defn ensure-sxhkd-tmux-session []
-  (r.tmux/ensure-background-session {:name "sxhkd"}))
+  (r.tmux/ensure-session {:tmux/session-name "sxhkd"
+                          :tmux/directory    "~"}))
 
 (defn reset-bindings []
   (log "SXHKD bindings resetting...")
