@@ -383,7 +383,7 @@
   {:workspace/directory       "Dropbox/todo"
    :workspace/exec            {:tmux/fire         "bb --config /home/russ/russmatney/clawe/bb.edn todo"
                                :tmux/session-name "doctor-todo"
-                               :tmux/window-name  "doctor-todo"}
+                               :tmux/interrupt?   true}
    :workspace/initial-file    "projects.org"
    :workspace/scratchpad      true
    :workspace/scratchpad-name "tauri/doctor-todo"
@@ -397,7 +397,7 @@
   {:workspace/directory       "russmatney/clawe"
    :workspace/exec            {:tmux/fire         "bb --config /home/russ/russmatney/clawe/bb.edn popup"
                                :tmux/session-name "doctor-popup"
-                               :tmux/window-name  "doctor-popup"}
+                               :tmux/interrupt?   true}
    :workspace/initial-file    "bb.edn"
    :workspace/scratchpad      true
    :workspace/scratchpad-name "tauri/doctor-popup"

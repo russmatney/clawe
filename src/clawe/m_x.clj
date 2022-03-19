@@ -26,6 +26,11 @@
   (workspaces/current-workspace)
   )
 
+(defn kill-things [wsp]
+  ;; TODO options to kill running tmux sessions
+  ;; TODO options to kill browser tabs
+  )
+
 
 (defn bb-tasks-for-wsp [wsp]
   (when-let [dir (:workspace/directory wsp)]
@@ -39,10 +44,7 @@
                                     (println "bb task on-select" task wsp)
                                     (tmux/fire
                                       {:tmux/fire         (str "bb " cmd)
-                                       :tmux/session-name (:workspace/title wsp)
-                                       :tmux/window-name  (:workspace/title wsp)
-                                       ;; TODO support killing whatevers running
-                                       }))))))))
+                                       :tmux/session-name (:workspace/title wsp)}))))))))
 
 (comment
   (->> (bb-tasks-for-wsp (workspaces/current-workspace))

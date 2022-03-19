@@ -140,7 +140,8 @@ uberjar. Otherwise this might need to be called twice."
     ;; (awm/reload-bar-and-widgets)
 
     ;; Doom env refresh - probably a race-case here....
-    (r.tmux/fire "doom env")
+    (r.tmux/fire {:tmux/fire         "doom env"
+                  :tmux/session-name "dotfiles"})
     (r.emacs/fire "(doom/reload-env)")
 
     ;; Doctor - Wallpaper
