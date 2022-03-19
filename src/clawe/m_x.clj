@@ -11,6 +11,22 @@
    [defthing.defkbd :as defkbd]
    [ralphie.tmux :as tmux]))
 
+(defn godot-repo-actions [wsp]
+  (when-let [dir (:workspace/directory wsp)]
+    ;; TODO search for godot project file
+    ;; could also be opt-in as a db field
+    ;; i.e. run detection for projects, maybe part of installation
+    ;; could even re-run installation as the same entry for
+    ;; detection, doctor reports, git-status
+    nil
+    )
+  )
+
+(comment
+  (workspaces/current-workspace)
+  )
+
+
 (defn bb-tasks-for-wsp [wsp]
   (when-let [dir (:workspace/directory wsp)]
     (->> (r.bb/tasks dir)
@@ -52,6 +68,9 @@
                                ;; TODO support fetching via ssh-agent
                                (r.git/fetch (workspaces/workspace-repo wsp)))})]
 
+         ;; TODO current workspace app suggestions
+         ;; i.e. open godot, aseprite if in a godot-workspace
+
          ;; clone suggestions from open tabs and the clipboard
          (->>
            (r.git/rofi-clone-suggestions-fast)
@@ -61,16 +80,13 @@
          (bb-tasks-for-wsp wsp)
 
          ;; all bindings
-         (->>
-           (defkbd/list-bindings)
-           (map defkbd/->rofi))
+         (->> (defkbd/list-bindings) (map defkbd/->rofi))
 
          ;; all defcoms
-         (->>
-           (defcom/list-commands)
-           (map r.core/defcom->rofi))
+         (->> (defcom/list-commands) (map r.core/defcom->rofi))
 
          ;; open a known workspace
+         ;; TODO improve display, handling if wsp already open
          (->> (workspaces/open-workspace-rofi-options)
               (map #(assoc % :rofi/label (str "Open wsp: " (:rofi/label %))))))
        (remove nil?)))))
