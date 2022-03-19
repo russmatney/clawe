@@ -44,7 +44,10 @@
 
 (defkbd rofi-launcher
   [[:mod] "space"]
-  (awm/awm-fnl '(awful.spawn.easy_async "rofi -show combi" (fn []))))
+  (->
+    ^{:out :string}
+    ($ rofi -show combi -combi-modi "window,drun")
+    check :out))
 
 (defkbd kill-client
   [[:mod] "q"]

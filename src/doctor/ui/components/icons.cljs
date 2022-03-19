@@ -48,6 +48,10 @@
       {:color "text-city-green-600"
        :src   "/assets/candy-icons/google-chrome.svg"}
 
+      (= "DevHub" name)
+      {:color "text-city-green-600"
+       :src   "/assets/candy-icons/github-desktop.svg"}
+
       (string/includes? name "Slack call")
       {:color "text-city-green-600"
        :src   "/assets/candy-icons/shutter.svg"}
