@@ -225,9 +225,9 @@
        (ensure-session {:tmux/session-name session-name}))
 
      (let [panes          (list-panes
-                            {:formats #{:tmux/pane-current-command
-                                        :tmux/pane-index}
-                             :target  initial-target})
+                            {:tmux/formats #{:tmux/pane-current-command
+                                             :tmux/pane-index}
+                             :tmux/target  initial-target})
            available-pane (when (seq panes)
                             (get-available-pane {:tmux/target initial-target
                                                  :tmux/panes  panes}))
