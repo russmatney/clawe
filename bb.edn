@@ -95,8 +95,14 @@
                    (shell "systemctl --user daemon-reload")
                    (shell "systemctl --user restart doctor-be doctor-fe doctor-topbar"))
 
-  stop-doctor (shell "systemctl --user stop doctor-be doctor-fe doctor-topbar")
-  log-doctor  (shell "journalctl --user -n 100 -f -u doctor-be -u doctor-fe -u doctor-topbar")
-
-  log-awesome (shell "tail -f /home/russ/.cache/awesome/logs")
-  }}
+  stop-doctor  (shell "systemctl --user stop doctor-be doctor-fe doctor-topbar")
+  log-doctor   {:task (shell "journalctl --user -n 100 -f -u doctor-be -u doctor-fe -u doctor-topbar")
+                :doc  "Tail the doctor logs. FE, BE, and topbar via journalctl"}
+  tail-doctor  {:depends [log-doctor]}
+  doctor-log   {:depends [log-doctor]}
+  doctor-tail  {:depends [log-doctor]}
+  log-awesome  {:task (shell "tail -f /home/russ/.cache/awesome/logs")
+                :doc  "Tail the awesome logs, via ~/.cache/awesome/logs"}
+  tail-awesome {:depends [log-awesome]}
+  awesome-tail {:depends [log-awesome]}
+  awesome-log  {:depends [log-awesome]}}}
