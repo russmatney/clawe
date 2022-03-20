@@ -2,27 +2,45 @@
   (:require
    [uix.core.alpha :as uix]))
 
+(defn colls-last [m]
+  (->> m
+       (sort-by (fn [k-v]
+                  (and (vector? k-v)
+                       (-> k-v second coll?))))))
+
+(defn map-key-sort [m]
+  (->> m (sort-by first) colls-last))
+
+(comment
+  (colls-last {:some-v 5 :some-coll [5]})
+  )
+
 
 (defn colorized-metadata
+  "TODO figure out why data is getting double printed/leaking in here"
   ([m] (colorized-metadata 0 m))
   ([level m]
    (cond
      (map? m)
-     (->> m (map (partial colorized-metadata (inc level))))
+     (->> m
+          map-key-sort
+          (map (partial colorized-metadata (inc level))))
 
      :else
      (let [[k v] m]
        (println "k" k "v" v)
        ^{:key k}
        [:div.font-mono
-        {:class ["text-city-gray-400" (str "pl-" (* 2 level))]}
+        {:class ["text-city-gray-400" (str "px-" (* 2 level))]}
         "["
         [:span {:class ["text-city-pink-400"]} (str k)]
         " "
 
         (cond
           (and (map? v) (seq v))
-          (->> v (map (partial colorized-metadata (inc level))))
+          (->> v
+               map-key-sort
+               (map (partial colorized-metadata (inc level))))
 
           (and (list? v) (seq v))
           (->> v (map (partial colorized-metadata (inc level))))
@@ -48,15 +66,17 @@
          show-raw-metadata?       (uix/state initial-show?)
          toggle-show-raw-metadata #(swap! show-raw-metadata? (comp boolean not))]
      [:div
+      {:class ["pb-4"]}
       [:span.text-sm
        {:class    ["hover:text-city-pink-400" "cursor-pointer"]
         :on-click toggle-show-raw-metadata}
        label]
 
+      ;; TODO consider a modal?
       (when @show-raw-metadata?
         [:div
          {:class ["mt-auto"]}
          (when metadata
-           (->>
-             metadata
-             (map colorized-metadata)))])])))
+           (->> metadata
+                map-key-sort
+                (map colorized-metadata)))])])))
