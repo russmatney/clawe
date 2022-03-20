@@ -11,7 +11,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn escape-rofi-label [label]
-  (string/escape label {\& "&amp;"}))
+  (-> label
+      (string/escape {\& "&amp;"})
+      (string/replace #"\|" "-")))
 
 (defn build-label
   "Builds a better looking label when :rofi/label and :rofi/description are set.
@@ -130,6 +132,9 @@
     check
     :out
     slurp)
+
+  (rofi {:msg "test"}
+        [{:rofi/label "Kill client: Slack | news-and-articles | clojurians - Slack - slack"}])
 
   (rofi
     {:msg "message"}
