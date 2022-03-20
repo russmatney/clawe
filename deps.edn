@@ -80,6 +80,9 @@
                   :deps/root "rn"
                   :sha       "fc98f57a01d16228e709fb1ad4c2a504c65964d3"}
 
+    ;; keybindings
+    keybind/keybind {:mvn/version "2.2.0"}
+
     ;; ui icons
     hiccup-icons/hiccup-icons {:mvn/version "0.4.4"}
 

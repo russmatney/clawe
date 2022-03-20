@@ -11,6 +11,8 @@
    [uix.core.alpha :as uix]
    [uix.dom.alpha :as uix.dom]
 
+   [keybind.core :as key]
+
    [doctor.ui.tauri :as tauri]
    [doctor.ui.views.todos :as views.todos]
    [doctor.ui.views.topbar :as views.topbar]
@@ -42,11 +44,65 @@
     "No app selected, defaulting..."]
    [views.events/event-page]])
 
+(def menu-opts
+  [[:page/home "Home"]
+   [:page/todos "Todos"]
+   [:page/popup "Pop Up"]
+   [:page/events "Events"]
+   [:page/topbar "Top Bar"]
+   [:page/topbar-bg "Top Bar BG"]
+   [:page/counter "Counter"]
+   [:page/wallpapers "Wallpapers"]
+   [:page/workspaces "Workspaces"]
+   [:page/screenshots "Screenshots"]])
+
+(def page-name->route
+  (->> routes
+       (map (fn [[rt {:keys [name]}]]
+              [name rt]))
+       (into {})))
+
+(comment
+  (page-name->route :page/topbar)
+
+  (for [[i [name label]] (map-indexed vector menu-opts)]
+    (println i name label))
+
+  "hi"
+
+  (router/href :page/events)
+
+  (js/location "https://google.com")
+  (set! (.-location js/window) "/popup")
+
+  ;; reload:
+  (set! (.-location js/window) "somepath")
+
+  ;; set hash?
+  (set! (.-hash js/window.location) "somehash")
+  )
+
+
 (defn home [main]
-  (let [params            (router/use-route-parameters)
-        main              (or main default-main)
+  (let [params             (router/use-route-parameters)
+        main               (or main default-main)
         ;; fallback main disabled for now, seems to some issue mounting/unmounting defhandlers
-        current-page-name (-> router/*match* uix/context :data :name)]
+        current-page-name  (-> router/*match* uix/context :data :name)
+        cursor-idx         (uix/state
+                             (->> menu-opts (map first)
+                                  ((fn [xs] (.indexOf xs current-page-name)))))
+        indexed-menu-items (->> menu-opts (map-indexed vector))]
+    (key/bind! "j" ::cursor-down #(swap! cursor-idx inc))
+    (key/bind! "k" ::cursor-up #(swap! cursor-idx dec))
+    (key/bind! "enter"
+               ::cursor-select
+               (fn [e]
+                 (println "enter pressed")
+                 (println e)
+                 (when-let [[_i [page-name label]]
+                            (nth indexed-menu-items @cursor-idx)]
+                   (set! (.-location js/window)
+                         (page-name->route page-name)))))
     [:div
      {:class ["bg-city-blue-900"
               "min-h-screen"
@@ -59,24 +115,19 @@
                      "text-city-pink-100"
                      "text-xxl"
                      "font-nes"]}
-       (for [[page-name label] [[:page/home "Home"]
-                                [:page/todos "Todos"]
-                                [:page/popup "Pop Up"]
-                                [:page/events "Events"]
-                                [:page/topbar "Top Bar"]
-                                [:page/topbar-bg "Top Bar BG"]
-                                [:page/counter "Counter"]
-                                [:page/wallpapers "Wallpapers"]
-                                [:page/workspaces "Workspaces"]
-                                [:page/screenshots "Screenshots"]]]
-         ^{:key page-name}
-         [:a {:class (when (#{current-page-name} page-name)
-                       ["text-city-pink-400"
-                        "text-bold"])
-              :href  (router/href page-name)} label])]
+       (for [[i [page-name label]]
+             indexed-menu-items]
+         ^{:key i}
+         [:a {:class
+              (cond
+                (#{current-page-name} page-name)
+                ["text-city-pink-400" "text-bold"]
+                (#{@cursor-idx} i)
+                ["text-city-red-400" "text-bold"])
+              :href (router/href page-name)} label])]
       [:div {:class ["flex" "flex-col" "p-6"
                      "text-city-pink-100" "text-xl"]}
-       [:p (str "Router:" (clj->js (uix/context router/*router*)))]
+       [:p (str "Router:" (uix/context router/*router*))]
        [:p (str "Match: "  @params)]]
       (let [{:keys [tauri? open?] :as popup} (tauri/use-popup)]
         [:div {:class ["ml-auto"
