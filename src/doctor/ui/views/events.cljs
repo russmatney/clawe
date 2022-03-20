@@ -10,7 +10,7 @@
 
 (defn event-page []
   (let [{:keys [items]} (events/use-events)]
-    (println "event-page" items)
+    (println "event-page" (count items))
     [:div
      {:class ["flex" "flex-row" "flex-wrap" "flex-auto"
               "min-h-screen"

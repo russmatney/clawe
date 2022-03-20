@@ -30,7 +30,7 @@
    (defn use-events []
      (let [evts        (plasma.uix/state [])
            handle-resp (fn [new-items]
-                         (println "new events!" new-items)
+                         (println "new events!" (count new-items))
                          (swap! evts
                                 (fn [_]
                                   (->> new-items
