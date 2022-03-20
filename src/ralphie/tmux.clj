@@ -1,16 +1,17 @@
 (ns ralphie.tmux
   (:require
-   [babashka.process :as process :refer [$ check]]
-   [ralphie.rofi :as rofi]
-   [ralphie.notify :refer [notify]]
-   [defthing.defcom :refer [defcom] :as defcom]
-   [ralphie.sh :as r.sh]
-   [ralphie.config :as config]
    [clojure.string :as string]
-   [ralphie.awesome :as awm]
    [clojure.edn :as edn]
+
+   [babashka.process :as process :refer [$ check]]
+   [wing.core :as w]
+
+   [defthing.defcom :refer [defcom] :as defcom]
+   [ralphie.awesome :as awm]
+   [ralphie.config :as config]
    [ralphie.notify :as notify]
-   [wing.core :as w]))
+   [ralphie.rofi :as rofi]
+   [ralphie.sh :as r.sh]))
 
 
 ;; TODO sync sessions/window/panes with defs/workspaces - similar to awm tags and emacs workspaces
@@ -195,7 +196,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn new-session [{:tmux/keys [session-name window-name directory] :as opts}]
-  (notify "Attempt to create new tmux session" opts)
+  (notify/notify "Attempt to create new tmux session" opts)
   (when session-name
     (->
       ^{:out :string}
@@ -205,7 +206,7 @@
          -n ~(or window-name session-name))
       check
       :out)
-    (notify "Created new tmux session" opts)))
+    (notify/notify "Created new tmux session" opts)))
 
 (comment
   (has-session? {:name "ralphie"}))
@@ -342,11 +343,11 @@
                      (str "cd " directory " && " cmd-str)
                      cmd-str)]
        (if-not cmd-str
-         (notify "invalid tmux/fire! called" cmd-str opts)
+         (notify/notify "invalid tmux/fire! called" cmd-str opts)
          (try
-           (notify "tmux/fire!" {:tmux/session session
-                                 :tmux/cmd     cmd-str
-                                 :tmux/target  non-busy-target})
+           (notify/notify "tmux/fire!" {:tmux/session session
+                                        :tmux/cmd     cmd-str
+                                        :tmux/target  non-busy-target})
 
            (->
              ^{:out :string}
