@@ -9,7 +9,8 @@
    [ralphie.git :as r.git]
    [ralphie.bb :as r.bb]
    [defthing.defkbd :as defkbd]
-   [ralphie.tmux :as tmux]))
+   [ralphie.tmux :as r.tmux]
+   [ralphie.awesome :as r.awm]))
 
 (defn godot-repo-actions [wsp]
   (when-let [dir (:workspace/directory wsp)]
@@ -24,16 +25,18 @@
 
 (comment
   (workspaces/current-workspace)
+
+  (r.awm/fetch-tags)
   )
 
 (defn kill-things [wsp]
   (concat
-    (tmux/rofi-kill-opts))
+    (r.tmux/rofi-kill-opts)
+    (r.awm/rofi-kill-opts)
+    )
 
   ;; TODO options to kill pids running in panes?
   ;; TODO options to kill browser tabs
-  ;; TODO options to kill running clients
-  ;; TODO options to kill running awm tags
   ;; TODO options to kill running workspaces (and clients within)
   )
 
@@ -48,7 +51,7 @@
                   :rofi/description description
                   :rofi/on-select (fn [_]
                                     (println "bb task on-select" task wsp)
-                                    (tmux/fire
+                                    (r.tmux/fire
                                       {:tmux.fire/cmd     (str "bb " cmd)
                                        :tmux.fire/session (:workspace/title wsp)}))))))))
 

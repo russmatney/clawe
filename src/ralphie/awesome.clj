@@ -37,7 +37,8 @@
    [clojure.string :as string]
    [defthing.defcom :refer [defcom] :as defcom]
    [ralphie.notify :as notify]
-   [ralphie.sh :as sh]))
+   [ralphie.sh :as sh]
+   [clojure.edn :as edn]))
 
 ;;  TODO rename `awm-cli` to `awm-lua`, and write a shared `awm-cli` base. or just
 ;;  support `awm-cli` and check for a leading `(`.
@@ -108,10 +109,11 @@ util = require 'util';
                   (string/replace trimmed #"^double " ""))]
     (try
       ;; convert to clojure data structure
-      ;; TODO: use edn/read-string?
+      ;; (edn/read-string to-load)
       (load-string to-load)
       (catch Exception _e
         (println "Exception while parsing output:" trimmed to-load)
+        ;; (println "e" e)
         to-load))
     ))
 
@@ -598,6 +600,12 @@ util = require 'util';
     (let [tag (awful.tag.find_by_name nil ~tag-name)]
       (tag:delete))))
 
+(comment
+  (delete-tag! "slack")
+  (delete-tag! "dotfiles")
+  (focus-tag! "slack")
+  )
+
 (defn delete-current-tag! []
   (fnl (s.selected_tag:delete)))
 
@@ -778,6 +786,31 @@ util = require 'util';
   (shell "notify-send hi")
   (shell "pactl set-sink-volume @DEFAULT_SINK@ +5%")
   (shell "pactl set-sink-volume @DEFAULT_SINK@ -5%"))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Rofi
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn rofi-kill-opts []
+  (->>
+    (fetch-tags)
+    (map (fn [tag]
+           (let [tag-name (:awesome.tag/name tag)]
+             (concat
+               [{:rofi/label     (str "Kill awesome tag: " tag-name)
+                 ;; TODO tags with clients block deletion - support deleting a tag's clients
+                 :rofi/on-select (fn [_] (delete-tag! tag-name))}]
+               (->> (:awesome.tag/clients tag)
+                    (map (fn [client]
+                           (let [client-name (str (:awesome.client/name client)
+                                                  " - "
+                                                  (:awesome.client/class client)
+                                                  " - "
+                                                  (:awesome.client/instance client))]
+                             {:rofi/label     (str "Kill client: " client-name)
+                              :rofi/on-select (fn [_] (close-client client))})))
+                    (into []))))))
+    flatten))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
