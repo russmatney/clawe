@@ -66,6 +66,40 @@
   ;; (defcom/exec systemctl-restart-unit)
   )
 
+(defn list-service-units []
+  (->>
+    (list-units)
+    (filter (comp #{"active"} :active))
+    (filter (comp (fn [x]
+                    (re-seq #"(\.service)" x)
+                    ) :name))
+    (remove (comp (fn [x]
+                    (re-seq #"(sys|\.mount|\.socket|\.target|\.slice|\.swap)" x)
+                    ) :name))))
+
+(def systemd-operations
+  {:systemd/restart "restart"
+   :systemd/stop    "stop"
+   :systemd/start   "start"})
+
+(defn rofi-service-opts [->label operation]
+  (if-let [op (systemd-operations operation)]
+    (->> (list-service-units)
+         (map (fn [u]
+                {:rofi/label (-> u :name ->label)
+                 :rofi/on-select
+                 (fn [_]
+                   (tmux/fire {:tmux.fire/command
+                               (str "systemctl --user " op " " (:name u))}))})))
+    (throw (str "unsupported systemd operation: " operation))))
+
+(comment
+  (rofi-service-opts #(str "Restart " %) :systemd/restart)
+  (rofi-service-opts #(str "Stop " %) :systemd/stop)
+  (rofi-service-opts #(str "Start " %) :systemd/start)
+  )
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (comment

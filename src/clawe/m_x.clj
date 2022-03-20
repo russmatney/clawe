@@ -1,16 +1,19 @@
 (ns clawe.m-x
   (:require
+   [defthing.defkbd :as defkbd]
    [defthing.defcom :as defcom :refer [defcom]]
-   [clawe.workspaces :as workspaces]
-   [clawe.workspaces.create :as wsp.create]
+
    [ralphie.notify :as r.notify]
    [ralphie.rofi :as r.rofi]
    [ralphie.core :as r.core]
    [ralphie.git :as r.git]
    [ralphie.bb :as r.bb]
-   [defthing.defkbd :as defkbd]
    [ralphie.tmux :as r.tmux]
-   [ralphie.awesome :as r.awm]))
+   [ralphie.awesome :as r.awm]
+   [ralphie.systemd :as r.systemd]
+
+   [clawe.workspaces :as workspaces]
+   [clawe.workspaces.create :as wsp.create]))
 
 (defn godot-repo-actions [wsp]
   (when-let [dir (:workspace/directory wsp)]
@@ -102,8 +105,12 @@
          (->> (workspaces/open-workspace-rofi-options)
               (map #(assoc % :rofi/label (str "Open wsp: " (:rofi/label %)))))
 
+         ;; kill tmux/tags/clients
          (kill-things wsp)
-         )
+
+         ;; systemd stops/restart
+         (r.systemd/rofi-service-opts #(str "Restart " %) :systemd/restart)
+         (r.systemd/rofi-service-opts #(str "Stop " %) :systemd/stop))
        (remove nil?)))))
 
 (comment
