@@ -17,21 +17,22 @@
 
 (def tmux-format-keys
   "These are pulled from the tmux man-page, FORMATS section."
-  {:tmux.pane/active                 "?pane_active"
-   :tmux.pane/current-command        "pane_current_command"
-   :tmux.pane/current-path           "pane_current_path"     ;; Current path if available
-   :tmux.pane/dead                   "?pane_dead"            ;; 1 if pane is dead
-   :tmux.pane/dead-status            "pane_dead_status"      ;; Exit status of process in dead pane
-   :tmux.pane/id                     "pane_id"               ;; Unique pane ID
-   :tmux.pane/in-mode                "?pane_in_mode"         ;; 1 if pane is in a mode
-   :tmux.pane/index                  "pane_index"
-   :tmux.pane/path                   "pane_path"             ;; Path of pane (can be set by application)
-   :tmux.pane/pid                    "pane_pid"              ;; PID of first process in pane
-   :tmux.pane/synchronized           "?pane_synchronized"    ;; 1 if pane is synchronized
-   :tmux.pane/start-command          "pane_start_command"    ;; Command pane started with
-   :tmux.pane/tabs                   "pane_tabs"             ;; Pane tab positions
-   :tmux.pane/title                  "pane_title"            ;; Title of pane (can be set by application)
-   :tmux.pane/tty                    "pane_tty"              ;; Pseudo terminal of pane
+  {:tmux.pane/active          "?pane_active"
+   :tmux.pane/current-command "pane_current_command"
+   :tmux.pane/current-path    "pane_current_path"     ;; Current path if available
+   :tmux.pane/dead            "?pane_dead"            ;; 1 if pane is dead
+   :tmux.pane/dead-status     "pane_dead_status"      ;; Exit status of process in dead pane
+   :tmux.pane/id              "pane_id"               ;; Unique pane ID
+   :tmux.pane/in-mode         "?pane_in_mode"         ;; 1 if pane is in a mode
+   :tmux.pane/index           "pane_index"
+   :tmux.pane/path            "pane_path"             ;; Path of pane (can be set by application)
+   :tmux.pane/pid             "pane_pid"              ;; PID of first process in pane
+   :tmux.pane/synchronized    "?pane_synchronized"    ;; 1 if pane is synchronized
+   :tmux.pane/start-command   "pane_start_command"    ;; Command pane started with
+   :tmux.pane/tabs            "pane_tabs"             ;; Pane tab positions
+   :tmux.pane/title           "pane_title"            ;; Title of pane (can be set by application)
+   :tmux.pane/tty             "pane_tty"              ;; Pseudo terminal of pane
+
    :tmux.session/activity            "session_activity"      ;; Time of session last activity
    :tmux.session/created             "session_created"       ;; Time session created
    :tmux.session/id                  "session_id"            ;; Unique session ID
@@ -40,20 +41,21 @@
    :tmux.session/stack               "session_stack"         ;; Window indexes in most recent order
    :tmux.session/windows             "session_windows"       ;; Number of windows in session
    :tmux.session/active-window-index "active_window_index"   ;; Index of active window in session
-   :tmux.window/active               "?window_active"        ;; 1 if window active
-   :tmux.window/activity             "window_activity"       ;; Time of window last activity
-   :tmux.window/activity-flag        "?window_activity_flag" ;; 1 if window has activity
-   :tmux.window/bell-flag            "?window_bell_flag"     ;; 1 if window has bell
-   :tmux.window/id                   "window_id"             ;; Unique window ID
-   :tmux.window/index                "window_index"          ;; Index of window
-   :tmux.window/last-flag            "?window_last_flag"     ;; 1 if window is the last used
-   :tmux.window/layout               "window_layout"         ;; Window layout description, ignoring zoomed window panes
-   :tmux.window/name                 "window_name"
-   :tmux.window/panes                "window_panes"          ;; Number of panes in window
-   :tmux.window/silence-flag         "?window_silence_flag"  ;; 1 if window has silence alert
-   :tmux.window/stack-index          "window_stack_index"    ;; Index in session most recent stack
-   :tmux.window/start-flag           "?window_start_flag"    ;; 1 if window has the lowest index
-   :tmux.window/visible-layout       "window_visible_layout" ;; Window layout description, respecting zoomed window panes
+
+   :tmux.window/active         "?window_active"        ;; 1 if window active
+   :tmux.window/activity       "window_activity"       ;; Time of window last activity
+   :tmux.window/activity-flag  "?window_activity_flag" ;; 1 if window has activity
+   :tmux.window/bell-flag      "?window_bell_flag"     ;; 1 if window has bell
+   :tmux.window/id             "window_id"             ;; Unique window ID
+   :tmux.window/index          "window_index"          ;; Index of window
+   :tmux.window/last-flag      "?window_last_flag"     ;; 1 if window is the last used
+   :tmux.window/layout         "window_layout"         ;; Window layout description, ignoring zoomed window panes
+   :tmux.window/name           "window_name"
+   :tmux.window/panes          "window_panes"          ;; Number of panes in window
+   :tmux.window/silence-flag   "?window_silence_flag"  ;; 1 if window has silence alert
+   :tmux.window/stack-index    "window_stack_index"    ;; Index in session most recent stack
+   :tmux.window/start-flag     "?window_start_flag"    ;; 1 if window has the lowest index
+   :tmux.window/visible-layout "window_visible_layout" ;; Window layout description, respecting zoomed window panes
    })
 
 ;; TODO unit tests
@@ -238,7 +240,8 @@
    (let [panes       (or panes
                          (list-panes
                            {:tmux/formats #{:tmux.pane/current-command
-                                            :tmux.pane/index}
+                                            :tmux.pane/index
+                                            :tmux.pane/current-path}
                             :tmux/target  target}))
          active-pane (some->> panes (filter :tmux.pane/active) first)]
      (if (-> active-pane :tmux.pane/current-command #{"zsh"})
@@ -277,7 +280,8 @@
      (string? opts-or-str)
      (fire opts-or-str nil)))
   ([cmd-str opts]
-   (let [{:tmux.fire/keys [cmd session window pane interrupt?]} (or opts {})
+   (let [{:tmux.fire/keys [cmd session window pane interrupt?
+                           directory]} (or opts {})
 
          cmd-str (or cmd-str cmd)
          ;; fallback to a session in the current tag/workspace
@@ -298,48 +302,59 @@
                                                  :tmux/panes  panes}))
 
            ;; get a non-busy target pane
-           non-busy-target (cond
-                             (empty? panes)
-                             (do
-                               ;; this should never happen - missing panes means a new session should have been created
-                               (notify/notify "No panes :/" "This should never happen!")
-                               initial-target)
+           [non-busy-target
+            available-pane]
+           (cond
+             (empty? panes)
+             (do
+               ;; this should never happen - missing panes means a new session should have been created
+               (notify/notify "No panes :/" "This should never happen!")
+               [initial-target available-pane])
 
-                             available-pane
-                             (str session ":" window "." (:tmux.pane/index available-pane))
+             available-pane
+             [(str session ":" window "." (:tmux.pane/index available-pane))
+              available-pane]
 
-                             interrupt?
-                             (do
-                               ;; interrupt whatever's running
-                               (notify/notify "Tmux/fire interrupting pane!")
-                               (-> ($ tmux send-keys "-t" ~initial-target C-c) check)
-                               initial-target)
+             interrupt?
+             (do
+               ;; interrupt whatever's running
+               (notify/notify "Tmux/fire interrupting pane!")
+               (-> ($ tmux send-keys "-t" ~initial-target C-c) check)
+               [initial-target
+                available-pane])
 
-                             :else
-                             (do
-                               ;; split the window and get that pane's index
-                               (notify/notify "Creating new pane")
-                               (-> ($ tmux split-window "-t" ~initial-target) check)
-                               ;; is this a race-case? may need to wait if zsh is slow?
-                               ;; could also loop-recur with a delay?
-                               ;; seems like the keys send and fire as soon as zsh is ready
-                               (let [available-pane (get-available-pane {:tmux/target initial-target})]
-                                 (str session ":" window "." (:tmux.pane/index available-pane)))))]
+             :else
+             (do
+               ;; split the window and get that pane's index
+               (notify/notify "Creating new pane")
+               (-> ($ tmux split-window "-t" ~initial-target) check)
+               ;; is this a race-case? may need to wait if zsh is slow?
+               ;; could also loop-recur with a delay?
+               ;; seems like the keys send and fire as soon as zsh is ready
+               (let [available-pane (get-available-pane {:tmux/target initial-target})]
+                 [(str session ":" window "." (:tmux.pane/index available-pane))
+                  available-pane])))
+
+           cmd-str (if (and directory
+                            ;; not in this directory right now
+                            (not (#{directory} (:tmux.pane/current-path available-pane))))
+                     ;; move to this dir before firing
+                     (str "cd " directory " && " cmd-str)
+                     cmd-str)]
        (if-not cmd-str
          (notify "invalid tmux/fire! called" cmd-str opts)
          (try
-           (do
-             (notify "tmux/fire!" {:tmux/session session
-                                   :tmux/cmd     cmd-str
-                                   :tmux/target  non-busy-target})
+           (notify "tmux/fire!" {:tmux/session session
+                                 :tmux/cmd     cmd-str
+                                 :tmux/target  non-busy-target})
 
-             (->
-               ^{:out :string}
-               ($ tmux send-keys
-                  -t ~non-busy-target
-                  ;; -R ;; resets the terminal state
-                  ~cmd-str C-m)
-               check))
+           (->
+             ^{:out :string}
+             ($ tmux send-keys
+                -t ~non-busy-target
+                ;; -R ;; resets the terminal state
+                ~cmd-str C-m)
+             check)
            (catch Exception e
              (println "tmux/fire Exception" e)
              (throw e))))))))
@@ -351,7 +366,8 @@
   ;;   if the specified session does not exist, it should be created and the command run in there
 
   (fire "echo sup")
-  (fire "bb log-awesome")
+  (fire "bb log-awesome"
+        {:tmux.fire/directory "~/russmatney/clawe"})
   (fire "echo sup" {:tmux.fire/interrupt? true})
   (fire "bb log-awesome" {:tmux.fire/interrupt? true})
   (fire "notify-send.py supject supdy")

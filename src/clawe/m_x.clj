@@ -52,8 +52,9 @@
                   :rofi/on-select (fn [_]
                                     (println "bb task on-select" task wsp)
                                     (r.tmux/fire
-                                      {:tmux.fire/cmd     (str "bb " cmd)
-                                       :tmux.fire/session (:workspace/title wsp)}))))))))
+                                      {:tmux.fire/cmd       (str "bb " cmd)
+                                       :tmux.fire/session   (:workspace/title wsp)
+                                       :tmux.fire/directory dir}))))))))
 
 (comment
   (->> (bb-tasks-for-wsp (workspaces/current-workspace))
