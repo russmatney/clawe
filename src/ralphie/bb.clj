@@ -1,8 +1,10 @@
 (ns ralphie.bb
-  (:require [ralphie.notify :as notify]
-            [clojure.string :as string]
-            [babashka.process :as process :refer [$]]
-            [ralphie.zsh :as zsh]))
+  (:require
+   [ralphie.notify :as notify]
+   [clojure.string :as string]
+   [babashka.process :as process :refer [$]]
+   [babashka.fs :as fs]
+   [ralphie.zsh :as zsh]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; run command helper
@@ -61,15 +63,20 @@
 (defn tasks [dir]
   (when dir
     (let [dir (zsh/expand dir)]
-      (->
-        ^{:dir dir :out :string}
-        ($ bb tasks)
-        process/check
-        :out
-        string/split-lines
-        (->>
-          (drop 2)
-          (map parse-task))))))
+      (when (fs/exists? (str dir "/bb.edn"))
+        (try
+          (->
+            ^{:dir dir :out :string}
+            ($ bb tasks)
+            process/check
+            :out
+            string/split-lines
+            (->>
+              (drop 2)
+              (map parse-task)))
+          (catch Exception e
+            (notify/notify "Error parsing repo bb.edn" e)
+            (println "Error parsing repo bb.edn" e)))))))
 
 (comment
   (tasks "~/russmatney/clawe")
