@@ -3,9 +3,7 @@
    [clojure.string :as string]
    [doctor.ui.workspaces :as workspaces]
    [doctor.ui.components.icons :as icons]
-   [doctor.ui.components.debug :as debug]
-
-   [doctor.ui.topbar :as topbar]))
+   [doctor.ui.components.debug :as debug]))
 
 (defn dir [s]
   (-> s (string/replace #"/home/russ" "~")))
@@ -28,17 +26,15 @@
   [{:action/label    "Update workspace display name"
     :action/on-click #(-> w
                           (assoc :workspace/display-name %)
-                          (workspaces/update-workspace))}
-   ]
-  )
+                          (workspaces/update-workspace))}])
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Detail window
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn client-metadata
-  ([client] [client-metadata nil client])
+(defn client-detail
+  ([client] [client-detail nil client])
   ([opts client]
    (let [{:keys [awesome.client/name
                  awesome.client/class
@@ -53,7 +49,12 @@
                :class ["w-8" "mr-4"])]
 
        [:span.text-xl
-        (str name " | " class " | " instance)]]
+        (cond
+          (#{(string/lower-case class)} (string/lower-case instance))
+          (str class " | " name)
+
+          :else
+          (str class " | " instance " | " name))]]
 
       [debug/raw-metadata
        (merge {:label "Raw Client Metadata"} opts)
@@ -61,7 +62,7 @@
 
 (defn active-workspace [active-workspaces]
   [:div
-   {:class ["bg-yo-blue-500" "p-6" "text-white"]}
+   {:class ["bg-yo-blue-500" "p-6" "text-white" "w-full"]}
    (when (seq active-workspaces)
      (for [wsp active-workspaces]
        (let [{:keys [workspace/directory
@@ -70,7 +71,9 @@
                      git/dirty?
                      git/needs-pull?
                      workspace/title
-                     awesome.tag/clients]} wsp
+                     awesome.tag/clients
+                     tmux/session
+                     ]} wsp
 
              dir     (or directory repo)
              clients (->> clients (remove is-bar-app?))]
@@ -92,14 +95,24 @@
            {:class ["mb-4" "font-mono"]}
            dir]
 
+          (when session
+            (println "haz session")
+            [debug/raw-metadata
+             {:label "Raw Tmux Session Metadata"}
+             session])
+
           [debug/raw-metadata
            {:label "Raw Workspace Metadata"}
-           (->> wsp (sort-by first))]
+           wsp]
+
+          [:div
+           {:class ["flex flex-row justify-between items-center" "py-2"]}
+           [:span.text-lg.font-nes (str (count clients) " client(s)")]]
 
           (when (seq clients)
             (for [client clients]
               ^{:key (:awesome.client/window client)}
-              [client-metadata client]))])))])
+              [client-detail client]))])))])
 
 ;; TODO restore
 ;; (defn topbar-metadata []
@@ -113,25 +126,25 @@
 (defn workspace-comp
   ([wsp] (workspace-comp nil wsp))
   ([_opts wsp]
-   (let [{:keys [workspace/title
-                 git/repo
+   (let [{:keys [git/repo
                  workspace/directory
                  workspace/color
                  workspace/title-hiccup
                  awesome.tag/index
                  workspace/scratchpad
-                 awesome/clients
-                 ]} wsp]
+                 awesome.tag/clients]} wsp]
      [:div
       {:class ["m-1"
                "p-4"
                "border"
                "border-city-blue-600"
                "bg-yo-blue-700"
-               "text-white"]}
+               "text-white"
+               "w-96"
+               ]}
       [:div
        (when color {:style {:color color}})
-       (str (workspaces/workspace-name wsp) " (" index ")")]
+       (str "(" index ") " (workspaces/workspace-name wsp))]
 
       [:div
        (when scratchpad
@@ -141,10 +154,13 @@
          (str "#repo"))]
 
       (when (seq clients)
-        [:div
+        [:ul
+         {:class ["truncate"]}
          (for [c (->> clients)]
-           ^{:key (:window c)}
-           [:div (str "- '" (:name c) "'")])])
+           ^{:key (:awesome.client/window c)}
+           [:li
+            (str (:awesome.client/class c) " | "
+                 (:awesome.client/name c))])])
 
       (when title-hiccup
         [:div title-hiccup])
@@ -157,16 +173,17 @@
     [:div
      {:class ["p-4"]}
      [:h1
-      {:class ["font-nes" "text-2xl" "text-white"
-               "pb-2"]}
+      {:class ["font-nes" "text-2xl" "text-white" "pb-2"]}
       (str "Workspaces (" (count workspaces) ")")]
 
      [:div
-      {:class ["flex" "flex-row" "flex-wrap"
-               "justify-between"
-               ]}
-      (for [[i it] (->> workspaces (map-indexed vector))]
-        ^{:key i}
-        [workspace-comp nil it])]
+      {:class ["flex" "flex-row" "pt-4"]}
+      [:div
+       {:class ["flex" "flex-0" "flex-col" "flex-wrap" "justify-between"]}
+       (for [[i it] (->> workspaces (map-indexed vector))]
+         ^{:key i}
+         [workspace-comp nil it])]
 
-     [active-workspace active-workspaces]]))
+      [:div
+       {:class ["flex" "flex-1"]}
+       [active-workspace active-workspaces]]]]))
