@@ -363,6 +363,23 @@
     )
   )
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; tmux session merging
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn merge-tmux-sessions
+  "assumes the workspace title and tmux session are the same"
+  ([wsps] (merge-tmux-sessions {} wsps))
+  ([_opts wsps]
+   (let [sessions-by-name (r.tmux/list-sessions)]
+     (->> wsps
+          (map (fn [{:workspace/keys [title] :as wsp}]
+                 (if-let [sesh (sessions-by-name title)]
+                   (assoc wsp :tmux/session sesh)
+                   wsp)))))))
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Workspaces fetchers
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -379,12 +396,14 @@
            (sort-by :workspace/scratchpad)
            ;; (take 1)
            ;; merge-awm-tags
+           (merge-tmux-sessions)
            first))
 
 (comment
   (->> (awm/current-tag-names)
        (map defworkspace/get-workspace)
        (sort-by :workspace/scratchpad))
+
   (current-workspace)
 
   (some->> (awm/current-tag-names)
@@ -410,6 +429,7 @@
   (->>
     (db-with-merged-in-memory-workspaces)
     (merge-awm-tags {:include-unmatched? true})
+    (merge-tmux-sessions)
     ;; merge-db-workspaces
     ;; (map apply-git-status)
     ))
