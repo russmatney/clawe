@@ -9,51 +9,51 @@
    [clojure.string :as string]
    [ralphie.awesome :as awm]
    [clojure.edn :as edn]
-   [ralphie.notify :as notify]))
+   [ralphie.notify :as notify]
+   [wing.core :as w]))
 
 
 ;; TODO sync sessions/window/panes with defs/workspaces - similar to awm tags and emacs workspaces
 
 (def tmux-format-keys
   "These are pulled from the tmux man-page, FORMATS section."
-  {
-   :tmux/pane-active           "?pane_active"
-   :tmux/pane-current-command  "pane_current_command"
-   :tmux/pane-current-path     "pane_current_path"     ;; Current path if available
-   :tmux/pane-dead             "?pane_dead"            ;; 1 if pane is dead
-   :tmux/pane-dead-status      "pane_dead_status"      ;; Exit status of process in dead pane
-   :tmux/pane-id               "pane_id"               ;; Unique pane ID
-   :tmux/pane-in-mode          "?pane_in_mode"         ;; 1 if pane is in a mode
-   :tmux/pane-index            "pane-index"
-   :tmux/pane-path             "pane_path"             ;; Path of pane (can be set by application)
-   :tmux/pane-pid              "pane_pid"              ;; PID of first process in pane
-   :tmux/pane-synchronized     "?pane_synchronized"    ;; 1 if pane is synchronized
-   :tmux/pane-start-command    "pane_start_command"    ;; Command pane started with
-   :tmux/pane-tabs             "pane_tabs"             ;; Pane tab positions
-   :tmux/pane-title            "pane_title"            ;; Title of pane (can be set by application)
-   :tmux/pane-tty              "pane_tty"              ;; Pseudo terminal of pane
-   :tmux/session-activity      "session_activity"      ;; Time of session last activity
-   :tmux/session-created       "session_created"       ;; Time session created
-   :tmux/session-id            "session_id"            ;; Unique session ID
-   :tmux/session-name          "session_name"          ;; Name of session
-   :tmux/session-path          "session_path"          ;; Working directory of session
-   :tmux/session-stack         "session_stack"         ;; Window indexes in most recent order
-   :tmux/session-windows       "session_windows"       ;; Number of windows in session
-   :tmux/active-window-index   "active_window_index"   ;; Index of active window in session
-   :tmux/window-active         "?window_active"        ;; 1 if window active
-   :tmux/window-activity       "window_activity"       ;; Time of window last activity
-   :tmux/window-activity-flag  "?window_activity_flag" ;; 1 if window has activity
-   :tmux/window-bell-flag      "?window_bell_flag"     ;; 1 if window has bell
-   :tmux/window-id             "window_id"             ;; Unique window ID
-   :tmux/window-index          "window_index"          ;; Index of window
-   :tmux/window-last-flag      "?window_last_flag"     ;; 1 if window is the last used
-   :tmux/window-layout         "window_layout"         ;; Window layout description, ignoring zoomed window panes
-   :tmux/window-name           "window_name"
-   :tmux/window-panes          "window_panes"          ;; Number of panes in window
-   :tmux/window-silence-flag   "?window_silence_flag"  ;; 1 if window has silence alert
-   :tmux/window-stack-index    "window_stack_index"    ;; Index in session most recent stack
-   :tmux/window-start-flag     "?window_start_flag"    ;; 1 if window has the lowest index
-   :tmux/window-visible-layout "window_visible_layout" ;; Window layout description, respecting zoomed window panes
+  {:tmux.pane/active                 "?pane_active"
+   :tmux.pane/current-command        "pane_current_command"
+   :tmux.pane/current-path           "pane_current_path"     ;; Current path if available
+   :tmux.pane/dead                   "?pane_dead"            ;; 1 if pane is dead
+   :tmux.pane/dead-status            "pane_dead_status"      ;; Exit status of process in dead pane
+   :tmux.pane/id                     "pane_id"               ;; Unique pane ID
+   :tmux.pane/in-mode                "?pane_in_mode"         ;; 1 if pane is in a mode
+   :tmux.pane/index                  "pane_index"
+   :tmux.pane/path                   "pane_path"             ;; Path of pane (can be set by application)
+   :tmux.pane/pid                    "pane_pid"              ;; PID of first process in pane
+   :tmux.pane/synchronized           "?pane_synchronized"    ;; 1 if pane is synchronized
+   :tmux.pane/start-command          "pane_start_command"    ;; Command pane started with
+   :tmux.pane/tabs                   "pane_tabs"             ;; Pane tab positions
+   :tmux.pane/title                  "pane_title"            ;; Title of pane (can be set by application)
+   :tmux.pane/tty                    "pane_tty"              ;; Pseudo terminal of pane
+   :tmux.session/activity            "session_activity"      ;; Time of session last activity
+   :tmux.session/created             "session_created"       ;; Time session created
+   :tmux.session/id                  "session_id"            ;; Unique session ID
+   :tmux.session/name                "session_name"          ;; Name of session
+   :tmux.session/path                "session_path"          ;; Working directory of session
+   :tmux.session/stack               "session_stack"         ;; Window indexes in most recent order
+   :tmux.session/windows             "session_windows"       ;; Number of windows in session
+   :tmux.session/active-window-index "active_window_index"   ;; Index of active window in session
+   :tmux.window/active               "?window_active"        ;; 1 if window active
+   :tmux.window/activity             "window_activity"       ;; Time of window last activity
+   :tmux.window/activity-flag        "?window_activity_flag" ;; 1 if window has activity
+   :tmux.window/bell-flag            "?window_bell_flag"     ;; 1 if window has bell
+   :tmux.window/id                   "window_id"             ;; Unique window ID
+   :tmux.window/index                "window_index"          ;; Index of window
+   :tmux.window/last-flag            "?window_last_flag"     ;; 1 if window is the last used
+   :tmux.window/layout               "window_layout"         ;; Window layout description, ignoring zoomed window panes
+   :tmux.window/name                 "window_name"
+   :tmux.window/panes                "window_panes"          ;; Number of panes in window
+   :tmux.window/silence-flag         "?window_silence_flag"  ;; 1 if window has silence alert
+   :tmux.window/stack-index          "window_stack_index"    ;; Index in session most recent stack
+   :tmux.window/start-flag           "?window_start_flag"    ;; 1 if window has the lowest index
+   :tmux.window/visible-layout       "window_visible_layout" ;; Window layout description, respecting zoomed window panes
    })
 
 ;; TODO unit tests
@@ -72,7 +72,7 @@
               (map (fn [[key fmt-key]]
                      (str key " \"#{" fmt-key "}\"")
                      (str key " " (if (re-seq #"^\?" fmt-key)
-                                    ;; `?` prefix for now implies we want a boolean
+                                    ;; `?` prefix implies we want a boolean
                                     ;; may one day want something for ints/indexes
                                     ;; this lets edn/read-string read a bool
                                     (str "#{" fmt-key ",true,false}")
@@ -80,6 +80,9 @@
               (string/join " "))]
      (str "{" format-syms-and-keys "}"))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; list panes
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn list-panes
   ([] (list-panes nil))
@@ -93,7 +96,7 @@
              (when target "-t")
              (when target target)]
             (remove nil?)))
-     check :out string/split-lines (->> (map edn/read-string))) ))
+     check :out (#(str "[" % "]")) edn/read-string)))
 
 (comment
   (tmux-format-str nil)
@@ -103,8 +106,60 @@
                                :tmux/pane-active}})
   (list-panes {:tmux/formats #{:tmux/pane-current-command
                                :tmux/pane-index}
-               :tmux/target  "clawe:."})
+               :tmux/target  "clawe:."}))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; list sessions
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn keys-with-ns [ns]
+  (keys (into {} (w/filter-keys (comp #{ns} namespace)) tmux-format-keys))
   )
+
+(defn list-sessions
+  "Builds a map of sessions by name,
+  each with a map of windows by index,
+  each with a map of panes by index."
+  []
+  (let [session-keys (keys-with-ns "tmux.session")
+        window-keys  (keys-with-ns "tmux.window")
+        pane-keys    (keys-with-ns "tmux.pane")]
+    (->> (list-panes)
+         (w/group-by :tmux.session/name)
+         (map (fn [[session-name xs]]
+                (let [sesh     (first xs)
+                      [sesh _] (w/partition-keys sesh session-keys)
+
+                      windows (->> xs
+                                   (w/group-by :tmux.window/index)
+                                   (map (fn [[w-idx ys]]
+                                          (let [window     (first ys)
+                                                [window _] (w/partition-keys window window-keys)]
+                                            [w-idx (assoc window :tmux/panes
+                                                          (->> ys
+                                                               (map
+                                                                 (fn [y]
+                                                                   [(:tmux.pane/index y) (first (w/partition-keys y pane-keys))]))
+                                                               (into {})))])))
+                                   (into {}))]
+                  [session-name (assoc sesh :tmux/windows windows)])))
+         (into {}))))
+
+(comment
+
+  (list-sessions)
+
+  (keys (into {} (w/filter-keys (comp #{"tmux.session"} namespace)) tmux-format-keys))
+  (keys (into {} (w/filter-keys (comp #{"tmux.window"} namespace)) tmux-format-keys))
+  (keys (into {} (w/filter-keys (comp #{"tmux.pane"} namespace)) tmux-format-keys))
+
+  (-> (list-panes)
+      first
+      (w/partition-keys (keys-with-ns "tmux.session")))
+
+  (namespace :tmux.session/name)
+  )
+
 
 
 (defn has-session? [name]
@@ -116,6 +171,20 @@
   (notify/notify "Killing session" name)
   (-> ^{:out :string :err :string}
       ($ tmux kill-session -t ~name)
+      check
+      :out))
+
+(defn kill-window [name]
+  (notify/notify "Killing window" name)
+  (-> ^{:out :string :err :string}
+      ($ tmux kill-window -t ~name)
+      check
+      :out))
+
+(defn kill-pane [name]
+  (notify/notify "Killing pane" name)
+  (-> ^{:out :string :err :string}
+      ($ tmux kill-pane -t ~name)
       check
       :out))
 
@@ -168,17 +237,17 @@
   ([{:tmux/keys [panes target]}]
    (let [panes       (or panes
                          (list-panes
-                           {:tmux/formats #{:tmux/pane-current-command
-                                            :tmux/pane-index}
+                           {:tmux/formats #{:tmux.pane/current-command
+                                            :tmux.pane/index}
                             :tmux/target  target}))
-         active-pane (some->> panes (filter :tmux/pane-active) first)]
-     (if (-> active-pane :tmux/pane-current-command #{"zsh"})
+         active-pane (some->> panes (filter :tmux.pane/active) first)]
+     (if (-> active-pane :tmux.pane/current-command #{"zsh"})
        ;; return active pane if it is available
        active-pane
 
        ;; otherwise, return first available pane
        (some->> panes
-                (filter (comp #{"zsh"} :tmux/pane-current-command))
+                (filter (comp #{"zsh"} :tmux.pane/current-command))
                 first)))))
 
 (comment
@@ -199,8 +268,7 @@
   If the pane is busy (i.e. `:tmux/pane-current-command` is not \"zsh\"),
   a new pane will be created and the command will run in there.
   If `:tmux/interrupt?` is true, the active pane will be sent `C-c` first
-  to kill whatever is running, and that pane will be used.
-  "
+  to kill whatever is running, and that pane will be used."
   ([opts-or-str]
    (cond
      (map? opts-or-str)
@@ -209,24 +277,21 @@
      (string? opts-or-str)
      (fire opts-or-str nil)))
   ([cmd-str opts]
-   (let [{:tmux/keys [fire session-name
-                      window-name window-index
-                      pane-name interrupt?]} (or opts {})
+   (let [{:tmux.fire/keys [cmd session window pane interrupt?]} (or opts {})
 
-         cmd-str      (or cmd-str fire)
+         cmd-str (or cmd-str cmd)
          ;; fallback to a session in the current tag/workspace
-         session-name (or session-name (awm/current-tag-name))
-         window-name  (or window-name window-index)
+         session (or session (awm/current-tag-name))
 
          ;; leave the window/pane empty to get the last-active ones
-         initial-target (str session-name ":" window-name "." pane-name)]
+         initial-target (str session ":" window "." pane)]
 
      (when-not (has-session? initial-target)
-       (ensure-session {:tmux/session-name session-name}))
+       (ensure-session {:tmux/session-name session}))
 
      (let [panes          (list-panes
-                            {:tmux/formats #{:tmux/pane-current-command
-                                             :tmux/pane-index}
+                            {:tmux/formats #{:tmux.pane/current-command
+                                             :tmux.pane/index}
                              :tmux/target  initial-target})
            available-pane (when (seq panes)
                             (get-available-pane {:tmux/target initial-target
@@ -241,7 +306,7 @@
                                initial-target)
 
                              available-pane
-                             (str session-name ":" window-name "." (:tmux/pane-index available-pane))
+                             (str session ":" window "." (:tmux.pane/index available-pane))
 
                              interrupt?
                              (do
@@ -259,14 +324,14 @@
                                ;; could also loop-recur with a delay?
                                ;; seems like the keys send and fire as soon as zsh is ready
                                (let [available-pane (get-available-pane {:tmux/target initial-target})]
-                                 (str session-name ":" window-name "." (:tmux/pane-index available-pane)))))]
+                                 (str session ":" window "." (:tmux.pane/index available-pane)))))]
        (if-not cmd-str
          (notify "invalid tmux/fire! called" cmd-str opts)
          (try
            (do
-             (notify "tmux/fire!" {:tmux/session-name session-name
-                                   :tmux/cmd-str      cmd-str
-                                   :tmux/target       non-busy-target})
+             (notify "tmux/fire!" {:tmux/session session
+                                   :tmux/cmd     cmd-str
+                                   :tmux/target  non-busy-target})
 
              (->
                ^{:out :string}
@@ -287,14 +352,14 @@
 
   (fire "echo sup")
   (fire "bb log-awesome")
-  (fire "echo sup" {:tmux/interrupt? true})
-  (fire "bb log-awesome" {:tmux/interrupt? true})
+  (fire "echo sup" {:tmux.fire/interrupt? true})
+  (fire "bb log-awesome" {:tmux.fire/interrupt? true})
   (fire "notify-send.py supject supdy")
 
   ;; should create and run in non-existent session
-  (fire "notify-send.py supject supdy" {:tmux/session-name "mysess"})
-  (kill-session "mysess")
+  (fire "notify-send.py supject supdy" {:tmux.fire/session "mysess"})
 
+  (kill-session "mysess")
   (ensure-session {:tmux/session-name "mysess"
                    :tmux/directory    "~/russmatney/clawe"}))
 
@@ -313,8 +378,8 @@ if it is busy."
     (let [cmd (if (seq args)
                 (first args)
                 (rofi/rofi {:msg "Command to fire"} (rofi/zsh-history)))]
-      (fire {:tmux/interrupt? true
-             :tmux/fire       cmd}))))
+      (fire {:tmux.fire/interrupt? true
+             :tmux.fire/cmd        cmd}))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; New window
@@ -322,14 +387,11 @@ if it is busy."
 
 (defn open-session
   "Creates a session in a new alacritty window."
-  ([] (open-session {:tmux/name "ralphie-fallback" :tmux/directory "~"}))
-  ([{:tmux/keys [name session-name directory]}]
-   (let [directory    (if directory
-                        (r.sh/expand directory)
-                        (config/home-dir))
-         session-name (or session-name name)
-         ;; window-name  (or window-name name)
-         ]
+  ([] (open-session {:tmux/session-name "ralphie-fallback" :tmux/directory "~"}))
+  ([{:tmux/keys [session-name directory]}]
+   (let [directory (if directory
+                     (r.sh/expand directory)
+                     (config/home-dir))]
 
      ;; NOTE `check`ing or derefing this won't release until
      ;; the alacritty window is closed. Not sure if there's a better
@@ -342,3 +404,34 @@ if it is busy."
 (comment
   (open-session {:tmux/name "name"})
   (open-session {:tmux/name "name" :tmux/directory "~/russmatney"}))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Rofi
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn rofi-kill-opts
+  "Lists ralphie.rofi compatible kill options for every session, window, and pane."
+  []
+  (->>
+    (list-sessions)
+    vals
+    (map (fn [{:keys [tmux/windows] :as session}]
+           (let [session-name (:tmux.session/name session)]
+             (concat
+               [{:rofi/label     (str "Kill tmux session: " session-name)
+                 :rofi/on-select (fn [_] (kill-session session-name))}]
+               (->> windows
+                    vals
+                    (map (fn [{:keys [tmux/panes] :as window}]
+                           (let [window-target (str session-name ":" (:tmux.window/name window))]
+                             (concat
+                               [{:rofi/label     (str "Kill tmux window: " window-target)
+                                 :rofi/on-select (fn [_] (kill-window window-target))}]
+                               (->> panes
+                                    vals
+                                    (map (fn [pane]
+                                           (let [pane-target (str window-target "." (:tmux.pane/index pane))]
+                                             {:rofi/label     (str "kill tmux pane: " pane-target)
+                                              :rofi/on-select (fn [_] (kill-pane pane-target))}))))))))
+                    flatten)))))
+    flatten))

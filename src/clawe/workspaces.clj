@@ -15,7 +15,8 @@
 
    [clawe.workspaces.create :as wsp.create]
    [clojure.string :as string]
-   [ralphie.zsh :as zsh]))
+   [ralphie.zsh :as zsh]
+   [ralphie.tmux :as r.tmux]))
 
 (defn update-topbar []
   (slurp "http://localhost:3334/topbar/update"))
@@ -441,7 +442,17 @@
     first))
 
 (comment
-  (for-name "ralphie"))
+  (for-name "ralphie")
+
+  (for-name "doctor-todo")
+
+
+  (->>
+    (r.tmux/list-panes)
+    (filter (comp #{"doctor-todo"} :tmux/session-name))
+    )
+
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;

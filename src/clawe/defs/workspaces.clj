@@ -381,9 +381,9 @@
 
 (defworkspace doctor-todo
   {:workspace/directory       "Dropbox/todo"
-   :workspace/exec            {:tmux/fire         "bb --config /home/russ/russmatney/clawe/bb.edn todo"
-                               :tmux/session-name "doctor-todo"
-                               :tmux/interrupt?   true}
+   :workspace/exec            {:tmux.fire/cmd        "bb --config /home/russ/russmatney/clawe/bb.edn todo"
+                               :tmux.fire/session    "doctor-todo"
+                               :tmux.fire/interrupt? true}
    :workspace/initial-file    "projects.org"
    :workspace/scratchpad      true
    :workspace/scratchpad-name "tauri/doctor-todo"
@@ -395,9 +395,9 @@
 
 (defworkspace doctor-popup
   {:workspace/directory       "russmatney/clawe"
-   :workspace/exec            {:tmux/fire         "bb --config /home/russ/russmatney/clawe/bb.edn popup"
-                               :tmux/session-name "doctor-popup"
-                               :tmux/interrupt?   true}
+   :workspace/exec            {:tmux.fire/cmd        "bb --config /home/russ/russmatney/clawe/bb.edn popup"
+                               :tmux.fire/session    "doctor-popup"
+                               :tmux.fire/interrupt? true}
    :workspace/initial-file    "bb.edn"
    :workspace/scratchpad      true
    :workspace/scratchpad-name "tauri/doctor-popup"

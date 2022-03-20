@@ -407,7 +407,7 @@
        (if-not wsp
          (r.tmux/open-session)
          (let [directory (or directory repo (r.zsh/expand "~"))
-               opts      {:tmux/name title :tmux/directory directory}]
+               opts      {:tmux/session-name title :tmux/directory directory}]
            (r.tmux/open-session opts))))}))
 
 (defkbd toggle-emacs

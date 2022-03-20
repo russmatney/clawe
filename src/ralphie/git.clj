@@ -208,8 +208,8 @@
   []
   (notify "Updating local repo refs via git-summary" local-repo-group-dirs)
   (for [dir local-repo-group-dirs]
-    (tmux/fire {:tmux/fire         (str "cd " dir " && git-summary")
-                :tmux/session-name "git-summary"})))
+    (tmux/fire {:tmux.fire/cmd     (str "cd " dir " && git-summary")
+                :tmux.fire/session "git-summary"})))
 
 (defcom update-local-repos-cmd
   "Updates local repo refs using git-summary."

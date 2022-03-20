@@ -27,8 +27,14 @@
   )
 
 (defn kill-things [wsp]
-  ;; TODO options to kill running tmux sessions
+  (concat
+    (tmux/rofi-kill-opts))
+
+  ;; TODO options to kill pids running in panes?
   ;; TODO options to kill browser tabs
+  ;; TODO options to kill running clients
+  ;; TODO options to kill running awm tags
+  ;; TODO options to kill running workspaces (and clients within)
   )
 
 
@@ -43,8 +49,8 @@
                   :rofi/on-select (fn [_]
                                     (println "bb task on-select" task wsp)
                                     (tmux/fire
-                                      {:tmux/fire         (str "bb " cmd)
-                                       :tmux/session-name (:workspace/title wsp)}))))))))
+                                      {:tmux.fire/cmd     (str "bb " cmd)
+                                       :tmux.fire/session (:workspace/title wsp)}))))))))
 
 (comment
   (->> (bb-tasks-for-wsp (workspaces/current-workspace))
@@ -90,7 +96,10 @@
          ;; open a known workspace
          ;; TODO improve display, handling if wsp already open
          (->> (workspaces/open-workspace-rofi-options)
-              (map #(assoc % :rofi/label (str "Open wsp: " (:rofi/label %))))))
+              (map #(assoc % :rofi/label (str "Open wsp: " (:rofi/label %)))))
+
+         (kill-things wsp)
+         )
        (remove nil?)))))
 
 (comment

@@ -27,7 +27,7 @@
                                  :emacs.open/file      (or initial-file readme)})
       :create/exec
       (cond
-        (and (map? exec) (:tmux/fire exec))
+        (and (map? exec) (:tmux.fire/cmd exec))
         (tmux/fire exec)
 
         (string? exec) (-> exec
