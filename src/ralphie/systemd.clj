@@ -87,9 +87,11 @@
     (->> (list-service-units)
          (map (fn [u]
                 {:rofi/label (-> u :name ->label)
+                 ;; TODO support tags for rofi search
+                 :rofi/description "#systemd #sc"
                  :rofi/on-select
                  (fn [_]
-                   (tmux/fire {:tmux.fire/command
+                   (tmux/fire {:tmux.fire/cmd
                                (str "systemctl --user " op " " (:name u))}))})))
     (throw (str "unsupported systemd operation: " operation))))
 

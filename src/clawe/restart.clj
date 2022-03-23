@@ -73,8 +73,9 @@ uberjar. Otherwise this might need to be called twice."
     (check-unit-tests)
 
     (log "restarting...")
-    ;; maybe detect if the current uberjar is out of date?
-    ;; might not always need to rebuild here
+    ;; TODO detect if the current uberjar is out of date
+    ;; maybe using git status, or some local timestamp?
+    ;; then provide a force rebuild option
     (c.install/build-uberjar)
     (log "rebuilt uberjar...")
     ;; maybe a pause or file read/watch, something that shows it's new?

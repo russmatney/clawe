@@ -103,7 +103,8 @@
          ;; open a known workspace
          ;; TODO improve display, handling if wsp already open
          (->> (workspaces/open-workspace-rofi-options)
-              (map #(assoc % :rofi/label (str "Open wsp: " (:rofi/label %)))))
+              (map #(assoc % :rofi/label (str "Open wsp: " (:rofi/label %))
+                           :rofi/description (:workspace/display-name %))))
 
          ;; kill tmux/tags/clients
          (kill-things wsp)
