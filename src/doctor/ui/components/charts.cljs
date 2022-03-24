@@ -9,7 +9,8 @@
                   (getElementById canvas-id)
                   (getContext "2d"))]
 
-      (js/Chart. ctx (clj->js chart-data)))))
+      (when js/Chart
+        (js/Chart. ctx (clj->js chart-data))))))
 
 (defn chart-component [chart-data]
   (let [canvas-id  (str (gensym))

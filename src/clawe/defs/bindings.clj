@@ -333,9 +333,8 @@
   `:wsp->client` is a function that returns the client to-be-toggled from a list of
   the current clients in the workspace.
 
-  `:wsp->open-client` is a function to call to create the client in the context
-  of the workspace. Note that this may be called in the context of no workspace
-  at all.
+  `:wsp->open-client` is a function to create the client in the context of the
+  workspace. Note that this may be called in the context of no workspace at all.
   "
   [{:keys [wsp->client wsp->open-client]}]
   (let [wsp            (some->> (workspaces/current-workspace) workspaces/merge-awm-tags)
@@ -345,6 +344,7 @@
       ;; no tag
       (not wsp)
       (do
+        (notify/notify "No current tag found...?" "Creating fallback")
         (awm/create-tag! "temp-tag")
         (awm/focus-tag! "temp-tag")
         (wsp->open-client nil))
@@ -365,6 +365,12 @@
       (do
         (wsp->open-client wsp)
         nil))))
+
+(comment
+  (some->>
+    (workspaces/current-workspace)
+    workspaces/merge-awm-tags)
+  )
 
 ;; TODO express godot/aseprite as a quick app-toggle right here
 ;; could be that it's a dried up version of the below toggle emacs/terminal
