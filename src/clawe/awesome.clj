@@ -62,34 +62,36 @@
        (do
          (when bury-all? (mark-buried-clients))
 
-         ;; TODO rewrite as awm-fnl
-         (awm/awm-cli
-           {:quiet? true}
-           (str
-             (when bury-all?
-               (str
-                 ;; set all ontops/floating false
-                 "for c in awful.client.iterate(function (c) return c.ontop end) do\n"
-                 ;; TODO filter things to bury
-                 "c.ontop = false; "
-                 "c.floating = false; "
-                 "end;\n"))
+         ^{:quiet? false}
+         (awm/fnl
+           (when ~bury-all?
+             (each [c (awful.client.iterate (fn [c] (. c :ontop)))]
+                   ;; TODO filter things to bury/not-bury?
+                   (tset c :ontop false)
+                   (tset c :floating false)))
 
-             "for c in awful.client.iterate(function (c) return c.window == "
-             window
-             " end) do\n"
+           (each [c (awful.client.iterate (fn [c] (= (. c :window) ~window)))]
 
-             (when float?
-               (str
-                 "c.ontop = true; "
-                 "c.floating = true; "))
+                 (when ~float?
+                   (tset c :ontop true)
+                   (tset c :floating true))
 
-             (when center?
-               (str
-                 "local f = awful.placement.centered; "
-                 "f(c); "))
+                 (when ~center?
+                   (awful.placement.centered c))
 
-             ;; TODO set minimum height/width?
-             ;; focus it
-             "_G.client.focus = c;"
-             "end; ")))))))
+                 ;; TODO set minimum height/width?
+                 (tset _G.client :focus c))))))))
+
+(comment
+  (def c
+    (->>
+      (awm/fetch-tags)
+      (filter (comp #{"clawe"} :awesome.tag/name))
+      first
+      :awesome.tag/clients
+      first
+      ))
+
+  (focus-client {:center? false} c)
+
+  )
