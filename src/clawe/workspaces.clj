@@ -389,20 +389,32 @@
   Sorts scratchpads to the end, intending to return the 'base' workspace,
   which is usually what we want."
   []
-  (some->> (awm/current-tag-names)
-           (map get-db-workspace)
-           ;; assumes local overwrites have hit db already
-           ;; otherwise we may need to merge the static wsps in here
-           (sort-by :workspace/scratchpad)
-           ;; (take 1)
-           ;; merge-awm-tags
-           (merge-tmux-sessions)
-           first))
+  (let [tag-names (awm/current-tag-names)]
+    (some->> tag-names
+             (map get-db-workspace)
+             ((fn [wsps]
+                ;; if no db workspace found for tag name,
+                ;; get data from defworkspace
+                (if (some->> wsps first)
+                  wsps
+                  (->> tag-names (map defworkspace/get-workspace)))
+                ))
+             ;; assumes local overwrites have hit db already
+             ;; otherwise we may need to merge the static wsps in here
+             (sort-by :workspace/scratchpad)
+             ;; (take 1)
+             ;; merge-awm-tags
+             (merge-tmux-sessions)
+             first)))
 
 (comment
   (->> (awm/current-tag-names)
        (map defworkspace/get-workspace)
        (sort-by :workspace/scratchpad))
+
+  (some->> '(nil)
+           first
+           )
 
   (current-workspace)
 
