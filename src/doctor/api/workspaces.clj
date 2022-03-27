@@ -2,7 +2,8 @@
   (:require
    [systemic.core :refer [defsys] :as sys]
    [manifold.stream :as s]
-   [clawe.workspaces :as clawe.workspaces]))
+   [clawe.workspaces :as clawe.workspaces]
+   [doctor.util]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Active workspaces
@@ -13,7 +14,7 @@
     (clawe.workspaces/all-workspaces)
     (filter :awesome.tag/name)
     (map clawe.workspaces/apply-git-status)
-    (map #(dissoc % :rules/apply :rules/is-my-client?))))
+    (map doctor.util/drop-complex-types)))
 
 (defsys *workspaces-stream*
   :start (s/stream)
@@ -25,6 +26,7 @@
 (defn update-workspaces []
   (println "pushing to workspaces stream (updating topbar)!")
   (s/put! *workspaces-stream* (active-workspaces)))
+
 
 (comment
   (->>
