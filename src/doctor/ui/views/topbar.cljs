@@ -235,6 +235,17 @@
    [:div
     (if (:microphone/muted metadata) fa/microphone-slash-solid fa/microphone-solid)]
 
+   (when (:battery/status metadata)
+     [sep])
+
+   (when (:battery/status metadata)
+     [:div
+      [:span
+       (:battery/remaining-time metadata)]
+      [:span
+       {:class ["pl-2"]}
+       (:battery/remaining-charge metadata)]])
+
    [sep]
    [:div
     {:class ["flex" "flex-row"]}
