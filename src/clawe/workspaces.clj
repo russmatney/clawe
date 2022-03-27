@@ -400,8 +400,8 @@
              ;; otherwise we may need to merge the static wsps in here
              (sort-by :workspace/scratchpad)
              ;; (take 1)
-             ;; merge-awm-tags
-             (merge-tmux-sessions)))
+             merge-awm-tags
+             merge-tmux-sessions))
   )
 
 (defn current-workspace
