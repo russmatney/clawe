@@ -363,22 +363,22 @@ util = require 'util';
 (defn ->namespaced-client
   "Recieves a raw-awm `client`, and moves data to namespaced keywords."
   [client]
-  (let [tags (->> client :tags (map ->namespaced-tag))]
-    {:awesome/client          (dissoc client :name :urgent :instance :type :pid :class :ontop :master :window :focused :tags)
-     :awesome.client/name     (:name client)
-     :awesome.client/class    (:class client)
-     :awesome.client/instance (:instance client)
-     :awesome.client/window   (:window client)
-     :awesome.client/pid      (:pid client)
+  {:awesome/client          (dissoc client :name :urgent :instance :type :pid :class :ontop :master :window :focused
+                                    :tag-names)
+   :awesome.client/name     (:name client)
+   :awesome.client/class    (:class client)
+   :awesome.client/instance (:instance client)
+   :awesome.client/window   (:window client)
+   :awesome.client/pid      (:pid client)
 
-     :awesome.client/tags tags
-     :awesome.client/type (:type client)
+   :awesome.client/tag-names (:tag-names client)
+   :awesome.client/type      (:type client)
 
-     :awesome.client/focused  (:focused client)
-     :awesome.client/urgent   (:urgent client)
-     :awesome.client/ontop    (:ontop client)
-     :awesome.client/master   (:master client)
-     :awesome.screen/geometry (:geometry client)}))
+   :awesome.client/focused  (:focused client)
+   :awesome.client/urgent   (:urgent client)
+   :awesome.client/ontop    (:ontop client)
+   :awesome.client/master   (:master client)
+   :awesome.screen/geometry (:geometry client)})
 
 
 ;; TODO replace this with a malli docoder
@@ -427,19 +427,43 @@ util = require 'util';
                 (t:clients)
                 (lume.map
                   (fn [c]
-                    {:name     (. c :name)
-                     :ontop    c.ontop
-                     :window   c.window
-                     :urgent   c.urgent
-                     :type     c.type
-                     :class    c.class
-                     :instance c.instance
-                     :pid      c.pid
-                     :role     c.role
-                     :master   (= m-window c.window)
-                     :focused  (= focused-window c.window)})))}))
+                    {:name      (. c :name)
+                     :ontop     c.ontop
+                     :window    c.window
+                     :urgent    c.urgent
+                     :type      c.type
+                     :class     c.class
+                     :instance  c.instance
+                     :pid       c.pid
+                     :role      c.role
+                     :tag-names (-> (c:tags) (lume.map (fn [x] (. x :name))))
+                     :master    (= m-window c.window)
+                     :focused   (= focused-window c.window)})))}))
          view))
      (map ->namespaced-tag))))
+
+(comment
+  (->>
+    (fetch-tags)
+    first
+    :awesome.tag/clients
+    first
+    )
+
+  (fnl
+    (->
+      (root.tags)
+      (lume.map
+        (fn [t]
+          {:clients
+           (->
+             (t:clients)
+             (lume.map
+               (fn [c]
+                 {:tag-names (-> (c:tags) (lume.map (fn [x] (. x :name))))})))}))
+      view))
+
+  )
 
 
 (defn tag-for-name
