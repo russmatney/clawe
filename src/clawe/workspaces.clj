@@ -384,10 +384,7 @@
 ;; Workspaces fetchers
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn current-workspace
-  "Returns the current workspace.
-  Sorts scratchpads to the end, intending to return the 'base' workspace,
-  which is usually what we want."
+(defn current-workspaces
   []
   (let [tag-names (awm/current-tag-names)]
     (some->> tag-names
@@ -404,8 +401,17 @@
              (sort-by :workspace/scratchpad)
              ;; (take 1)
              ;; merge-awm-tags
-             (merge-tmux-sessions)
-             first)))
+             (merge-tmux-sessions)))
+  )
+
+(defn current-workspace
+  "Returns the current workspace.
+  Sorts scratchpads to the end, intending to return the 'base' workspace,
+  which is usually what we want."
+  []
+  (->>
+    (current-workspaces)
+    first))
 
 (comment
   (->> (awm/current-tag-names)
