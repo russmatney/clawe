@@ -6,6 +6,7 @@
    [clojure.string :as string]
    [clojure.set :as set]))
 
+
 (t/deftest awm-lua-parse-output-test
   (t/testing "parses numbers"
     (t/is (= 4.5 (sut/awm-lua "return 4.5")))
@@ -110,7 +111,7 @@
         (t/is (= client-keys
                  #{:awesome.client/urgent :awesome.screen/geometry
                    :awesome.client/window :awesome.client/master
-                   :awesome.client/class :awesome/client :awesome.client/tags
+                   :awesome.client/class :awesome/client :awesome.client/tag-names
                    :awesome.client/type :awesome.client/name
                    :awesome.client/instance :awesome.client/focused
                    :awesome.client/pid :awesome.client/ontop}))))))
@@ -120,6 +121,6 @@
     (t/is (= (-> (sut/all-clients) first keys set)
              #{:awesome.client/urgent :awesome.screen/geometry
                :awesome.client/window :awesome.client/master
-               :awesome.client/class :awesome/client :awesome.client/tags
+               :awesome.client/class :awesome/client :awesome.client/tag-names
                :awesome.client/type :awesome.client/name :awesome.client/instance
                :awesome.client/focused :awesome.client/pid :awesome.client/ontop}))))
