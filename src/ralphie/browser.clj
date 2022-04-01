@@ -18,14 +18,28 @@
         :tab/url   url}))))
 
 (defn tabs
-  "List browser tabs - depends on https://github.com/balta2ar/brotab."
-  []
-  (->> (p/process '[bt list])
-       p/check
-       :out
-       slurp
-       (#(string/split % #"\n"))
-       (map line->tab)))
+  "List browser tabs - depends on https://github.com/balta2ar/brotab.
+
+  "
+  ([] (tabs nil))
+  ([opts]
+   (let [query         (:query opts nil)
+         default-query "-pinned"
+         ]
+     (->> (p/$ bt query ~(if query query default-query ))
+          p/check
+          :out
+          slurp
+          (#(string/split % #"\n"))
+          (map line->tab)))))
+
+(comment
+  (tabs)
+  (tabs {:query "+active"})
+  (tabs {:query "+highlighted"})
+  (let [query "+active"]
+    (p/$ bt query -pinned ~(when query query)))
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; List open tabs
@@ -59,14 +73,21 @@ Depends on `brotab`."
 ;; Copy all open tabs to clipboard
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn copy-tabs [ts]
+  (->> ts
+       (map :tab/url)
+       (string/join "\n")
+       clipboard/set-clip)
+  (notify/notify (str "Copied " (count ts) " tabs to the clipboard")))
+
 (defcom copy-all-tabs
-  "Copies all open urls to the clipboard, seperated by newlines."
-  (let [ts (tabs)]
-    (->> ts
-         (map :tab/url)
-         (string/join "\n")
-         clipboard/set-clip)
-    (notify/notify (str "Copied " (count ts) " tabs to the clipboard"))))
+  "Copies all (non-pinned) urls to the clipboard, seperated by newlines."
+  (copy-tabs (tabs {:query "-pinned"})))
+
+(defcom copy-highlighted-tabs
+  "Copies only highlighted tab urls to the clipboard, seperated by newlines."
+  "Note that this includes the current tab, if no others are highlighted."
+  (copy-tabs (tabs {:query "+highlighted"})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Open
