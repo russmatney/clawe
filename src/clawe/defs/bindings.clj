@@ -224,23 +224,6 @@
              {:honor_padding  true
               :honor_workarea true})))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; chess
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defcom open-chess-game
-  ;; [[:mod :shift] "e"]
-  (do
-    (notify/notify "Fetching chess games")
-    (->>
-      (chess/fetch-games)
-      (map (fn [{:keys [white-user black-user] :as game}]
-             (assoc game
-                    :rofi/label (str white-user " vs " black-user))))
-      (rofi/rofi {:msg       "Open Game"
-                  :on-select (fn [{:keys [lichess/url]}]
-                               (notify/notify "Opening game" url)
-                               (r.browser/open {:browser.open/url url}))}))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Notifications

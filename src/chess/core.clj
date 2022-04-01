@@ -82,7 +82,10 @@
                :white-user (-> players :white :user :id)
                :black-user (-> players :black :user :id)))))
 
-(defonce *fetch-games-cache (atom nil))
+(defonce *fetch-games-cache (atom {}))
+
+(defn clear-cache []
+  (reset! *fetch-games-cache nil))
 
 (defn fetch-games
   ([]
@@ -102,9 +105,9 @@
               (when analysis "&analysis=true"))]
 
      (->
-       (or @*fetch-games-cache (lichess-request endpoint+params))
+       (or (get @*fetch-games-cache endpoint+params) (lichess-request endpoint+params))
        ((fn [res]
-          (reset! *fetch-games-cache res)
+          (swap! *fetch-games-cache #(assoc % endpoint+params res))
           res))
        (string/split #"\n")
        (->>
@@ -120,6 +123,10 @@
                   :analysis true}))
 
   (fetch-games)
+  (clear-cache)
+
+  ;; TODO i ought to be storing these in clawe's db
+
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
