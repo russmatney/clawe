@@ -28,10 +28,10 @@
   (reset! lichess-token "") ;; paste and set token here
   )
 
-(def lichess-api-base "https://lichess.org/api")
-(def lichess-api-account (str lichess-api-base "/account"))
+(def lichess-api-base "https://lichess.org")
+(def lichess-api-account (str lichess-api-base "/api/account"))
 (def lichess-api-account-playing (str lichess-api-account "/playing"))
-(def lichess-api-user (str lichess-api-base "/user"))
+(def lichess-api-user (str lichess-api-base "/api/user"))
 (def lichess-api-user-activity (str lichess-api-user "/" @lichess-username
                                     "/activity"))
 (def lichess-api-puzzle-activity (str lichess-api-user
@@ -82,10 +82,14 @@
                :white-user (-> players :white :user :id)
                :black-user (-> players :black :user :id)))))
 
-(defonce *fetch-games-cache (atom {}))
+(defn parse-lichess-json [raw]
+  (-> raw (string/split #"\n")
+      (->> (map #(json/parse-string % true)))))
+
+(defonce *lichess-cache (atom {}))
 
 (defn clear-cache []
-  (reset! *fetch-games-cache nil))
+  (reset! *lichess-cache nil))
 
 (defn fetch-games
   ([]
@@ -97,24 +101,17 @@
    (let [max      (or max 5)
          username (or username (:lichess/username *lichess-env*))
          endpoint+params
-         (str lichess-api-base "/games/user/" username
+         (str lichess-api-base "/api/games/user/" username
               "?pgnInJson=true"
               "&max=" max
               (when opening "&opening=true")
               (when evals "&evals=true")
               (when analysis "&analysis=true"))]
-
      (->
-       (or (get @*fetch-games-cache endpoint+params) (lichess-request endpoint+params))
-       ((fn [res]
-          (swap! *fetch-games-cache #(assoc % endpoint+params res))
-          res))
-       (string/split #"\n")
-       (->>
-         (map (fn [raw-game]
-                (-> raw-game
-                    (json/parse-string true)
-                    parse-game))))))))
+       (or (get @*lichess-cache endpoint+params) (lichess-request endpoint+params))
+       ((fn [res] (swap! *lichess-cache #(assoc % endpoint+params res)) res))
+       parse-lichess-json
+       (->> (map parse-game))))))
 
 (comment
   (def --user-games
@@ -126,14 +123,55 @@
   (clear-cache)
 
   ;; TODO i ought to be storing these in clawe's db
+  )
 
+(defn parse-study [st]
+  (let [{:keys [pgn id players opening]} st]
+    (-> st
+        ;; (assoc :lichess/id id
+        ;;        :lichess/url (str "https://lichess.org/" id)
+        ;;        :white-user (-> players :white :user :id)
+        ;;        :black-user (-> players :black :user :id))
+        )))
+
+(defn fetch-studies
+  ([]
+   (fetch-studies nil))
+  ([{:keys [username max] :study/keys [clocks comments variations]}]
+   (println "Fetching lichess studies")
+   (when-not (sys/running? `*lichess-env*)
+     (sys/start! `*lichess-env*))
+   (let [max      (or max 5)
+         username (or username (:lichess/username *lichess-env*))
+         endpoint+params
+         (str lichess-api-base "/study/by/" username "/export.pgn"
+              "?pgnInJson=true"
+              "&max=" max
+              (when clocks "&clocks=true")
+              (when comments "&comments=true")
+              (when variations "&variations=true"))]
+     (->
+       (or (get @*lichess-cache endpoint+params) (lichess-request endpoint+params))
+       ((fn [res] (swap! *lichess-cache #(assoc % endpoint+params res)) res))
+       parse-lichess-json
+       (->> (map parse-study))))))
+
+(comment
+  (fetch-studies {:study/clocks     true
+                  :study/comments   true
+                  :study/variations true})
+
+  (fetch-studies)
+  (clear-cache)
+
+  ;; TODO i ought to be storing these in clawe's db
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Lichess Import
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def lichess-api-import (str lichess-api-base "/import"))
+(def lichess-api-import (str lichess-api-base "/api/import"))
 
 (comment
 
