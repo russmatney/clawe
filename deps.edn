@@ -9,8 +9,8 @@
   babashka/babashka.curl   {:mvn/version "0.1.1"}
   babashka/process         {:mvn/version "0.1.1"}
   babashka/fs              {:mvn/version "0.1.4"}
-  wing/wing                {:git/url "https://github.com/teknql/wing.git"
-                            :sha     "509e374015747840d7c1f1819172f45a122029d5"}
+  wing/wing                {:mvn/version "0.1.4"}
+  metosin/malli            {:mvn/version "0.8.4"}
   cheshire/cheshire        {:mvn/version "5.10.2"}
   org.clojure/tools.reader {:mvn/version "1.3.6"}
   backtick/backtick        {:mvn/version "0.3.4"}
