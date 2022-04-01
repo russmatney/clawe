@@ -270,6 +270,9 @@
 (defn toggle-workspace [workspace]
   (-> workspace
       workspaces/merge-awm-tags
+      ;; TODO consider merging db workspaces here
+      ;; not sure what we'd need to read
+      ;; but could be a dynamic scratchpad config
       scratchpad/toggle-scratchpad)
   (update-topbar))
 

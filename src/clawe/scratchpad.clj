@@ -2,8 +2,10 @@
   (:require
    [ralphie.awesome :as awm]
    [clawe.awesome :as c.awm] ;; DEPRECATED
+   [clawe.workspaces :as workspaces]
    [clawe.workspaces.create :as wsp.create]
-   [clawe.db.scratchpad :as db.scratchpad]))
+   [clawe.db.scratchpad :as db.scratchpad]
+   [clojure.set :as set]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; toggle scratchpad
@@ -61,7 +63,7 @@
           centerwork?           (= (:awesome.tag/layout wsp) "centerwork")
           is-master?            (:awesome.client/master client)]
       (cond
-        ;; "found selected tag, client for:" wsp-name
+        ;; "found selected tag&client for:" wsp-name
         (and tag? client (:awesome.tag/selected wsp))
         (if (or (:awesome.client/ontop client) (and centerwork? is-master?))
           (do
@@ -137,4 +139,86 @@
   (->>
     (awm/all-clients)
     (map :awesome.client/class))
+  )
+
+
+(defn toggle-scratchpad-2
+  "Creates and focuses the passed scratchpad.
+  If it exists anywhere, it will be found and pulled into the current workspace.
+    (this includes 'correcting' the scratchpad's tag if it is wrong)
+  If it is already in the current workspace but not focused, it will be focused.
+  If it is in focus, it will be removed (hidden).
+  Once removed, a previously focused, just-buried scratchpad will have its focus restored.
+  "
+  ;; TODO the scratchpad passed may not exist yet in awesome
+  ;; TODO create tag if it doesn't exist
+  [scratchpad]
+  (let [current-workspaces (workspaces/current-workspaces)
+        current-clients    (->> current-workspaces
+                                (map :awesome.tag/clients)
+                                (apply concat))
+
+        is-scratchpad-client? (:scratchpad/is-my-client? scratchpad)
+
+        scratchpad-clients (->> awm/all-clients
+                                (filter is-scratchpad-client?))
+
+        on-wrong-tag? (->> scratchpad-clients
+                           (filter (comp
+                                     seq
+                                     #(set/difference
+                                        #{(:awesome.tag/name scratchpad)})
+                                     :awesome.client/tag-names)))
+
+        scratchpad-client-current (some->> current-clients
+                                           (filter is-scratchpad-client?)
+                                           first)
+
+        is-focused? (:awesome.client/focused scratchpad-client-current)
+
+        scratchpad-client-current-is-on-scratchpad-tag?
+        (-> scratchpad-client-current
+            :awesome.client/tag-names
+            ;; TODO clients should generally be on one tag only
+            ;; (but this may change)
+            first
+            #{(:awesome.tag/name scratchpad)})
+
+        ]
+
+    ;; client exists, but is on the wrong tag - lets correct that
+    (when (and scratchpad-clients on-wrong-tag?)
+      (->> scratchpad-clients
+           (map
+             ;; TODO create awm tag if it doesn't exist
+             #(awm/move-client-to-tag (:awesome.client/window %)
+                                      (:awesome.tag/name scratchpad)))))
+
+
+    (cond
+      (and scratchpad-client-current is-focused?)
+      ;; hide the scratchpad tag
+      (awm/toggle-tag (:awesome.tag/name scratchpad))
+
+      (and scratchpad-client-current (not is-focused?))
+      ;; focus/center the scratchpad tag
+      (awm/toggle-tag (:awesome.tag/name scratchpad))
+
+      :else
+      (do
+        ;; TODO nothing
+        )
+      )
+    )
+  )
+
+(comment
+  (->>
+    (workspaces/all-workspaces)
+    (filter :awesome.tag/selected)
+    ;; (filter :workspace/scratchpad)
+    first
+    )
+
+  (toggle-scratchpad-2)
   )

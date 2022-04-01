@@ -365,7 +365,8 @@
      (let [matches                             #{"journal" "tauri/doctor-topbar"}
            {:awesome.client/keys [name class]} c]
        (or (matches name) (matches class))))}
-  workspace-repo)
+  workspace-repo
+  (fn [x] {:scratchpad/is-my-client? (:rules/is-my-client? x)}))
 
 (defworkspace garden
   {:workspace/directory "Dropbox/todo/garden"}
