@@ -37,6 +37,7 @@
   {:doc  "Rebuild the clawe uberjar"
    :task (let [cp (-> ^{:out :string} (p/$ clojure -A:remove-clojure -Spath) p/check :out)]
            (shell (str "bb -cp " cp " --uberjar clawe.jar -m clawe.core")))}
+  install-clawe {:depends [clawe-install]}
 
   dev-doctor
   {:doc "Assess the local environment for any issues"
