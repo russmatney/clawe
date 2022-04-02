@@ -11,7 +11,8 @@
    [ralphie.config :as config]
    [ralphie.notify :as notify]
    [ralphie.rofi :as rofi]
-   [ralphie.sh :as r.sh]))
+   [ralphie.sh :as r.sh]
+   [clojure.java.shell :as sh]))
 
 
 ;; TODO sync sessions/window/panes with defs/workspaces - similar to awm tags and emacs workspaces
@@ -405,22 +406,34 @@ if it is busy."
 (defn open-session
   "Creates a session in a new alacritty window."
   ([] (open-session {:tmux/session-name "ralphie-fallback" :tmux/directory "~"}))
-  ([{:tmux/keys [session-name directory]}]
+  ([{:tmux/keys [session-name directory] :as inputs}]
    (let [directory (if directory
                      (r.sh/expand directory)
                      (config/home-dir))]
 
+     (notify/notify "opening tmux session via alacritty"
+                    inputs)
+
      ;; NOTE `check`ing or derefing this won't release until
      ;; the alacritty window is closed. Not sure if there's a better
      ;; way to disown the process without skipping error handling
-     (-> ($ alacritty --title ~session-name -e tmux "new-session" -A
+     (-> ^{:out :string}
+         ($ alacritty --title ~session-name -e tmux "new-session" -A
             ~(when directory "-c") ~(when directory directory)
             -s ~session-name)
-         check))))
+         ;; check ;; don't check! let the process return
+         ;; this process is not disowned, so created terminals (alacritty) may
+         ;; close when the daemon that launched it (skhd) is restarted
+         ))))
+
 
 (comment
-  (open-session {:tmux/name "name"})
-  (open-session {:tmux/name "name" :tmux/directory "~/russmatney"}))
+
+  (sh/sh "nohup" "alacritty" "--title" "sesh" "-e" "tmux" "new-session" "-A"
+          "-s" "sesh" "&" "disown")
+
+  (open-session {:tmux/session-name "name"})
+  (open-session {:tmux/session-name "name" :tmux/directory "~/russmatney"}))
 
 ;; TODO warning - locks until the term is closed
 (defcom open-term
