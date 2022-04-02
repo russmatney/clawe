@@ -11,7 +11,7 @@
   (repl/sync-libs!))
 
 (comment
-
+  "yo"
 
   (->>
     (workspaces/all-workspaces)
@@ -24,7 +24,6 @@
 
   (defkbd/list-bindings)
   (defworkspace/list-workspaces)
-  (awm/reload)
 
   ;; reload widgets (re-runs connect_for_each_screen)
   (awm/awm-cli "require('bar'); return init_bar();")

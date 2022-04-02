@@ -14,7 +14,8 @@
    [ralphie.zsh :as r.zsh]
    [ralphie.sh :as r.sh]
    [ralphie.tmux :as r.tmux]
-   [ralphie.emacs :as r.emacs]))
+   [ralphie.emacs :as r.emacs]
+   [ralphie.zsh :as zsh]))
 
 (defn log [msg]
   (let [msg (str "[CLAWE] " msg)]
@@ -33,7 +34,7 @@
   []
   (let [proc               ^{:out :string
                              ;; TODO use clawe-dir (config?)
-                             :dir "/home/russ/russmatney/clawe"
+                             :dir (zsh/expand "~/russmatney/clawe")
                              } (proc/$ bb test-unit)
         {:keys [exit out]} @proc]
 

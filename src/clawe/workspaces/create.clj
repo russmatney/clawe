@@ -5,7 +5,8 @@
 
    [babashka.process :as process]
    [clojure.string :as string]
-   [ralphie.tmux :as tmux]))
+   [ralphie.tmux :as tmux]
+   [ralphie.zsh :as zsh]))
 
 (defn create-client
   "Creates clients for a given workspace
@@ -46,5 +47,5 @@
 
 (comment
   (create-client
-    {:workspace/initial-file "/home/russ/russmatney/ralphie/readme.org"
+    {:workspace/initial-file (zsh/expand "~/russmatney/ralphie/readme.org")
      :workspace/title        "my-wsp"}))

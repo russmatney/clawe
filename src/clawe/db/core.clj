@@ -3,13 +3,14 @@
   (:require
    [babashka.pods :as pods]
    [babashka.process :as process :refer [$]]
-   [clojure.string :as string]))
+   [clojure.string :as string]
+   [ralphie.zsh :as zsh]))
 
 (pods/load-pod "dtlv")
 (require '[pod.huahaiy.datalevin :as d])
 
 ;; TODO defsys and configuration
-(def clawe-db-filepath "/home/russ/russmatney/clawe/clawedb")
+(def clawe-db-filepath (zsh/expand "~/russmatney/clawe/clawedb"))
 
 (def schema {:scratchpad.db/id
              {:db/valueType :db.type/string

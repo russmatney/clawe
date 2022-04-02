@@ -10,6 +10,8 @@
    [ralphie.tmux :as tmux]
    [ralphie.zsh :as zsh]))
 
+(def home-dir (zsh/expand "~"))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Misc workspace builder helpers
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -64,10 +66,10 @@
   "
   [{:workspace/keys [directory readme initial-file]}]
   (let [readme-path (or initial-file readme "readme.org")]
-    {:git/repo               (str "/home/russ/" directory)
-     :workspace/directory    (str "/home/russ/" directory)
-     :workspace/readme       (str "/home/russ/" directory "/" readme-path)
-     :workspace/initial-file (str "/home/russ/" directory "/" (or initial-file readme-path))}))
+    {:git/repo               (str home-dir directory)
+     :workspace/directory    (str home-dir directory)
+     :workspace/readme       (str home-dir directory "/" readme-path)
+     :workspace/initial-file (str home-dir directory "/" (or initial-file readme-path))}))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -373,7 +375,7 @@
   workspace-repo)
 
 (defworkspace ink
-  {:workspace/directory "/home/russ/Dropbox/todo/ink"}
+  {:workspace/directory (zsh/expand "~/Dropbox/todo/ink")}
   workspace-repo)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -382,7 +384,7 @@
 
 (defworkspace doctor-todo
   {:workspace/directory       "Dropbox/todo"
-   :workspace/exec            {:tmux.fire/cmd        "bb --config /home/russ/russmatney/clawe/bb.edn todo"
+   :workspace/exec            {:tmux.fire/cmd        (str "bb --config " home-dir "/russmatney/clawe/bb.edn todo")
                                :tmux.fire/session    "doctor-todo"
                                :tmux.fire/interrupt? true}
    :workspace/initial-file    "projects.org"
@@ -396,7 +398,7 @@
 
 (defworkspace doctor-popup
   {:workspace/directory       "russmatney/clawe"
-   :workspace/exec            {:tmux.fire/cmd        "bb --config /home/russ/russmatney/clawe/bb.edn popup"
+   :workspace/exec            {:tmux.fire/cmd        (str "bb --config " home-dir "/russmatney/clawe/bb.edn popup")
                                :tmux.fire/session    "doctor-popup"
                                :tmux.fire/interrupt? true}
    :workspace/initial-file    "bb.edn"

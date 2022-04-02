@@ -4,7 +4,8 @@
    [babashka.process :as process :refer [$ check]]
    [defthing.defcom :refer [defcom] :as defcom]
    [clojure.string :as string]
-   [babashka.fs :as fs]))
+   [babashka.fs :as fs]
+   [ralphie.zsh :as zsh]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; emacs server/client fns
@@ -54,22 +55,22 @@
   [initial-file]
   (when initial-file
     (if (fs/exists? initial-file)
-        initial-file
-        (let [dir (fs/parent initial-file)
-              lower-case-f->f (->> (fs/list-dir dir)
-                                (map str)
-                                (map (fn [f] [(string/lower-case f) f]))
-                                (into {}))
-              does-exist (->> fallback-default-files
-                              (map #(str dir "/" %))
-                              (filter lower-case-f->f)
-                              first
-                              lower-case-f->f)]
-          does-exist))))
+      initial-file
+      (let [dir (fs/parent initial-file)
+
+            lower-case-f->f (->> (fs/list-dir dir)
+                                 (map str)
+                                 (map (fn [f] [(string/lower-case f) f]))
+                                 (into {}))]
+        (->> fallback-default-files
+             (map #(str (string/lower-case dir) "/" %))
+             (filter lower-case-f->f)
+             first
+             lower-case-f->f)))))
 
 (comment
-  (determine-initial-file "/home/russ/russmatney/ralphie/some.blah")
-  (determine-initial-file "/home/russ/borkdude/babashka/readme.org")
+  (determine-initial-file (zsh/expand "~/russmatney/clawe/some.blah"))
+  (determine-initial-file (zsh/expand "~/borkdude/babashka/readme.org"))
   )
 
 (defn open
@@ -112,8 +113,8 @@
          check))))
 
 (comment
-  (open {:emacs.open/workspace "ralphie"
-         :emacs.open/file      "/home/russ/russmatney/ralphie/readme.org"}))
+  (open {:emacs.open/workspace "clawe"
+         :emacs.open/file      (zsh/expand "~/russmatney/clawe/readme.org")}))
 
 (defcom open-emacs
   "Opens emacs in the current workspace"
