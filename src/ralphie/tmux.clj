@@ -422,6 +422,10 @@ if it is busy."
   (open-session {:tmux/name "name"})
   (open-session {:tmux/name "name" :tmux/directory "~/russmatney"}))
 
+;; TODO warning - locks until the term is closed
+(defcom open-term
+  (open-session))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Rofi
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

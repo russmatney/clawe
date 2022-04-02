@@ -5,7 +5,8 @@
    [clojure.string :as string]
    [babashka.process :as proc]
    [ralphie.notify :as notify]
-   [ralphie.tmux :as r.tmux]))
+   [ralphie.tmux :as r.tmux]
+   [ralphie.zsh :as zsh]))
 
 (defn log [msg]
   ;; TODO consider clawe.log macro
@@ -63,7 +64,7 @@
 (defn reset-bindings []
   (log "SXHKD bindings resetting...")
   (let [config (raw-sxhkdrc)]
-    (spit "/home/russ/.config/sxhkd/sxhkdrc" config)
+    (spit (zsh/expand "~/.config/sxhkd/sxhkdrc") config)
     (log "SXHKD bindings rewritten.")
     (-> (proc/$ systemctl --user restart sxhkd)
         (proc/check))

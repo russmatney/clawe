@@ -199,10 +199,11 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn local-git-users []
-  (->>
-    (zsh/expand-many "~/*")
-    (filter #(string/starts-with? % "/home/russ/"))
-    (map #(string/replace % "/home/russ/" ""))))
+  (let [h (zsh/expand "~")]
+    (->>
+      (zsh/expand-many "~/*")
+      (filter #(string/starts-with? % h))
+      (map #(string/replace % h "")))))
 
 (defn select-local-git-user []
   (rofi/rofi {:msg "Select git user"} (local-git-users)))

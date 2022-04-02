@@ -119,3 +119,9 @@ if only json supported comments....
         "transparent": true
       }
 #+end_src
+* dtlv
+binary for datalevin required
+
+#+begin_src osx
+brew install huahaiy/brew/datalevin
+#+end_src

@@ -11,6 +11,8 @@
     (def doctor-fe-url "http://localhost:3333")
     (def doctor-tauri-executable "./src-tauri/target/debug/doctor")
 
+    (def home-dir (or "/Users/russ" "/home/russ"))
+
     (defn pp [x]
       (binding [pprint/*print-right-margin* 130]
         (pprint/pprint x)))
@@ -22,7 +24,7 @@
             cmd   (str doctor-tauri-executable " create-window"
                        " --title " title " --label " label " --url " url)]
         (pp (str "Running doctor tauri app: " cmd))
-        (shell {:dir "/home/russ/russmatney/clawe"} cmd))))
+        (shell {:dir (str home-dir "/russmatney/clawe")} cmd))))
 
   clj-kondo      (shell "clj-kondo --lint src")
   clj-kondo-test (shell "clj-kondo --lint test")
@@ -70,18 +72,18 @@
   {:doc "Run tauri in dev mode, rebuilding the exec on local rust changes."
    :task
    (shell
-     {:dir "/home/russ/russmatney/clawe/src-tauri"}
+     {:dir (str home-dir "/russmatney/clawe/src-tauri")}
      "cargo tauri dev")}
 
   doctor-be {:doc
              "Run the doctor backend. Consumed from systemd service."
              :task
-             (shell {:dir "/home/russ/russmatney/clawe"}
+             (shell {:dir (str home-dir "/russmatney/clawe")}
                     "clj -M:dev:doctor-deps:doctor-server")}
   doctor-fe {:doc
              "Run the doctor frontend shadowcljs server. Consumed from systemd service."
              :task
-             (shell {:dir "/home/russ/russmatney/clawe"}
+             (shell {:dir (str home-dir "/russmatney/clawe")}
                     "npx shadow-cljs watch doctor-app")}
 
   topbar {:doc  "Run the doctor topbar via tauri. Consumed from systemd service."
