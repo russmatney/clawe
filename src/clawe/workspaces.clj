@@ -430,7 +430,10 @@
   "assumes the workspace title and tmux session are the same"
   ([wsps] (merge-tmux-sessions {} wsps))
   ([_opts wsps]
-   (let [sessions-by-name (r.tmux/list-sessions)]
+   (when-let [sessions-by-name (try (r.tmux/list-sessions)
+                                    (catch Exception _e
+                                      (println "Tmux probably not running!")
+                                      nil))]
      (->> wsps
           (map (fn [{:workspace/keys [title] :as wsp}]
                  (if-let [sesh (sessions-by-name title)]
