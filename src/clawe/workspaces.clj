@@ -3,6 +3,7 @@
    [defthing.defcom :refer [defcom] :as defcom]
    [defthing.defworkspace :as defworkspace]
    [ralphie.awesome :as awm]
+   [ralphie.yabai :as yabai]
    [ralphie.rofi :as rofi]
    [ralphie.git :as r.git]
    [ralphie.notify :as notify]
@@ -16,7 +17,8 @@
    [clawe.workspaces.create :as wsp.create]
    [clojure.string :as string]
    [ralphie.zsh :as zsh]
-   [ralphie.tmux :as r.tmux]))
+   [ralphie.tmux :as r.tmux]
+   [wing.core :as w]))
 
 (defn update-topbar []
   (slurp "http://localhost:3334/topbar/update"))
@@ -51,15 +53,22 @@
         wsp))
     wsp))
 
-(defn tag->pseudo-workspace
-  [{:as tag :keys [awesome.tag/name
-                   awesome.tag/index
-                   ]}]
-  (let [n (str name "-" index)]
+(def home-dir (zsh/expand "~"))
+
+(defn ->pseudo-workspace [wsp]
+  (let [name (or (:awesome.tag/name wsp)
+                 (:yabai.space/label wsp))
+
+        index (or (:awesome.tag/index wsp)
+                  (:yabai.space/index wsp))
+
+        n (str name "-" index)]
     ;; NOTE this :workspace/title is used to get/find the key in the clawe-db
-    (-> tag
+    ;; TODO maybe some nice defaults here? directory?
+    (-> wsp
         (assoc :name n)
-        (assoc :workspace/title n))))
+        (assoc :workspace/title n)
+        (assoc :workspace/directory home-dir))))
 
 (defn merge-awm-tags
   "Fetches all awm tags and merges those with matching
@@ -95,7 +104,7 @@
                 unmatched-tags    (->> awm-all-tags
                                        (remove (comp matched-tag-names :awesome.tag/name)))
                 pseudo-wsps       (->> unmatched-tags
-                                       (map tag->pseudo-workspace))]
+                                       (map ->pseudo-workspace))]
             (concat wsps pseudo-wsps))))
 
        ;; unwrap if only one was passed
@@ -108,6 +117,54 @@
     (merge-awm-tags {:include-unmatched? true})
     (filter :awesome.tag/name))
   )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; merge-yabai-spaces
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+(defn merge-yabai-spaces
+  ([wsps] (merge-yabai-spaces {} wsps))
+  ([{:keys [include-unmatched?]} wsps]
+   (let [all-spaces               (yabai/query-spaces)
+         all-spaces-by-label      (->> all-spaces
+                                       (w/index-by :yabai.space/label))
+         all-windows-by-space-idx (->> (yabai/query-windows)
+                                       (w/group-by :yabai.window/space))
+         is-map?                  (map? wsps)
+         include-unmatched?       (if is-map? false include-unmatched?)
+         wsps                     (if is-map? [wsps] wsps)]
+     (cond->> wsps
+       true
+       (map (fn [wsp]
+              ;; depends on the :workspace/title matching the space label name
+              ;; could also just be a unique id stored from open-workspace
+              (merge (all-spaces-by-label (workspace-name wsp))
+                     wsp)))
+
+       include-unmatched?
+       ((fn [wsps]
+          (let [matched-names  (->> wsps (map :yabai.space/label) (into #{}))
+                unmatched-tags (->> all-spaces (remove (comp matched-names :yabai.space/label)))
+                pseudo-wsps    (->> unmatched-tags (map ->pseudo-workspace))]
+            (concat wsps pseudo-wsps))))
+
+       true ;; could make yabai windows optional
+       (map (fn [wsp]
+              (let [windows (->> wsp :yabai.space/index all-windows-by-space-idx)]
+                (assoc wsp :yabai/windows windows))))
+
+       ;; unwrap if only one was passed
+       is-map?
+       first))))
+
+(comment
+  (->>
+    (defworkspace/list-workspaces)
+    (merge-yabai-spaces {:include-unmatched? true})
+    (filter :yabai.space/label))
+
+  (merge-yabai-spaces []))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; db workspaces
@@ -386,23 +443,52 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn current-workspaces
+  "Returns the Active workspace(s).
+  Can be multiple in awesomeWM or multi-display contexts."
   []
-  (let [tag-names (awm/current-tag-names)]
+  ;; TODO refactor to be more forgiving for the current spaces/tags/etc
+  (let [tag-names
+        (or (awm/current-tag-names)
+            (->> (list (yabai/query-current-space))
+                 (map (fn [wsp]
+                        (if (seq (:yabai.space/label wsp))
+                          (:yabai.space/label wsp)
+                          ;; TODO this isn't really right,
+                          ;; but it matches ->pseudo-tag's workspace title
+                          (str "-" (:yabai.space/index wsp)))))))]
+    (println tag-names)
     (some->> tag-names
              (map get-db-workspace)
+             (remove nil?)
              ((fn [wsps]
                 ;; if no db workspace found for tag name,
-                ;; get data from defworkspace
+                ;; lookup data from defworkspace
                 (if (some->> wsps first)
-                  wsps
-                  (->> tag-names (map defworkspace/get-workspace)))
-                ))
+                  (do
+                    (println "got wsps")
+                    wsps)
+                  (let [wsps (->> tag-names (map defworkspace/get-workspace))]
+                    (println "falling back to defworkspace match")
+                    (if (some->> wsps first)
+                      wsps
+                      ;; still none? map to pseudo workspaces
+                      (do
+                        (println "falling back to pseudo workspaces")
+                        (->>
+                          (list (yabai/query-current-space))
+                          (map ->pseudo-workspace))))))))
              ;; assumes local overwrites have hit db already
              ;; otherwise we may need to merge the static wsps in here
              (sort-by :workspace/scratchpad)
              ;; (take 1)
              merge-awm-tags
-             merge-tmux-sessions))
+             merge-yabai-spaces
+             merge-tmux-sessions)))
+
+(comment
+  (current-workspaces)
+
+  (merge-yabai-spaces {:include-unmatched? true} [])
   )
 
 (defn current-workspace
@@ -448,6 +534,7 @@
   (->>
     (db-with-merged-in-memory-workspaces)
     (merge-awm-tags {:include-unmatched? true})
+    (merge-yabai-spaces {:include-unmatched? true})
     (merge-tmux-sessions)
     ;; merge-db-workspaces
     ;; (map apply-git-status)

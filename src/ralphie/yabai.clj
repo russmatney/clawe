@@ -2,11 +2,12 @@
   (:require
    [babashka.process :as process]
    [cheshire.core :as json]
-   [malli.core :as m]
-   [malli.transform :as mt]
-   [malli.provider :as mp]
+   ;; [malli.core :as m]
+   ;; [malli.transform :as mt]
+   ;; [malli.provider :as mp]
    ))
 
+;; TODO get this frame decoding done properly
 (def Frame
   [:map
    [:x float?]
@@ -91,7 +92,7 @@
    [:yabai.window/has-shadow boolean?]
    [:yabai.window/space int?]
    [:yabai.window/is-minimized boolean?]
-   [:yabai.window/frame [:map-of keyword? double?]]
+   [:yabai.window/frame Frame]
    [:yabai.window/is-native-fullscreen boolean?]
    [:yabai.window/is-sticky boolean?]
    [:yabai.window/has-parent-zoom boolean?]
@@ -136,4 +137,59 @@
     (json/parse-string (fn [k] (keyword "yabai.window" k)))))
 
 (comment
-  (query-current-window))
+  (query-current-window)
+
+  (def raw
+    (->
+      ^{:out :string}
+      (process/$ yabai -m query --windows --window)
+      process/check
+      :out))
+
+  (m/decode Window
+            (json/parse-string raw true)
+            mt/json-transformer))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn focus-window [w]
+  (println "focusing yabai window" w)
+  (->
+    ^{:out :string}
+    (process/$ yabai -m window --focus ~(:yabai.window/id w))
+    process/check
+    :out))
+
+(comment
+  (->> (query-windows)
+       (filter (comp #{"Spotify"} :yabai.window/app))
+       first
+       focus-window))
+
+(defn close-window
+  "heads up that this requires the application to have a title bar.
+  Apparently the implementation simulates a click of the red x.
+  could resort to pkill or something else, as we have the pid....
+  "
+  [w]
+  (println "closing yabai window" w)
+  (->
+    ^{:out :string}
+    (process/$ yabai -m window --close ~(:yabai.window/id w))
+    process/check
+    :out))
+
+;; osascript -e
+;;   'tell application "System Events"
+;;      to perform action "AXPress" of (first button whose subrole is
+;;        "AXCloseButton") of
+;;          (first window whose subrole is "AXStandardWindow")
+;;                of (first process whose frontmost is true)'
+
+(comment
+  (->> (query-windows)
+       (filter (comp #{"Safari"} :yabai.window/app))
+       first
+       close-window))

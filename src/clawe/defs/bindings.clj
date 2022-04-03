@@ -23,7 +23,8 @@
    [clawe.m-x :as c.m-x]
    [clawe.scratchpad :as scratchpad]
    [clawe.workspaces :as workspaces]
-   [clawe.rules :as c.rules]))
+   [clawe.rules :as c.rules]
+   [ralphie.yabai :as yabai]))
 
 (defn update-topbar []
   (slurp "http://localhost:3334/topbar/update"))
@@ -323,12 +324,17 @@
   workspace. Note that this may be called in the context of no workspace at all.
   "
   [{:keys [wsp->client wsp->open-client]}]
-  (let [wsp            (some->> (workspaces/current-workspace) workspaces/merge-awm-tags)
-        client         (wsp->client wsp)
-        client-focused (:awesome.client/focused client)]
+  (let [wsp    (workspaces/current-workspace)
+        client (wsp->client wsp)
+        client-focused
+        (or
+          (:yabai.window/has-focus client)
+          (:awesome.client/focused client))]
     (cond
       ;; no tag
       (not wsp)
+      ;; TODO probably better to create the 'right' tag here if possible
+      ;; maybe prompt for a tag name?
       (do
         (notify/notify "No current tag found...?" "Creating fallback")
         (awm/create-tag! "temp-tag")
@@ -337,14 +343,25 @@
 
       ;; client focused
       (and client client-focused)
-      (awm/close-client client)
+      (cond
+        notify/is-mac?
+        (yabai/close-window client)
+
+        :else
+        (awm/close-client client))
 
       ;; client not focused
       (and client (not client-focused))
-      ;; DEPRECATED
-      (c.awm/focus-client {:center?   false
-                           :float?    false
-                           :bury-all? false} client)
+      (cond
+        notify/is-mac?
+        ;; TODO center and float? and bury?
+        (yabai/focus-window client)
+
+        :else
+        ;; DEPRECATED
+        (c.awm/focus-client {:center?   false
+                             :float?    false
+                             :bury-all? false} client))
 
       ;; tag but no client
       (not client)
@@ -385,13 +402,25 @@
   (toggle-client
     {:wsp->client
      (fn [{:workspace/keys   [title]
-           :awesome.tag/keys [clients]}]
-       (some->> clients
-                (filter (fn [c]
-                          (and
-                            (-> c :awesome.client/class #{"Alacritty"})
-                            (-> c :awesome.client/name #{title}))))
-                first))
+           :awesome.tag/keys [clients]
+           :yabai/keys       [windows]}]
+       (cond
+         (seq clients)
+         (some->>
+           clients
+           (filter (fn [c]
+                     (and
+                       (-> c :awesome.client/class #{"Alacritty"})
+                       (-> c :awesome.client/name #{title}))))
+           first)
+
+         (seq windows)
+         (some->>
+           windows
+           (filter (fn [c]
+                     ;; TODO check the title/tmux session?
+                     (-> c :yabai.window/app #{"Alacritty"})))
+           first)))
      :wsp->open-client
      (fn [{:workspace/keys [title directory]
            :git/keys       [repo]
@@ -407,13 +436,23 @@
   (toggle-client
     {:wsp->client
      (fn [{:workspace/keys   [title]
-           :awesome.tag/keys [clients]}]
-       (some->> clients
-                (filter (fn [c]
-                          (and
-                            (-> c :awesome.client/class #{"Emacs"})
-                            (-> c :awesome.client/name #{title}))))
-                first))
+           :awesome.tag/keys [clients]
+           :yabai/keys       [windows]}]
+       (cond
+         (seq clients)
+         (some->> clients
+                  (filter (fn [c]
+                            (and
+                              (-> c :awesome.client/class #{"Emacs"})
+                              (-> c :awesome.client/name #{title}))))
+                  first)
+
+         (seq windows)
+         (some->> windows
+                  (filter (fn [w]
+                            ;; TODO one day check the title/emacs workspace
+                            (-> w :yabai.window/app #{"Emacs"})))
+                  first)))
      :wsp->open-client
      (fn [{:workspace/keys [title initial-file directory]
            :git/keys       [repo]

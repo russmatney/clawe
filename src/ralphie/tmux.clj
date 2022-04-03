@@ -414,17 +414,33 @@ if it is busy."
      (notify/notify "opening tmux session via alacritty"
                     inputs)
 
-     ;; NOTE `check`ing or derefing this won't release until
-     ;; the alacritty window is closed. Not sure if there's a better
-     ;; way to disown the process without skipping error handling
-     (-> ^{:out :string}
-         ($ alacritty --title ~session-name -e tmux "new-session" -A
-            ~(when directory "-c") ~(when directory directory)
-            -s ~session-name)
-         ;; check ;; don't check! let the process return
-         ;; this process is not disowned, so created terminals (alacritty) may
-         ;; close when the daemon that launched it (skhd) is restarted
-         ))))
+
+     (let [
+           proc
+           (if notify/is-mac?
+             ($ open -na "/Applications/Alacritty.app" --args
+                --title ~session-name -e tmux "new-session" -A
+                ~(when directory "-c") ~(when directory directory)
+                -s ~session-name)
+
+             ($ alacritty
+                --title ~session-name -e tmux "new-session" -A
+                ~(when directory "-c") ~(when directory directory)
+                -s ~session-name))]
+
+       ;; NOTE `check`ing or derefing this won't release until
+       ;; the alacritty window is closed. Not sure if there's a better
+       ;; way to disown the process without skipping error handling
+       (-> ^{:out :string}
+           proc
+           ((fn [proc]
+              (println "cmd" (:cmd proc))
+              proc))
+           check
+           ;; check ;; don't check! let the process return
+           ;; this process is not disowned, so created terminals (alacritty) may
+           ;; close when the daemon that launched it (skhd) is restarted
+           )))))
 
 
 (comment
