@@ -407,40 +407,44 @@ util = require 'util';
   ([] (fetch-tags {}))
   ([_opts]
    ;; TODO consider filtering on passed tag names, current tag
-   (->>
-     (fnl
-       (local focused-window (if client.focus client.focus.window nil))
-       (local m-client (awful.client.getmaster))
-       (local m-window (if m-client m-client.window nil))
+   (try
+     (->>
+       (fnl
+         (local focused-window (if client.focus client.focus.window nil))
+         (local m-client (awful.client.getmaster))
+         (local m-window (if m-client m-client.window nil))
 
-       (->
-         (root.tags)
-         (lume.map
-           (fn [t]
-             {:name     t.name
-              :selected t.selected
-              :index    t.index
-              :urgent   t.urgent
-              :layout   (-?> t (. :layout) (. :name))
-              :clients
-              (->
-                (t:clients)
-                (lume.map
-                  (fn [c]
-                    {:name      (. c :name)
-                     :ontop     c.ontop
-                     :window    c.window
-                     :urgent    c.urgent
-                     :type      c.type
-                     :class     c.class
-                     :instance  c.instance
-                     :pid       c.pid
-                     :role      c.role
-                     :tag-names (-> (c:tags) (lume.map (fn [x] (. x :name))))
-                     :master    (= m-window c.window)
-                     :focused   (= focused-window c.window)})))}))
-         view))
-     (map ->namespaced-tag))))
+         (->
+           (root.tags)
+           (lume.map
+             (fn [t]
+               {:name     t.name
+                :selected t.selected
+                :index    t.index
+                :urgent   t.urgent
+                :layout   (-?> t (. :layout) (. :name))
+                :clients
+                (->
+                  (t:clients)
+                  (lume.map
+                    (fn [c]
+                      {:name      (. c :name)
+                       :ontop     c.ontop
+                       :window    c.window
+                       :urgent    c.urgent
+                       :type      c.type
+                       :class     c.class
+                       :instance  c.instance
+                       :pid       c.pid
+                       :role      c.role
+                       :tag-names (-> (c:tags) (lume.map (fn [x] (. x :name))))
+                       :master    (= m-window c.window)
+                       :focused   (= focused-window c.window)})))}))
+           view))
+       (map ->namespaced-tag))
+     (catch Exception e
+       (println "awm/fetch-tags error")
+       nil))))
 
 (comment
   (->>
@@ -493,10 +497,13 @@ util = require 'util';
   (current-tag-name-2))
 
 (defn current-tag-names []
-  (fnl (->
-         s.selected_tags
-         (lume.map (fn [t] (. t :name)))
-         view)))
+  (try
+    (fnl (->
+           s.selected_tags
+           (lume.map (fn [t] (. t :name)))
+           view))
+    (catch Exception e
+      (println "awesome/current-tag-names error"))))
 
 (defn tag-exists? [tag-name]
   (fnl (-> (root.tags)

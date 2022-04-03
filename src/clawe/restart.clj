@@ -111,26 +111,26 @@ uberjar. Otherwise this might need to be called twice."
 
     ;; Bindings
     (log "rewriting awm bindings")
-    (awm.bindings/write-awesome-bindings)
-    (log "resetting sxhkd bindings")
-    (sxhkd.bindings/reset-bindings)
+    ;; (awm.bindings/write-awesome-bindings)
+    ;; (log "resetting sxhkd bindings")
+    ;; (sxhkd.bindings/reset-bindings)
 
     ;; Rules
     (log "rewriting rules")
-    (awm.rules/write-awesome-rules)
+    ;; (awm.rules/write-awesome-rules)
     (log "reapplying rules")
-    (c.rules/apply-rules)
-    (c.rules/correct-clients-and-workspaces)
+    ;; (c.rules/apply-rules)
+    ;; (c.rules/correct-clients-and-workspaces)
 
     ;; Notifications
     (log "reloading notifications")
     ;; TODO untested - i'm hoping this saves the manual effort at startup
-    (-> (proc/$ systemctl --user start deadd-notification-center)
-        (proc/check))
+    ;; (-> (proc/$ systemctl --user start deadd-notification-center)
+    ;;     (proc/check))
 
     ;; Misc
     (log "reloading misc")
-    (awm/reload-misc)
+    ;; (awm/reload-misc)
 
     ;; Reload completions/caches
     (log "reloading zsh tab completion")
@@ -148,7 +148,7 @@ uberjar. Otherwise this might need to be called twice."
 
     ;; Doctor - Wallpaper
     (log "reloading doctor")
-    (slurp "http://localhost:3334/reload")
+    ;; (slurp "http://localhost:3334/reload")
 
     ;; considering...
     ;; (-> (proc/$ systemctl --user restart doctor-topbar)
