@@ -2,10 +2,8 @@
   (:require
    [babashka.process :as process]
    [cheshire.core :as json]
-   ;; [malli.core :as m]
-   ;; [malli.transform :as mt]
-   ;; [malli.provider :as mp]
-   ))
+   [wing.core :as w]
+   [ralphie.notify :as notify]))
 
 ;; TODO get this frame decoding done properly
 (def Frame
@@ -14,6 +12,10 @@
    [:y float?]
    [:w float?]
    [:h float?]])
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Displays
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def Display
   [:map
@@ -29,25 +31,16 @@
     (process/$ yabai -m query --displays)
     process/check
     :out
-    (json/parse-string (fn [k] (keyword "yabai.display" k)))
-    ;; (->> (map #(m/encode
-    ;;              Display %
-    ;;              (mt/key-transformer
-    ;;                {:encode (fn [k]
-    ;;                           (keyword "yabai.display" (name k)))}))))
-    ))
+    (json/parse-string (fn [k] (keyword "yabai.display" k)))))
 
 (comment
   (query-displays)
 
-  (keyword "my" (name :hi))
+  (keyword "my" (name :hi)))
 
-  (->>
-    (query-displays)
-    (first)
-    (#(m/decode Display % mt/json-transformer)))
-
-  (mp/provide (query-displays)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; spaces
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def Space
   [:map
@@ -72,6 +65,9 @@
     :out
     (json/parse-string (fn [k] (keyword "yabai.space" k)))))
 
+(defn spaces-by-idx []
+  (->> (query-spaces) (w/index-by :yabai.space/index)))
+
 (comment
   (query-spaces))
 
@@ -85,6 +81,10 @@
 
 (comment
   (query-current-space))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; windows
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def Window
   [:map
@@ -125,9 +125,6 @@
     :out
     (json/parse-string (fn [k] (keyword "yabai.window" k)))))
 
-(comment
-  (query-windows))
-
 (defn query-current-window []
   (->
     ^{:out :string}
@@ -136,22 +133,8 @@
     :out
     (json/parse-string (fn [k] (keyword "yabai.window" k)))))
 
-(comment
-  (query-current-window)
-
-  (def raw
-    (->
-      ^{:out :string}
-      (process/$ yabai -m query --windows --window)
-      process/check
-      :out))
-
-  (m/decode Window
-            (json/parse-string raw true)
-            mt/json-transformer))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
+;; yabai commands
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn focus-window [w]
@@ -193,3 +176,77 @@
        (filter (comp #{"Safari"} :yabai.window/app))
        first
        close-window))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; finding and labelling spaces
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn windows-for-app-name [app-name]
+  ;; TODO maybe extend to match on app and title
+  (->>
+    (query-windows)
+    (filter (comp #{app-name} :yabai.window/app))))
+
+(comment
+  (windows-for-app-name "Spotify")
+  (windows-for-app-name "Emacs"))
+
+(defn space-for-window [window]
+  (let [spcs-by-idx (spaces-by-idx)]
+    (->
+      window
+      :yabai.window/space
+      spcs-by-idx)))
+
+(defn label-space
+  [label space]
+  (println "label-space" label space)
+  (when (and label space)
+    (let [space-idx (:yabai.space/index space)]
+      (notify/notify (str "Labelling space: " space-idx) label)
+      (->
+        ^{:out :string}
+        (process/$ yabai -m space ~space-idx --label ~label)
+        process/check
+        :out))))
+
+(defn find-and-label-space [app-name label]
+  (let [windows (windows-for-app-name app-name)]
+    (cond
+      (#{1} (count windows))
+      (do
+        (notify/notify "Found window" app-name)
+        (->>
+          windows
+          first
+          space-for-window
+          (label-space label)))
+
+      (zero? (count windows))
+      (notify/notify "No windows for app name, could not label space" app-name)
+
+      (> (count windows) 1)
+      ;; TODO but if they're in the same space, maybe just do it?
+      (notify/notify "Multiple windows for app name, could not label space" app-name))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; sandbox
+
+(comment
+  (find-and-label-space "Spotify" "spotify")
+  (find-and-label-space "Safari" "web")
+  (find-and-label-space "Emacs" "journal")
+
+  (->>
+    (windows-for-app-name "Emacs")
+    first
+    space-for-window)
+
+  (let [spcs-by-idx (spaces-by-idx)]
+    (->
+      (windows-for-app-name "Safari")
+      first
+      :yabai.window/space
+      spcs-by-idx))
+
+  (spaces-by-idx))
