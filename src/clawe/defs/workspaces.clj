@@ -66,10 +66,10 @@
   "
   [{:workspace/keys [directory readme initial-file]}]
   (let [readme-path (or initial-file readme "readme.org")]
-    {:git/repo               (str home-dir directory)
-     :workspace/directory    (str home-dir directory)
-     :workspace/readme       (str home-dir directory "/" readme-path)
-     :workspace/initial-file (str home-dir directory "/" (or initial-file readme-path))}))
+    {:git/repo               (str home-dir "/" directory)
+     :workspace/directory    (str home-dir "/" directory)
+     :workspace/readme       (str home-dir "/" directory "/" readme-path)
+     :workspace/initial-file (str home-dir "/" directory "/" (or initial-file readme-path))}))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -4,12 +4,10 @@
    [ralphie.zsh :as zsh]))
 
 
-(defn is-mac? []
-  (boolean (#{"darwin21"} (zsh/expand "$OSTYPE"))))
+(def is-mac? (boolean (#{"darwin21"} (zsh/expand "$OSTYPE"))))
 
 (comment
-  (is-mac?)
-  )
+  is-mac?)
 
 (defn notify
   ([notice]
@@ -28,7 +26,7 @@
          print?           (:notify/print? opts)
          replaces-process (some opts [:notify/id :replaces-process :notify/replaces-process])
          exec-strs
-         (if (is-mac?)
+         (if is-mac?
            ["osascript" "-e" (str "display notification \""
                                   (cond
                                     (string? body) body
