@@ -94,8 +94,11 @@
   restart-doctor (do
                    (shell "systemctl --user daemon-reload")
                    (shell "systemctl --user restart doctor-be doctor-fe doctor-topbar"))
+  doctor-restart {:depends [restart-doctor]}
 
-  stop-doctor  (shell "systemctl --user stop doctor-be doctor-fe doctor-topbar")
+  stop-doctor (shell "systemctl --user stop doctor-be doctor-fe doctor-topbar")
+  doctor-stop {:depends [stop-doctor]}
+
   log-doctor   {:task (shell "journalctl --user -n 100 -f -u doctor-be -u doctor-fe -u doctor-topbar")
                 :doc  "Tail the doctor logs. FE, BE, and topbar via journalctl"}
   tail-doctor  {:depends [log-doctor]}
