@@ -62,7 +62,7 @@
         index (or (:awesome.tag/index wsp)
                   (:yabai.space/index wsp))
 
-        n (str name "-" index)]
+        n (str (if (empty? name) "fallback-name" name) "-" index)]
     ;; NOTE this :workspace/title is used to get/find the key in the clawe-db
     ;; TODO maybe some nice defaults here? directory?
     (-> wsp
