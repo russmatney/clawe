@@ -187,6 +187,12 @@
     (query-windows)
     (filter (comp #{app-name} :yabai.window/app))))
 
+(defn window-for-app-name [app-name]
+  (->>
+    (windows-for-app-name app-name)
+    first)
+  )
+
 (comment
   (windows-for-app-name "Spotify")
   (windows-for-app-name "Emacs"))
@@ -229,13 +235,60 @@
       ;; TODO but if they're in the same space, maybe just do it?
       (notify/notify "Multiple windows for app name, could not label space" app-name))))
 
+(defn move-window-to-space [window space-label]
+  (->
+    ^{:out :string}
+    (process/$ yabai -m window ~(:yabai.window/id window) --space ~space-label)
+    process/check
+    :out))
+
+(comment
+
+  (move-window-to-space
+    (window-for-app-name "Safari")
+    "web"
+    )
+  )
+
+(defn focus-window [window]
+  (->
+    ^{:out :string}
+    (process/$ yabai -m window ~(:yabai.window/id window) --focus)
+    process/check
+    :out))
+
+(defn float-and-center-window
+  "Toggles floating if the passed window is not already."
+  [{:yabai.window/keys [id is-floating] :as w}]
+  (println "\nw" w)
+  ;; ensure floating
+  (when-not is-floating
+    (->
+      ^{:out :string}
+      (process/$ yabai -m window ~id --toggle float)
+      process/check
+      :out))
+
+  (->
+    ^{:out :string}
+    (process/$ yabai -m window ~id --grid "10:10:1:1:8:8")
+    process/check
+    :out))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; sandbox
 
 (comment
+  (spaces-by-idx)
+  (->>
+    (spaces-by-idx)
+    (vals)
+    (map :yabai.space/label))
+
   (find-and-label-space "Spotify" "spotify")
+  (find-and-label-space "Slack" "slack")
   (find-and-label-space "Safari" "web")
-  (find-and-label-space "Emacs" "journal")
+  (find-and-label-space "Emacs" "clawe")
 
   (->>
     (windows-for-app-name "Emacs")
@@ -248,5 +301,4 @@
       first
       :yabai.window/space
       spcs-by-idx))
-
-  (spaces-by-idx))
+  )
