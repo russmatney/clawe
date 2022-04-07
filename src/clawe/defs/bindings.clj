@@ -323,7 +323,7 @@
   `:wsp->open-client` is a function to create the client in the context of the
   workspace. Note that this may be called in the context of no workspace at all.
   "
-  [{:keys [wsp->client wsp->open-client]}]
+  [{:keys [wsp->client wsp->open-client clients->client client->hide client->show]}]
   (let [wsp    (workspaces/current-workspace)
         client (wsp->client wsp)
         client-focused
@@ -331,7 +331,7 @@
           (:yabai.window/has-focus client)
           (:awesome.client/focused client))]
     (cond
-      ;; no tag
+      ;; no tag, maybe create one?
       (not wsp)
       ;; TODO probably better to create the 'right' tag here if possible
       ;; maybe prompt for a tag name?
@@ -341,33 +341,53 @@
         (awm/focus-tag! "temp-tag")
         (wsp->open-client nil))
 
-      ;; client focused
+      ;; client is focused, let's close/hide it
       (and client client-focused)
-      (cond
-        notify/is-mac?
-        (yabai/close-window client)
-
-        :else
-        (awm/close-client client))
-
-      ;; client not focused
-      (and client (not client-focused))
-      (cond
-        notify/is-mac?
-        ;; TODO center and float? and bury?
-        (yabai/focus-window client)
-
-        :else
-        ;; DEPRECATED
-        (c.awm/focus-client {:center?   false
-                             :float?    false
-                             :bury-all? false} client))
-
-      ;; tag but no client
-      (not client)
       (do
-        (wsp->open-client wsp)
-        nil))))
+        (notify/notify "client found and focused")
+        (cond
+          client->hide
+          (client->hide client)
+
+          notify/is-mac?
+          (yabai/close-window client)
+
+          :else
+          (awm/close-client client)))
+
+      ;; client found in workspace, not focused
+      (and client (not client-focused))
+      (do
+        (notify/notify "client found and not focused")
+        (cond
+          notify/is-mac?
+          ;; TODO center and float? and bury?
+          (yabai/focus-window client)
+
+          :else
+          ;; DEPRECATED
+          (c.awm/focus-client {:center?   false
+                               :float?    false
+                               :bury-all? false} client)))
+
+      ;; we have a current workspace, but no client in it
+      ;; (not client)
+      :else
+      (let [client
+            (when clients->client
+              ;; TODO include awm clients (clawe.clients ns?)
+              (clients->client (yabai/query-windows)))]
+
+        (cond
+          (and client client->show)
+          (let []
+            (notify/notify "found journal, ready to pull to this space!")
+            (client->show client wsp))
+
+          :else
+          (do
+            (wsp->open-client wsp)
+            nil))))))
 
 (comment
   (some->>
@@ -462,6 +482,49 @@
          (let [initial-file (or initial-file repo directory)
                opts         {:emacs.open/workspace title :emacs.open/file initial-file}]
            (r.emacs/open opts))))}))
+
+(defn is-journal? [c]
+  (or
+    (and
+      (-> c :awesome.client/class #{"Emacs"})
+      (-> c :awesome.client/name #{"journal"}))
+    (and
+      (-> c :yabai.window/app #{"Emacs"})
+      (-> c :yabai.window/title (#(re-seq #"^journal" %))))))
+
+(comment
+  (re-seq #"^journal" "journal - (126 x 65)")
+  (re-seq #"^journal" "something else"))
+
+(defcom toggle-journal-2
+  (do
+    (notify/notify "toggling-journal-2")
+    (toggle-client
+      {:wsp->client
+       (fn [{:awesome.tag/keys [clients] :yabai/keys [windows]}]
+         (some->> (concat clients windows) (filter is-journal?) first))
+
+       :clients->client
+       (fn [clients] (some->> clients (filter is-journal?) first))
+
+       :client->hide
+       (fn [c] (yabai/move-window-to-space c "journal"))
+
+       :client->show
+       (fn [c wsp]
+         (yabai/float-and-center-window c)
+         (yabai/move-window-to-space c (:workspace/title wsp))
+         ;; focus last so it doesn't move spaces on us
+         (yabai/focus-window c))
+
+       :wsp->open-client
+       (fn [{:workspace/keys [title initial-file directory]
+             :git/keys       [repo]
+             :as             wsp}]
+         (let [opts {;; TODO get from defworkspace journal
+                     :emacs.open/workspace "journal"
+                     :emacs.open/file      "/Users/russ/todo/journal.org"}]
+           (r.emacs/open opts)))})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; cycle tags and clients
