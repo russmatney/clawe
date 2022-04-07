@@ -235,10 +235,10 @@
       ;; TODO but if they're in the same space, maybe just do it?
       (notify/notify "Multiple windows for app name, could not label space" app-name))))
 
-(defn move-window-to-space [window space-label]
+(defn move-window-to-space [window space-label-or-idx]
   (->
     ^{:out :string}
-    (process/$ yabai -m window ~(:yabai.window/id window) --space ~space-label)
+    (process/$ yabai -m window ~(:yabai.window/id window) --space ~space-label-or-idx)
     process/check
     :out))
 

@@ -513,7 +513,8 @@
        :client->show
        (fn [c wsp]
          (yabai/float-and-center-window c)
-         (yabai/move-window-to-space c (:workspace/title wsp))
+         (yabai/move-window-to-space c (or (:yabai.space/index wsp)
+                                           (:workspace/title wsp)))
          ;; focus last so it doesn't move spaces on us
          (yabai/focus-window c))
 
