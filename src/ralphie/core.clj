@@ -18,6 +18,7 @@
    ralphie.spotify
    ralphie.systemd
    ralphie.tmux
+   ralphie.yabai
    ralphie.zsh))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
