@@ -1,5 +1,7 @@
 (ns clawe.restart
   (:require
+   [cheshire.core :as json]
+
    [babashka.process :as proc]
    [defthing.defcom :as defcom :refer [defcom]]
    [defthing.defkbd :refer [defkbd]]
@@ -14,8 +16,35 @@
    [ralphie.zsh :as r.zsh]
    [ralphie.sh :as r.sh]
    [ralphie.tmux :as r.tmux]
-   [ralphie.emacs :as r.emacs]
-   [ralphie.zsh :as zsh]))
+   [ralphie.emacs :as r.emacs]))
+
+;; dumping here as part of restart process
+
+(defn write-commands-to-json-fn []
+  (let [f (r.zsh/expand "~/russmatney/clawe/commands.json")]
+    (->>
+      (defcom/list-commands)
+      (map (fn [{:keys [name ns doc]}]
+             {;; super-secret-special-alfred-keys
+              ;; https://www.alfredapp.com/help/workflows/inputs/script-filter/json/
+              :arg          name
+              :title        name
+              :autocomplete name
+              :subtitle     (or doc "")
+
+              :mods
+              {:cmd {:arg      (str "open-in-emacs " name)
+                     :subtitle "Open In Emacs"}}
+
+              :name name
+              :ns   ns
+              :doc  doc}))
+      (#(json/generate-string % {:pretty true}))
+      (spit f))))
+
+(defcom write-commands-to-json []
+  (write-commands-to-json-fn))
+
 
 (defn log [msg]
   (let [msg (str "[CLAWE] " msg)]
@@ -107,34 +136,37 @@ uberjar. Otherwise this might need to be called twice."
 (defcom reload
   "Write all dependent configs and restart whatever daemons."
   (do
-    (log "reloading...")
+    ;; (log "reloading...")
 
     ;; Bindings
-    (log "rewriting awm bindings")
+    ;; (log "rewriting awm bindings")
     ;; (awm.bindings/write-awesome-bindings)
     ;; (log "resetting sxhkd bindings")
     ;; (sxhkd.bindings/reset-bindings)
 
     ;; Rules
-    (log "rewriting rules")
+    ;; (log "rewriting rules")
     ;; (awm.rules/write-awesome-rules)
-    (log "reapplying rules")
+    ;; (log "reapplying rules")
     ;; (c.rules/apply-rules)
     ;; (c.rules/correct-clients-and-workspaces)
 
     ;; Notifications
-    (log "reloading notifications")
+    ;; (log "reloading notifications")
     ;; TODO untested - i'm hoping this saves the manual effort at startup
     ;; (-> (proc/$ systemctl --user start deadd-notification-center)
     ;;     (proc/check))
 
     ;; Misc
-    (log "reloading misc")
+    ;; (log "reloading misc")
     ;; (awm/reload-misc)
 
     ;; Reload completions/caches
     (log "reloading zsh tab completion")
     (c.install/install-zsh-tab-completion)
+
+    (log "writing commands to commands.json")
+    (write-commands-to-json-fn)
 
     ;; Widgets
     ;; DEPRECATED

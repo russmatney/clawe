@@ -6,7 +6,6 @@
    [defthing.defcom :refer [defcom]]
    [ralphie.notify :as notify]
    [ralphie.zsh :as zsh]
-   [clojure.java.shell :as sh]
    [clojure.string :as string]
    [clojure.edn :as edn]))
 
@@ -329,17 +328,12 @@
 (comment
 
   (move-window-to-space
-    (window-for-app-name "Safari")
+    (window-for-app-desc "Safari")
     "web"
     )
   )
 
-(defn focus-window [window]
-  (->
-    ^{:out :string}
-    (process/$ yabai -m window ~(:yabai.window/id window) --focus)
-    process/check
-    :out))
+
 
 (defn float-and-center-window
   "Toggles floating if the passed window is not already."
@@ -371,7 +365,7 @@
       :err :string}
     (process/$ "./bin/dialog.clj")
     process/check
-    ;; TODO for now, obb outputs to stderr
+    ;; TODO for now, obb prints outputs to stderr
     ;; https://github.com/babashka/obb/issues/16
     :err
     string/split-lines
