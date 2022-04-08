@@ -44,7 +44,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn set-clip [s]
-
   (if notify/is-mac?
     (-> ^{:out :string :in s} (p/$ pbcopy) p/check :out)
     (-> (p/process '[xclip -i -selection clipboard]

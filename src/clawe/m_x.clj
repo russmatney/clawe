@@ -90,10 +90,9 @@
          ;; i.e. open godot, aseprite if in a godot-workspace
 
          ;; clone suggestions from open tabs and the clipboard
-         (when-not notify/is-mac?
-           (->>
-             (r.git/rofi-clone-suggestions-fast)
-             (map (fn [x] (assoc x :rofi/label (str "Clone: " (:rofi/label x)))))))
+         (->>
+           (r.git/rofi-clone-suggestions-fast)
+           (map (fn [x] (assoc x :rofi/label (str "Clone: " (:rofi/label x))))))
 
          ;; run bb tasks for the current workspace
          (bb-tasks-for-wsp wsp)
