@@ -17,21 +17,36 @@
         :tab/title title
         :tab/url   url}))))
 
+(defn tabs-osx []
+  (->
+    ^{:out :string}
+    (p/$
+      osascript -e "tell application \"Safari\" to return URL of every tab of every window")
+    p/check
+    :out
+    (string/replace "missing value" "")
+    (string/split #",")
+    (->> (map string/trim)
+         (remove empty?)
+         (map (fn [url]
+                {:tab/url url})))))
+
 (defn tabs
   "List browser tabs - depends on https://github.com/balta2ar/brotab.
 
   "
   ([] (tabs nil))
   ([opts]
-   (let [query         (:query opts nil)
-         default-query "-pinned"
-         ]
-     (->> (p/$ bt query ~(if query query default-query ))
-          p/check
-          :out
-          slurp
-          (#(string/split % #"\n"))
-          (map line->tab)))))
+   (if notify/is-mac?
+     (tabs-osx)
+     (let [query         (:query opts nil)
+           default-query "-pinned"]
+       (->> (p/$ bt query ~(if query query default-query ))
+            p/check
+            :out
+            slurp
+            (#(string/split % #"\n"))
+            (map line->tab))))))
 
 (comment
   (tabs)
@@ -39,6 +54,33 @@
   (tabs {:query "+highlighted"})
   (let [query "+active"]
     (p/$ bt query -pinned ~(when query query)))
+
+  (->
+    ^{:out :string
+      :err :string}
+    (p/$
+      obb -e '(-> (js/Application "Safari")
+                  (.-windows)
+                  (aget 0) ;; just for first window rn
+                  (.tabs)
+                  (->> (map (fn [t]
+                              (-> (t) (.-url)))))))
+    p/check)
+
+
+  (->
+    ^{:out :string}
+    (p/$
+      osascript -e "tell application \"Safari\" to return URL of every tab of every window")
+    p/check
+    :out
+    (string/replace "missing value" "")
+    (string/split #",")
+    (->> (map string/trim)
+         (remove empty?)
+         )
+    )
+
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
