@@ -95,12 +95,32 @@ Depends on `brotab`."
 
 (defn open
   "Opens the passed url"
-  [opts]
-  (let [url (some opts [:url :browser.open/url])]
-    (->
-      (p/$ xdg-open ~url)
-      p/check :out slurp)))
+  ([] (open nil))
+  ([opts]
+   (let [url (when opts (some opts [:url :browser.open/url]))]
+     (if notify/is-mac?
+       (if url
+         (->
+           ^{:out :string}
+           (p/$ open ~url)
+           p/check :out)
+         (->
+           ^{:out :string}
+           (p/$ open -na "/Applications/Safari.app")
+           p/check :out))
+
+       (->
+         ^{:out :string}
+         (p/$ xdg-open ~url)
+         p/check :out)))))
 
 (comment
   (open {:url "https://github.com"})
+
+  (->
+    ^{:out :string}
+    (p/$ open -na "/Applications/Safari.app")
+    p/check :out)
+
+  (open)
   )
