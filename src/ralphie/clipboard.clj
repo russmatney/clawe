@@ -2,15 +2,24 @@
   (:require
    [clojure.string :as string]
    [babashka.process :as p]
-   [clojure.java.shell :as sh]))
+   [clojure.java.shell :as sh]
+   [ralphie.notify :as notify]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Read the clipboard
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn get-clip [clipboard-name]
-  (-> (sh/sh "xclip" "-o" "-selection" clipboard-name)
-      :out))
+(defn get-clip
+  ([] (get-clip "primary"))
+  ([clipboard-name]
+   (if notify/is-mac?
+     (-> ^{:out :string} (p/$ pbpaste) p/check :out)
+     (-> (sh/sh "xclip" "-o" "-selection" clipboard-name)
+         :out))))
+
+(comment
+  (get-clip)
+  )
 
 (defn get-all
   "Returns a list of things on available clipboards."
@@ -35,11 +44,14 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn set-clip [s]
-  (-> (p/process '[xclip -i -selection clipboard]
-                 {:in s})
-      p/check
-      :out
-      slurp))
+
+  (if notify/is-mac?
+    (-> ^{:out :string :in s} (p/$ pbcopy) p/check :out)
+    (-> (p/process '[xclip -i -selection clipboard]
+                   {:in s})
+        p/check
+        :out
+        slurp)))
 
 (comment
   (set-clip "hello\ngoodbye")
