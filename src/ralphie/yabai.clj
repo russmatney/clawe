@@ -3,7 +3,12 @@
    [babashka.process :as process]
    [cheshire.core :as json]
    [wing.core :as w]
-   [ralphie.notify :as notify]))
+   [defthing.defcom :refer [defcom]]
+   [ralphie.notify :as notify]
+   [ralphie.zsh :as zsh]
+   [clojure.java.shell :as sh]
+   [clojure.string :as string]
+   [clojure.edn :as edn]))
 
 ;; TODO get this frame decoding done properly
 (def Frame
@@ -181,21 +186,35 @@
 ;; finding and labelling spaces
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn windows-for-app-name [app-name]
-  ;; TODO maybe extend to match on app and title
-  (->>
-    (query-windows)
-    (filter (comp #{app-name} :yabai.window/app))))
+(defn windows-for-app-desc [app-desc]
+  (let [app-name    (if (string? app-desc) app-desc
+                        (:yabai.window/app app-desc))
+        title-match (if (string? app-desc) app-desc
+                        (:yabai.window/title app-desc))]
+    (->>
+      (query-windows)
+      (filter (fn [w]
+                (and
+                  (-> w :yabai.window/app ((fn [app-str]
+                                             (if (string? app-name)
+                                               (#{app-name} app-str)
+                                               (app-name app-str)))))
+                  (if-not title-match
+                    true
+                    (-> w :yabai.window/title ((fn [app-str]
+                                                 (if (string? title-match)
+                                                   (#{title-match} app-str)
+                                                   (title-match app-str))))))))))))
 
-(defn window-for-app-name [app-name]
+(defn window-for-app-desc [app-desc]
   (->>
-    (windows-for-app-name app-name)
+    (windows-for-app-desc app-desc)
     first)
   )
 
 (comment
-  (windows-for-app-name "Spotify")
-  (windows-for-app-name "Emacs"))
+  (windows-for-app-desc "Spotify")
+  (windows-for-app-desc "Emacs"))
 
 (defn space-for-window [window]
   (let [spcs-by-idx (spaces-by-idx)]
@@ -203,6 +222,33 @@
       window
       :yabai.window/space
       spcs-by-idx)))
+
+(defn spaces-for-app-desc
+  "Returns spaces indexed by <label>-<idx>, or just <idx> if no <label> is set."
+  [app-desc]
+  (->> app-desc
+       windows-for-app-desc
+       (map space-for-window)
+       (w/index-by #(str (when-not (empty? (:yabai.space/label %))
+                           (:yabai.space/label %) "-")
+                         (:yabai.space/index %)))))
+
+(comment
+
+  (->
+    {:yabai.window/app "Emacs"
+     ;; :yabai.window/title #(re-seq #"journal" %)
+     }
+    spaces-for-app-desc
+    )
+
+  (->
+    {:yabai.window/app "Spotify"
+     ;; :yabai.window/title #(re-seq #"journal" %)
+     }
+    spaces-for-app-desc
+    )
+  )
 
 (defn label-space
   [label space]
@@ -216,24 +262,62 @@
         process/check
         :out))))
 
-(defn find-and-label-space [app-name label]
-  (let [windows (windows-for-app-name app-name)]
+(defn find-and-label-space [app-desc label]
+  (let [spaces-map   (spaces-for-app-desc app-desc)
+        str-app-name (if (string? app-desc) app-desc (:yabai.window/app app-desc))
+        ;; could be a function/obj, which notify on osx can't deal with yet
+        str-app-name (when (string? str-app-name) str-app-name)]
     (cond
-      (#{1} (count windows))
+      (#{1} (count spaces-map))
       (do
-        (notify/notify "Found window" app-name)
-        (->>
-          windows
-          first
-          space-for-window
-          (label-space label)))
+        (notify/notify "Found single space for window(s)" (str (first (keys spaces-map)) " - " str-app-name))
+        (->> spaces-map vals first (label-space label)))
 
-      (zero? (count windows))
-      (notify/notify "No windows for app name, could not label space" app-name)
+      (zero? (count spaces-map))
+      (notify/notify "No spaces for app name, no space to label" str-app-name)
 
-      (> (count windows) 1)
-      ;; TODO but if they're in the same space, maybe just do it?
-      (notify/notify "Multiple windows for app name, could not label space" app-name))))
+      (> (count spaces-map) 1)
+      (notify/notify "Multiple spaces for app desc.... could not label space" str-app-name))))
+
+(def app-desc->space-label
+  {{:yabai.window/app "Spotify"}                "spotify"
+   {:yabai.window/app "Slack"}                  "slack"
+   {:yabai.window/app "Safari"}                 "web"
+   {:yabai.window/app   "Emacs"
+    :yabai.window/title #(re-seq #"journal" %)} "journal"
+   {:yabai.window/app   "Emacs"
+    :yabai.window/title #(re-seq #"clawe" %)}   "clawe"})
+
+(defn set-space-labels []
+  (doall
+    (->> app-desc->space-label
+         (map (fn [[desc label]]
+                (find-and-label-space desc label))))))
+
+(comment
+  (set-space-labels)
+  (->>
+    (spaces-by-idx)
+    (vals)
+    (map :yabai.space/label))
+
+  (->>
+    app-desc->space-label
+    (map (fn [[desc]]
+           desc
+           )
+         )
+    )
+
+  (find-and-label-space "Spotify" "spotify")
+  (find-and-label-space "Slack" "slack")
+  (find-and-label-space "Safari" "web")
+  (find-and-label-space "Emacs" "clawe")
+  )
+
+(defcom yabai-set-space-labels
+  set-space-labels)
+
 
 (defn move-window-to-space [window space-label-or-idx]
   (->
@@ -276,28 +360,50 @@
     :out))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; prompt and label space
+
+(defn get-input
+  "Prompts for user input in a native dialog via obb."
+  []
+  (->
+    ^{:dir (zsh/expand "~/russmatney/clawe")
+      :out :string
+      :err :string}
+    (process/$ "./bin/dialog.clj")
+    process/check
+    ;; TODO for now, obb outputs to stderr
+    ;; https://github.com/babashka/obb/issues/16
+    :err
+    string/split-lines
+    first
+    edn/read-string))
+
+(comment
+  (get-input))
+
+(defn label-space-with-user-input []
+  (let [new-label     (get-input)
+        current-space (query-current-space)]
+    (when new-label
+      (label-space new-label current-space))))
+
+(defcom set-new-label-for-space
+  (label-space-with-user-input))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; sandbox
 
 (comment
   (spaces-by-idx)
-  (->>
-    (spaces-by-idx)
-    (vals)
-    (map :yabai.space/label))
-
-  (find-and-label-space "Spotify" "spotify")
-  (find-and-label-space "Slack" "slack")
-  (find-and-label-space "Safari" "web")
-  (find-and-label-space "Emacs" "clawe")
 
   (->>
-    (windows-for-app-name "Emacs")
+    (windows-for-app-desc "Emacs")
     first
     space-for-window)
 
   (let [spcs-by-idx (spaces-by-idx)]
     (->
-      (windows-for-app-name "Safari")
+      (windows-for-app-desc "Safari")
       first
       :yabai.window/space
       spcs-by-idx))
