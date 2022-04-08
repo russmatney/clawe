@@ -527,6 +527,41 @@
                      :emacs.open/file      "/Users/russ/todo/journal.org"}]
            (r.emacs/open opts)))})))
 
+(defn is-web? [c]
+  (or
+    (-> c :awesome.client/class #{"Firefox"})
+    (-> c :yabai.window/app #{"Safari"})))
+
+(defcom toggle-web-2
+  (do
+    (notify/notify "toggling-web-2")
+    (toggle-client
+      {:wsp->client
+       (fn [{:awesome.tag/keys [clients] :yabai/keys [windows]}]
+         (some->> (concat clients windows) (filter is-web?) first))
+
+       :clients->client
+       (fn [clients] (some->> clients (filter is-web?) first))
+
+       :client->hide
+       ;; TODO create the space if missing
+       (fn [c] (yabai/move-window-to-space c "web"))
+
+       :client->show
+       (fn [c wsp]
+         (yabai/float-and-center-window c)
+         (yabai/move-window-to-space c (or (:yabai.space/index wsp)
+                                           (:workspace/title wsp)))
+         ;; focus last so it doesn't move spaces on us
+         (yabai/focus-window c))
+
+       :wsp->open-client
+       ;; TODO create the space if missing
+       (fn [{:workspace/keys [title initial-file directory]
+             :git/keys       [repo]
+             :as             wsp}]
+         (r.browser/open))})))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; cycle tags and clients
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
