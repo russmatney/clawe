@@ -9,6 +9,7 @@
    clawe.dwim
    clawe.godot
    clawe.install
+   clawe.toggle
    clawe.restart
    clawe.rules
    clawe.m-x
@@ -16,7 +17,8 @@
    clawe.workspaces
    clawe.workspaces.create
    ralphie.core ;; so we include all ralphie commands
-   [ralphie.rofi :as r.rofi]))
+   [ralphie.rofi :as r.rofi]
+   ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; awm-cli wrapper

@@ -148,7 +148,7 @@
                        :msg            "Clawe commands"}))))
 
 (comment
-  (defcom/exec m-x)
+  ;; (defcom/exec m-x)
 
   (->> (defcom/list-commands)
        (map r.core/defcom->rofi)
