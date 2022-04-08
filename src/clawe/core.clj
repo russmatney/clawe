@@ -18,15 +18,6 @@
    ralphie.core ;; so we include all ralphie commands
    [ralphie.rofi :as r.rofi]))
 
-(defcom hello-cmd (println "Howdy"))
-
-(defcom rofi
-  (when-let [cmd (some->> (defcom/list-commands)
-                          (map :name)
-                          (r.rofi/rofi {:require-match? true
-                                        :msg            "Clawe commands"}))]
-    (defcom/exec cmd)))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; awm-cli wrapper
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
