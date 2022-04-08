@@ -4,6 +4,7 @@
    [clojure.string :as string]
    [ralphie.zsh :as zsh]
    [ralphie.awesome :as awm]
+   [ralphie.notify :as notify]
    [ralphie.doctor :as doctor]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -22,6 +23,7 @@
   it is left as is."
   [{:rofi/keys [label description] :as x}]
   (cond
+    notify/is-mac?        x
     (not label)           x
     (#{\<} (first label)) x
     :else
@@ -54,37 +56,47 @@
    (doctor/log "Rofi called with" (count xs) "xs.")
 
    ;; push any floating windows into the view
-   (awm/awm-cli
-     {:quiet? true}
-     (str
-       ;; set all ontops false
-       "for c in awful.client.iterate(function (c) return c.ontop end) do\n"
-       "c.ontop = false; "
-       "c.floating = false; "
-       "end;"))
+   (when-not notify/is-mac?
+     (awm/awm-cli
+       {:quiet? true}
+       (str
+         ;; set all ontops false
+         "for c in awful.client.iterate(function (c) return c.ontop end) do\n"
+         "c.ontop = false; "
+         "c.floating = false; "
+         "end;")))
 
    (let [maps?  (-> xs first map?)
          xs     (if maps? (->> xs (map build-label)) xs)
          labels (if maps? (->> xs
                                (map (some-fn :label :rofi/label))
-                               (map escape-rofi-label)
-                               )
+                               (map escape-rofi-label))
                     xs)
          msg    (or msg message)
 
+         sep "|"
+
          selected-label
          (some->
-           ^{:in  (string/join "|" labels)
-             :out :string}
-           ($ rofi -i
-              ~(if require-match? "-no-custom" "")
-              -sep "|"
-              -markup-rows
-              -normal-window ;; NOTE may want this to be optional
-              ;; -eh 2 ;; row height
-              ;; -dynamic
-              ;; -no-fixed-num-lines
-              -dmenu -mesg ~msg -sync -p *)
+
+           (if notify/is-mac?
+             ^{:in  (string/join "\n" labels)
+               :out :string}
+             ($ choose)
+
+             ^{:in  (string/join sep labels)
+               :out :string}
+             ($ rofi -i
+                ~(if require-match? "-no-custom" "")
+                -sep ~sep
+                -markup-rows
+                -normal-window ;; NOTE may want this to be optional
+                ;; -eh 2 ;; row height
+                ;; -dynamic
+                ;; -no-fixed-num-lines
+                -dmenu -mesg ~msg -sync -p *)
+             )
+
            ((fn [proc]
               ;; check for type of error
               (let [res @proc]
@@ -117,8 +129,8 @@
                                    selected-x) on-select)]
              (do
                ;; TODO support zero-arity on-select here
-               ;; (println "on-select found" on-select)
-               ;; (println "argslists" (-> on-select meta :arglists))
+               (println "on-select found" on-select)
+               (println "argslists" (-> on-select meta :arglists))
                (on-select selected-x))
              selected-x)
            selected-label))))))
@@ -149,7 +161,18 @@
     [{:label "iii" :url "urlllll"}
      {:label "333" :url "something"}
      {:label "jkjkjkjkjkjkjkjkjkjkjkjkjkjkjk" :url "w/e"}
-     {:label "xxxxxxxx" :url "--------------"}]))
+     {:label "xxxxxxxx" :url "--------------"}])
+
+  (->
+    ^{:in  "11  iiii\n22 IIIIII\n33 33333"
+      :out :string
+      }
+    ($ choose)
+    check
+    :out)
+
+
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Suggestion helpers

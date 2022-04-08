@@ -3,7 +3,7 @@
    [defthing.defkbd :as defkbd]
    [defthing.defcom :as defcom :refer [defcom]]
 
-   [ralphie.notify :as r.notify]
+   [ralphie.notify :as notify]
    [ralphie.rofi :as r.rofi]
    [ralphie.core :as r.core]
    [ralphie.git :as r.git]
@@ -69,27 +69,31 @@
    (let [wsp (or wsp (workspaces/current-workspace))]
      (->>
        (concat
-         [(when wsp {:rofi/label     "Create Workspace Client"
-                     :rofi/on-select (fn [_]
-                                       ;; TODO detect if workspace client is already open
-                                       ;; wrap these in a nil-punning actions-list api
-                                       (r.notify/notify "Creating client for workspace")
-                                       (wsp.create/create-client wsp))})
+         [
+          (when-not notify/is-mac?
+            (when wsp {:rofi/label     "Create Workspace Client"
+                       :rofi/on-select (fn [_]
+                                         ;; TODO detect if workspace client is already open
+                                         ;; wrap these in a nil-punning actions-list api
+                                         (notify/notify "Creating client for workspace")
+                                         (wsp.create/create-client wsp))}))
 
-          (when (and wsp (r.git/repo? (workspaces/workspace-repo wsp)))
-            {:rofi/label     (str "Fetch repo upstream: " (workspaces/workspace-repo wsp))
-             :rofi/on-select (fn [_]
-                               (r.notify/notify "Fetching upstream for workspace")
-                               ;; TODO support fetching via ssh-agent
-                               (r.git/fetch (workspaces/workspace-repo wsp)))})]
+          (when-not notify/is-mac?
+            (when (and wsp (r.git/repo? (workspaces/workspace-repo wsp)))
+              {:rofi/label     (str "Fetch repo upstream: " (workspaces/workspace-repo wsp))
+               :rofi/on-select (fn [_]
+                                 (notify/notify "Fetching upstream for workspace")
+                                 ;; TODO support fetching via ssh-agent
+                                 (r.git/fetch (workspaces/workspace-repo wsp)))}))]
 
          ;; TODO current workspace app suggestions
          ;; i.e. open godot, aseprite if in a godot-workspace
 
          ;; clone suggestions from open tabs and the clipboard
-         (->>
-           (r.git/rofi-clone-suggestions-fast)
-           (map (fn [x] (assoc x :rofi/label (str "Clone: " (:rofi/label x))))))
+         (when-not notify/is-mac?
+           (->>
+             (r.git/rofi-clone-suggestions-fast)
+             (map (fn [x] (assoc x :rofi/label (str "Clone: " (:rofi/label x)))))))
 
          ;; run bb tasks for the current workspace
          (bb-tasks-for-wsp wsp)
@@ -107,11 +111,14 @@
                            :rofi/description (:workspace/display-name %))))
 
          ;; kill tmux/tags/clients
-         (kill-things wsp)
+         (when-not notify/is-mac?
+           (kill-things wsp))
 
          ;; systemd stops/restart
-         (r.systemd/rofi-service-opts #(str "Restart " %) :systemd/restart)
-         (r.systemd/rofi-service-opts #(str "Stop " %) :systemd/stop))
+         (when-not notify/is-mac?
+           (r.systemd/rofi-service-opts #(str "Restart " %) :systemd/restart))
+         (when-not notify/is-mac?
+           (r.systemd/rofi-service-opts #(str "Stop " %) :systemd/stop)))
        (remove nil?)))))
 
 (comment
@@ -128,13 +135,14 @@
   (let [wsp (workspaces/current-workspace)]
 
     ;; Notify with git status
-    (when (and wsp (r.git/repo? (workspaces/workspace-repo wsp)))
-      (r.notify/notify (str "Git Status: " (workspaces/workspace-repo wsp))
+    (when-not notify/is-mac?
+      (when (and wsp (r.git/repo? (workspaces/workspace-repo wsp)))
+        (notify/notify (str "Git Status: " (workspaces/workspace-repo wsp))
                        (->>
                          (r.git/status (workspaces/workspace-repo wsp))
                          (filter second)
                          (map first)
-                         seq)))
+                         seq))))
 
     (->> (m-x-commands {:wsp wsp})
          (r.rofi/rofi {:require-match? true
@@ -142,4 +150,10 @@
 
 (comment
   (defcom/exec m-x)
+
+  (->> (defcom/list-commands)
+       (map r.core/defcom->rofi)
+       (r.rofi/rofi {:require-match? true :msg "Clawe commands"})
+       )
+
   )

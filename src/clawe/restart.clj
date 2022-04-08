@@ -13,7 +13,7 @@
    [clawe.awesome.rules :as awm.rules]
    [clawe.awesome.bindings :as awm.bindings]
    [clawe.sxhkd.bindings :as sxhkd.bindings]
-   [ralphie.zsh :as r.zsh]
+   [ralphie.zsh :as zsh]
    [ralphie.sh :as r.sh]
    [ralphie.tmux :as r.tmux]
    [ralphie.emacs :as r.emacs]))
@@ -21,7 +21,7 @@
 ;; dumping here as part of restart process
 
 (defn write-commands-to-json-fn []
-  (let [f (r.zsh/expand "~/russmatney/clawe/commands.json")]
+  (let [f (zsh/expand "~/russmatney/clawe/commands.json")]
     (->>
       (defcom/list-commands)
       (map (fn [{:keys [name ns doc]}]

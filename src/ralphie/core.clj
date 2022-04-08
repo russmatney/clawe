@@ -26,9 +26,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn defcom->rofi [{:keys [doc name] :as cmd}]
-  {:rofi/label     (str "<span>" name " </span> "
-                        (when doc (str "<span color='gray'>" doc "</span> ")))
-   :rofi/on-select (fn [_] (defcom/exec cmd))} )
+  {:rofi/label       name
+   :rofi/description doc
+   :rofi/on-select   (fn [_] (defcom/exec cmd))} )
 
 (defcom/defcom rofi
   "Rofi for all defcoms in all required namespaces."
