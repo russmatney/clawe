@@ -224,7 +224,7 @@
         (toggle-scratchpad-app {:space-name "web" :is-client? is-web?})
         {:wsp->open-client
          ;; TODO create the space if missing
-         (r.browser/open)}))))
+         (fn [_wsp] (r.browser/open))}))))
 
 (defcom toggle-slack-2
   (do
