@@ -142,7 +142,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn focus-window [w]
-  (println "focusing yabai window" w)
   (->
     ^{:out :string}
     (process/$ yabai -m window --focus ~(:yabai.window/id w))
@@ -338,7 +337,6 @@
 (defn float-and-center-window
   "Toggles floating if the passed window is not already."
   [{:yabai.window/keys [id is-floating] :as w}]
-  (println "\nw" w)
   ;; ensure floating
   (when-not is-floating
     (->

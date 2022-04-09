@@ -17,7 +17,6 @@
    clawe.workspaces
    clawe.workspaces.create
    ralphie.core ;; so we include all ralphie commands
-   [ralphie.rofi :as r.rofi]
    ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -38,9 +37,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn -main [& args]
-  (println "[CLAWE] start" args)
   (let [start-time (System/currentTimeMillis)
+        _          (println "[CLAWE] start" (str "[" start-time "]") args)
         res        (apply defcom/run args)
-        dt         (- (System/currentTimeMillis) start-time)]
-    (println "[CLAWE] complete" args "in" dt "ms")
+        end-time   (System/currentTimeMillis)
+        dt         (- end-time start-time)]
+    (println "[CLAWE] complete" args "in" dt "ms" (str "[" end-time "]"))
     res))

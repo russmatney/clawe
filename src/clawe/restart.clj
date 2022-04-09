@@ -42,7 +42,7 @@
       (#(json/generate-string % {:pretty true}))
       (spit f))))
 
-(defcom write-commands-to-json []
+(defcom write-commands-to-json
   (write-commands-to-json-fn))
 
 

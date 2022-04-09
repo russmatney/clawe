@@ -125,11 +125,13 @@
 
 (defn merge-yabai-spaces
   ([wsps] (merge-yabai-spaces {} wsps))
-  ([{:keys [include-unmatched?]} wsps]
-   (let [all-spaces               (yabai/query-spaces)
+  ([{:keys [include-unmatched? prefetched-spaces prefetched-windows]} wsps]
+
+   (println "[CLAWE] merge-yabai-spaces" (str "[" (System/currentTimeMillis) "]"))
+   (let [all-spaces               (or prefetched-spaces (yabai/query-spaces))
          all-spaces-by-label      (->> all-spaces
                                        (w/index-by :yabai.space/label))
-         all-windows-by-space-idx (->> (yabai/query-windows)
+         all-windows-by-space-idx (->> (or prefetched-windows (yabai/query-windows))
                                        (w/group-by :yabai.window/space))
          is-map?                  (map? wsps)
          include-unmatched?       (if is-map? false include-unmatched?)
@@ -175,6 +177,8 @@
   TODO May one day need to fetch latest by sorting, if we end with multiple ents somehow
   "
   [w]
+
+  (println "[CLAWE] get-db-wsp" (str "[" (System/currentTimeMillis) "]"))
   (let [title (cond (string? w) w
                     (map? w)    (:workspace/title w))]
     (some->>
@@ -296,7 +300,7 @@
 
 (comment
 
-  (defcom/exec install-workspaces)
+  ;; (defcom/exec install-workspaces)
 
   (def w
     (->>
@@ -365,12 +369,12 @@
        first))))
 
 (comment
-  (select-keys --w #{:workspace/title})
   (def --w
     (->>
       (defworkspace/list-workspaces)
       (filter (comp #{"clawe"} :name))
       first))
+  (select-keys --w #{:workspace/title})
 
   (get-db-workspace --w)
   (update-db-workspace --w)
@@ -430,6 +434,8 @@
   "assumes the workspace title and tmux session are the same"
   ([wsps] (merge-tmux-sessions {} wsps))
   ([_opts wsps]
+
+   (println "[CLAWE] merge-tmux-sessions" (str "[" (System/currentTimeMillis) "]"))
    (when-let [sessions-by-name (try (r.tmux/list-sessions)
                                     (catch Exception _e
                                       (println "Tmux probably not running!")
@@ -450,6 +456,8 @@
   Can be multiple in awesomeWM or multi-display contexts."
   []
   ;; TODO refactor to be more forgiving for the current spaces/tags/etc
+
+  (println "[CLAWE] current-wsp start" (str "[" (System/currentTimeMillis) "]"))
   (let [tag-names
         (or (awm/current-tag-names)
             (->> (list (yabai/query-current-space))
@@ -458,35 +466,36 @@
                           (:yabai.space/label wsp)
                           ;; TODO this isn't really right,
                           ;; but it matches ->pseudo-tag's workspace title
-                          (str "-" (:yabai.space/index wsp)))))))]
-    (println tag-names)
-    (some->> tag-names
-             (map get-db-workspace)
-             (remove nil?)
-             ((fn [wsps]
-                ;; if no db workspace found for tag name,
-                ;; lookup data from defworkspace
-                (if (some->> wsps first)
-                  (do
-                    (println "got wsps")
-                    wsps)
-                  (let [wsps (->> tag-names (map defworkspace/get-workspace))]
-                    (println "falling back to defworkspace match")
-                    (if (some->> wsps first)
-                      wsps
-                      ;; still none? map to pseudo workspaces
-                      (do
-                        (println "falling back to pseudo workspaces")
-                        (->>
-                          (list (yabai/query-current-space))
-                          (map ->pseudo-workspace))))))))
-             ;; assumes local overwrites have hit db already
-             ;; otherwise we may need to merge the static wsps in here
-             (sort-by :workspace/scratchpad)
-             ;; (take 1)
-             merge-awm-tags
-             merge-yabai-spaces
-             merge-tmux-sessions)))
+                          (str "-" (:yabai.space/index wsp)))))))
+        wsps (some->> tag-names
+                      ;; TODO more efficient db fetch here?
+                      (map get-db-workspace)
+                      (remove nil?)
+                      ((fn [wsps]
+                         ;; if no db workspace found for tag name,
+                         ;; lookup data from defworkspace
+                         (if (some->> wsps first)
+                           wsps
+                           (let [wsps (->> tag-names (map defworkspace/get-workspace))]
+                             (println "falling back to defworkspace match")
+                             (if (some->> wsps first)
+                               wsps
+                               ;; still none? map to pseudo workspaces
+                               (do
+                                 (println "falling back to pseudo workspaces")
+                                 (->>
+                                   (list (yabai/query-current-space))
+                                   (map ->pseudo-workspace))))))))
+                      ;; assumes local overwrites have hit db already
+                      ;; otherwise we may need to merge the static wsps in here
+                      (sort-by :workspace/scratchpad)
+                      ;; (take 1)
+                      merge-awm-tags
+                      merge-yabai-spaces
+                      merge-tmux-sessions
+                      )]
+    (println "[CLAWE] current-wsp end" (str "[" (System/currentTimeMillis) "]"))
+    wsps))
 
 (comment
   (current-workspaces)
@@ -523,6 +532,25 @@
            ;; merge-awm-tags
            first)
   )
+
+(defn current-workspace-fast
+  "Does not mix the current workspace with the db overwritable keys."
+  ([] (current-workspace-fast))
+  ([{:keys [prefetched-windows]}]
+   (println "[CLAWE] current-wsp-fast start" (str "[" (System/currentTimeMillis) "]"))
+   (let [yb-spc     (yabai/query-current-space)
+         pseudo-wsp (->pseudo-workspace yb-spc)
+         wsp        (if-let [wsp (defworkspace/get-workspace (:yabai.space/label pseudo-wsp))]
+                      wsp pseudo-wsp)
+         ;; optional? part of yabai request?
+         wsp        (merge-yabai-spaces
+                      {:prefetched-spaces  (list yb-spc)
+                       :prefetched-windows prefetched-windows}
+                      wsp)
+         ]
+     (println "[CLAWE] current-wsp-fast end" (str "[" (System/currentTimeMillis) "]"))
+     wsp)
+   ))
 
 (defn all-workspaces-fast
   "Returns all defs.workspaces, without any awm data"
