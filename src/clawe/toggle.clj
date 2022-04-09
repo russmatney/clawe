@@ -16,7 +16,7 @@
    [ralphie.yabai :as yabai]))
 
 
-(defn is-journal? [wsp c]
+(defn is-journal? [_wsp c]
   (or
     (and
       (-> c :awesome.client/class #{"Emacs"})
@@ -25,17 +25,17 @@
       (-> c :yabai.window/app #{"Emacs"})
       (-> c :yabai.window/title (#(re-seq #"^journal" %))))))
 
-(defn is-web? [wsp c]
+(defn is-web? [_wsp c]
   (or
     (-> c :awesome.client/class #{"Firefox"})
     (-> c :yabai.window/app #{"Safari"})))
 
-(defn is-slack? [wsp c]
+(defn is-slack? [_wsp c]
   (or
     (-> c :awesome.client/class #{"Slack"})
     (-> c :yabai.window/app #{"Slack"})))
 
-(defn is-spotify? [wsp c]
+(defn is-spotify? [_wsp c]
   (or
     (-> c :awesome.client/class #{"Spotify"})
     (-> c :yabai.window/app #{"Spotify"})))
@@ -74,18 +74,15 @@
   workspace. Note that this may be called in the context of no workspace at all.
   "
   [{:keys [wsp->client wsp->open-client clients->client client->hide client->show]}]
-  (println "[CLAWE] toggle-client" (str "[" (System/currentTimeMillis) "]"))
-  (let [yb-windows (yabai/query-windows)
-        wsp        (workspaces/current-workspace-fast {:prefetched-windows yb-windows})
-        client     (wsp->client wsp)
-        client-focused
-        (or
-          (:yabai.window/has-focus client)
-          (:awesome.client/focused client))]
-
-    (println "[CLAWE] toggle-client data fetched" (str "[" (System/currentTimeMillis) "]"))
+  (let [yb-windows     (yabai/query-windows)
+        wsp            (workspaces/current-workspace-fast
+                         {:prefetched-windows yb-windows})
+        client         (wsp->client wsp)
+        client-focused (or
+                         (:yabai.window/has-focus client)
+                         (:awesome.client/focused client))]
     (cond
-      ;; no tag, maybe create one?
+      ;; no tag, maybe create one? maybe prompt for a name?
       (not wsp)
       ;; TODO probably better to create the 'right' tag here if possible
       ;; maybe prompt for a tag name?
@@ -97,17 +94,10 @@
 
       ;; client is focused, let's close/hide it
       (and client client-focused)
-      (do
-        (println "[CLAWE] toggle-client client found + focused" (str "[" (System/currentTimeMillis) "]"))
-        (cond
-          client->hide
-          (client->hide client)
-
-          notify/is-mac?
-          (yabai/close-window client)
-
-          :else
-          (awm/close-client client)))
+      (cond
+        client->hide   (client->hide client)
+        notify/is-mac? (yabai/close-window client)
+        :else          (awm/close-client client))
 
       ;; client found in workspace, not focused
       (and client (not client-focused))
@@ -127,25 +117,16 @@
       ;; we have a current workspace, but no client in it
       ;; (not client)
       :else
-      (let [client
-            (when clients->client
-              ;; TODO include awm clients (clawe.clients ns?)
-
-              (println "[CLAWE] toggle-client clients->client" (str "[" (System/currentTimeMillis) "]"))
-              (clients->client yb-windows))]
-
+      (let [client (when clients->client (clients->client yb-windows))]
         (cond
           (and client client->show)
-          (do
-            (println "[CLAWE] toggle-client found client, ready to pull" (str "[" (System/currentTimeMillis) "]"))
-            (client->show client wsp))
+          (client->show client wsp)
 
           :else
-          (do
-            (wsp->open-client wsp)
-            nil))))
-
-    (println "[CLAWE] toggle-client finished toggle-client" (str "[" (System/currentTimeMillis) "]"))))
+          (wsp->open-client wsp)
+          )))
+    ;; prevent noise in the logs
+    nil))
 
 (comment
   (some->>
@@ -204,48 +185,40 @@
            (r.emacs/open opts))))}))
 
 (defcom toggle-journal-2
-  (do
-    (println "toggling-journal-2")
-    (toggle-client
-      (merge
-        (toggle-scratchpad-app {:space-name "journal" :is-client? is-journal?})
-        {:wsp->open-client
-         (fn [{:as _wsp}]
-           (let [opts { ;; TODO get from defworkspace journal
-                       :emacs.open/workspace "journal"
-                       :emacs.open/file      "/Users/russ/todo/journal.org"}]
-             (r.emacs/open opts)))}))))
+  (toggle-client
+    (merge
+      (toggle-scratchpad-app {:space-name "journal" :is-client? is-journal?})
+      {:wsp->open-client
+       (fn [{:as _wsp}]
+         (let [opts { ;; TODO get from defworkspace journal
+                     :emacs.open/workspace "journal"
+                     :emacs.open/file      "/Users/russ/todo/journal.org"}]
+           (r.emacs/open opts)))})))
 
 (defcom toggle-web-2
-  (do
-    (println "toggling-web-2")
-    (toggle-client
-      (merge
-        (toggle-scratchpad-app {:space-name "web" :is-client? is-web?})
-        {:wsp->open-client
-         ;; TODO create the space if missing
-         (fn [_wsp] (r.browser/open))}))))
+  (toggle-client
+    (merge
+      (toggle-scratchpad-app {:space-name "web" :is-client? is-web?})
+      {:wsp->open-client
+       ;; TODO create the space if missing
+       (fn [_wsp] (r.browser/open))})))
 
 (defcom toggle-slack-2
-  (do
-    (println "toggling-slack-2")
-    (toggle-client
-      (merge
-        (toggle-scratchpad-app {:space-name "slack" :is-client? is-slack?})
-        {:wsp->open-client
-         ;; TODO create the space if missing
-         (fn [{:as wsp}]
-           (notify/notify "To do: open slack")
-           (println wsp))}))))
+  (toggle-client
+    (merge
+      (toggle-scratchpad-app {:space-name "slack" :is-client? is-slack?})
+      {:wsp->open-client
+       ;; TODO create the space if missing
+       (fn [{:as wsp}]
+         (notify/notify "To do: open slack")
+         (println wsp))})))
 
 (defcom toggle-spotify-2
-  (do
-    (println "toggling-spotify-2")
-    (toggle-client
-      (merge
-        (toggle-scratchpad-app {:space-name "spotify" :is-client? is-spotify?})
-        {:wsp->open-client
-         ;; TODO create the space if missing
-         (fn [{:as wsp}]
-           (notify/notify "To do: open spotify")
-           (println wsp))}))))
+  (toggle-client
+    (merge
+      (toggle-scratchpad-app {:space-name "spotify" :is-client? is-spotify?})
+      {:wsp->open-client
+       ;; TODO create the space if missing
+       (fn [{:as wsp}]
+         (notify/notify "To do: open spotify")
+         (println wsp))})))

@@ -62,7 +62,9 @@
         index (or (:awesome.tag/index wsp)
                   (:yabai.space/index wsp))
 
-        n (str (if (empty? name) "fallback-name" name) "-" index)]
+        n (if-not (empty? name)
+            name
+            (str "fallback-name-" index))]
     ;; NOTE this :workspace/title is used to get/find the key in the clawe-db
     ;; TODO maybe some nice defaults here? directory?
     (-> wsp
@@ -126,8 +128,6 @@
 (defn merge-yabai-spaces
   ([wsps] (merge-yabai-spaces {} wsps))
   ([{:keys [include-unmatched? prefetched-spaces prefetched-windows]} wsps]
-
-   (println "[CLAWE] merge-yabai-spaces" (str "[" (System/currentTimeMillis) "]"))
    (let [all-spaces               (or prefetched-spaces (yabai/query-spaces))
          all-spaces-by-label      (->> all-spaces
                                        (w/index-by :yabai.space/label))
@@ -455,9 +455,6 @@
   "Returns the Active workspace(s).
   Can be multiple in awesomeWM or multi-display contexts."
   []
-  ;; TODO refactor to be more forgiving for the current spaces/tags/etc
-
-  (println "[CLAWE] current-wsp start" (str "[" (System/currentTimeMillis) "]"))
   (let [tag-names
         (or (awm/current-tag-names)
             (->> (list (yabai/query-current-space))
@@ -492,9 +489,7 @@
                       ;; (take 1)
                       merge-awm-tags
                       merge-yabai-spaces
-                      merge-tmux-sessions
-                      )]
-    (println "[CLAWE] current-wsp end" (str "[" (System/currentTimeMillis) "]"))
+                      merge-tmux-sessions)]
     wsps))
 
 (comment
@@ -537,10 +532,9 @@
   "Does not mix the current workspace with the db overwritable keys."
   ([] (current-workspace-fast))
   ([{:keys [prefetched-windows]}]
-   (println "[CLAWE] current-wsp-fast start" (str "[" (System/currentTimeMillis) "]"))
    (let [yb-spc     (yabai/query-current-space)
          pseudo-wsp (->pseudo-workspace yb-spc)
-         wsp        (if-let [wsp (defworkspace/get-workspace (:yabai.space/label pseudo-wsp))]
+         wsp        (if-let [wsp (defworkspace/get-workspace pseudo-wsp)]
                       wsp pseudo-wsp)
          ;; optional? part of yabai request?
          wsp        (merge-yabai-spaces
@@ -548,9 +542,22 @@
                        :prefetched-windows prefetched-windows}
                       wsp)
          ]
-     (println "[CLAWE] current-wsp-fast end" (str "[" (System/currentTimeMillis) "]"))
-     wsp)
-   ))
+     wsp)))
+
+(comment
+
+  (->
+    (yabai/query-current-space)
+    ->pseudo-workspace
+    ;; :name
+    defworkspace/get-workspace
+    )
+  (->>
+    (defworkspace/list-workspaces)
+    (filter (comp #{"clawe"} :name))
+    )
+
+  )
 
 (defn all-workspaces-fast
   "Returns all defs.workspaces, without any awm data"
