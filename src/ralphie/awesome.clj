@@ -37,8 +37,7 @@
    [clojure.string :as string]
    [defthing.defcom :refer [defcom] :as defcom]
    [ralphie.notify :as notify]
-   [ralphie.sh :as sh]
-   [clojure.edn :as edn]))
+   [ralphie.sh :as sh]))
 
 ;;  TODO rename `awm-cli` to `awm-lua`, and write a shared `awm-cli` base. or just
 ;;  support `awm-cli` and check for a leading `(`.
@@ -122,19 +121,20 @@ util = require 'util';
   Adds a preamble that sets common variables and requires common modules."
   ([lua-str] (awm-cli nil lua-str))
   ([opts lua-str]
-   (let [quiet? (:quiet? opts true)]
-     (->>
-       (str lua-preamble "\n\n-- Passed command:\n" lua-str)
-       ((fn [lua-str]
-          (when-not quiet?
-            (println "Running lua via awesome-client!:\n\n" lua-str))
-          lua-str))
-       ((fn [lua-str]
-          ^{:out :string}
-          (process/$ awesome-client ~lua-str)))
-       check
-       :out
-       parse-output))))
+   (when-not notify/is-mac? ;; TODO better detection/handling for awm running
+     (let [quiet? (:quiet? opts true)]
+       (->>
+         (str lua-preamble "\n\n-- Passed command:\n" lua-str)
+         ((fn [lua-str]
+            (when-not quiet?
+              (println "Running lua via awesome-client!:\n\n" lua-str))
+            lua-str))
+         ((fn [lua-str]
+            ^{:out :string}
+            (process/$ awesome-client ~lua-str)))
+         check
+         :out
+         parse-output)))))
 
 (def awm-lua awm-cli)
 
@@ -442,7 +442,7 @@ util = require 'util';
                        :focused   (= focused-window c.window)})))}))
            view))
        (map ->namespaced-tag))
-     (catch Exception e
+     (catch Exception _e
        (println "awm/fetch-tags error")
        nil))))
 
@@ -502,8 +502,8 @@ util = require 'util';
            s.selected_tags
            (lume.map (fn [t] (. t :name)))
            view))
-    (catch Exception e
-      (println "awesome/current-tag-names error"))))
+    (catch Exception _e
+      nil)))
 
 (defn tag-exists? [tag-name]
   (fnl (-> (root.tags)
@@ -784,16 +784,15 @@ util = require 'util';
 ;; Reloading in the running awm instance
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn hotswap-module-names [names]
+(defn hotswap-module-names
+  "Hotswap lua modules by name."
+  [names]
   (->> names
        (map #(str "lume.hotswap('" % "');"))
        ;; might not be necessary
        ;; reverse ;; move 'bar' hotswap to last
        (string/join "\n")
        (awm-lua {:quiet? true})))
-
-(defn reload-misc []
-  (hotswap-module-names ["clawe" "util" "icons"]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Awesome-$ (shell command)
@@ -807,7 +806,7 @@ util = require 'util';
   One detail - awm key-repeats much faster than sxhkd, which is an issue -
   i've spammed awesomewm to death multiple times by holding keybindings...
   "
- ;; TODO async or not? maybe `shell!` is async?
+  ;; TODO async or not? maybe `shell!` is async?
   [arg] (fnl (awful.spawn.easy_async ~arg (fn []))))
 
 (comment
