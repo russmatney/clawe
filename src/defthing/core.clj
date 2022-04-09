@@ -77,6 +77,7 @@
       :else             (do (println "unexpected xorf type!")
                             (println "type" (type xorf))
                             (println "xorf" xorf)
+                            (println "x" x)
                             x))))
 
 (comment
