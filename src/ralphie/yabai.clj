@@ -97,8 +97,20 @@
 (defn spaces-by-idx []
   (->> (query-spaces) (w/index-by :yabai.space/index)))
 
+(defn spaces-by-label []
+  (->> (query-spaces)
+       (remove (comp empty? :yabai.space/label))
+       (w/index-by :yabai.space/label)))
+
+(defn spaces-unlabeled []
+  (->> (query-spaces)
+       (filter (comp empty? :yabai.space/label))))
+
 (comment
-  (query-spaces))
+  (query-spaces)
+  (spaces-by-idx)
+  (spaces-by-label)
+  )
 
 (defn query-current-space []
   (->
@@ -153,6 +165,10 @@
     process/check
     :out
     (json/parse-string (fn [k] (keyword "yabai.window" k)))))
+
+(comment
+  (query-windows)
+  )
 
 (defn query-current-window []
   (->
@@ -232,18 +248,21 @@
                         (:yabai.window/title app-desc))]
     (->>
       (query-windows)
-      (filter (fn [w]
-                (and
-                  (-> w :yabai.window/app ((fn [app-str]
-                                             (if (string? app-name)
-                                               (#{app-name} app-str)
-                                               (app-name app-str)))))
-                  (if-not title-match
-                    true
-                    (-> w :yabai.window/title ((fn [app-str]
-                                                 (if (string? title-match)
-                                                   (#{title-match} app-str)
-                                                   (title-match app-str))))))))))))
+      (filter
+        (fn [w]
+          (and
+            (-> w :yabai.window/app
+                ((fn [app-str]
+                   (if (string? app-name)
+                     (#{app-name} app-str)
+                     (app-name app-str)))))
+            (if-not title-match
+              true
+              (-> w :yabai.window/title
+                  ((fn [app-str]
+                     (if (string? title-match)
+                       (#{title-match} app-str)
+                       (title-match app-str))))))))))))
 
 (defn window-for-app-desc [app-desc]
   (->>
@@ -325,6 +344,8 @@
    {:yabai.window/app   "Emacs"
     :yabai.window/title #(re-seq #"journal" %)} "journal"
    {:yabai.window/app   "Emacs"
+    :yabai.window/title #(re-seq #"dotfiles" %)} "dotfiles"
+   {:yabai.window/app   "Emacs"
     :yabai.window/title #(re-seq #"clawe" %)}   "clawe"})
 
 (defn set-space-labels []
@@ -396,26 +417,35 @@
 ;; create space
 
 (defn create-and-label-space
-  "If a space with the passed label does not exist, one is created and labeled.
-  If :focus is true, the new space will be focused."
+  "If a space with the passed label does not exist,
+  (and overwrite-unlabeled is truty) an unlabeled one is
+  selected and labeled. If there are no unlabeled, a new one is created.
+  If :focus is true, the new space will be focused.
+  "
   [{:keys [space-label
-           focus]}]
-  (let [spcs    (spaces-by-idx)
+           focus
+           overwrite-unlabeled
+           ]}]
+  (let [spcs    (spaces-by-label)
         ;; naive, just checks if a space already has this label
         ;; could one day determine if an existing space should be labeled
         exists? (spcs space-label)]
     (when-not exists?
-      (->
-        ^{:out :string}
-        (process/$ yabai -m space --create)
-        process/check
-        :out)
-      (let [new-space (->> (query-spaces)
-                           (remove :yabai.space/is-native-fullscreen)
-                           (sort-by :yabai.space/index)
-                           reverse
-                           first)]
-        (label-space space-label new-space)))
+      (let [unlabeled-space (when overwrite-unlabeled
+                              (->> (spaces-unlabeled) first))]
+        (when-not unlabeled-space
+          (->
+            ^{:out :string}
+            (process/$ yabai -m space --create)
+            process/check
+            :out))
+        (let [space (or unlabeled-space
+                        (->> (query-spaces)
+                             (remove :yabai.space/is-native-fullscreen)
+                             (sort-by :yabai.space/index)
+                             reverse
+                             first))]
+          (label-space space-label space))))
 
     (when focus
       (->
