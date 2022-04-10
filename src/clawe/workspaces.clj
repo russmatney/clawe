@@ -643,6 +643,7 @@
 
 (defn update-workspace-indexes
   []
+  ;; TODO rewrite for yabai
   (loop [wsps (workspaces-to-swap-indexes)]
     (let [wsp (some-> wsps first)]
       (when wsp
@@ -755,12 +756,19 @@
   [wsp]
   (let [name (workspace-name wsp)]
 
-    ;; create tag if none is found
-    (when (not (awm/tag-exists? name))
-      (awm/create-tag! name))
+    (if notify/is-mac?
+      ;; TODO handle this space/label already existing
+      (yabai/create-and-label-space
+        {:space-label name
+         :focus       true})
 
-    ;; focus the tag
-    (awm/focus-tag! name)
+      (do
+        ;; create tag if none is found
+        (when (not (awm/tag-exists? name))
+          (awm/create-tag! name))
+        ;; focus the tag
+        (awm/focus-tag! name)))
+
 
     ;; run on-create hook
     ;; (when-let [f (:workspace/on-create wsp)]
@@ -796,7 +804,7 @@
     (for-name)
     (create-workspace)))
 
-(defn wsp->repo-and-status-label
+(defn wsp->rofi-opts
   [{:as   wsp
     :keys [git/dirty? git/needs-push? git/needs-pull?]}]
   (let [default-name "noname"
@@ -805,24 +813,21 @@
     (when (= name default-name)
       (println "wsp without name" wsp))
 
-    (str
-      "<span>" (or name default-name) " </span> "
-      (when repo (str "<span color='gray' size='small'>" repo "</span> "))
-      (when dirty? (str "<span color='#88aadd' size='small'>" "#dirty" "</span> "))
-      (when needs-push? (str "<span color='#aa88ee' size='small'>" "#needs-push" "</span> "))
-      (when needs-pull? (str "<span color='#38b98a' size='small'>" "#needs-pull" "</span> ")))))
+    {:rofi/label (or name default-name)
+     :rofi/description
+     (str (when repo repo " ")
+          (when dirty? "#dirty ")
+          (when needs-push? "#needs-push ")
+          (when needs-pull? "#needs-pull"))}))
 
 (defn workspace-rofi-options []
-  (->> (all-workspaces)
-       (map #(assoc % :rofi/label (wsp->repo-and-status-label %)))))
+  (->> (all-workspaces) (map #(merge % (wsp->rofi-opts %)))))
 
 (defn open-workspace-rofi-options []
   (->>
     (workspace-rofi-options)
     (map #(assoc % :rofi/on-select (fn [wsp]
-                                     (create-workspace wsp)
-                                     )))))
-
+                                     (create-workspace wsp))))))
 
 (defn select-workspace
   "Opens a list of workspaces in rofi.
