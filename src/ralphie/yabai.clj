@@ -425,9 +425,12 @@
   )
 
 (defn destroy-space [{:keys             [space-label]
-                      :yabai.space/keys [label]}]
-  (let [label (or label space-label)]
+                      :yabai.space/keys [label index]
+                      :as               input}]
+  (println "destory space" input)
+  (let [label (or label space-label index)]
     (when label
+      (notify/notify "Destroying space" label)
       (->
         ^{:out :string}
         (process/$ yabai -m space --destroy ~label)
@@ -450,12 +453,32 @@
   (spaces-by-idx)
   )
 
-(defn destory-unlabelled-empty-spaces []
-  (->> (query-spaces)
-       (remove :yabai.space/label)
-       (remove (comp seq :yabai.space/windows))
-       (map destroy-space)))
+(defn destroy-unlabelled-empty-spaces []
+  (doall
+    (->> (query-spaces)
+         (filter (comp empty? :yabai.space/label))
+         (remove (comp seq :yabai.space/windows))
+         (map destroy-space))))
 
+(comment
+  (->> (query-spaces)
+       (remove (comp not empty? :yabai.space/label))
+       (remove (comp seq :yabai.space/windows))
+       )
+  )
+
+(defcom yabai-clean-up-spaces
+  ;; TODO the scratchpads need to be more resilient
+  ;; the behavior here is poor
+  ;; (some of) the labelled spaces still get deleted
+  ;; maybe a race-case?
+  ;; maybe deleting one space breaks everything b/c
+  ;; things shift around
+  ;; might need to impl better clean-up 'swapping' like in awesome
+  (do
+    (set-space-labels)
+    (destroy-unlabelled-empty-spaces))
+  )
 
 (defn label-space-with-user-input []
   (let [new-label     (get-input)
