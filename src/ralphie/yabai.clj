@@ -167,17 +167,30 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn focus-window [w]
-  (->
-    ^{:out :string}
-    (process/$ yabai -m window --focus ~(:yabai.window/id w))
-    process/check
-    :out))
+  (let [window-id (or (:yabai.window/id w)
+                      (:window-id w))]
+    (when window-id
+      (println "focusing window with window-id" window-id)
+      (->
+        ^{:out :string}
+        (process/$ yabai -m window --focus ~window-id)
+        process/check
+        :out))))
 
 (comment
   (->> (query-windows)
        (filter (comp #{"Spotify"} :yabai.window/app))
        first
        focus-window))
+
+(defn focus-window-in-current-space []
+  (let [current-space (query-current-space)
+        window-ids    (:yabai.space/windows current-space)
+        window-id     (some-> window-ids first)]
+    (println "focus window attempt" current-space)
+    (when window-id
+      (println "focusing window" window-id)
+      (focus-window {:window-id window-id}))))
 
 (defn close-window
   "heads up that this requires the application to have a title bar.
@@ -452,6 +465,8 @@
 
 (defcom set-new-label-for-space
   (label-space-with-user-input))
+
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; sandbox
