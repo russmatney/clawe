@@ -7,7 +7,32 @@
    [ralphie.notify :as notify]
    [ralphie.zsh :as zsh]
    [clojure.string :as string]
-   [clojure.edn :as edn]))
+   [clojure.edn :as edn]
+   [ralphie.rofi :as rofi]))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; prompt and label space
+
+(defn get-input
+  "Prompts for user input in a native dialog via obb."
+  []
+  (->
+    ^{:dir (zsh/expand "~/russmatney/clawe")
+      :out :string
+      :err :string}
+    ;; TODO pass in dialog messages
+    (process/$ "./bin/dialog.clj")
+    process/check
+    ;; TODO for now, obb prints outputs to stderr
+    ;; https://github.com/babashka/obb/issues/16
+    :err
+    string/split-lines
+    first
+    edn/read-string))
+
+(comment
+  (get-input))
+
 
 ;; TODO get this frame decoding done properly
 (def Frame
@@ -352,26 +377,72 @@
     :out))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; prompt and label space
+;; create space
 
-(defn get-input
-  "Prompts for user input in a native dialog via obb."
-  []
+(defn create-and-label-space [{:keys [space-label
+                                      focus]}]
+  ;; TODO handle this space/label already existing
   (->
-    ^{:dir (zsh/expand "~/russmatney/clawe")
-      :out :string
-      :err :string}
-    (process/$ "./bin/dialog.clj")
+    ^{:out :string}
+    (process/$ yabai -m space --create)
     process/check
-    ;; TODO for now, obb prints outputs to stderr
-    ;; https://github.com/babashka/obb/issues/16
-    :err
-    string/split-lines
-    first
-    edn/read-string))
+    :out)
+  (let [new-space (->> (query-spaces)
+                       (remove :yabai.space/is-native-fullscreen)
+                       (sort-by :yabai.space/index)
+                       reverse
+                       first)]
+    (label-space space-label new-space))
+
+  (when focus
+    (->
+      ^{:out :string}
+      (process/$ yabai -m space --focus ~space-label)
+      process/check
+      :out))
+  )
 
 (comment
-  (get-input))
+  (create-and-label-space {:space-label "new-space"
+                           :focus       true})
+  (->>
+    (spaces-by-idx)
+    (sort-by first)
+    )
+  )
+
+(defn destroy-space [{:keys             [space-label]
+                      :yabai.space/keys [label]}]
+  (let [label (or label space-label)]
+    (when label
+      (->
+        ^{:out :string}
+        (process/$ yabai -m space --destroy ~label)
+        process/check
+        :out))))
+
+(defcom destroy-current-space
+  (destroy-space (query-current-space)))
+
+(defcom destroy-selected-space
+  (let [selected (rofi/rofi (->> (query-spaces)
+                                 (map (fn [spc]
+                                        (assoc spc :rofi/label (or (:yabai.space/label spc)
+                                                                   (:yabai.space/index spc)))))))]
+    (when selected
+      (destroy-space (:yabai.space/index selected)))))
+
+(comment
+  (destroy-space {:space-label "2"})
+  (spaces-by-idx)
+  )
+
+(defn destory-unlabelled-empty-spaces []
+  (->> (query-spaces)
+       (remove :yabai.space/label)
+       (remove (comp seq :yabai.space/windows))
+       (map destroy-space)))
+
 
 (defn label-space-with-user-input []
   (let [new-label     (get-input)
