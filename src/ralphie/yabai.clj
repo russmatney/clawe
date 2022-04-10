@@ -267,8 +267,7 @@
 (defn window-for-app-desc [app-desc]
   (->>
     (windows-for-app-desc app-desc)
-    first)
-  )
+    first))
 
 (comment
   (windows-for-app-desc "Spotify")
@@ -287,26 +286,12 @@
   (->> app-desc
        windows-for-app-desc
        (map space-for-window)
-       (w/index-by #(str (when-not (empty? (:yabai.space/label %))
-                           (:yabai.space/label %) "-")
-                         (:yabai.space/index %)))))
+       (w/index-by :yabai.space/index)))
 
 (comment
-
-  (->
-    {:yabai.window/app "Emacs"
-     ;; :yabai.window/title #(re-seq #"journal" %)
-     }
-    spaces-for-app-desc
-    )
-
-  (->
-    {:yabai.window/app "Spotify"
-     ;; :yabai.window/title #(re-seq #"journal" %)
-     }
-    spaces-for-app-desc
-    )
-  )
+  (-> {:yabai.window/app "Spotify"
+       ;; :yabai.window/title #(re-seq #"journal" %)
+       } spaces-for-app-desc))
 
 (defn label-space
   [label space]
@@ -321,20 +306,20 @@
         :out))))
 
 (defn find-and-label-space [app-desc label]
-  (let [spaces-map   (spaces-for-app-desc app-desc)
-        str-app-name (if (string? app-desc) app-desc (:yabai.window/app app-desc))
+  (let [spaces-by-idx (spaces-for-app-desc app-desc)
+        str-app-name  (if (string? app-desc) app-desc (:yabai.window/app app-desc))
         ;; could be a function/obj, which notify on osx can't deal with yet
-        str-app-name (when (string? str-app-name) str-app-name)]
+        str-app-name  (when (string? str-app-name) str-app-name)]
     (cond
-      (#{1} (count spaces-map))
+      (#{1} (count spaces-by-idx))
       (do
-        (notify/notify "Found single space for window(s)" (str (first (keys spaces-map)) " - " str-app-name))
-        (->> spaces-map vals first (label-space label)))
+        (notify/notify "Found single space for window(s)" (str (first (keys spaces-by-idx)) " - " str-app-name))
+        (->> spaces-by-idx vals first (label-space label)))
 
-      (zero? (count spaces-map))
+      (zero? (count spaces-by-idx))
       (notify/notify "No spaces for app name, no space to label" str-app-name)
 
-      (> (count spaces-map) 1)
+      (> (count spaces-by-idx) 1)
       (notify/notify "Multiple spaces for app desc.... could not label space" str-app-name))))
 
 (def app-desc->space-label
@@ -364,10 +349,12 @@
   (->>
     app-desc->space-label
     (map (fn [[desc]]
-           desc
-           )
-         )
-    )
+           desc)))
+
+  (->>
+    app-desc->space-label
+    (map first)
+    (map spaces-for-app-desc))
 
   (find-and-label-space "Spotify" "spotify")
   (find-and-label-space "Slack" "slack")
@@ -376,7 +363,7 @@
   )
 
 (defcom yabai-set-space-labels
-  set-space-labels)
+  (set-space-labels))
 
 
 (defn move-window-to-space [window space-label-or-idx]
