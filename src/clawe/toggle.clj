@@ -178,6 +178,11 @@
      (fn [{:workspace/keys [title initial-file directory]
            :git/keys       [repo]
            :as             wsp}]
+       ;; TODO workspace repos that toggle this are no longer getting the db-mixin
+       ;; so the initial file is probably better inferred here
+       ;; possibly check if the workspace already exists and just open that/
+       ;; i.e. w/e current file was already open - could be better off
+       ;; as an emacs function that's called when opening the frame
        (if-not wsp
          (r.emacs/open)
          (let [initial-file (or initial-file repo directory)
