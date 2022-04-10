@@ -183,7 +183,10 @@
        first
        focus-window))
 
-(defn focus-window-in-current-space []
+(defn focus-window-in-current-space
+  "Typically unnecessary (osx tries to focus windows for you).
+  Perhaps better handled via yabai signals."
+  []
   (let [current-space (query-current-space)
         window-ids    (:yabai.space/windows current-space)
         window-id     (some-> window-ids first)]
@@ -374,7 +377,7 @@
 
 (defn float-and-center-window
   "Toggles floating if the passed window is not already."
-  [{:yabai.window/keys [id is-floating] :as w}]
+  [{:yabai.window/keys [id is-floating]}]
   ;; ensure floating
   (when-not is-floating
     (->
@@ -392,28 +395,34 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; create space
 
-(defn create-and-label-space [{:keys [space-label
-                                      focus]}]
-  ;; TODO handle this space/label already existing
-  (->
-    ^{:out :string}
-    (process/$ yabai -m space --create)
-    process/check
-    :out)
-  (let [new-space (->> (query-spaces)
-                       (remove :yabai.space/is-native-fullscreen)
-                       (sort-by :yabai.space/index)
-                       reverse
-                       first)]
-    (label-space space-label new-space))
+(defn create-and-label-space
+  "If a space with the passed label does not exist, one is created and labeled.
+  If :focus is true, the new space will be focused."
+  [{:keys [space-label
+           focus]}]
+  (let [spcs    (spaces-by-idx)
+        ;; naive, just checks if a space already has this label
+        ;; could one day determine if an existing space should be labeled
+        exists? (spcs space-label)]
+    (when-not exists?
+      (->
+        ^{:out :string}
+        (process/$ yabai -m space --create)
+        process/check
+        :out)
+      (let [new-space (->> (query-spaces)
+                           (remove :yabai.space/is-native-fullscreen)
+                           (sort-by :yabai.space/index)
+                           reverse
+                           first)]
+        (label-space space-label new-space)))
 
-  (when focus
-    (->
-      ^{:out :string}
-      (process/$ yabai -m space --focus ~space-label)
-      process/check
-      :out))
-  )
+    (when focus
+      (->
+        ^{:out :string}
+        (process/$ yabai -m space --focus ~space-label)
+        process/check
+        :out))))
 
 (comment
   (create-and-label-space {:space-label "new-space"
