@@ -69,8 +69,7 @@
    (let [wsp (or wsp (workspaces/current-workspace))]
      (->>
        (concat
-         [
-          (when-not notify/is-mac?
+         [(when-not notify/is-mac?
             (when wsp {:rofi/label     "Create Workspace Client"
                        :rofi/on-select (fn [_]
                                          ;; TODO detect if workspace client is already open
@@ -110,8 +109,7 @@
                            :rofi/description (:workspace/display-name %))))
 
          ;; kill tmux/tags/clients
-         (when-not notify/is-mac?
-           (kill-things wsp))
+         (when-not notify/is-mac? (kill-things wsp))
 
          ;; systemd stops/restart
          (when-not notify/is-mac?
