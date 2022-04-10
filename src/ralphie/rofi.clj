@@ -82,7 +82,7 @@
            (if notify/is-mac?
              ^{:in  (string/join "\n" labels)
                :out :string}
-             ($ choose)
+             ($ choose -u)
 
              ^{:in  (string/join sep labels)
                :out :string}
