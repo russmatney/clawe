@@ -144,7 +144,9 @@
      (some->> (concat clients windows) (filter #(is-client? wsp %)) first))
 
    :->ensure-workspace
-   (fn [] (yabai/create-and-label-space {:space-label space-label}))
+   (fn [] (yabai/create-and-label-space
+            {:space-label       space-label
+             :overwrite-labeled true}))
 
    :clients->client
    (fn [clients] (some->> clients (filter #(is-client? nil %)) first))

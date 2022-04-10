@@ -759,8 +759,9 @@
     (if notify/is-mac?
       ;; TODO handle this space/label already existing
       (yabai/create-and-label-space
-        {:space-label name
-         :focus       true})
+        {:space-label       name
+         :focus             true
+         :overwrite-labeled true})
 
       (do
         ;; create tag if none is found
