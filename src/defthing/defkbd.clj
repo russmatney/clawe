@@ -55,16 +55,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn ->rofi [{:keys [doc name] :as bd}]
-  {:rofi/label
-   (str "<span>" name " </span> "
-        (when doc (str "<span color='gray'>" doc "</span> "))
-        (when :binding/key
-          (apply
-            str "<span color='gray'>" (:binding/key bd) "</span> ")))
-   :rofi/on-select
-   (fn [_]
-     (defcom/exec (get-command bd)))})
-
+  {:rofi/label       name
+   :rofi/description (str doc (when :binding/key (:binding/key bd)))
+   :rofi/on-select   (fn [_] (defcom/exec (get-command bd)))})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; defkbd
