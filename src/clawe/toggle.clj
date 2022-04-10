@@ -73,29 +73,33 @@
   `:wsp->open-client` is a function to create the client in the context of the
   workspace. Note that this may be called in the context of no workspace at all.
   "
-  [{:keys [wsp->client wsp->open-client clients->client client->hide client->show]}]
+  [{:keys [wsp->client wsp->open-client
+           clients->client client->hide client->show
+           ->ensure-workspace]}]
   (let [yb-windows     (yabai/query-windows)
-        wsp            (workspaces/current-workspace-fast
+        current-wsp    (workspaces/current-workspace-fast
                          {:prefetched-windows yb-windows})
-        client         (wsp->client wsp)
+        client         (wsp->client current-wsp)
         client-focused (or
                          (:yabai.window/has-focus client)
                          (:awesome.client/focused client))]
     (cond
       ;; no tag, maybe create one? maybe prompt for a name?
-      (not wsp)
-      ;; TODO probably better to create the 'right' tag here if possible
-      ;; maybe prompt for a tag name?
+      (not current-wsp)
       (do
-        (println "No current tag found...?" "Creating fallback")
         (awm/create-tag! "temp-tag")
         (awm/focus-tag! "temp-tag")
         (wsp->open-client nil))
 
-      ;; client is focused, let's close/hide it
+      ;; client is focused, let's close/hide/send-it-away it
       (and client client-focused)
       (cond
-        client->hide   (client->hide client)
+        client->hide
+        (do
+          (when ->ensure-workspace
+            ;; support creating the target workspace
+            (->ensure-workspace))
+          (client->hide client))
         notify/is-mac? (yabai/close-window client)
         :else          (awm/close-client client))
 
@@ -120,10 +124,10 @@
       (let [client (when clients->client (clients->client yb-windows))]
         (cond
           (and client client->show)
-          (client->show client wsp)
+          (client->show client current-wsp)
 
           :else
-          (wsp->open-client wsp)
+          (wsp->open-client current-wsp)
           )))
     ;; prevent noise in the logs
     nil))
@@ -134,16 +138,19 @@
     workspaces/merge-awm-tags)
   )
 
-(defn toggle-scratchpad-app [{:keys [space-name is-client?]}]
+(defn toggle-scratchpad-app [{:keys [space-label is-client?]}]
   {:wsp->client
    (fn [{:awesome.tag/keys [clients] :yabai/keys [windows] :as wsp}]
      (some->> (concat clients windows) (filter #(is-client? wsp %)) first))
+
+   :->ensure-workspace
+   (fn [] (yabai/create-and-label-space {:space-label space-label}))
 
    :clients->client
    (fn [clients] (some->> clients (filter #(is-client? nil %)) first))
 
    :client->hide
-   (fn [c] (yabai/move-window-to-space c space-name))
+   (fn [c] (yabai/move-window-to-space c space-label))
 
    :client->show
    (fn [c wsp]
@@ -159,6 +166,7 @@
      (fn [{:awesome.tag/keys [clients] :yabai/keys [windows] :as wsp}]
        (some->> (concat clients windows) (filter #(is-terminal? wsp %)) first))
      :wsp->open-client
+     ;; TODO could fetch the full current-workspace here
      (fn [{:workspace/keys [title directory]
            :git/keys       [repo]
            :as             wsp}]
@@ -183,6 +191,8 @@
        ;; possibly check if the workspace already exists and just open that/
        ;; i.e. w/e current file was already open - could be better off
        ;; as an emacs function that's called when opening the frame
+
+       ;; TODO could just fetch the full current-workspace here
        (if-not wsp
          (r.emacs/open)
          (let [initial-file (or initial-file repo directory)
@@ -192,7 +202,7 @@
 (defcom toggle-journal-2
   (toggle-client
     (merge
-      (toggle-scratchpad-app {:space-name "journal" :is-client? is-journal?})
+      (toggle-scratchpad-app {:space-label "journal" :is-client? is-journal?})
       {:wsp->open-client
        (fn [{:as _wsp}]
          (let [opts { ;; TODO get from defworkspace journal
@@ -203,17 +213,14 @@
 (defcom toggle-web-2
   (toggle-client
     (merge
-      (toggle-scratchpad-app {:space-name "web" :is-client? is-web?})
-      {:wsp->open-client
-       ;; TODO create the space if missing
-       (fn [_wsp] (r.browser/open))})))
+      (toggle-scratchpad-app {:space-label "web" :is-client? is-web?})
+      {:wsp->open-client (fn [_wsp] (r.browser/open))})))
 
 (defcom toggle-slack-2
   (toggle-client
     (merge
-      (toggle-scratchpad-app {:space-name "slack" :is-client? is-slack?})
+      (toggle-scratchpad-app {:space-label "slack" :is-client? is-slack?})
       {:wsp->open-client
-       ;; TODO create the space if missing
        (fn [{:as wsp}]
          (notify/notify "To do: open slack")
          (println wsp))})))
@@ -221,9 +228,8 @@
 (defcom toggle-spotify-2
   (toggle-client
     (merge
-      (toggle-scratchpad-app {:space-name "spotify" :is-client? is-spotify?})
+      (toggle-scratchpad-app {:space-label "spotify" :is-client? is-spotify?})
       {:wsp->open-client
-       ;; TODO create the space if missing
        (fn [{:as wsp}]
          (notify/notify "To do: open spotify")
          (println wsp))})))
