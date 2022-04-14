@@ -35,6 +35,9 @@
     (-> c :awesome.client/class #{"Slack"})
     (-> c :yabai.window/app #{"Slack"})))
 
+(defn is-messages? [_wsp c]
+  (-> c :yabai.window/app #{"Messages"}))
+
 (defn is-spotify? [_wsp c]
   (or
     (-> c :awesome.client/class #{"Spotify"})
@@ -152,7 +155,9 @@
    (fn [clients] (some->> clients (filter #(is-client? nil %)) first))
 
    :client->hide
-   (fn [c] (yabai/move-window-to-space c space-label))
+   (fn [c]
+     ;; TODO what to do when we're already on this space-label?
+     (yabai/move-window-to-space c space-label))
 
    :client->show
    (fn [c wsp]
@@ -231,4 +236,14 @@
       {:wsp->open-client
        (fn [{:as wsp}]
          (notify/notify "To do: open spotify")
+         (println wsp))})))
+
+
+(defcom toggle-messages-2
+  (toggle-client
+    (merge
+      (toggle-scratchpad-app {:space-label "messages" :is-client? is-messages?})
+      {:wsp->open-client
+       (fn [{:as wsp}]
+         (notify/notify "To do: open messages")
          (println wsp))})))

@@ -288,6 +288,9 @@
     (windows-for-app-desc app-desc)
     first))
 
+(def ->window window-for-app-desc)
+
+
 (comment
   (windows-for-app-desc "Spotify")
   (windows-for-app-desc "Emacs"))
@@ -381,43 +384,111 @@
   (find-and-label-space "Emacs" "clawe")
   )
 
+(defn toggle-floating [{:yabai.window/keys [id] :as _window}]
+  (notify/notify "toggling floating" id)
+  (->
+    ^{:out :string}
+    (process/$ yabai -m window ~id --toggle float)
+    process/check
+    :out))
+
+(comment
+  (toggle-floating
+    (->window
+      {:yabai.window/app   "Emacs"
+       :yabai.window/title #(re-seq #"clawe" %)}
+      ))
+  )
+
+(defn center-window
+  "
+
+  From yabai manual:
+  --grid <rows>:<cols>:<start-x>:<start-y>:<width>:<height>
+    Set the frame of the selected window based on a
+    self-defined grid.
+
+  "
+  [window]
+  (->
+    ^{:out :string}
+    (process/$ yabai -m window ~(:yabai.window/id window) --grid "10:10:1:1:8:8")
+    process/check
+    :out))
+
+
+
 (defcom yabai-set-space-labels
   (set-space-labels))
 
+(defn is-in-space-for-label?
+  "Does the window's space match the passed label?"
+  [window label]
+  (->>
+    (query-spaces)
+    (filter (fn [spc]
+              (and
+                (-> spc :yabai.space/index #{(:yabai.window/space window)})
+                (-> spc :yabai.space/label #{label}))))
+    seq))
 
-(defn move-window-to-space [window space-label-or-idx]
-  (->
-    ^{:out :string}
-    (process/$ yabai -m window ~(:yabai.window/id window) --space ~space-label-or-idx)
-    process/check
-    :out))
+(defn move-window-to-space
+  "If the window is already in the space, it's float will be toggled
+  and the window will be centered.
+  "
+  [window space-label-or-idx]
+  (if (is-in-space-for-label? window space-label-or-idx)
+    (do
+      (notify/notify "i'm in my space, cozy as can be")
+      (toggle-floating window)
+      (center-window window))
+    (->
+      ^{:out :string}
+      (process/$ yabai -m window ~(:yabai.window/id window) --space ~space-label-or-idx || yabai -m space --focus recent)
+      process/check
+      :out)))
 
 (comment
 
   (move-window-to-space
     (window-for-app-desc "Safari")
-    "web"
-    )
+    "web")
+
+  (query-windows)
+
+
+  (->>
+    (query-spaces)
+    (filter (comp #{(->
+                      {:yabai.window/app   "Emacs"
+                       :yabai.window/title #(re-seq #"clawe" %)}
+                      ->window
+                      :yabai.window/space
+                      )} :yabai.space/index)))
+  (spaces-by-idx)
+
+  (move-window-to-space
+    (->window {:yabai.window/app "Emacs" :yabai.window/title #(re-seq #"clawe" %)})
+    "clawe")
   )
-
-
 
 (defn float-and-center-window
   "Toggles floating if the passed window is not already."
-  [{:yabai.window/keys [id is-floating]}]
+  [{:yabai.window/keys [is-floating] :as window}]
   ;; ensure floating
   (when-not is-floating
-    (->
-      ^{:out :string}
-      (process/$ yabai -m window ~id --toggle float)
-      process/check
-      :out))
+    (toggle-floating window))
 
-  (->
-    ^{:out :string}
-    (process/$ yabai -m window ~id --grid "10:10:1:1:8:8")
-    process/check
-    :out))
+  (center-window window))
+
+(comment
+  "
+--move abs|rel:<dx>:<dy>
+If type is rel the selected window is moved by dx pixels
+horizontally and dy pixels vertically, otherwise dx and
+dy will become its new position. "
+
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; create space
