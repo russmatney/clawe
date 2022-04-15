@@ -6,12 +6,19 @@
              [clojure.tools.logging :as log]
              [babashka.fs :as fs]
              [babashka.process :as p])
+
+  :enter (println "Entering:" (:name (current-task)))
   :init
   (do
     (def doctor-fe-url "http://localhost:3333")
     (def doctor-tauri-executable "./src-tauri/target/debug/doctor")
 
-    (def home-dir (or "/Users/russ" "/home/russ"))
+    (defn env [s] (System/getenv s))
+
+    (defn home-dir []
+      (-> (shell {:out :string}
+                 "zsh -c 'echo -n ~'")
+          :out))
 
     (defn pp [x]
       (binding [pprint/*print-right-margin* 130]
@@ -24,7 +31,9 @@
             cmd   (str doctor-tauri-executable " create-window"
                        " --title " title " --label " label " --url " url)]
         (pp (str "Running doctor tauri app: " cmd))
-        (shell {:dir (str home-dir "/russmatney/clawe")} cmd))))
+        (shell {:dir (str (home-dir) "/russmatney/clawe")} cmd))))
+
+  home (pp (home-dir))
 
   clj-kondo      (shell "clj-kondo --lint src")
   clj-kondo-test (shell "clj-kondo --lint test")
@@ -73,18 +82,18 @@
   {:doc "Run tauri in dev mode, rebuilding the exec on local rust changes."
    :task
    (shell
-     {:dir (str home-dir "/russmatney/clawe/src-tauri")}
+     {:dir (str (home-dir) "/russmatney/clawe/src-tauri")}
      "cargo tauri dev")}
 
   doctor-be {:doc
              "Run the doctor backend. Consumed from systemd service."
              :task
-             (shell {:dir (str home-dir "/russmatney/clawe")}
+             (shell {:dir (str (home-dir) "/russmatney/clawe")}
                     "clj -M:dev:doctor-deps:doctor-server")}
   doctor-fe {:doc
              "Run the doctor frontend shadowcljs server. Consumed from systemd service."
              :task
-             (shell {:dir (str home-dir "/russmatney/clawe")}
+             (shell {:dir (str (home-dir) "/russmatney/clawe")}
                     "npx shadow-cljs watch doctor-app")}
 
   topbar {:doc  "Run the doctor topbar via tauri. Consumed from systemd service."
@@ -104,11 +113,11 @@
 
   log-doctor   {:task (shell "journalctl --user -n 100 -f -u doctor-be -u doctor-fe -u doctor-topbar")
                 :doc  "Tail the doctor logs. FE, BE, and topbar via journalctl"}
-  tail-doctor  {:depends [log-doctor]}
-  doctor-log   {:depends [log-doctor]}
-  doctor-tail  {:depends [log-doctor]}
+  tail-doctor  (run 'log-doctor)
+  doctor-log   (run 'log-doctor)
+  doctor-tail  (run 'log-doctor)
   log-awesome  {:task (shell "tail -f /home/russ/.cache/awesome/logs")
                 :doc  "Tail the awesome logs, via ~/.cache/awesome/logs"}
-  tail-awesome {:depends [log-awesome]}
-  awesome-tail {:depends [log-awesome]}
-  awesome-log  {:depends [log-awesome]}}}
+  tail-awesome (run 'log-awesome)
+  awesome-tail (run 'log-awesome)
+  awesome-log  (run 'log-awesome)}}
