@@ -6,7 +6,6 @@
    [defthing.defcom :as defcom :refer [defcom]]
    [defthing.defkbd :refer [defkbd]]
    [ralphie.notify :as notify]
-   [ralphie.awesome :as awm]
 
    [clawe.install :as c.install]
    [clawe.rules :as c.rules]
@@ -14,7 +13,6 @@
    [clawe.awesome.bindings :as awm.bindings]
    [clawe.sxhkd.bindings :as sxhkd.bindings]
    [ralphie.zsh :as zsh]
-   [ralphie.sh :as r.sh]
    [ralphie.tmux :as r.tmux]
    [ralphie.emacs :as r.emacs]))
 
@@ -136,42 +134,36 @@ uberjar. Otherwise this might need to be called twice."
 (defcom reload
   "Write all dependent configs and restart whatever daemons."
   (do
-    ;; (log "reloading...")
+    (log "reloading...")
 
     ;; Bindings
-    ;; (log "rewriting awm bindings")
-    ;; (awm.bindings/write-awesome-bindings)
-    ;; (log "resetting sxhkd bindings")
-    ;; (sxhkd.bindings/reset-bindings)
+    (when-not notify/is-mac?
+      (log "rewriting awm bindings")
+      (awm.bindings/write-awesome-bindings)
+      (log "resetting sxhkd bindings")
+      (sxhkd.bindings/reset-bindings))
 
     ;; Rules
-    ;; (log "rewriting rules")
-    ;; (awm.rules/write-awesome-rules)
-    ;; (log "reapplying rules")
-    ;; (c.rules/apply-rules)
-    ;; (c.rules/correct-clients-and-workspaces)
+    (when-not notify/is-mac?
+      (log "rewriting rules")
+      (awm.rules/write-awesome-rules)
+      (log "reapplying rules")
+      (c.rules/apply-rules)
+      (c.rules/correct-clients-and-workspaces))
 
     ;; Notifications
-    ;; (log "reloading notifications")
-    ;; TODO untested - i'm hoping this saves the manual effort at startup
-    ;; (-> (proc/$ systemctl --user start deadd-notification-center)
-    ;;     (proc/check))
-
-    ;; Misc
-    ;; (log "reloading misc")
-    ;; (awm/reload-misc)
+    (when-not notify/is-mac?
+      (log "reloading notifications")
+      ;; TODO untested - i'm hoping this saves the manual effort at startup
+      (-> (proc/$ systemctl --user start deadd-notification-center)
+          (proc/check)))
 
     ;; Reload completions/caches
-    (log "reloading zsh tab completion")
-    (c.install/install-zsh-tab-completion)
-
-    (log "writing commands to commands.json")
-    (write-commands-to-json-fn)
-
-    ;; Widgets
-    ;; DEPRECATED
-    ;; (log "reloading widgets")
-    ;; (awm/reload-bar-and-widgets)
+    (when-not notify/is-mac?
+      (log "reloading zsh tab completion")
+      (c.install/install-zsh-tab-completion)
+      (log "writing commands to commands.json")
+      (write-commands-to-json-fn))
 
     ;; Doom env refresh - probably a race-case here....
     (r.tmux/fire {:tmux.fire/cmd     "doom env"
@@ -179,8 +171,9 @@ uberjar. Otherwise this might need to be called twice."
     (r.emacs/fire "(doom/reload-env)")
 
     ;; Doctor - Wallpaper
-    (log "reloading doctor")
-    ;; (slurp "http://localhost:3334/reload")
+    (when-not notify/is-mac?
+      (log "reloading doctor")
+      (slurp "http://localhost:3334/reload"))
 
     ;; considering...
     ;; (-> (proc/$ systemctl --user restart doctor-topbar)
