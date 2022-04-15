@@ -33,6 +33,18 @@
 (comment
   (get-input))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; yabai message
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;; TODO refactor into something like this
+;; (defn yabai-m [cmd]
+;;   (->
+;;     ^{:out :string}
+;;     (process/$ yabai -m ~@cmd)
+;;     process/check
+;;     :out))
 
 ;; TODO get this frame decoding done properly
 (def Frame
@@ -87,12 +99,15 @@
    [:yabai.space/first-window int?]])
 
 (defn query-spaces []
-  (->
-    ^{:out :string}
-    (process/$ yabai -m query --spaces)
-    process/check
-    :out
-    (json/parse-string (fn [k] (keyword "yabai.space" k)))))
+  (try
+    (->
+      ^{:out :string}
+      (process/$ yabai -m query --spaces)
+      process/check
+      :out
+      (json/parse-string (fn [k] (keyword "yabai.space" k))))
+    (catch Exception _e
+      nil)))
 
 (defn spaces-by-idx []
   (->> (query-spaces) (w/index-by :yabai.space/index)))
@@ -113,12 +128,14 @@
   )
 
 (defn query-current-space []
-  (->
-    ^{:out :string}
-    (process/$ yabai -m query --spaces --space)
-    process/check
-    :out
-    (json/parse-string (fn [k] (keyword "yabai.space" k)))))
+  (try
+    (->
+      ^{:out :string}
+      (process/$ yabai -m query --spaces --space)
+      process/check
+      :out
+      (json/parse-string (fn [k] (keyword "yabai.space" k))))
+    (catch Exception _e nil)))
 
 (comment
   (query-current-space))
@@ -159,12 +176,14 @@
    [:yabai.window/can-resize boolean?]])
 
 (defn query-windows []
-  (->
-    ^{:out :string}
-    (process/$ yabai -m query --windows)
-    process/check
-    :out
-    (json/parse-string (fn [k] (keyword "yabai.window" k)))))
+  (try
+    (->
+      ^{:out :string}
+      (process/$ yabai -m query --windows)
+      process/check
+      :out
+      (json/parse-string (fn [k] (keyword "yabai.window" k))))
+    (catch Exception _e nil)))
 
 (comment
   (query-windows)
