@@ -531,6 +531,7 @@
 (defn current-workspace-fast
   "Does not mix the current workspace with the db overwritable keys."
   ([] (current-workspace-fast))
+  ;; TODO support awm
   ([{:keys [prefetched-windows]}]
    (let [yb-spc     (yabai/query-current-space)
          pseudo-wsp (->pseudo-workspace yb-spc)
