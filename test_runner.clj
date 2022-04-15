@@ -2,14 +2,26 @@
 ;; https://book.babashka.org/#_running_tests
 
 (require '[clojure.test :as t]
-         '[babashka.classpath :as cp])
+         '[babashka.process :as p]
+         '[babashka.classpath :as cp]
+         )
 
 (cp/add-classpath "src:test")
 
+(def is-mac?
+  (let [ostype
+        (-> ^{:out :string}
+            (p/$ "zsh -c 'echo -n $OSTYPE'")
+            p/check :out)]
+    (re-seq #"^darwin" ostype)))
+
 ;; TODO collect these automagically
-(def test-nses ['ralphie.awesome-test
-                'defthing.core-test
-                'defthing.defcom-test])
+(def test-nses
+  (->>
+    [(when-not is-mac? 'ralphie.awesome-test)
+     'defthing.core-test
+     'defthing.defcom-test]
+    (remove nil?)))
 
 (doall
   (for [t test-nses]
