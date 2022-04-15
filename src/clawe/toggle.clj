@@ -169,14 +169,16 @@
        (some->> (concat clients windows) (filter #(is-terminal? wsp %)) first))
      :wsp->open-client
      ;; TODO could fetch the full current-workspace here
-     (fn [{:workspace/keys [title directory]
-           :git/keys       [repo]
-           :as             wsp}]
-       (if-not wsp
-         (r.tmux/open-session)
-         (let [directory (or directory repo (r.zsh/expand "~"))
-               opts      {:tmux/session-name title :tmux/directory directory}]
-           (r.tmux/open-session opts))))}))
+     (fn [_fast-wsp]
+       (let [{:workspace/keys [title directory]
+              :git/keys       [repo]
+              :as             wsp}
+             (workspaces/current-workspace)]
+         (if-not wsp
+           (r.tmux/open-session)
+           (let [directory (or directory repo (r.zsh/expand "~"))
+                 opts      {:tmux/session-name title :tmux/directory directory}]
+             (r.tmux/open-session opts)))))}))
 
 (defkbd toggle-emacs
   [[:mod :shift] "Return"]
@@ -185,21 +187,16 @@
      (fn [{:awesome.tag/keys [clients] :yabai/keys [windows] :as wsp}]
        (some->> (concat clients windows) (filter #(is-emacs? wsp %)) first))
      :wsp->open-client
-     (fn [{:workspace/keys [title initial-file directory]
-           :git/keys       [repo]
-           :as             wsp}]
-       ;; TODO workspace repos that toggle this are no longer getting the db-mixin
-       ;; so the initial file is probably better inferred here
-       ;; possibly check if the workspace already exists and just open that/
-       ;; i.e. w/e current file was already open - could be better off
-       ;; as an emacs function that's called when opening the frame
-
-       ;; TODO could just fetch the full current-workspace here
-       (if-not wsp
-         (r.emacs/open)
-         (let [initial-file (or initial-file repo directory)
-               opts         {:emacs.open/workspace title :emacs.open/file initial-file}]
-           (r.emacs/open opts))))}))
+     (fn [_fast-wsp]
+       (let [{:workspace/keys [title initial-file directory]
+              :git/keys       [repo]
+              :as             wsp}
+             (workspaces/current-workspace)]
+         (if-not wsp
+           (r.emacs/open)
+           (let [initial-file (or initial-file repo directory)
+                 opts         {:emacs.open/workspace title :emacs.open/file initial-file}]
+             (r.emacs/open opts)))))}))
 
 (defcom toggle-journal-2
   (toggle-client
