@@ -9,12 +9,14 @@
 
    [clawe.install :as c.install]
    [clawe.rules :as c.rules]
+   [clawe.workspaces :as workspaces]
    [clawe.awesome.rules :as awm.rules]
    [clawe.awesome.bindings :as awm.bindings]
    [clawe.sxhkd.bindings :as sxhkd.bindings]
    [ralphie.zsh :as zsh]
    [ralphie.tmux :as r.tmux]
-   [ralphie.emacs :as r.emacs]))
+   [ralphie.emacs :as r.emacs]
+   [ralphie.yabai :as yabai]))
 
 ;; dumping here as part of restart process
 
@@ -144,12 +146,19 @@ uberjar. Otherwise this might need to be called twice."
       (sxhkd.bindings/reset-bindings))
 
     ;; Rules
-    (when-not notify/is-mac?
-      (log "rewriting rules")
-      (awm.rules/write-awesome-rules)
-      (log "reapplying rules")
-      (c.rules/apply-rules)
-      (c.rules/correct-clients-and-workspaces))
+    (if notify/is-mac?
+      (do
+        ;; workspace indexes
+        (yabai/set-space-labels)
+        (yabai/destroy-unlabelled-empty-spaces)
+        (workspaces/update-workspace-indexes))
+      (do
+        (log "rewriting rules")
+        (awm.rules/write-awesome-rules)
+        (log "reapplying rules")
+        (c.rules/apply-rules)
+        (c.rules/correct-clients-and-workspaces)))
+
 
     ;; Notifications
     (when-not notify/is-mac?

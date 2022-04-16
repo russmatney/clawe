@@ -11,6 +11,7 @@
    [ralphie.awesome :as awm]
    [ralphie.spotify :as r.spotify]
    [ralphie.pulseaudio :as r.pulseaudio]
+   [ralphie.yabai :as yabai]
 
    [clawe.awesome :as c.awm] ;; DEPRECATED
    [clawe.defs.workspaces :as defs.workspaces]
@@ -374,6 +375,14 @@
   [[:mod] "d"]
   "Applies clawe rules"
   (c.rules/correct-clients-and-workspaces))
+
+(defcom yabai-correct-workspaces
+  ;; some what duplicated in clawe.restart...
+  ;; maybe this belongs in c.rules...
+  (do
+    (yabai/set-space-labels)
+    (yabai/destroy-unlabelled-empty-spaces)
+    (workspaces/update-workspace-indexes)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Brightness

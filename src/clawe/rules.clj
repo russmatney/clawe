@@ -121,26 +121,24 @@ to the passed client obj."
                                      (-> c :awesome.client/tags first :awesome.tag/name)))))])))
           (into {})
           (remove (comp zero? count second))
-          (into {}))
+          (into {}))]
 
-        _
-        (when (or true (seq mismatched-wsp-clients))
-          (notify/notify
-            {:notify/print?  true
-             :notify/subject (str "Found " (count mismatched-wsp-clients) " claimed clients on the wrong tag")
-             :notify/body    (->> mismatched-wsp-clients
-                                  (map
-                                    (fn [[w cs]]
-                                      (->> cs
-                                           (map
-                                             #(str (:awesome.client/class %)
-                                                   " | "
-                                                   (:awesome.client/name %)
-                                                   " on "
-                                                   (:workspace/title w)))
-                                           (apply str))))
-                                  (string/join ", "))}))
-        ]
+    (when (or true (seq mismatched-wsp-clients))
+      (notify/notify
+        {:notify/print?  true
+         :notify/subject (str "Found " (count mismatched-wsp-clients) " claimed clients on the wrong tag")
+         :notify/body    (->> mismatched-wsp-clients
+                              (map
+                                (fn [[w cs]]
+                                  (->> cs
+                                       (map
+                                         #(str (:awesome.client/class %)
+                                               " | "
+                                               (:awesome.client/name %)
+                                               " on "
+                                               (:workspace/title w)))
+                                       (apply str))))
+                              (string/join ", "))}))
 
     (def -mwc mismatched-wsp-clients)
     (log "Correcting mismatched clients")

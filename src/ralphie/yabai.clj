@@ -121,10 +121,25 @@
   (->> (query-spaces)
        (filter (comp empty? :yabai.space/label))))
 
+
 (comment
   (query-spaces)
   (spaces-by-idx)
   (spaces-by-label)
+  )
+
+(defn swap-spaces-by-index [index new-index]
+  (when (and index new-index)
+    (->
+      ^{:out :string}
+      (process/$ yabai -m space ~index --swap ~new-index)
+      process/check
+      :out)))
+
+(comment
+  (swap-spaces-by-index 4 1)
+
+  (spaces-by-idx)
   )
 
 (defn query-current-space []
@@ -344,46 +359,6 @@
       (> (count spaces-by-idx) 1)
       (notify/notify "Multiple spaces for app desc.... could not label space" str-app-name))))
 
-(def app-desc->space-label
-  {{:yabai.window/app "Spotify"}                "spotify"
-   {:yabai.window/app "Slack"}                  "slack"
-   {:yabai.window/app "Safari"}                 "web"
-   {:yabai.window/app   "Emacs"
-    :yabai.window/title #(re-seq #"journal" %)} "journal"
-   {:yabai.window/app   "Emacs"
-    :yabai.window/title #(re-seq #"dotfiles" %)} "dotfiles"
-   {:yabai.window/app   "Emacs"
-    :yabai.window/title #(re-seq #"clawe" %)}   "clawe"})
-
-(defn set-space-labels []
-  (doall
-    (->> app-desc->space-label
-         (map (fn [[desc label]]
-                (find-and-label-space desc label))))))
-
-(comment
-  (set-space-labels)
-  (->>
-    (spaces-by-idx)
-    (vals)
-    (map :yabai.space/label))
-
-  (->>
-    app-desc->space-label
-    (map (fn [[desc]]
-           desc)))
-
-  (->>
-    app-desc->space-label
-    (map first)
-    (map spaces-for-app-desc))
-
-  (find-and-label-space "Spotify" "spotify")
-  (find-and-label-space "Slack" "slack")
-  (find-and-label-space "Safari" "web")
-  (find-and-label-space "Emacs" "clawe")
-  )
-
 (defn toggle-floating [{:yabai.window/keys [id] :as _window}]
   (notify/notify "toggling floating" id)
   (->
@@ -416,10 +391,6 @@
     process/check
     :out))
 
-
-
-(defcom yabai-set-space-labels
-  (set-space-labels))
 
 (defn is-in-space-for-label?
   "Does the window's space match the passed label?"
@@ -539,6 +510,55 @@ dy will become its new position. "
     (sort-by first)
     )
   )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; clean and destroy
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+(def app-desc->space-label
+  {{:yabai.window/app "Spotify"}                 "spotify"
+   {:yabai.window/app "Slack"}                   "slack"
+   {:yabai.window/app "Safari"}                  "web"
+   {:yabai.window/app   "Emacs"
+    :yabai.window/title #(re-seq #"journal" %)}  "journal"
+   {:yabai.window/app   "Emacs"
+    :yabai.window/title #(re-seq #"dotfiles" %)} "dotfiles"
+   {:yabai.window/app   "Emacs"
+    :yabai.window/title #(re-seq #"clawe" %)}    "clawe"})
+
+(defn set-space-labels []
+  (doall
+    (->> app-desc->space-label
+         (map (fn [[desc label]]
+                (find-and-label-space desc label))))))
+
+(defcom yabai-set-space-labels
+  (set-space-labels))
+
+(comment
+  (set-space-labels)
+  (->>
+    (spaces-by-idx)
+    (vals)
+    (map :yabai.space/label))
+
+  (->>
+    app-desc->space-label
+    (map (fn [[desc]]
+           desc)))
+
+  (->>
+    app-desc->space-label
+    (map first)
+    (map spaces-for-app-desc))
+
+  (find-and-label-space "Spotify" "spotify")
+  (find-and-label-space "Slack" "slack")
+  (find-and-label-space "Safari" "web")
+  (find-and-label-space "Emacs" "clawe")
+  )
+
 
 (defn destroy-space [{:keys             [space-label]
                       :yabai.space/keys [label index]

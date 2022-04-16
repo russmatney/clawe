@@ -204,6 +204,11 @@
 ;; Slack, Spotify, Web, other app-workspaces
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defworkspace messages
+  {:workspace/directory  "."
+   :workspace/scratchpad true}
+  workspace-repo)
+
 (defworkspace spotify
   {:awesome/rules
    (awm-workspace-rules "spotify"  "Spotify" "Pavucontrol" "pavucontrol")}

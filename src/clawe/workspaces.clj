@@ -623,20 +623,31 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn workspaces-to-swap-indexes
+(defn wsp-name [wsp]
+  (or
+    (-> wsp :awesome.tag/name)
+    (-> wsp :yabai.space/label)))
+
+(defn wsp-index [wsp]
+  (or
+    (-> wsp :awesome.tag/index)
+    (-> wsp :yabai.space/index)))
+
+(defn- workspaces-to-swap-indexes
+  "Creates a sorted list of workspaces with an additional key: :new-index.
+  This is in support of the `update-workspace-indexes` func below."
   []
   (->> (all-workspaces)
-       (filter :awesome.tag/name)
+       (filter wsp-name)
        (map (fn [spc]
               (assoc spc :sort-key (str (if (:workspace/scratchpad spc) "z" "a") "-"
-                                        (format "%03d" (or (:awesome.tag/index spc)
-                                                           0))))))
+                                        (format "%03d" (or (wsp-index spc) 0))))))
        ;; sort and map-indexed to set new_indexes
        (sort-by :sort-key)
        (map-indexed (fn [i wsp] (assoc wsp :new-index
                                        ;; lua indexes start at 1
                                        (+ i 1))))
-       (remove #(= (:new-index %) (:awesome.tag/index %)))))
+       (remove #(= (:new-index %) (wsp-index %)))))
 
 (comment
   (workspaces-to-swap-indexes)
@@ -644,19 +655,21 @@
 
 (defn update-workspace-indexes
   []
-  ;; TODO rewrite for yabai
   (loop [wsps (workspaces-to-swap-indexes)]
     (let [wsp (some-> wsps first)]
       (when wsp
-        (let [{:keys             [new-index]
-               :awesome.tag/keys [index]} (merge-awm-tags wsp)]
+        (let [{:keys [new-index] :as wsp} (merge-awm-tags wsp)
+              index                       (wsp-index wsp)]
           (when (not= new-index index)
-            (awm/awm-cli {:quiet? true}
-                         (str
-                           "local tags = awful.screen.focused().tags;"
-                           "local tag = tags[" index "];"
-                           "local tag2 = tags[" new-index "];"
-                           "tag:swap(tag2);")))
+            (if notify/is-mac?
+              (yabai/swap-spaces-by-index index new-index)
+              ;; TODO write ralphie.awesome/swap-tags-by-index
+              (awm/awm-cli {:quiet? true}
+                           (str
+                             "local tags = awful.screen.focused().tags;"
+                             "local tag = tags[" index "];"
+                             "local tag2 = tags[" new-index "];"
+                             "tag:swap(tag2);"))))
           ;; could be optimized....
           (recur (workspaces-to-swap-indexes)))))))
 
