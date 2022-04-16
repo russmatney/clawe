@@ -38,6 +38,11 @@
 (defn is-messages? [_wsp c]
   (-> c :yabai.window/app #{"Messages"}))
 
+(defn is-godot? [_wsp c]
+  (or
+    (-> c :awesome.client/class #{"Godot"})
+    (-> c :yabai.window/app #{"Godot"})))
+
 (defn is-spotify? [_wsp c]
   (or
     (-> c :awesome.client/class #{"Spotify"})
@@ -238,7 +243,6 @@
          (notify/notify "To do: open spotify")
          (println wsp))})))
 
-
 (defcom toggle-messages-2
   (toggle-client
     (merge
@@ -246,4 +250,13 @@
       {:wsp->open-client
        (fn [{:as wsp}]
          (notify/notify "To do: open messages")
+         (println wsp))})))
+
+(defcom toggle-godot-2
+  (toggle-client
+    (merge
+      (toggle-scratchpad-app {:space-label "godot" :is-client? is-godot?})
+      {:wsp->open-client
+       (fn [{:as wsp}]
+         (notify/notify "To do: open godot")
          (println wsp))})))
