@@ -3,7 +3,7 @@
    [plasma.core :refer [defhandler defstream]]
    #?@(:clj [[clawe.workspaces :as clawe.workspaces]
              [clawe.scratchpad :as scratchpad]
-             [clawe.db.core :as db]
+             [defthing.db :as db]
              [doctor.api.workspaces :as d.workspaces]]
        :cljs [[wing.core :as w]
               [plasma.uix :refer [with-rpc with-stream]]])))

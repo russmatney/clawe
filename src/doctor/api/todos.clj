@@ -7,7 +7,7 @@
    [tick.core :as t]
    [babashka.fs :as fs]
    [clojure.string :as string]
-   [clawe.db.core :as db]
+   [defthing.db :as db]
    [wing.core :as w]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

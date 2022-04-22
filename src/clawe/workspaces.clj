@@ -8,7 +8,7 @@
    [ralphie.git :as r.git]
    [ralphie.notify :as notify]
 
-   [clawe.db.core :as db]
+   [defthing.db :as db]
 
    ;; be sure to require all workspaces here
    ;; otherwise (all-workspaces) will be incomplete from consumers like doctor

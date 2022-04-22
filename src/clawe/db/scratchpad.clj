@@ -1,5 +1,5 @@
 (ns clawe.db.scratchpad
-  (:require [clawe.db.core :as db]))
+  (:require [defthing.db :as db]))
 
 (defn mark-buried
   "Adds the passed map to the db with a :scratchpads/buried-at timestamp."

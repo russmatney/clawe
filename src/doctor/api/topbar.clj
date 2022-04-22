@@ -7,7 +7,7 @@
    [ralphie.spotify :as r.spotify]
    [babashka.process :as process]
    [clojure.string :as string]
-   [clawe.db.core :as db]))
+   [defthing.db :as db]))
 
 (defn in-progress-todos []
   (some->>

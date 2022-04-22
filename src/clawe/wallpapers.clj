@@ -4,7 +4,7 @@
    [clojure.string :as string]
    [babashka.fs :as fs]
    [babashka.process :as process]
-   [clawe.db.core :as db]
+   [defthing.db :as db]
    [ralphie.notify :as notify]))
 
 (defn wp-dir->paths [root]
