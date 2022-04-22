@@ -37,10 +37,38 @@
     (dump)
     (take-last 5)))
 
-(defn drop-nil-vals [tx]
-  (->> tx
-       (remove (comp nil? second))
-       (into {})))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; transact helpers
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(def supported-types
+  (->> [6 "hi" true (random-uuid)]
+       (map type)
+       (into #{})))
+
+(defn supported-type-keys [m]
+  (->>
+    m
+    (filter (fn [[_k v]]
+              (supported-types (type v))))
+    (map first)))
+
+(comment
+  (supported-type-keys {:hello     "goodbye"
+                        :some-int  5
+                        :some-bool false
+                        :some-uuid (random-uuid)
+                        :some-fn   (fn [] (print "complexity!"))}))
+
+(defn drop-unsupported-vals
+  "Drops unsupported map vals. Drops nil. Only `supported` types
+  get through."
+  [map-tx]
+  (let [supported-keys (supported-type-keys map-tx)]
+    (->> (select-keys map-tx supported-keys)
+         ;; might be unnecessary b/c it's not 'supported'
+         (remove (comp nil? second))
+         (into {}))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Transact
@@ -52,7 +80,7 @@
         txs  (->> txs
                   (map (fn [tx]
                          (cond
-                           (map? tx) (drop-nil-vals tx)
+                           (map? tx) (drop-unsupported-vals tx)
                            :else     tx))))
         res  (d/transact! conn txs)]
     (d/close conn)
