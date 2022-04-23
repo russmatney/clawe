@@ -36,6 +36,10 @@
       {:color "text-city-green-400"
        :src   "/assets/candy-icons/spotify.svg"}
 
+      (= "Pavucontrol" class)
+      {:color "text-city-green-400"
+       :src   "/assets/candy-icons/pavucontrol.svg"}
+
       (= "firefox" class)
       {:color "text-city-green-400"
        :src   "/assets/candy-icons/firefox.svg"}
