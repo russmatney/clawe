@@ -55,9 +55,13 @@
         (assert-in-memory-workspace-fetches
           test-workspace my-random-uuid))
 
-      ;; TODO syncing `all` (no params) here is problemmatic for testing,
+      ;; syncing `all` (no params) here is problemmatic for testing,
       ;; b/c it'll overwrite the :test-val with whatever's in the db
-      (sut/sync-workspaces-to-db test-workspace)
+      (testing "sync-workspaces-to-db"
+        (let [res (sut/sync-workspaces-to-db test-workspace)]
+          (is res)
+          ;; some val, at least
+          (is (-> res :datoms-transacted))))
 
       (testing "db fetches"
         (assert-db-workspace-fetches test-workspace my-random-uuid))
@@ -89,14 +93,18 @@
 (deftest install-repo-workspaces-test
   (let [repo-paths ["russmatney/clawe-test"
                     "teknql/wing-test"]]
-    (sut/install-repo-workspaces repo-paths)
+    (let [res (sut/install-repo-workspaces repo-paths)]
+      (is res)
+      ;; some datoms, at least
+      (is (-> res :datoms-transacted)))
 
-    (let [wsps       (sut/latest-db-workspaces)
-          find-wsp   (fn [n]
-                       (->> wsps
-                            (filter (comp #{n} :name))
-                            first))
-          clawe-test (find-wsp "clawe-test")
-          wing-test  (find-wsp "wing-test")]
-      (assert-repo-path clawe-test "russmatney/clawe-test")
-      (assert-repo-path wing-test "russmatney/wing-test"))))
+    (testing "installed wsps are listed from the db"
+      (let [wsps       (sut/latest-db-workspaces)
+            find-wsp   (fn [n]
+                         (->> wsps
+                              (filter (comp #{n} :name))
+                              first))
+            clawe-test (find-wsp "clawe-test")
+            wing-test  (find-wsp "wing-test")]
+        (assert-repo-path clawe-test "russmatney/clawe-test")
+        (assert-repo-path wing-test "teknql/wing-test")))))

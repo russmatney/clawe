@@ -1,7 +1,25 @@
 (ns defthing.defworkspace
   (:require
+   [clojure.string :as string]
    [defthing.core :as defthing]
-   [defthing.db :as db]))
+   [defthing.db :as db]
+   [ralphie.zsh :as zsh]))
+
+(def home-dir (zsh/expand "~"))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Helpers
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn workspace-title
+  "Sets the workspace title using the :name (which defaults to the symbol).
+
+  This only happens to work b/c defthing sets the {:name blah} attr with
+  the passed symbol.
+  "
+  [{:keys [name]}]
+  {:workspace/title name})
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Workspaces API
@@ -78,10 +96,9 @@
   "
   ([] (sync-workspaces-to-db (list-workspaces)))
   ([ws]
-   (let [ws    (cond
-                 (map? ws) [ws]
-                 :else     ws)
-         w-txs (map workspace-for-tx ws)]
+   (let [ws    (if (map? ws) [ws] ws)
+         ;; TODO learn why this seq is so critical
+         w-txs (seq (map workspace-for-tx ws))]
      (db/transact w-txs))))
 
 (comment
@@ -94,25 +111,46 @@
   (sync-workspaces-to-db
     (assoc w :test-val "NEWWW")))
 
+(defn path->repo-desc [path]
+  (let [reversed (-> path (string/split #"/") reverse)]
+    {:repo/name      (first reversed)
+     :repo/user-name (second reversed)
+     :repo/path      path}))
+
+(defn workspace-repo
+  "Expects at least a :workspace/directory as a string relative to $HOME."
+  [{:workspace/keys [directory]}]
+  {:git/repo            (str home-dir "/" directory)
+   :workspace/directory (str home-dir "/" directory)})
+
+(defn repo-desc->workspace
+  [{:repo/keys [name user-name _path] :as desc}]
+  (if (and name user-name)
+    (-> desc
+        ((fn [x]
+           (merge x
+                  (defthing/initial-thing :clawe/workspaces name))))
+        ((fn [x]
+           (merge x
+                  (workspace-title x))))
+        ((fn [x]
+           (merge x
+                  {:workspace/directory (str user-name "/" name)
+                   :workspace/readme    "README.md"})))
+        ((fn [x]
+           (merge x (workspace-repo x)))))
+    (do
+      (println "Missing name or user-name" desc)
+      ;; (throw Exception)
+      )))
+
 (defn install-repo-workspaces
   "For a list of paths to git-repos, creates a workspace
   and adds them to the db."
   [repo-paths]
-  ;; TODO impl
-  )
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Helpers
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn workspace-title
-  "Sets the workspace title using the :name (which defaults to the symbol).
-
-  This only happens to work b/c defthing sets the {:name blah} attr with
-  the passed symbol.
-  "
-  [{:keys [name]}]
-  {:workspace/title name})
+  (->> repo-paths
+       (map (comp repo-desc->workspace path->repo-desc))
+       sync-workspaces-to-db))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; defworkspace

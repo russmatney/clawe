@@ -54,11 +54,12 @@
     (map first)))
 
 (comment
-  (supported-type-keys {:hello     "goodbye"
-                        :some-int  5
-                        :some-bool false
-                        :some-uuid (random-uuid)
-                        :some-fn   (fn [] (print "complexity!"))}))
+  (supported-type-keys {:hello        "goodbye"
+                        :some-int     5
+                        :some-bool    false
+                        :some-keyword :keyword
+                        :some-uuid    (random-uuid)
+                        :some-fn      (fn [] (print "complexity!"))}))
 
 (defn drop-unsupported-vals
   "Drops unsupported map vals. Drops nil. Only `supported` types
@@ -79,9 +80,8 @@
   (let [conn (d/get-conn defthing-db-filepath db-schema)
         txs  (->> txs
                   (map (fn [tx]
-                         (cond
-                           (map? tx) (drop-unsupported-vals tx)
-                           :else     tx))))
+                         (if (map? tx) (drop-unsupported-vals tx)
+                             tx))))
         res  (d/transact! conn txs)]
     (d/close conn)
     res))
@@ -92,8 +92,7 @@
   (transact [{:some-workspace "Clawe"} {:some-other-data "jaja"}])
   (transact [{:some-workspace "Clawe"
               :some-nil-val   nil}
-             {:some-other-data "jaja"}])
-  )
+             {:some-other-data "jaja"}]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Query
