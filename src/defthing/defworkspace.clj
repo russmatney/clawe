@@ -68,10 +68,15 @@
   If none are passed, the in-memory workspaces will be
   written to the db.
   ;; TODO this probably overwrites the user-overwrites...
+
+  Supports passing a single workspace as a map.
   "
   ([] (sync-workspaces-to-db (list-workspaces)))
   ([ws]
-   (let [w-txs (map workspace-for-tx ws)]
+   (let [ws    (cond
+                 (map? ws) [ws]
+                 :else     ws)
+         w-txs (map workspace-for-tx ws)]
      (println w-txs)
      (db/transact w-txs))))
 

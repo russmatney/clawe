@@ -3,56 +3,60 @@
    [clojure.test :refer [deftest is testing]]
    [defthing.defworkspace :as sut]))
 
+(defn- assert-test-workspace [wsp test-val]
+  (is (= "test-workspace" (-> wsp :name)))
+  (is (= test-val (-> wsp :test-val))))
+
+(defn- assert-db-workspace-fetches
+  [workspace test-val]
+  (testing "get-db-workspace"
+    (-> (sut/get-db-workspace workspace)
+        (assert-test-workspace test-val))
+
+    (testing "with a string"
+      (-> (sut/get-db-workspace (:name workspace))
+          (assert-test-workspace test-val))))
+
+  (testing "latest-db-workspaces"
+    (let [match (->> (sut/latest-db-workspaces)
+                     (filter (comp #{"test-workspace"} :name))
+                     first)]
+      (assert-test-workspace match test-val))))
+
+(defn- assert-in-memory-workspace-fetches
+  [workspace test-val]
+  (testing "get-workspace"
+    (-> (sut/get-workspace workspace)
+        (assert-test-workspace test-val))
+
+    (testing "with a string"
+      (-> (sut/get-workspace (:name workspace))
+          (assert-test-workspace test-val))))
+
+  (testing "list-workspaces"
+    (let [match (->> (sut/list-workspaces)
+                     (filter (comp #{"test-workspace"} :name))
+                     first)]
+      (assert-test-workspace match test-val))))
+
 (deftest defworkspaces-memory-and-storage-test
   (let [my-random-uuid (random-uuid)]
     (testing "defworkspace macro"
-      (sut/defworkspace test-workspace
-        {:test-val my-random-uuid})
+      (sut/defworkspace test-workspace {:test-val my-random-uuid})
 
-      (testing "get-workspace"
-        (let [fetched (sut/get-workspace test-workspace)]
-          (is (= "test-workspace" (-> fetched :name)))
-          (is (= my-random-uuid (-> fetched :test-val))))
+      (testing "in-memory fetches"
+        (assert-in-memory-workspace-fetches test-workspace my-random-uuid))
 
-        (testing "with a string"
-          (let [fetched (sut/get-workspace (:name test-workspace))]
-            (is (= "test-workspace" (-> fetched :name)))
-            (is (= my-random-uuid (-> fetched :test-val))))))
-
-      (testing "list-workspaces"
-        (let [latest (sut/list-workspaces)
-              match  (->> latest
-                          (filter (comp #{"test-workspace"} :name))
-                          first)]
-          (is (= my-random-uuid
-                 (-> match :test-val)))))
-
-      ;; adds all required defworkspaced files to the db
       (sut/sync-workspaces-to-db)
+      (testing "db fetches"
+        (assert-db-workspace-fetches test-workspace my-random-uuid))
 
-      (testing "get-db-workspace"
-        (let [fetched (sut/get-db-workspace test-workspace)]
-          (is (= "test-workspace" (-> fetched :name)))
-          (is (= my-random-uuid (-> fetched :test-val))))
-        (testing "with a string"
-          (let [fetched (sut/get-db-workspace (:name test-workspace))]
-            (is (= "test-workspace" (-> fetched :name)))
-            (is (= my-random-uuid (-> fetched :test-val))))))
+      (testing "supports overwrites via the db"
+        (let [new-id-val "some-new-val"]
+          (sut/sync-workspaces-to-db
+            (assoc test-workspace :test-val new-id-val))
 
-      (testing "latest-db-workspaces"
-        (let [match (->> (sut/latest-db-workspaces)
-                         (filter (comp #{"test-workspace"} :name))
-                         first)]
-          (is (= "test-workspace" (-> match :name)))
-          (is (= my-random-uuid (-> match :test-val)))))
-
-      (testing "supports overwrites (the db's latest)"
-        ;; overwrite :test-val with transaction/update fn
-        ;; then test the db fetches
-        ))))
-
-(comment
-  (defthing.db/dump)
-  )
+          (testing "db fetches"
+            (assert-db-workspace-fetches test-workspace new-id-val)))))))
 
 ;; TODO test install-repo-workspaces
