@@ -1,7 +1,8 @@
 (ns defthing.defworkspace-test
   (:require
    [clojure.test :refer [deftest is testing]]
-   [defthing.defworkspace :as sut]))
+   [defthing.defworkspace :as sut]
+   [ralphie.zsh :as zsh]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; test-workspace storage
@@ -86,9 +87,15 @@
 ;; repo workspace install and storage
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn- assert-repo-path [wsp path]
-  (is wsp)
-  (is (= path (-> wsp :repo/path))))
+(def home-dir (zsh/expand "~"))
+
+(defn- assert-repo-path [wsp path title]
+  (let [dir (str home-dir "/" path)]
+    (is wsp)
+    (is (= path (-> wsp :repo/short-path)))
+    (is (= title (-> wsp :workspace/title)))
+    (is (= dir (-> wsp :workspace/directory)))
+    (is (= dir (-> wsp :git/repo)))))
 
 (deftest install-repo-workspaces-test
   (let [repo-paths ["russmatney/clawe-test"
@@ -106,5 +113,5 @@
                               first))
             clawe-test (find-wsp "clawe-test")
             wing-test  (find-wsp "wing-test")]
-        (assert-repo-path clawe-test "russmatney/clawe-test")
-        (assert-repo-path wing-test "teknql/wing-test")))))
+        (assert-repo-path clawe-test "russmatney/clawe-test" "clawe-test")
+        (assert-repo-path wing-test "teknql/wing-test" "wing-test")))))

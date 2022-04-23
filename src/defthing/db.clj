@@ -42,15 +42,14 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def supported-types
-  (->> [6 "hi" true (random-uuid)]
+  (->> [6 "hi" :some-keyword true (random-uuid)]
        (map type)
        (into #{})))
 
 (defn supported-type-keys [m]
   (->>
     m
-    (filter (fn [[_k v]]
-              (supported-types (type v))))
+    (filter (fn [[_k v]] (supported-types (type v))))
     (map first)))
 
 (comment
@@ -77,11 +76,13 @@
 
 (defn transact [txs]
   ;; TODO refactor into defsys conn ?
-  (let [conn (d/get-conn defthing-db-filepath db-schema)
-        txs  (->> txs
-                  (map (fn [tx]
-                         (if (map? tx) (drop-unsupported-vals tx)
-                             tx))))
+  (let [;; seq before grabbing the connection, in case lazySeq needs to connect
+        txs  (seq txs)
+        conn (d/get-conn defthing-db-filepath db-schema)
+        txs  (map (fn [tx] (if (map? tx)
+                             (drop-unsupported-vals tx)
+                             tx))
+                  txs)
         res  (d/transact! conn txs)]
     (d/close conn)
     res))

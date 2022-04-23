@@ -3,7 +3,8 @@
    [clojure.string :as string]
    [defthing.core :as defthing]
    [defthing.db :as db]
-   [ralphie.zsh :as zsh]))
+   [ralphie.zsh :as zsh]
+   [ralphie.notify :as notify]))
 
 (def home-dir (zsh/expand "~"))
 
@@ -97,8 +98,7 @@
   ([] (sync-workspaces-to-db (list-workspaces)))
   ([ws]
    (let [ws    (if (map? ws) [ws] ws)
-         ;; TODO learn why this seq is so critical
-         w-txs (seq (map workspace-for-tx ws))]
+         w-txs (map workspace-for-tx ws)]
      (db/transact w-txs))))
 
 (comment
@@ -111,45 +111,34 @@
   (sync-workspaces-to-db
     (assoc w :test-val "NEWWW")))
 
-(defn path->repo-desc [path]
-  (let [reversed (-> path (string/split #"/") reverse)]
-    {:repo/name      (first reversed)
-     :repo/user-name (second reversed)
-     :repo/path      path}))
-
-(defn workspace-repo
-  "Expects at least a :workspace/directory as a string relative to $HOME."
-  [{:workspace/keys [directory]}]
-  {:git/repo            (str home-dir "/" directory)
-   :workspace/directory (str home-dir "/" directory)})
-
-(defn repo-desc->workspace
-  [{:repo/keys [name user-name _path] :as desc}]
-  (if (and name user-name)
-    (-> desc
-        ((fn [x]
-           (merge x
-                  (defthing/initial-thing :clawe/workspaces name))))
-        ((fn [x]
-           (merge x
-                  (workspace-title x))))
-        ((fn [x]
-           (merge x
-                  {:workspace/directory (str user-name "/" name)
-                   :workspace/readme    "README.md"})))
-        ((fn [x]
-           (merge x (workspace-repo x)))))
-    (do
-      (println "Missing name or user-name" desc)
-      ;; (throw Exception)
-      )))
+(defn path->repo-workspace [path]
+  (let [reversed  (-> path (string/split #"/") reverse)
+        repo-name (first reversed)
+        user-name (second reversed)]
+    (if (and repo-name user-name)
+      (merge
+        (defthing/initial-thing :clawe/workspaces repo-name)
+        ;; TODO consider :workspace/readme, :workspace/initial-file
+        { ;; TODO may need something smart for forks/collisions on :workspace/title
+         ;; consider using just repo/short-path
+         :workspace/title     repo-name
+         :repo/name           repo-name
+         :repo/user-name      user-name
+         :repo/short-path     (str user-name "/" repo-name)
+         ;; TODO maybe git/repo should be short-path?
+         :git/repo            (str home-dir "/" user-name "/" repo-name)
+         :workspace/directory (str home-dir "/" user-name "/" repo-name)})
+      (do
+        (notify/notify "Missing repo-name or user-name for repo-path" path)
+        nil))))
 
 (defn install-repo-workspaces
   "For a list of paths to git-repos, creates a workspace
   and adds them to the db."
   [repo-paths]
   (->> repo-paths
-       (map (comp repo-desc->workspace path->repo-desc))
+       (map path->repo-workspace)
+       (remove nil?)
        sync-workspaces-to-db))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -159,12 +148,3 @@
 (defmacro defworkspace [title & args]
   (apply defthing/defthing :clawe/workspaces title
          (conj args `workspace-title)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; usage examples
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(comment
-  (defworkspace my-workspace
-    workspace-title
-    {:some/meta :some/data}))
