@@ -8,7 +8,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn list-workspaces
-  "Lists in-memory workspaces (no db)."
+  "Lists in-memory workspaces (defined via `defworkspace` macro)."
   []
   (defthing/list-things :clawe/workspaces))
 
@@ -53,23 +53,28 @@
                      (sort-by :workspace/updated-at)
                      first))))))
 
-(defn workspace-for-tx [w]
-  (let [existing (get-db-workspace w)
-        db-id    (:db/id existing)]
-    (cond-> w
-      true
-      (assoc :workspace/updated-at (System/currentTimeMillis))
+(defn workspace-for-tx
+  "Prepares the workspace to be upserted.
+  If there is no `:db/id` on the passed workspace,
+  a lookup is attempted to find one."
+  [w]
+  (let [db-id (:db/id w)
+        db-id (when-not db-id (:db/id (get-db-workspace w)))]
 
-      (and db-id (not (:db/id w)))
-      (assoc :db/id db-id))))
+    (cond->
+        (assoc w :workspace/updated-at (System/currentTimeMillis))
+      db-id (assoc :db/id db-id))))
 
 (defn sync-workspaces-to-db
   "Adds the passed workspaces to the db.
   If none are passed, the in-memory workspaces will be
   written to the db.
-  ;; TODO this probably overwrites the user-overwrites...
 
-  Supports passing a single workspace as a map.
+  ;; TODO this probably overwrites the user-overwrites...
+  ;; maybe we can somehow skip those fields?
+
+  Supports passing a single workspace as a map, or a list
+  of workspace maps.
   "
   ([] (sync-workspaces-to-db (list-workspaces)))
   ([ws]
@@ -77,8 +82,17 @@
                  (map? ws) [ws]
                  :else     ws)
          w-txs (map workspace-for-tx ws)]
-     (println w-txs)
      (db/transact w-txs))))
+
+(comment
+  (def w
+    (->> (latest-db-workspaces)
+         (filter (comp #{"test-workspace"} :name))
+         first
+         ))
+
+  (sync-workspaces-to-db
+    (assoc w :test-val "NEWWW")))
 
 (defn install-repo-workspaces
   "For a list of paths to git-repos, creates a workspace
