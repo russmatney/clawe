@@ -21,9 +21,8 @@
   [{:keys [name]}]
   {:workspace/title name})
 
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Workspaces API
+;; Fetch in-memory workspaces
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn list-workspaces
@@ -40,6 +39,10 @@
               (some wsp [:workspace/title :awesome/tag-name :name])
               wsp)}
           :name)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Fetch workspaces from the db
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn get-db-workspace
   "Gets a single workspace from the db."
@@ -71,6 +74,10 @@
                 (->> vs
                      (sort-by :workspace/updated-at)
                      first))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Sync/write workspaces to db
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn workspace-for-tx
   "Prepares the workspace to be upserted.
@@ -111,7 +118,18 @@
   (sync-workspaces-to-db
     (assoc w :test-val "NEWWW")))
 
-(defn path->repo-workspace [path]
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Build and store repo workspaces
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn path->repo-workspace
+  "Creates a map used as the base for a workspace based on a git repo.
+  Expects a path to a repo to be passed, where the last parts of the path
+  are the org or user-name, then the repo-name.
+
+  ex: `russmatney/clawe` or `/home/russ/teknql/wing`
+  "
+  [path]
   (let [reversed  (-> path (string/split #"/") reverse)
         repo-name (first reversed)
         user-name (second reversed)]

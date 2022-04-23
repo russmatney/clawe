@@ -99,7 +99,7 @@
 
 (deftest install-repo-workspaces-test
   (let [repo-paths ["russmatney/clawe-test"
-                    "teknql/wing-test"]]
+                    "/home/russ/teknql/wing-test"]]
     (let [res (sut/install-repo-workspaces repo-paths)]
       (is res)
       ;; some datoms, at least

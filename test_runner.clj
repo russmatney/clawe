@@ -20,7 +20,9 @@
   (->>
     [(when-not is-mac? 'ralphie.awesome-test)
      'defthing.core-test
-     'defthing.defcom-test]
+     'defthing.defcom-test
+     'defthing.db-test
+     'defthing.defworkspace-test]
     (remove nil?)))
 
 (doall
