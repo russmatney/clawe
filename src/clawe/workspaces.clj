@@ -8,11 +8,9 @@
    [ralphie.git :as r.git]
    [ralphie.notify :as notify]
 
-   [defthing.db :as db]
-
    ;; be sure to require all workspaces here
    ;; otherwise (all-workspaces) will be incomplete from consumers like doctor
-   [clawe.defs.workspaces :as defs.workspaces]
+   clawe.defs.workspaces
 
    [clawe.workspaces.create :as wsp.create]
    [clojure.string :as string]
@@ -169,93 +167,6 @@
   (merge-yabai-spaces []))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; db workspaces
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn get-db-workspace
-  "Assumes the first match is the one we want.
-  TODO May one day need to fetch latest by sorting, if we end with multiple ents somehow
-  "
-  [w]
-
-  (println "[CLAWE] get-db-wsp" (str "[" (System/currentTimeMillis) "]"))
-  (let [title (cond (string? w) w
-                    (map? w)    (:workspace/title w))]
-    (some->>
-      (db/query
-        '[:find (pull ?e [*])
-          :in $ ?workspace-title
-          :where
-          [?e :workspace/title ?workspace-title]]
-        title)
-      ffirst)))
-
-(defn latest-db-workspaces []
-  (let [wsps
-        (->>
-          (db/query
-            '[:find (pull ?e [*])
-              :where
-              [?e :workspace/title ?workspace-title]])
-          (map first))]
-    (->> wsps
-         (group-by :workspace/title)
-         (map (fn [[_k vs]]
-                (->> vs
-                     (sort-by :workspace/updated-at)
-                     first)))))
-  )
-
-(comment
-  (->>
-    (latest-db-workspaces)
-    count
-    )
-  (->>
-    (defworkspace/list-workspaces)
-    count)
-
-
-  (type 6)
-  (type "B")
-  (type true)
-  )
-
-(def supported-types (->> [6 "hi" true]
-                          (map type)
-                          (into #{})))
-
-(defn supported-type-keys [m]
-  (->>
-    m
-    (filter (fn [[_k v]]
-              (supported-types (type v))))
-    (map first)))
-
-(comment
-  (supported-type-keys {:hello     "goodbye"
-                        :some-int  5
-                        :some-bool false
-                        :some-fn   (fn [] (print "complexity!"))
-                        })
-  )
-
-;; TODO roundtrip test these
-(defn update-db-workspace [w]
-  (let [existing   (get-db-workspace w)
-        db-id      (:db/id existing)
-        basic-keys (supported-type-keys w)]
-    (db/transact [(cond-> w
-                    true
-                    (select-keys basic-keys)
-
-                    true
-                    (assoc :workspace/updated-at (System/currentTimeMillis))
-
-                    (and db-id (not (:db/id w)))
-                    (assoc :db/id db-id))])))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Interactive workspace creation
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -274,7 +185,10 @@
 
 (defn do-install-workspaces
   "Walks through selecting one or more repos, converts them to workspaces,
-  and add them to the db."
+  and add them to the db.
+
+  ;; TODO add options to show all workspaces for all git users.
+  Right now you need to know the git user to install a particular repo."
   []
   (let [git-user   (select-local-git-user)
         repo-paths (zsh/expand-many (str home-dir "/" git-user "/*"))
@@ -283,71 +197,27 @@
         selected   (->> (concat [all-option] (->> repo-paths (map path->rofi-obj)))
                         (rofi/rofi {:msg "Install workspace for which repo?"}))]
     (cond
-      (nil? selected)
-      (notify/notify "No repo selected")
+      (nil? selected) (notify/notify "No repo selected")
 
       (= (:some/id all-option) (:some/id selected))
       (do
         (notify/notify (str "installing " (count repo-paths) " workspaces for") git-user)
         (println "repo-paths" repo-paths)
+        ;; TODO notify w/ datoms-txed result when osx can handle it
         (defworkspace/install-repo-workspaces repo-paths)
         (notify/notify "installed all workspaces for" git-user))
 
       :else
       (do
         (notify/notify "installing workspace" (:path selected))
+        ;; TODO notify w/ datoms-txed result when osx can handle it
         (defworkspace/install-repo-workspaces (:path selected))
         (notify/notify "Installed workspace" (:path selected))))))
 
 (defcom install-workspaces do-install-workspaces)
 
 (comment
-  (do-install-workspaces)
-
-  ;; (defcom/exec install-workspaces)
-
-  (def w
-    (->>
-      (defworkspace/list-workspaces)
-      (filter (comp (fnil #(string/includes? % "aave") "") :workspace/title))
-      first
-      ))
-  (update-db-workspace w)
-
-  (->>
-    (latest-db-workspaces)
-    ;; (filter (comp (fnil #(string/includes? % "aave") "") :workspace/title))
-    (map :workspace/title)
-    )
-
-  (get-db-workspace w)
-
-  (defs.workspaces/load-workspaces ["teknql"])
-  (defs.workspaces/load-workspaces
-    ["russmatney"
-     "teknql"
-     "borkdude"
-     "godot"])
-
-  (defs.workspaces/load-workspaces
-    [["urbint" #{"grid" "lens" "gitops"
-                 "worker-safety-service"
-                 "worker-safety-client"}]])
-
-  (->>
-    (defworkspace/list-workspaces)
-    (filter (comp (fnil #(string/includes? % "urbint") "") :workspace/directory))
-    count)
-
-  ;; load workspaces into memory
-  (defs.workspaces/load-workspaces [["russmatney" #{"dotfiles"}]])
-  (defs.workspaces/load-workspaces ["teknql"])
-
-  ;; write in-memory workspaces to the db
-  (->> (defworkspace/list-workspaces) (map update-db-workspace))
-
-  (->> (defworkspace/list-workspaces) count)
-  )
+  (do-install-workspaces))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -358,7 +228,7 @@
   ([_opts wsps]
    (let [is-map?          (map? wsps)
          wsps             (if is-map? [wsps] wsps)
-         db-wsps-by-title (->> (latest-db-workspaces)
+         db-wsps-by-title (->> (defworkspace/latest-db-workspaces)
                                (map (fn [w]
                                       [(:workspace/title w) w]))
                                (into {}))]
@@ -380,8 +250,6 @@
       first))
   (select-keys --w #{:workspace/title})
 
-  (get-db-workspace --w)
-  (update-db-workspace --w)
   (merge-db-workspaces --w)
   )
 
@@ -392,7 +260,7 @@
 
 ;; TODO tests for this
 (defn db-with-merged-in-memory-workspaces []
-  (let [db-workspaces   (latest-db-workspaces)
+  (let [db-workspaces   (defworkspace/latest-db-workspaces)
         ->title         (fn [wsp] (:workspace/title wsp))
         by-title        (fn [wsps] (->> wsps
                                         (map (fn [wsp] [(->title wsp) wsp]))
@@ -470,7 +338,7 @@
                           (str "-" (:yabai.space/index wsp)))))))
         wsps (some->> tag-names
                       ;; TODO more efficient db fetch here?
-                      (map get-db-workspace)
+                      (map defworkspace/get-db-workspace)
                       (remove nil?)
                       ((fn [wsps]
                          ;; if no db workspace found for tag name,
@@ -523,7 +391,7 @@
   (current-workspace)
 
   (some->> (awm/current-tag-names)
-           (map get-db-workspace)
+           (map defworkspace/get-db-workspace)
            ;; assumes local overwrites have hit db already
            ;; otherwise we may need to merge the static wsps in here
            (sort-by :workspace/scratchpad)

@@ -4,6 +4,7 @@
    #?@(:clj [[clawe.workspaces :as clawe.workspaces]
              [clawe.scratchpad :as scratchpad]
              [defthing.db :as db]
+             [defthing.defworkspace :as defworkspace]
              [doctor.api.workspaces :as d.workspaces]]
        :cljs [[wing.core :as w]
               [plasma.uix :refer [with-rpc with-stream]]])))
@@ -76,14 +77,14 @@
   (d.workspaces/update-workspaces))
 
 (defhandler update-workspace [item]
-  (clawe.workspaces/update-db-workspace item))
+  (defworkspace/sync-workspaces-to-db item))
 
 #?(:clj
    (comment
      (def --w (->> (d.workspaces/active-workspaces)
                    (filter (comp #{"clawe"} :workspace/title))
                    first))
-     (clawe.workspaces/get-db-workspace --w)
+     (defworkspace/get-db-workspace --w)
      (update-workspace (-> --w
                            (assoc :workspace/directory "/home/russ/russmatney/doctor")
                            ))
