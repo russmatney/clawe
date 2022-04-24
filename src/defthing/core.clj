@@ -141,9 +141,12 @@
   TODO consider partitioning xorfs with a runtime/macro-time eval,
   like in emacs use-package.
   "
-  ([thing-key thing-sym] (defthing thing-key thing-sym {}))
-  ([thing-key thing-sym & xorfs]
-   (let [x (->> (concat [(initial-thing thing-key thing-sym)] xorfs)
+  ([opts thing-sym] (defthing opts thing-sym {}))
+  ([opts thing-sym & xorfs]
+   (let [{:keys [thing-key post-ops]} (if (map? opts) opts
+                                          {:thing-key opts :post-ops []})
+
+         x (->> (concat [(initial-thing thing-key thing-sym)] xorfs (or post-ops []))
                 (reduce eval-xorf))]
      `(do
         (def ~thing-sym ~x)

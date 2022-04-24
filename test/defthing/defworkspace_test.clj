@@ -4,6 +4,37 @@
    [defthing.defworkspace :as sut]
    [ralphie.zsh :as zsh]))
 
+(def home-dir (zsh/expand "~"))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; defworkspace
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(deftest defworkspace-test
+  (testing ":name"
+    (sut/defworkspace test-wsp-defaults)
+    (is (= "test-wsp-defaults" (-> test-wsp-defaults :name)))
+    (is (= "test-wsp-defaults" (-> test-wsp-defaults :workspace/title))))
+
+  (testing ":workspace/directory"
+    (testing "defaults to ~"
+      (sut/defworkspace test-directory-defaults)
+      (is (= home-dir (-> test-directory-defaults :workspace/directory))))
+
+    (testing "sets an absolute path"
+      (sut/defworkspace test-directory-sets-abs-path
+        {:workspace/directory "some/path"})
+      (is (= (str home-dir "/some/path") (-> test-directory-sets-abs-path :workspace/directory))))
+
+    ;; TODO support unquoting in args
+    ;; (testing "supports unquote?"
+    ;;   (let [path "some/other-path"]
+    ;;     (sut/defworkspace test-directory-supports-unquote
+    ;;       {:workspace/directory ~path})
+    ;;     (is (= (str home-dir "/" path) (-> test-directory-supports-unquote :workspace/directory)))))
+    ))
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; test-workspace storage
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -86,8 +117,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; repo workspace install and storage
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(def home-dir (zsh/expand "~"))
 
 (defn- assert-repo-path [wsp path title]
   (let [dir (str home-dir "/" path)]

@@ -12,14 +12,26 @@
 ;; Helpers
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn workspace-title
+(defn workspace-defaults
   "Sets the workspace title using the :name (which defaults to the symbol).
 
   This only happens to work b/c defthing sets the {:name blah} attr with
   the passed symbol.
   "
   [{:keys [name]}]
-  {:workspace/title name})
+  {:workspace/title     name
+   :workspace/directory home-dir})
+
+(defn absolute-workspace-directory
+  "Expects at least a :workspace/directory as a string relative to $HOME.
+
+  {:workspace/directory    \"russmatney/dotfiles\"}
+  =>
+  {:workspace/directory    \"/home/russ/russmatney/dotfiles\",
+  "
+  [{:workspace/keys [directory]}]
+  (when-not (string/starts-with? directory "/")
+    {:workspace/directory (str home-dir "/" directory)}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Fetch in-memory workspaces
@@ -174,5 +186,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defmacro defworkspace [title & args]
-  (apply defthing/defthing :clawe/workspaces title
-         (conj args `workspace-title)))
+  (apply defthing/defthing {:thing-key :clawe/workspaces
+                            :post-ops  [`absolute-workspace-directory]}
+         title (conj args `workspace-defaults)))
