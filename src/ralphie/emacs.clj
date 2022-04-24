@@ -44,7 +44,8 @@
    "readme.org"
    "deps.edn"
    "shadow-cljs.edn"
-   "package.json"])
+   "package.json"
+   "bb.edn"])
 
 (defn determine-initial-file
   "Initial-file should be a file in the workspace repo's root.
@@ -54,14 +55,17 @@
   "
   [initial-file]
   (when initial-file
-    (if (fs/exists? initial-file)
+    (if (and (fs/exists? initial-file) (not (fs/directory? initial-file)))
       initial-file
-      (let [dir (fs/parent initial-file)
+      (let [dir (if (fs/directory? initial-file)
+                  initial-file
+                  (fs/parent initial-file))
 
             lower-case-f->f (->> (fs/list-dir dir)
                                  (map str)
                                  (map (fn [f] [(string/lower-case f) f]))
                                  (into {}))]
+        ;; TODO refactor to partial match on fallbacks, or support a fn/includes for that
         (->> fallback-default-files
              (map #(str (string/lower-case dir) "/" %))
              (filter lower-case-f->f)
@@ -70,8 +74,9 @@
 
 (comment
   (determine-initial-file (zsh/expand "~/russmatney/clawe/some.blah"))
-  (determine-initial-file (zsh/expand "~/borkdude/babashka/readme.org"))
-  )
+  (determine-initial-file (zsh/expand "~/russmatney/clawe"))
+  (fs/directory? (zsh/expand "~/russmatney/clawe"))
+  (determine-initial-file (zsh/expand "~/borkdude/babashka/readme.org")))
 
 (defn open
   "Opens a new emacs client in the passed workspace.
@@ -86,12 +91,13 @@
          (or (some wsp [:emacs.open/workspace :emacs/workspace-name
                         :workspace/title :org/name :clawe.defs/name])
              "ralphie-fallback")
-         initial-file (some wsp [:emacs.open/file :emacs/open-file
-                                 :workspace/initial-file :org.prop/initial-file])
+         initial-file (some wsp [:emacs.open/file :emacs/open-file :workspace/initial-file])
          initial-file (determine-initial-file initial-file)
          elisp-hook   (:emacs.open/elisp-hook wsp)
          eval-str     (str
                         "(progn "
+                        ;; TODO refactor russ/open-workspace to support initial-file
+                        ;; so that we don't open the readme when the workspace is already open
                         (when wsp-name
                           (str " (russ/open-workspace \"" wsp-name "\") "))
                         (when initial-file
