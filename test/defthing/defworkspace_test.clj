@@ -98,20 +98,21 @@
     (is (= dir (-> wsp :git/repo)))))
 
 (deftest install-repo-workspaces-test
-  (let [repo-paths ["russmatney/clawe-test"
-                    "/home/russ/teknql/wing-test"]]
-    (let [res (sut/install-repo-workspaces repo-paths)]
+  (let [repo-paths
+        {"clawe-test"    "russmatney/clawe-test"
+         "wing-test"     "/home/russ/teknql/wing-test"
+         "wing-test-two" "/home/russ/teknql/wing-test-two"}]
+    (let [res (sut/install-repo-workspaces (vals repo-paths))]
       (is res)
       ;; some datoms, at least
       (is (-> res :datoms-transacted)))
 
     (testing "installed wsps are listed from the db"
-      (let [wsps       (sut/latest-db-workspaces)
-            find-wsp   (fn [n]
-                         (->> wsps
-                              (filter (comp #{n} :name))
-                              first))
-            clawe-test (find-wsp "clawe-test")
-            wing-test  (find-wsp "wing-test")]
-        (assert-repo-path clawe-test "russmatney/clawe-test" "clawe-test")
-        (assert-repo-path wing-test "teknql/wing-test" "wing-test")))))
+      (let [wsps     (sut/latest-db-workspaces)
+            find-wsp (fn [n]
+                       (->> wsps
+                            (filter (comp #{n} :name))
+                            first))]
+        (for [[n path] repo-paths]
+          (let [wsp (find-wsp n)]
+            (assert-repo-path wsp path n)))))))

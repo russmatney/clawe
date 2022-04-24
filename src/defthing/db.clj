@@ -76,8 +76,10 @@
 
 (defn transact [txs]
   ;; TODO refactor into defsys conn ?
-  (let [;; seq before grabbing the connection, in case lazySeq needs to connect
-        txs  (seq txs)
+  (let [txs  (if (map? txs) [txs]
+                 ;; force seq/vec before grabbing the connection
+                 ;; in case lazySeq needs to use the db
+                 (->> txs (into [])))
         conn (d/get-conn defthing-db-filepath db-schema)
         txs  (map (fn [tx] (if (map? tx)
                              (drop-unsupported-vals tx)
