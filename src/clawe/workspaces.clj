@@ -21,6 +21,8 @@
 (defn update-topbar []
   (slurp "http://localhost:3334/topbar/update"))
 
+(def home-dir (zsh/expand "~"))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Workspace helpers
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -29,10 +31,7 @@
   (:workspace/title wsp))
 
 (defn workspace-repo [wsp]
-  (or
-    (:git/repo wsp)
-    (:workspace/directory wsp)
-    (:org.prop/directory wsp)))
+  (:workspace/directory wsp))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Workspace hydration
@@ -51,8 +50,6 @@
         wsp))
     wsp))
 
-(def home-dir (zsh/expand "~"))
-
 (defn ->pseudo-workspace [wsp]
   (let [name (or (:awesome.tag/name wsp)
                  (:yabai.space/label wsp))
@@ -61,14 +58,14 @@
                   (:yabai.space/index wsp))
 
         n (if-not (empty? name)
-            name
-            (str "fallback-name-" index))]
-    ;; NOTE this :workspace/title is used to get/find the key in the clawe-db
-    ;; TODO maybe some nice defaults here? directory?
+            name (str "fallback-name-" index))]
     (-> wsp
         (assoc :name n)
-        (assoc :workspace/title n)
-        (assoc :workspace/directory home-dir))))
+        ((fn [w] (merge w (defworkspace/workspace-defaults w)))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; merge-awm-tags
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn merge-awm-tags
   "Fetches all awm tags and merges those with matching
@@ -115,13 +112,11 @@
   (->>
     (defworkspace/list-workspaces)
     (merge-awm-tags {:include-unmatched? true})
-    (filter :awesome.tag/name))
-  )
+    (filter :awesome.tag/name)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; merge-yabai-spaces
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 
 (defn merge-yabai-spaces
   ([wsps] (merge-yabai-spaces {} wsps))
@@ -250,16 +245,18 @@
       first))
   (select-keys --w #{:workspace/title})
 
-  (merge-db-workspaces --w)
-  )
+  (merge-db-workspaces --w))
 
 (comment
-  ({:a "a" :b "b"} {:b "b" :c "c"})
-  )
+  ({:a "a" :b "b"} {:b "b" :c "c"}))
 
+;; TODO move to defworkspace, add tests
+(defn db-with-merged-in-memory-workspaces
+  "Supports cases where in-memory feats (like functions on wsps) are required.
 
-;; TODO tests for this
-(defn db-with-merged-in-memory-workspaces []
+  In-memory workspaces should always have a basic version in the db.
+  If not, call `sync-workspaces-to-db` with no args."
+  []
   (let [db-workspaces   (defworkspace/latest-db-workspaces)
         ->title         (fn [wsp] (:workspace/title wsp))
         by-title        (fn [wsps] (->> wsps
@@ -293,10 +290,7 @@
   (->>
     (db-with-merged-in-memory-workspaces)
     (filter (comp (fnil #(string/includes? % "urbint") "") :workspace/directory))
-    count
-    )
-  )
-
+    count))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; tmux session merging
@@ -318,14 +312,13 @@
                    (assoc wsp :tmux/session sesh)
                    wsp)))))))
 
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Workspaces fetchers
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn current-workspaces
   "Returns the Active workspace(s).
-  Can be multiple in awesomeWM or multi-display contexts."
+  Can be multiple in awesomeWM (tags) or multi-display contexts."
   []
   (let [tag-names
         (or (awm/current-tag-names)
@@ -367,8 +360,7 @@
 (comment
   (current-workspaces)
 
-  (merge-yabai-spaces {:include-unmatched? true} [])
-  )
+  (merge-yabai-spaces {:include-unmatched? true} []))
 
 (defn current-workspace
   "Returns the current workspace.
@@ -385,8 +377,7 @@
        (sort-by :workspace/scratchpad))
 
   (some->> '(nil)
-           first
-           )
+           first)
 
   (current-workspace)
 
@@ -397,8 +388,7 @@
            (sort-by :workspace/scratchpad)
            ;; (take 1)
            ;; merge-awm-tags
-           first)
-  )
+           first))
 
 (defn current-workspace-fast
   "Does not mix the current workspace with the db overwritable keys."
@@ -413,8 +403,7 @@
          wsp        (merge-yabai-spaces
                       {:prefetched-spaces  (list yb-spc)
                        :prefetched-windows prefetched-windows}
-                      wsp)
-         ]
+                      wsp)]
      wsp)))
 
 (comment
@@ -423,14 +412,10 @@
     (yabai/query-current-space)
     ->pseudo-workspace
     ;; :name
-    defworkspace/get-workspace
-    )
+    defworkspace/get-workspace)
   (->>
     (defworkspace/list-workspaces)
-    (filter (comp #{"clawe"} :name))
-    )
-
-  )
+    (filter (comp #{"clawe"} :name))))
 
 (defn all-workspaces-fast
   "Returns all defs.workspaces, without any awm data"
@@ -441,13 +426,12 @@
 (defn all-workspaces
   "Returns all defs.workspaces, merged with awesome tags."
   []
-  ;; TODO why don't `load-workspaces` wsps get included here? can it be tested?
   (->>
+    ;; TODO this should pull from defworkspace directly
     (db-with-merged-in-memory-workspaces)
     (merge-awm-tags {:include-unmatched? true})
     (merge-yabai-spaces {:include-unmatched? true})
     (merge-tmux-sessions)
-    ;; merge-db-workspaces
     ;; (map apply-git-status)
     ))
 
@@ -468,11 +452,12 @@
     (defworkspace/list-workspaces)
     (merge-awm-tags {:include-unmatched? true})
     merge-db-workspaces
-    count
-    )
-  )
+    count))
 
-(defn for-name [name]
+(defn- for-name
+  "Useful for misc debugging, but not optimized for much else."
+  [name]
+  ;; TODO could refactor to get one db wsp and then merge with wm/tmux
   (some->>
     (all-workspaces)
     (filter (comp #{name} workspace-name))
@@ -480,16 +465,7 @@
 
 (comment
   (for-name "ralphie")
-
-  (for-name "doctor-todo")
-
-
-  (->>
-    (r.tmux/list-panes)
-    (filter (comp #{"doctor-todo"} :tmux/session-name))
-    )
-
-  )
+  (for-name "doctor-todo"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -522,8 +498,7 @@
        (remove #(= (:new-index %) (wsp-index %)))))
 
 (comment
-  (workspaces-to-swap-indexes)
-  )
+  (workspaces-to-swap-indexes))
 
 (defn update-workspace-indexes
   []
@@ -535,30 +510,13 @@
           (when (not= new-index index)
             (if notify/is-mac?
               (yabai/swap-spaces-by-index index new-index)
-              ;; TODO write ralphie.awesome/swap-tags-by-index
-              (awm/awm-cli {:quiet? true}
-                           (str
-                             "local tags = awful.screen.focused().tags;"
-                             "local tag = tags[" index "];"
-                             "local tag2 = tags[" new-index "];"
-                             "tag:swap(tag2);"))))
+              (awm/swap-tags-by-index index new-index)))
           ;; could be optimized....
           (recur (workspaces-to-swap-indexes)))))))
 
 (comment
   (update-workspace-indexes)
-  (workspaces-to-swap-indexes)
-
-  (awm/awm-cli {:quiet? false}
-               (str
-                 "local tags = awful.screen.focused().tags;"
-                 "local tag = tags[" 2 "];"
-                 "local tag2 = tags[" 1 "];"
-                 "tag:swap(tag2);"))
-  )
-
-;; TODO the rest of this should be refactored into ralphie.awesome or clawe.defs.bindings
-;; maybe the workspace functions stay, but should dispatch to whatever window manager
+  (workspaces-to-swap-indexes))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Swapping Workspaces
@@ -567,19 +525,7 @@
 (defn drag-workspace
   "Drags the current awesome workspace in the given direction"
   [dir]
-  (let [up?   (= dir "up")
-        down? (= dir "down")]
-    (if (or up? down?)
-      (awm/awm-cli
-        {:quiet? true}
-        (str
-          "tags = awful.screen.focused().tags; "
-          "current_index = s.selected_tag.index; "
-          "new_index = current_index " (cond up? "+ 1" down? "- 1" ) "; "
-          "new_tag = tags[new_index]; "
-          "if new_tag then s.selected_tag:swap(new_tag) end; "
-          ))
-      (notify/notify "drag-workspace called without 'up' or 'down'!"))))
+  (awm/drag-workspace (case dir "up" :drag/up "down" :drag/down)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; consolidate workspaces
@@ -599,11 +545,7 @@
               (prn "swapping tags" {:name      name
                                     :idx       index
                                     :new-index new-index})
-              (awm/awm-cli {:quiet? true}
-                           (str "local tag = awful.tag.find_by_name(nil, \"" name "\");"
-                                "local tags = awful.screen.focused().tags;"
-                                "local tag2 = tags[" new-index "];"
-                                "tag:swap(tag2);")))))))))
+              (awm/swap-tags-by-index index new-index))))))))
 
 (defcom consolidate-workspaces-cmd
   "Groups active workspaces closer together"
@@ -656,12 +598,6 @@
         ;; focus the tag
         (awm/focus-tag! name)))
 
-
-    ;; run on-create hook
-    ;; (when-let [f (:workspace/on-create wsp)]
-    ;;   (println "found on-create" f)
-    ;;   (f wsp))
-
     ;; notify
     (notify/notify (str "Created new workspace: " name))
 
@@ -682,14 +618,6 @@
 
     ;; return the workspace
     wsp))
-
-(comment
-  (awm/tag-for-name "ralphie")
-  (awm/create-tag! "ralphie")
-  (->
-    "ralphie"
-    (for-name)
-    (create-workspace)))
 
 (defn wsp->rofi-opts
   [{:as   wsp
@@ -726,27 +654,15 @@
 
 (comment
   (select-workspace)
-
-  (repeat 100)
-
-  (workspace-rofi-options)
-
-  )
+  (workspace-rofi-options))
 
 (defn open-workspace
+  "Creates a workspace matching the passed name, or prompts for
+  a selection via rofi."
   ([] (open-workspace nil))
   ([name]
    ;; select and create
    (if name
-     (-> name for-name create-workspace)
+     (some-> name defworkspace/get-db-workspace create-workspace)
      ;; no name passed, get from rofi
      (some-> (select-workspace) create-workspace))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; toggle workspace names
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defcom toggle-scratchpad-names
-  (do
-    (awm/awm-cli "_G.toggle_show_scratchpad_names();")
-    (update-workspace-indexes)))

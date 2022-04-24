@@ -644,6 +644,27 @@ util = require 'util';
   "Deletes the current focused tag."
   delete-current-tag!)
 
+(defn swap-tags-by-index [idx-1 idx-2]
+  (fnl
+    (let [screen (awful.screen.focused)
+          tags   screen.tags
+          tag    (. tags ~idx-1)
+          tag2   (. tags ~idx-2)]
+      (tag:swap tag2))))
+
+(defn drag-workspace [up-or-down]
+  (let [increment (case up-or-down
+                    :drag/up   1
+                    :drag/down -1)]
+    (fnl
+      (let [screen        (awful.screen.focused)
+            tags          screen.tags
+            current-index s.selected_tag.index
+            new-idx       (+ current-index ~increment)
+            new-tag       (. tags new-idx)]
+        (when new-tag
+          (s.selected_tag:swap new-tag))))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; common awm client functions
 
