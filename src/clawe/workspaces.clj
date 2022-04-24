@@ -2,6 +2,7 @@
   (:require
    [defthing.defcom :refer [defcom] :as defcom]
    [defthing.defworkspace :as defworkspace]
+
    [ralphie.awesome :as awm]
    [ralphie.yabai :as yabai]
    [ralphie.rofi :as rofi]
@@ -11,8 +12,8 @@
    ;; be sure to require all workspaces here
    ;; otherwise (all-workspaces) will be incomplete from consumers like doctor
    clawe.defs.workspaces
-
    [clawe.workspaces.create :as wsp.create]
+
    [clojure.string :as string]
    [ralphie.zsh :as zsh]
    [ralphie.tmux :as r.tmux]
@@ -517,6 +518,18 @@
 (comment
   (update-workspace-indexes)
   (workspaces-to-swap-indexes))
+
+(defn do-yabai-correct-workspaces []
+  ;; some what duplicated in clawe.restart...
+  ;; maybe this belongs in c.rules...
+  (do
+    (yabai/set-space-labels)
+    (yabai/destroy-unlabelled-empty-spaces)
+    (update-workspace-indexes)))
+
+(defcom yabai-correct-workspaces
+  (do-yabai-correct-workspaces))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Swapping Workspaces

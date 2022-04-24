@@ -71,8 +71,7 @@
       first)))
 
 (comment
-  (get-db-workspace "clawe")
-  )
+  (get-db-workspace "clawe"))
 
 (defn latest-db-workspaces
   "Lists the latest entity for each :workspace/title in the db."
@@ -93,8 +92,7 @@
 
 (comment
   (count
-    (latest-db-workspaces))
-  )
+    (latest-db-workspaces)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Sync/write workspaces to db
@@ -133,8 +131,7 @@
   (def w
     (->> (latest-db-workspaces)
          (filter (comp #{"test-workspace"} :name))
-         first
-         ))
+         first))
 
   (sync-workspaces-to-db
     (assoc w :test-val "NEWWW")))
@@ -158,7 +155,7 @@
       (merge
         (defthing/initial-thing :clawe/workspaces repo-name)
         ;; TODO consider :workspace/readme, :workspace/initial-file
-        { ;; TODO may need something smart for forks/collisions on :workspace/title
+        {;; TODO may need something smart for forks/collisions on :workspace/title
          ;; consider using just repo/short-path
          :workspace/title     repo-name
          :repo/name           repo-name

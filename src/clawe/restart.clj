@@ -15,8 +15,7 @@
    [clawe.sxhkd.bindings :as sxhkd.bindings]
    [ralphie.zsh :as zsh]
    [ralphie.tmux :as r.tmux]
-   [ralphie.emacs :as r.emacs]
-   [ralphie.yabai :as yabai]))
+   [ralphie.emacs :as r.emacs]))
 
 ;; dumping here as part of restart process
 
@@ -147,11 +146,7 @@ uberjar. Otherwise this might need to be called twice."
 
     ;; Rules
     (if notify/is-mac?
-      (do
-        ;; workspace indexes
-        (yabai/set-space-labels)
-        (yabai/destroy-unlabelled-empty-spaces)
-        (workspaces/update-workspace-indexes))
+      (workspaces/do-yabai-correct-workspaces)
       (do
         (log "rewriting rules")
         (awm.rules/write-awesome-rules)

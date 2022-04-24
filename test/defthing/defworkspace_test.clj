@@ -34,7 +34,6 @@
     ;;     (is (= (str home-dir "/" path) (-> test-directory-supports-unquote :workspace/directory)))))
     ))
 
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; test-workspace storage
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -42,7 +41,6 @@
 (defn- assert-test-workspace [wsp test-val]
   (is (= "test-workspace" (-> wsp :name)))
   (is (= test-val (-> wsp :test-val))))
-
 
 (defn- assert-db-workspace-fetches
   [workspace test-val]
@@ -60,7 +58,6 @@
                      first)]
       (assert-test-workspace match test-val))))
 
-
 (defn- assert-in-memory-workspace-fetches
   [workspace test-val]
   (testing "get-workspace"
@@ -76,7 +73,6 @@
                      (filter (comp #{"test-workspace"} :name))
                      first)]
       (assert-test-workspace match test-val))))
-
 
 (deftest defworkspaces-memory-and-storage-test
   (let [my-random-uuid (random-uuid)]
