@@ -58,6 +58,10 @@
         n)
       first)))
 
+(comment
+  (get-db-workspace "clawe")
+  )
+
 (defn latest-db-workspaces
   "Lists the latest entity for each :workspace/title in the db."
   []
@@ -74,6 +78,11 @@
                 (->> vs
                      (sort-by :workspace/updated-at)
                      first))))))
+
+(comment
+  (count
+    (latest-db-workspaces))
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Sync/write workspaces to db
@@ -154,10 +163,11 @@
   "For a list of paths to git-repos, creates a workspace
   and adds them to the db."
   [repo-paths]
-  (->> repo-paths
-       (map path->repo-workspace)
-       (remove nil?)
-       sync-workspaces-to-db))
+  (let [paths (if (string? repo-paths) [repo-paths] repo-paths)]
+    (->> paths
+         (map path->repo-workspace)
+         (remove nil?)
+         sync-workspaces-to-db)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; defworkspace

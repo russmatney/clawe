@@ -260,7 +260,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn local-git-users []
-  (let [h (zsh/expand "~")]
+  (let [h (str home-dir "/")]
     (->>
       (zsh/expand-many "~/*")
       (filter #(string/starts-with? % h))
@@ -269,36 +269,40 @@
 (defn select-local-git-user []
   (rofi/rofi {:msg "Select git user"} (local-git-users)))
 
-(defcom install-workspaces
+(defn path->rofi-obj [path]
+  {:rofi/label (str "Install " path) :path path})
+
+(defn do-install-workspaces
   "Walks through selecting one or more repos, converts them to workspaces,
   and add them to the db."
-
+  []
   (let [git-user   (select-local-git-user)
-        wsps       (defs.workspaces/build-workspaces-for-git-user git-user)
+        repo-paths (zsh/expand-many (str home-dir "/" git-user "/*"))
         all-option {:rofi/label (str "Install all " git-user " workspaces")
                     :some/id    "all-option"}
-        selected   (->> (concat [all-option]
-                                (->> wsps
-                                     (map (fn [wsp]
-                                            (assoc wsp :rofi/label
-                                                   (str "Install " git-user "/" (:workspace/title wsp)))))))
+        selected   (->> (concat [all-option] (->> repo-paths (map path->rofi-obj)))
                         (rofi/rofi {:msg "Install workspace for which repo?"}))]
-    (if (= (:some/id all-option) (:some/id selected))
-      (do
-        (notify/notify "installing all workspaces for" git-user)
-        (let [ct (count (map update-db-workspace wsps))]
-          (notify/notify (str "Installed " ct " workspaces"))))
-      (do
-        (notify/notify "installing workspace"
-                       (str git-user "/" (:workspace/title selected)))
-        (update-db-workspace selected)
-        (notify/notify "Installed workspace")))
+    (cond
+      (nil? selected)
+      (notify/notify "No repo selected")
 
-    ;; TODO maybe rewrite/update awm rules?
+      (= (:some/id all-option) (:some/id selected))
+      (do
+        (notify/notify (str "installing " (count repo-paths) " workspaces for") git-user)
+        (println "repo-paths" repo-paths)
+        (defworkspace/install-repo-workspaces repo-paths)
+        (notify/notify "installed all workspaces for" git-user))
 
-    ))
+      :else
+      (do
+        (notify/notify "installing workspace" (:path selected))
+        (defworkspace/install-repo-workspaces (:path selected))
+        (notify/notify "Installed workspace" (:path selected))))))
+
+(defcom install-workspaces do-install-workspaces)
 
 (comment
+  (do-install-workspaces)
 
   ;; (defcom/exec install-workspaces)
 
