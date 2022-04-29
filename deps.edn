@@ -1,5 +1,6 @@
 {:paths ["src"
          "test"
+         "bench"
          "resources"]
  :deps
  {teknql/systemic          {:local/root "../../teknql/systemic"}
@@ -88,4 +89,6 @@
 
     ;; temporary, for expo
     io.replikativ/datahike {:mvn/version "0.3.3"}
+
+    criterium/criterium {:mvn/version "0.4.6"}
     }}}}
