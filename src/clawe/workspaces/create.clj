@@ -13,7 +13,7 @@
 
   TODO refactor to remove or otherwise use a :create.client/exec api
   "
-  [{:workspace/keys [exec initial-file readme] :as wsp}]
+  [{:workspace/keys [exec directory initial-file readme] :as wsp}]
   (let [first-client (cond
                        exec         :create/exec
                        readme       :create/emacs
@@ -24,8 +24,12 @@
                                       :create/none))]
 
     (case first-client
-      :create/emacs (emacs/open {:emacs.open/workspace (:workspace/title wsp)
-                                 :emacs.open/file      (or initial-file readme)})
+      :create/emacs
+      (emacs/open {:emacs.open/workspace (:workspace/title wsp)
+                   :emacs.open/file
+                   (let [f (or initial-file readme)]
+                     (if (string/starts-with? f "/") f
+                         (str directory "/" f)))})
       :create/exec
       (cond
         (and (map? exec) (:tmux.fire/cmd exec))

@@ -57,20 +57,21 @@
   (when initial-file
     (if (and (fs/exists? initial-file) (not (fs/directory? initial-file)))
       initial-file
-      (let [dir (if (fs/directory? initial-file)
-                  initial-file
-                  (fs/parent initial-file))
+      (if-let [dir (if (fs/directory? initial-file)
+                     initial-file
+                     (fs/parent initial-file))]
 
-            lower-case-f->f (->> (fs/list-dir dir)
-                                 (map str)
-                                 (map (fn [f] [(string/lower-case f) f]))
-                                 (into {}))]
-        ;; TODO refactor to partial match on fallbacks, or support a fn/includes for that
-        (->> fallback-default-files
-             (map #(str (string/lower-case dir) "/" %))
-             (filter lower-case-f->f)
-             first
-             lower-case-f->f)))))
+        (let [lower-case-f->f (->> (fs/list-dir dir)
+                                   (map str)
+                                   (map (fn [f] [(string/lower-case f) f]))
+                                   (into {}))]
+          ;; TODO refactor to partial match on fallbacks, or support a fn/includes for that
+          (->> fallback-default-files
+               (map #(str (string/lower-case dir) "/" %))
+               (filter lower-case-f->f)
+               first
+               lower-case-f->f))
+        (println "deter initial file fail" initial-file)))))
 
 (comment
   (determine-initial-file (zsh/expand "~/russmatney/clawe/some.blah"))
