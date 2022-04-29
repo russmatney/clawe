@@ -42,7 +42,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def supported-types
-  (->> [6 "hi" :some-keyword true (random-uuid)]
+  (->> [6 "hi" :some-keyword true
+        ;; (random-uuid)
+        ;; TODO restore in platform agnostic way
+        ]
        (map type)
        (into #{})))
 
@@ -57,7 +60,7 @@
                         :some-int     5
                         :some-bool    false
                         :some-keyword :keyword
-                        :some-uuid    (random-uuid)
+                        ;; :some-uuid    (random-uuid)
                         :some-fn      (fn [] (print "complexity!"))}))
 
 (defn drop-unsupported-vals

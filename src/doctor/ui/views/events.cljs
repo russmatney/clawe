@@ -65,6 +65,7 @@
               "bg-yo-blue-700"
               "text-white"
               "p-6"]}
+     ;; TODO filter by type (screenshots, commits, org items)
      [:div [:h1 {:class ["pb-4" "text-xl"]} (->> items count) " Events"]]
 
      (for [[i it] (->> items (map-indexed vector))]
