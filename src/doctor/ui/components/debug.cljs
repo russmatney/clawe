@@ -28,7 +28,6 @@
 
      :else
      (let [[k v] m]
-       (println "k" k "v" v)
        ^{:key k}
        [:div.font-mono
         {:class ["text-city-gray-400" (str "px-" (* 2 level))]}

@@ -26,8 +26,7 @@
        :on-mouse-enter #(do (reset! hovering? true))
        :on-mouse-leave #(do (reset! hovering? false))}
       (when web-asset-path
-        [:img {:src   web-asset-path
-               :class ["max-h-100"]}])
+        [:img {:src web-asset-path}])
 
       [:div
        (for [ax (->actions item)]

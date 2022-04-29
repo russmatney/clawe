@@ -89,7 +89,7 @@
 
     ;; not sure what to depend on here...
     (uix/with-effect []
-      (println "use-popup")
+      ;; (println "use-popup")
       (when (tauri?)
         (when-let [popup (tauri/window.WebviewWindow.getByLabel "popup")]
           (go
