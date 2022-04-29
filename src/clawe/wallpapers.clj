@@ -5,12 +5,16 @@
    [babashka.fs :as fs]
    [babashka.process :as process]
    [defthing.db :as db]
-   [ralphie.notify :as notify]))
+   [ralphie.notify :as notify]
+   [defthing.defwallpaper :as defwallpaper]))
 
 (defn wp-dir->paths [root]
   (-> (zsh/expand root)
       (string/split #" /")
-      (->> (map #(str "/" %)))))
+      (->> (map (fn [p]
+                  (if (string/starts-with? p "/")
+                    p
+                    (str "/" p)))))))
 
 (comment
   (zsh/expand "~/AbdelrhmanNile/onedark-wallpapers/onedark\\ wallpapers/*"))
@@ -19,26 +23,11 @@
   (->
     (concat
       (wp-dir->paths "~/Dropbox/wallpapers/**/*")
-      ;; (wp-dir->paths "~/AbdelrhmanNile/onedark-wallpapers/onedark\\ wallpapers/*")
-      )
+      (wp-dir->paths "~/AbdelrhmanNile/onedark-wallpapers/onedark\\ wallpapers/*"))
     (->> (filter #(re-seq #"\.(jpg|png)$" %)))))
 
 (comment
   (local-wallpapers-file-paths))
-
-(defn get-wallpaper
-  "Assumes the first is the one we want"
-  [f]
-  (some->>
-    (db/query
-      '[:find (pull ?e [*])
-        :in $ ?full-path
-        :where
-        [?e :file/full-path ?full-path]
-        [?e :background/last-time-set ?t]]
-      (:file/full-path f))
-    ffirst))
-
 
 (defn all-wallpapers
   "Baked in assumption that all wallpapers are one directory down."
@@ -54,9 +43,10 @@
                                                           (-> f fs/parent fs/file-name)
                                                           "/" (fs/file-name f))
                                 :name                (fs/file-name f)}
-                   db-wp       (get-wallpaper initial-wp)]
+                   db-wp       (defwallpaper/get-wallpaper initial-wp)]
                ;; db overwrites? or initial?
                (merge initial-wp db-wp)))))))
+
 
 (comment
   (->>
@@ -64,22 +54,32 @@
     (map :background/last-time-set)
     (remove nil?)))
 
+(defn mark-wp-set
+  ([w] (mark-wp-set w {}))
+  ([w {:keys [skip-count]}]
+   (db/transact (cond-> w
+                  true
+                  (assoc :background/last-time-set (System/currentTimeMillis))
+
+                  (not skip-count)
+                  (update :background/used-count (fnil inc 0))))))
+
 (defn set-wallpaper
   "Depends on `feh`."
   ([w] (set-wallpaper w {}))
-  ([w {:keys [skip-count]}]
+  ([w opts]
    (notify/notify "Setting wallpaper" w)
-   (db/transact [(cond-> w
-                   true
-                   (assoc :background/last-time-set (System/currentTimeMillis))
-
-                   (not skip-count)
-                   (update :background/used-count (fnil inc 0)))])
+   (mark-wp-set w opts)
    (-> (process/$ feh --bg-fill ~(:file/full-path w))
        process/check :out slurp)))
 
 (comment
-  (get-wallpaper --f)
+  ;; mark all as set once
+  (->>
+    (all-wallpapers)
+    (map mark-wp-set))
+
+  (defwallpaper/get-wallpaper --f)
   (->>
     (db/query
       '[:find (pull ?e [*])
