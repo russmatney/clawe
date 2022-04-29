@@ -13,7 +13,8 @@
    [ralphie.zsh :as zsh]
    [ralphie.bb :as bb]
    [clojure.string :as string]
-   [ralphie.tmux :as tmux]))
+   [ralphie.tmux :as tmux]
+   [clojure.edn :as edn]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; local repos
@@ -332,3 +333,87 @@
   (status "~/russmatney/dotfiles")
   (status "~/russmatney/lifeofbob")
   (status "~/todo"))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; commits
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; git log --pretty=format:
+;; '{%n ^^^^commit^^^^: ^^^^%H^^^^
+;; ,%n ^^^^abbreviated_commit^^^^: ^^^^%h^^^^
+;; ,%n ^^^^tree^^^^: ^^^^%T^^^^
+;; ,%n ^^^^abbreviated_tree^^^^: ^^^^%t^^^^
+;; ,%n ^^^^parent^^^^: ^^^^%P^^^^
+;; ,%n ^^^^abbreviated_parent^^^^: ^^^^%p^^^^
+;; ,%n ^^^^refs^^^^: ^^^^%D^^^^
+;; ,%n ^^^^encoding^^^^: ^^^^%e^^^^
+;; ,%n ^^^^subject^^^^: ^^^^%s^^^^
+;; ,%n ^^^^sanitized_subject_line^^^^: ^^^^%f^^^^
+;; ,%n ^^^^commit_notes^^^^: ^^^^%N^^^^
+;; ,%n ^^^^verification_flag^^^^: ^^^^%G?^^^^
+;; ,%n ^^^^signer^^^^: ^^^^%GS^^^^
+;; ,%n ^^^^signer_key^^^^: ^^^^%GK^^^^
+;; ,%n ^^^^author^^^^: {%n ^^^^name^^^^: ^^^^%aN^^^^
+;; ,%n ^^^^email^^^^: ^^^^%aE^^^^
+;; ,%n ^^^^date^^^^: ^^^^%aD^^^^%n  }
+;; , %n ^^^^commiter^^^^: {%n ^^^^name^^^^: ^^^^%cN^^^^
+;; ,%n ^^^^email^^^^: ^^^^%cE^^^^
+;; ,%n ^^^^date^^^^: ^^^^%cD^^^^%n  } %n}
+
+;; ,' | sed 's/"/\\"/g' | sed 's/\^^^^/"/g' | sed "$ s/
+;; ,$//" | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/ /g'  | awk 'BEGIN { print("[") } { print($0) } END { print("]") }'
+
+
+(def log-format-keys
+  {:git.commit/hash         "%H"
+   :git.commit/short-hash   "%h"
+   ;; :git.commit/tree             "%T"
+   ;; :git.commit/abbreviated-tree "%t"
+   ;; :git.commit/parent             "%P"
+   ;; :git.commit/abbreviated-parent "%p"
+   ;; :git.commit/refs               "%D"
+   ;; :git.commit/encoding           "%e"
+   :git.commit/subject      "%s"
+   ;; :git.commit/sanitized-subject-line "%f"
+   :git.commit/body         "%b"
+   :git.commit/full-message "%B"
+   ;; :git.commit/commit-notes           "%N"
+   ;; :git.commit/verification-flag      "%G?"
+   ;; :git.commit/signer                 "%GS"
+   ;; :git.commit/signer-key             "%GK"
+   :git.commit/author-name  "%aN"
+   :git.commit/author-email "%aE"
+   :git.commit/author-date  "%aD"
+   ;; :git.commit/commiter-name          "%cN"
+   ;; :git.commit/commiter-email         "%cE"
+   ;; :git.commit/commiter-date "%cD"
+   })
+
+
+(def delimiter "^^^^^")
+(defn log-format-str []
+  (str
+    "{"
+    (->> log-format-keys
+         (map (fn [[k v]] (str k " " delimiter v delimiter)))
+         (string/join " "))
+    "}"))
+
+(defn commits-for-dir
+  "Retuns metadata for `n` commits at the specified `dir`."
+  [{:keys [dir n]}]
+  (let [n (or n 10)]
+    (->
+      ^{:out :string
+        :dir dir}
+      ($ git log -n ~n (str "--pretty=format:" (log-format-str)))
+      check :out
+      ((fn [s] (str "[" s "]")))
+      (string/replace delimiter "\"")
+      edn/read-string)))
+
+(comment
+  (commits-for-dir {:dir "/Users/russ/russmatney/clawe" :n 10})
+  (commits-for-dir {:dir "/Users/russ/russmatney/dotfiles" :n 10})
+  )
