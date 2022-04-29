@@ -1,7 +1,6 @@
 (ns doctor.ui.views.events
   (:require
    [tick.core :as t]
-
    [doctor.ui.events :as events]
    [doctor.ui.views.screenshots :as screenshots]
    [doctor.ui.components.debug :as debug]))
@@ -17,15 +16,9 @@
       (:event/timestamp it))))
 
 (comment
-  (t/time)
-
-  (let [some-t (t/- (t/now) 5 :hours)]
-    (t/ago (t/- (t/now) some-t)))
-
   (t/between
     (t/now)
-    (t/>> (t/now) (t/new-duration 10 :minutes)))
-  )
+    (t/>> (t/now) (t/new-duration 10 :minutes))))
 
 (defn event-comp [opts it]
   [:div

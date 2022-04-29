@@ -17,17 +17,21 @@
         (map #(str base-dir %))
         sort
         ;; attempting to cheaply sort by date
-        ;; could just renamed the ones in the wrong pattern to match the new ones
+        ;; could just rename the ones in the wrong pattern to match the new ones
         reverse))))
 
 
 (defn fname->screenshot [f]
   (let [fname (fs/file-name f)]
-    {:file/full-path         f
+    {:file/full-path f
+     ;; NOTE this implies a symlink between the screenshots dir and the public assets dir
      :file/web-asset-path    (str "/assets/screenshots/" fname)
      :name                   fname
      :screenshot/time-string (-> fname
                                  (string/replace #"screenshot_" "")
+                                 (string/replace #"Screen Shot " "")
+                                 (string/replace #" at " "_")
+                                 (string/replace #".png" "")
                                  (string/replace #".jpg" ""))}))
 
 

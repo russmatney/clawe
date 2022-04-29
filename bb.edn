@@ -71,12 +71,12 @@
      (shell "yarn build")
 
      ;; local symlinks
-     (log/info "TODO impl ensure local symlinks")
+     (log/info "TODO impl ensure local symlinks (ln -s ~/Screenshots public/assets/screenshots)")
+     (shell "l public/assets")
 
      ;; tauri
      (shell {:dir "./src-tauri"}
-            "cargo install tauri-cli --git https://github.com/tauri-apps/tauri")
-     )}
+            "cargo install tauri-cli --git https://github.com/tauri-apps/tauri"))}
 
   tauri-dev
   {:doc "Run tauri in dev mode, rebuilding the exec on local rust changes."

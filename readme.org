@@ -72,6 +72,11 @@ See `bb.edn` for tasks related to installing and running clawe services
 ** local symlinking
 several local dirs are symlinked into public/assets/
 
+#+begin_src sh
+# from clawe root dir
+ln -s ~/Screenshots public/assets/screenshots
+#+end_src
+
 #+begin_src
 l ~/russmatney/doctor/public/assets/
 Name
