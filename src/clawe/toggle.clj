@@ -30,6 +30,10 @@
     (-> c :awesome.client/class #{"Firefox"})
     (-> c :yabai.window/app #{"Safari"})))
 
+(defn is-dev-web? [_wsp c]
+  (or
+    (-> c :yabai.window/app #{"Firefox Developer Edition"})))
+
 (defn is-slack? [_wsp c]
   (or
     (-> c :awesome.client/class #{"Slack"})
@@ -224,6 +228,12 @@
     (merge
       (toggle-scratchpad-app {:space-label "web" :is-client? is-web?})
       {:wsp->open-client (fn [_wsp] (r.browser/open))})))
+
+(defcom toggle-dev-web-2
+  (toggle-client
+    (merge
+      (toggle-scratchpad-app {:space-label "dev-web" :is-client? is-dev-web?})
+      {:wsp->open-client (fn [_wsp] (r.browser/open-dev))})))
 
 (defcom toggle-slack-2
   (toggle-client

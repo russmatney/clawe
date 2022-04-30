@@ -164,5 +164,17 @@ Depends on `brotab`."
     (p/$ open -na "/Applications/Safari.app")
     p/check :out)
 
-  (open)
+  (open))
+
+(defn open-dev
+  "Opens a dev browser"
+  []
+  (when notify/is-mac?
+    (->
+      ^{:out :string}
+      (p/$ open -na "/Applications/Firefox Developer Edition.app")
+      p/check :out)))
+
+(comment
+  (open-dev)
   )
