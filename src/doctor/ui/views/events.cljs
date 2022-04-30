@@ -27,9 +27,7 @@
   (some->
     (re-seq #"(\w+/\w+)$" "/users/russ/blah/hello")
     first
-    first
-    )
-  )
+    first))
 
 (defn short-repo [it]
   (some->
@@ -78,13 +76,15 @@
         [:p line])]]))
 
 
-(defn event-comp [{:keys [selected?]
+(defn event-comp [{:keys [selected?
+                          selected-ref]
                    :as   opts
                    } it]
   [:div
    {:class ["px-4" "pt-4" "pb-16" "flex-col"
             "hover:bg-yo-blue-600"
-            (when selected? "bg-yo-blue-500")]}
+            (when selected? "bg-yo-blue-500")]
+    :ref   selected-ref}
    (when-let [ts (:event/timestamp it)]
      [:div
       {:class ["text-2xl" "pb-4"]}
@@ -115,27 +115,32 @@
                     (assoc :label "And opts")
                     (assoc :initial-show? false)) opts])]])
 
-
 (defn event-page []
-  (let [{:keys [items]} (events/use-events)
-        event-count     (count items)
-        cursor-idx      (uix/state 0)]
+  (let [{:keys [items]}   (events/use-events)
+        event-count       (count items)
+        cursor-idx        (uix/state 0)
+        selected-elem-ref (uix/ref)]
 
     (key/bind! "j" ::cursor-down
                (fn [ev]
-                 ;; TODO smooth-scroll to the now selected component
                  (swap! cursor-idx (fn [v]
                                      (let [new-v (inc v)]
                                        (if (> new-v (dec event-count))
                                          (dec event-count)
-                                         new-v))))))
+                                         new-v))))
+                 (when selected-elem-ref
+                   (println "hi!")
+                   (.scrollIntoView @selected-elem-ref))))
     (key/bind! "k" ::cursor-up
                (fn [ev]
                  (swap! cursor-idx
                         (fn [v]
                           (let [new-v (dec v)]
                             (if (< new-v 0)
-                              0 new-v))))))
+                              0 new-v))))
+                 (when selected-elem-ref
+                   (println "hi!")
+                   (.scrollIntoView @selected-elem-ref))))
 
     [:div
      {:class ["flex" "flex-col" "flex-auto"
@@ -148,5 +153,9 @@
      [:div [:h1 {:class ["pb-4" "text-xl"]} event-count " Events"]]
 
      (for [[i it] (->> items (map-indexed vector))]
-       ^{:key i}
-       [event-comp {:selected? (#{i} @cursor-idx)} it])]))
+       (let [selected? (#{i} @cursor-idx)]
+         ^{:key i}
+         [event-comp
+          {:selected?    selected?
+           :selected-ref (when selected? selected-elem-ref)}
+          it]))]))
