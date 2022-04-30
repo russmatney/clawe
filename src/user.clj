@@ -13,6 +13,22 @@
 (comment
   "yo"
 
+  (def test-nses ['ralphie.awesome-test
+                  'defthing.core-test
+                  'defthing.defcom-test])
+
+  (doall
+    (for [t (->> test-nses
+                 )]
+      (require t)))
+
+  (->>
+    test-nses
+    (map meta)
+    )
+
+
+
   (->>
     (workspaces/all-workspaces)
     (filter :awesome.tag/name)

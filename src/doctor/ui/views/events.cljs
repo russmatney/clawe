@@ -3,7 +3,8 @@
    [tick.core :as t]
    [doctor.ui.events :as events]
    [doctor.ui.views.screenshots :as screenshots]
-   [doctor.ui.components.debug :as debug]))
+   [doctor.ui.components.debug :as debug]
+   [clojure.string :as string]))
 
 
 (defn ->string [_opts it]
@@ -18,7 +19,56 @@
 (comment
   (t/between
     (t/now)
-    (t/>> (t/now) (t/new-duration 10 :minutes))))
+    (t/>> (t/now) (t/new-duration 10 :minutes)))
+
+  (some->
+    (re-seq #"(\w+/\w+)$" "/users/russ/blah/hello")
+    first
+    first
+    )
+  )
+
+(defn short-repo [it]
+  (some->
+    (re-seq #"(\w+/\w+)$" (:git.commit/directory it))
+    first
+    first))
+
+(defn commit-comp [opts it]
+  (let [{:git.commit/keys
+         [body subject short-hash]} it
+        short-dir                   (short-repo it)
+        body-lines
+        (->
+          body
+          (string/split "\n"))]
+    [:div
+     {:class ["flex" "flex-col"]}
+
+     [:div
+      {:class ["flex" "flex-row"]}
+      [:div
+       {:class ["text-xl"
+                "text-city-green-400"]}
+       subject]
+
+      [:div
+       {:class ["flex" "flex-col" "ml-auto"]}
+       [:div
+        {:class ["text-city-pink-400"]}
+        short-hash]
+
+       [:div
+        {:class ["text-city-pink-400"]}
+        short-dir]]]
+
+     [:div
+      {:class ["pt-8"]}
+      (for [[idx line] (->> body-lines
+                            (map-indexed vector))]
+        ^{:key idx}
+        [:p line])]]))
+
 
 (defn event-comp [opts it]
   [:div
@@ -37,12 +87,18 @@
        {:class ["w-2/5"]}
        [screenshots/screenshot-comp opts it]])
 
+    (when (:git.commit/hash it)
+      [:div
+       {:class ["w-3/5"]}
+       [commit-comp opts it]])
+
     [:div
-     {:class ["flex" "px-16"]}
+     {:class ["flex" "px-8" "w-1/3" "lg:px-16" "lg:w-1/5"]}
      [debug/raw-metadata (-> opts
                              (assoc :label "Event metadata")
-                             (assoc :initial-show? true)) it]
-
+                             (assoc :initial-show? false)
+                             (assoc :exclude-key #{:git.commit/body
+                                                   :git.commit/full-message})) it]
 
      (when opts [debug/raw-metadata (-> opts
                                         (assoc :label "And opts")
@@ -52,7 +108,7 @@
 (defn event-page []
   (let [{:keys [items]} (events/use-events)]
     [:div
-     {:class ["flex" "flex-row" "flex-wrap" "flex-auto"
+     {:class ["flex" "flex-col" "flex-auto"
               "min-h-screen"
               "overflow-hidden"
               "bg-yo-blue-700"

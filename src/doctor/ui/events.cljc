@@ -19,8 +19,7 @@
 
 #?(:clj
    (comment
-     (api.events/re-push-events)
-     ))
+     (api.events/re-push-events)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Frontend

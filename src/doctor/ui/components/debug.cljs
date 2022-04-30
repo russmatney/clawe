@@ -18,49 +18,52 @@
 
 (defn colorized-metadata
   "TODO figure out why data is getting double printed/leaking in here"
-  ([m] (colorized-metadata 0 m))
-  ([level m]
-   (cond
-     (map? m)
-     (->> m
-          map-key-sort
-          (map (partial colorized-metadata (inc level))))
+  ([m] (colorized-metadata m {}))
+  ([m opts] (colorized-metadata 0 m opts))
+  ([level m {:keys [exclude-key]}]
+   (let [exclude-key (or exclude-key #{})]
+     (cond
+       (map? m)
+       (->> m
+            map-key-sort
+            (map (partial colorized-metadata (inc level))))
 
-     :else
-     (let [[k v] m]
-       ^{:key k}
-       [:div.font-mono
-        {:class ["text-city-gray-400" (str "px-" (* 2 level))]}
-        "["
-        [:span {:class ["text-city-pink-400"]} (str k)]
-        " "
+       :else
+       (let [[k v] m]
+         (when-not (exclude-key k)
+           ^{:key k}
+           [:div.font-mono
+            {:class ["text-city-gray-400" (str "px-" (* 2 level))]}
+            "["
+            [:span {:class ["text-city-pink-400"]} (str k)]
+            " "
 
-        (cond
-          (and (map? v) (seq v))
-          (->> v
-               map-key-sort
-               (map (partial colorized-metadata (inc level))))
+            (cond
+              (and (map? v) (seq v))
+              (->> v
+                   map-key-sort
+                   (map (partial colorized-metadata (inc level))))
 
-          (and (list? v) (seq v))
-          (->> v (map (partial colorized-metadata (inc level))))
+              (and (list? v) (seq v))
+              (->> v (map (partial colorized-metadata (inc level))))
 
-          :else
-          [:span {:class ["text-city-green-400"]}
-           (cond
-             (and (map? v) (empty? v))  "{}"
-             (and (list? v) (empty? v)) "[]"
+              :else
+              [:span {:class ["text-city-green-400"]}
+               (cond
+                 (and (map? v) (empty? v))  "{}"
+                 (and (list? v) (empty? v)) "[]"
 
-             (nil? v) "nil"
+                 (nil? v) "nil"
 
-             :else
-             (str v))])
+                 :else
+                 (str v))])
 
-        "] "]))))
+            "] "]))))))
 
 
 (defn raw-metadata
   ([metadata] [raw-metadata nil metadata])
-  ([{:keys [label initial-show?]} metadata]
+  ([{:keys [label initial-show?] :as opts} metadata]
    (let [label                    (or label "Show raw metadata")
          show-raw-metadata?       (uix/state initial-show?)
          toggle-show-raw-metadata #(swap! show-raw-metadata? (comp boolean not))]
@@ -78,4 +81,4 @@
          (when metadata
            (->> metadata
                 map-key-sort
-                (map colorized-metadata)))])])))
+                (map #(colorized-metadata % opts))))])])))
