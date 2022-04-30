@@ -4,7 +4,10 @@
    [doctor.ui.events :as events]
    [doctor.ui.views.screenshots :as screenshots]
    [doctor.ui.components.debug :as debug]
-   [clojure.string :as string]))
+   [clojure.string :as string]
+
+   [keybind.core :as key]
+   [uix.core.alpha :as uix]))
 
 
 (defn ->string [_opts it]
@@ -75,10 +78,13 @@
         [:p line])]]))
 
 
-(defn event-comp [opts it]
+(defn event-comp [{:keys [selected?]
+                   :as   opts
+                   } it]
   [:div
    {:class ["px-4" "pt-4" "pb-16" "flex-col"
-            "hover:bg-yo-blue-600"]}
+            "hover:bg-yo-blue-600"
+            (when selected? "bg-yo-blue-500")]}
    (when-let [ts (:event/timestamp it)]
      [:div
       {:class ["text-2xl" "pb-4"]}
@@ -111,7 +117,26 @@
 
 
 (defn event-page []
-  (let [{:keys [items]} (events/use-events)]
+  (let [{:keys [items]} (events/use-events)
+        event-count     (count items)
+        cursor-idx      (uix/state 0)]
+
+    (key/bind! "j" ::cursor-down
+               (fn [ev]
+                 ;; TODO smooth-scroll to the now selected component
+                 (swap! cursor-idx (fn [v]
+                                     (let [new-v (inc v)]
+                                       (if (> new-v (dec event-count))
+                                         (dec event-count)
+                                         new-v))))))
+    (key/bind! "k" ::cursor-up
+               (fn [ev]
+                 (swap! cursor-idx
+                        (fn [v]
+                          (let [new-v (dec v)]
+                            (if (< new-v 0)
+                              0 new-v))))))
+
     [:div
      {:class ["flex" "flex-col" "flex-auto"
               "min-h-screen"
@@ -120,8 +145,8 @@
               "text-white"
               "p-6"]}
      ;; TODO filter by type (screenshots, commits, org items)
-     [:div [:h1 {:class ["pb-4" "text-xl"]} (->> items count) " Events"]]
+     [:div [:h1 {:class ["pb-4" "text-xl"]} event-count " Events"]]
 
      (for [[i it] (->> items (map-indexed vector))]
        ^{:key i}
-       [event-comp nil it])]))
+       [event-comp {:selected? (#{i} @cursor-idx)} it])]))

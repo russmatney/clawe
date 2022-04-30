@@ -9,6 +9,7 @@
    [tick.locale-en-us]
    [wing.uix.router :as router]
    [uix.core.alpha :as uix]
+
    [uix.dom.alpha :as uix.dom]
 
    [keybind.core :as key]
@@ -92,17 +93,29 @@
                              (->> menu-opts (map first)
                                   ((fn [xs] (.indexOf xs current-page-name)))))
         indexed-menu-items (->> menu-opts (map-indexed vector))]
-    (key/bind! "j" ::cursor-down #(swap! cursor-idx inc))
-    (key/bind! "k" ::cursor-up #(swap! cursor-idx dec))
-    (key/bind! "enter"
-               ::cursor-select
-               (fn [e]
-                 (println "enter pressed")
-                 (println e)
-                 (when-let [[_i [page-name label]]
-                            (nth indexed-menu-items @cursor-idx)]
-                   (set! (.-location js/window)
-                         (page-name->route page-name)))))
+    (key/bind! "J" ::cursor-down
+               (fn [ev]
+                 (swap! cursor-idx (fn [v]
+                                     (let [new-v (inc v)]
+                                       (if (> new-v (dec (count indexed-menu-items)))
+                                         (dec (count indexed-menu-items))
+                                         new-v))))))
+    (key/bind! "K" ::cursor-up
+               (fn [ev]
+                 (swap! cursor-idx
+                        (fn [v]
+                          (let [new-v (dec v)]
+                            (if (< new-v 0)
+                              0 new-v))))))
+    ;; (key/bind! "enter"
+    ;;            ::cursor-select
+    ;;            (fn [e]
+    ;;              (println "enter pressed")
+    ;;              (println e)
+    ;;              (when-let [[_i [page-name label]]
+    ;;                         (nth indexed-menu-items @cursor-idx)]
+    ;;                (set! (.-location js/window)
+    ;;                      (page-name->route page-name)))))
     [:div
      {:class ["bg-city-blue-900"
               "min-h-screen"
