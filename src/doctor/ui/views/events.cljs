@@ -13,7 +13,7 @@
 (defn ->date-str [_opts it]
   (when (:event/timestamp it)
     (t/format
-      (t/formatter "MMM dd HH:mm")
+      (t/formatter "MMM dd h:mm a")
       (:event/timestamp it))))
 
 (comment
@@ -36,8 +36,8 @@
 
 (defn commit-comp [opts it]
   (let [{:git.commit/keys
-         [body subject short-hash]} it
-        short-dir                   (short-repo it)
+         [body subject short-hash hash]} it
+        short-dir                        (short-repo it)
         body-lines
         (->
           body
@@ -48,22 +48,27 @@
      [:div
       {:class ["flex" "flex-row"]}
       [:div
-       {:class ["text-xl"
-                "text-city-green-400"]}
+       {:class ["text-xl" "text-city-green-400"]}
        subject]
 
       [:div
        {:class ["flex" "flex-col" "ml-auto"]}
-       [:div
-        {:class ["text-city-pink-400"]}
+       [:a {:class ["text-city-pink-400"
+                    "hover:text-city-pink-200"
+                    "hover:cursor-pointer"]
+            ;; TODO not all commits have public repos (ignore dropbox)
+            ;; TODO include this link in db commits
+            :href  (str "https://github.com/" short-dir "/commit/" hash)}
         short-hash]
 
-       [:div
-        {:class ["text-city-pink-400"]}
+       [:a {:class ["text-city-pink-400"
+                    "hover:text-city-pink-200"
+                    "hover:cursor-pointer"]
+            :href  (str "https://github.com/" short-dir)}
         short-dir]]]
 
      [:div
-      {:class ["pt-8"]}
+      {:class [(when (seq body-lines) "pt-8")]}
       (for [[idx line] (->> body-lines
                             (map-indexed vector))]
         ^{:key idx}
@@ -72,7 +77,8 @@
 
 (defn event-comp [opts it]
   [:div
-   {:class ["pt-4" "pb-16"]}
+   {:class ["px-4" "pt-4" "pb-16" "flex-col"
+            "hover:bg-yo-blue-600"]}
    (when-let [ts (:event/timestamp it)]
      [:div
       {:class ["text-2xl" "pb-4"]}
@@ -80,29 +86,28 @@
         time-str
         ts)])
 
+   (when (:file/web-asset-path it)
+     [:div
+      {:class ["w-3/5"]}
+      [screenshots/screenshot-comp opts it]])
+
+   (when (:git.commit/hash it)
+     [:div
+      [commit-comp opts it]])
+
    [:div
-    {:class ["flex" "flex-row"]}
-    (when (:file/web-asset-path it)
-      [:div
-       {:class ["w-2/5"]}
-       [screenshots/screenshot-comp opts it]])
+    {:class ["flex" "pt-4"]}
+    [debug/raw-metadata
+     (-> opts
+         (assoc :label "Event metadata")
+         (assoc :initial-show? false)
+         (assoc :exclude-key #{:git.commit/body
+                               :git.commit/full-message})) it]
 
-    (when (:git.commit/hash it)
-      [:div
-       {:class ["w-3/5"]}
-       [commit-comp opts it]])
-
-    [:div
-     {:class ["flex" "px-8" "w-1/3" "lg:px-16" "lg:w-1/5"]}
-     [debug/raw-metadata (-> opts
-                             (assoc :label "Event metadata")
-                             (assoc :initial-show? false)
-                             (assoc :exclude-key #{:git.commit/body
-                                                   :git.commit/full-message})) it]
-
-     (when opts [debug/raw-metadata (-> opts
-                                        (assoc :label "And opts")
-                                        (assoc :initial-show? true)) opts])]]])
+    (when opts [debug/raw-metadata
+                (-> opts
+                    (assoc :label "And opts")
+                    (assoc :initial-show? false)) opts])]])
 
 
 (defn event-page []
