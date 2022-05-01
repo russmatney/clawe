@@ -12,9 +12,10 @@
 
 (defn todo
   [{:keys [on-select]} item]
-  (let [{:db/keys   [id]
-         :org/keys  [body urls]
-         :todo/keys [status name file-name last-started-at]} item]
+  (let [{:db/keys       [id]
+         :org/keys      [body urls]
+         :org.prop/keys [archive-time]
+         :todo/keys     [status name file-name last-started-at]} item]
     [:div
      {:class    ["py-2" "px-4" "w-1/3"
                  "border" "border-city-blue-600"
@@ -31,8 +32,8 @@
          :status/not-started fa/sticky-note
          :status/in-progress fa/pencil-alt-solid
          :status/cancelled   fa/ban-solid
-         [:div "no status"])]
-
+         :status/skipped     fa/ban-solid
+         (when archive-time [:div.text-sm.font-mono "Archived"]))]
       [components.todos/action-list item]]
 
      [:span
