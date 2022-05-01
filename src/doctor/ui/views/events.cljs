@@ -3,6 +3,7 @@
    [tick.core :as t]
    [doctor.ui.events :as events]
    [doctor.ui.views.screenshots :as screenshots]
+   [doctor.ui.views.todos :as todos]
    [doctor.ui.components.debug :as debug]
    [clojure.string :as string]
 
@@ -101,6 +102,10 @@
      [:div
       [commit-comp opts it]])
 
+   (when (:org/status it)
+     [:div
+      [todos/todo opts it]])
+
    [:div
     {:class ["flex" "pt-4"]}
     [debug/raw-metadata
@@ -108,12 +113,7 @@
          (assoc :label "Event metadata")
          (assoc :initial-show? false)
          (assoc :exclude-key #{:git.commit/body
-                               :git.commit/full-message})) it]
-
-    (when opts [debug/raw-metadata
-                (-> opts
-                    (assoc :label "And opts")
-                    (assoc :initial-show? false)) opts])]])
+                               :git.commit/full-message})) it]]])
 
 (defn event-page []
   (let [{:keys [items]}   (events/use-events)

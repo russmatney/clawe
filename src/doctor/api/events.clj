@@ -97,24 +97,30 @@
 
     :else x))
 
+(comment
+
+  (t/today)
+  (t/tomorrow)
+  )
+
 (defn recent-events []
-  (let [db-commits (c.git/list-db-commits)]
-    (->> (concat (->> (c.screenshots/all-screenshots)
-                      (map ->event)
-                      (filter :event/timestamp)
-                      (sort-by :event/timestamp t/>)
-                      (take 30))
-                 (->> (todos/build-org-todos)
-                      (map ->event)
-                      (filter :event/timestamp)
-                      (sort-by :event/timestamp t/>)
-                      (take 30))
-                 (->> db-commits
-                      (map ->event)
-                      ;; ugh, this pulls all of them, should do this at db layer
-                      (filter :event/timestamp)
-                      (sort-by :event/timestamp t/>)
-                      (take 50)))
+  (let [midnight (->
+                   (t/tomorrow)
+                   (t/at (t/midnight))
+                   (t/zoned-date-time))
+        ->sorted-list
+        (fn [get-items]
+          (->> (get-items)
+               (map ->event)
+               (filter :event/timestamp)
+               (filter (comp
+                         #(t/< % midnight)
+                         :event/timestamp))
+               (sort-by :event/timestamp t/>)
+               (take 45)))]
+    (->> (concat (->sorted-list c.screenshots/all-screenshots)
+                 (->sorted-list todos/build-org-todos)
+                 (->sorted-list c.git/list-db-commits))
          (sort-by :event/timestamp t/>)
          (into []))))
 
