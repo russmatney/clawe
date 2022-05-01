@@ -18,15 +18,15 @@
 
 (defn colorized-metadata
   "TODO figure out why data is getting double printed/leaking in here"
-  ([m] (colorized-metadata m {}))
-  ([m opts] (colorized-metadata 0 m opts))
-  ([level m {:keys [exclude-key]}]
+  ([m] (colorized-metadata {} m))
+  ([opts m] (colorized-metadata 0 opts m))
+  ([level {:keys [exclude-key] :as opts} m]
    (let [exclude-key (or exclude-key #{})]
      (cond
        (map? m)
        (->> m
             map-key-sort
-            (map (partial colorized-metadata (inc level))))
+            (map (partial colorized-metadata (inc level) opts)))
 
        :else
        (let [[k v] m]
@@ -42,10 +42,10 @@
               (and (map? v) (seq v))
               (->> v
                    map-key-sort
-                   (map (partial colorized-metadata (inc level))))
+                   (map (partial colorized-metadata (inc level) opts)))
 
               (and (list? v) (seq v))
-              (->> v (map (partial colorized-metadata (inc level))))
+              (->> v (map (partial colorized-metadata (inc level) opts)))
 
               :else
               [:span {:class ["text-city-green-400"]}
@@ -81,4 +81,4 @@
          (when metadata
            (->> metadata
                 map-key-sort
-                (map #(colorized-metadata % opts))))])])))
+                (map #(colorized-metadata opts %))))])])))
