@@ -11,8 +11,7 @@
               [uix.core.alpha :as uix]
               [plasma.uix :refer [with-rpc with-stream]]])
    [clojure.string :as string]
-   [tick.core :as t]
-   ))
+   [tick.core :as t]))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -344,12 +343,13 @@
                      "flex-grow-1"
                      "p-2"
                      "bg-yo-blue-700"]}
-            (for [p (->> @open-posts
-                         seq
-                         ;; TODO some fancy sorting/filtering feats
-                         ;; (sort-by :time/last-modified)
-                         )]
-              ^{:key (:org/source-file p)}
+            (for [[i p] (->> @open-posts
+                             seq
+                             ;; TODO some fancy sorting/filtering feats
+                             ;; (sort-by :time/last-modified)
+
+                             (map-indexed vector))]
+              ^{:key (or (:org/source-file p) i)}
               [:div
                (selected-node p)])]
            )
