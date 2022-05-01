@@ -10,6 +10,7 @@
   :enter (println "Entering:" (:name (current-task)))
   :init
   (do
+    (def expo-fe-url "http://localhost:4444")
     (def doctor-fe-url "http://localhost:3333")
     (def doctor-tauri-executable "./src-tauri/target/debug/doctor")
 
@@ -85,16 +86,24 @@
      {:dir (str (home-dir) "/russmatney/clawe/src-tauri")}
      "cargo tauri dev")}
 
-  doctor-be {:doc
-             "Run the doctor backend. Consumed from systemd service."
+  doctor-be {:doc "Run the doctor backend."
              :task
              (shell {:dir (str (home-dir) "/russmatney/clawe")}
                     "clj -M:dev:doctor-deps:doctor-server")}
-  doctor-fe {:doc
-             "Run the doctor frontend shadowcljs server. Consumed from systemd service."
+  doctor-fe {:doc "Run the doctor frontend shadowcljs server."
              :task
              (shell {:dir (str (home-dir) "/russmatney/clawe")}
                     "npx shadow-cljs watch doctor-app")}
+
+  expo-be {:doc "Run the expo backend shadowcljs server."
+           :task
+           ;; TODO consider renaming 'doctor-deps'
+           (shell {:dir (str (home-dir) "/russmatney/clawe")}
+                  "clj -M:dev:doctor-deps:expo-server")}
+  expo-fe {:doc "Run the expo frontend shadowcljs server."
+           :task
+           (shell {:dir (str (home-dir) "/russmatney/clawe")}
+                  "npx shadow-cljs watch expo-app")}
 
   topbar {:doc  "Run the doctor topbar via tauri. Consumed from systemd service."
           :task (run-doctor-tauri-app "topbar")}
@@ -105,6 +114,7 @@
 
   restart-doctor        (do
                           (shell "systemctl --user daemon-reload")
+                          ;; TODO osx: run as brew services with dedicated log files
                           (shell "systemctl --user restart doctor-be doctor-fe doctor-topbar"))
   doctor-restart        (run 'restart-doctor)
   restart-doctor-be     (shell "systemctl --user restart doctor-be")
@@ -117,6 +127,7 @@
   stop-doctor (shell "systemctl --user stop doctor-be doctor-fe doctor-topbar")
   doctor-stop {:depends [stop-doctor]}
 
+  ;; TODO osx: pull from proper server/fe logs
   log-doctor         {:task (shell "journalctl --user -n 100 -f -u doctor-be -u doctor-fe -u doctor-topbar")
                       :doc  "Tail the doctor logs. FE, BE, and topbar via journalctl"}
   tail-doctor        (run 'log-doctor)

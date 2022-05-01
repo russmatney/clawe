@@ -33,4 +33,34 @@
     :http-port   3333
     :loader-mode :eval
     :after-load  doctor.ui/mount-root
+    :repl-pprint true}}
+
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; expo
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+  :expo-app
+  {:target           :browser
+   :output-dir       "public/js/compiled"
+   :asset-path       "/js/compiled"
+   :modules          {:main {:init-fn expo.ui.core/init}}
+   :compiler-options {:output-feature-set :es-next}
+
+   :nrepl {:port 3332}
+
+   :build-hooks
+   [(plasma.uix.hot-reload/compile-prepare!)
+    (plasma.uix.hot-reload/compile-finish!)]
+
+   :dev {:closure-defines {:plasma.uix.hot-reload? true}}
+
+   :closure-defines
+   {expo.ui.events.tubes/SERVER_HOST #shadow/env "SERVER_HOST"
+    expo.ui.events.tubes/SERVER_PORT #shadow/env "SERVER_PORT"}
+
+   :devtools
+   {:http-root   "public"
+    :http-port   4444
+    :loader-mode :eval
+    :after-load  expo.ui/mount-root
     :repl-pprint true}}}}

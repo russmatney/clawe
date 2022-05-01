@@ -35,6 +35,9 @@
     org.clojure/core.specs.alpha nil}}
 
   :doctor-server {:main-opts ["-m" "doctor.main"]}
+  :expo-server   {:main-opts ["-m" "expo.main"]}
+
+  ;; TODO rename :doctor-deps everywhere to something like :server-deps
   :doctor-deps
   {:extra-deps
    {;; dev

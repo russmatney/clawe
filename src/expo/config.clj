@@ -5,7 +5,7 @@
    [clojure.java.io :as io]))
 
 (defn ->config []
-  (aero/read-config (io/resource "config.edn")))
+  (aero/read-config (io/resource "expo.edn")))
 
 (comment
   (->config))

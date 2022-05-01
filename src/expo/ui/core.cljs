@@ -35,6 +35,13 @@
        :page/posts  [posts/view]
        [:div "hi"])]))
 
+(comment
+  (+ 1 4)
+  "hi"
+
+  :sup
+  )
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -51,7 +58,7 @@
   (enable-console-print!))
 
 (goog-define SERVER_HOST "localhost")
-(goog-define SERVER_PORT 5777)
+(goog-define SERVER_PORT 4443)
 
 (def ws-url (str "ws://" SERVER_HOST ":" SERVER_PORT "/ws"))
 
