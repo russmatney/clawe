@@ -106,6 +106,16 @@ briefly in their FAQ: https://awesomewm.org/apidoc/documentation/90-FAQ.md.html
 (search `logs`).
 
 You can also [[file:~/.cache/awesome/logs][visit this file in emacs]].
+** Expo
+
+#+begin_src sh
+# after building main-built with yarn run build
+cp public/css/main-built.css expo/public/css/main-built.css
+
+# symlinking assets
+mkdir expo/public/assets
+ln -s ~/Screenshots expo/public/assets/screenshots
+#+end_src
 
 * tauri conf
 

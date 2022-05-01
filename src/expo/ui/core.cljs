@@ -17,8 +17,7 @@
 (def routes
   [["/" {:name :page/root}]
    ["/garden" {:name :page/garden}]
-   ["/posts" {:name :page/posts}]
-   ])
+   ["/posts" {:name :page/posts}]])
 
 (defn view
   []
@@ -38,9 +37,7 @@
 (comment
   (+ 1 4)
   "hi"
-
-  :sup
-  )
+  :sup)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;

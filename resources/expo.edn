@@ -1,0 +1,4 @@
+{:prod        #env "PROD"
+ :server/port #or [#env SERVER_PORT 4443]
+ :nrepl/port  #or [#env NREPL_PORT 4442]
+ :home-dir    "/home/russ"}

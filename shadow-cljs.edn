@@ -1,4 +1,6 @@
-{:deps {:aliases [:doctor-deps]}
+{:deps {:aliases
+        [;; TODO rename
+         :doctor-deps]}
 
  :nrepl {:port 3335
          :middleware
@@ -41,7 +43,7 @@
 
   :expo-app
   {:target           :browser
-   :output-dir       "public/js/compiled"
+   :output-dir       "expo/public/js/compiled"
    :asset-path       "/js/compiled"
    :modules          {:main {:init-fn expo.ui.core/init}}
    :compiler-options {:output-feature-set :es-next}
@@ -59,7 +61,7 @@
     expo.ui.events.tubes/SERVER_PORT #shadow/env "SERVER_PORT"}
 
    :devtools
-   {:http-root   "public"
+   {:http-root   "expo/public"
     :http-port   4444
     :loader-mode :eval
     :after-load  expo.ui/mount-root

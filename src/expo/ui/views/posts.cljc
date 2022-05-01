@@ -27,12 +27,13 @@
    (defn get-last-modified
      [item]
      (def i item)
-     (-> item :org/source-file fs/last-modified-time str t/parse t/date-time
-         (t/in "America/New_York"))))
+     (-> item :org/source-file fs/last-modified-time str)))
 
 
 #?(:clj
    (comment
+     (-> i :org/source-file fs/last-modified-time str
+         )
      (-> i :org/source-file fs/last-modified-time str t/parse
          t/date-time
          (t/in "America/New_York")
@@ -53,7 +54,9 @@
          item
          (dissoc :org/items)
          (assoc :garden/file-name (fs/file-name source-file)
-                :org/source-file (string/replace-first source-file "/home/russ/todo/" "")
+                :org/source-file (-> source-file
+                                     (string/replace-first "/home/russ/todo/" "")
+                                     (string/replace-first "/Users/russ/todo/" ""))
                 :org.prop/created-at (parse-created-at created-at)
                 :org.prop/title (or title (fs/file-name source-file))
                 :time/last-modified last-modified)))))
@@ -96,6 +99,7 @@
        (todo-dir-files)
        (take 3)
        )
+
      ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -326,7 +330,7 @@
                    "max-w-100"]}
           (for [[i it] (->> items
                             ;; TODO some fancy grouping/sorting/filtering feats
-                            (sort-by :time/last-modified t/>)
+                            (sort-by :time/last-modified >)
                             (map-indexed vector))]
             ^{:key i}
             [post-link
