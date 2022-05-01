@@ -9,7 +9,8 @@
    [ring.adapter.undertow.websocket :as undertow.ws]
    [expo.config :as config]
    [expo.ui.views.counts :as counts]
-   [expo.ui.views.garden :as garden]
+   [expo.ui.views.garden :as views.garden]
+   [garden.core :as garden]
    [expo.time-literals-transit :as tlt]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -40,6 +41,7 @@
 (defsys *server*
   "Expo webserver"
   :extra-deps [counts/*counts-stream*
+               views.garden/*garden-stream*
                garden/*garden-stream*]
   :start
   (let [port (:server/port config/*config*)]
