@@ -36,3 +36,8 @@
              ;; TODO consider whitelist of supported types
              :else true)))
        (into {})))
+
+(defn zp
+  "Zero Pad numbers - takes a number and the length to pad to as arguments"
+  [n c]
+  (format (str "%0" c "d") n))

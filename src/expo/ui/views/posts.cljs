@@ -1,7 +1,6 @@
 (ns expo.ui.views.posts
   (:require
    [wing.core :as w]
-   [wing.uix.router :as router]
    [uix.core.alpha :as uix]
    [hooks.garden]
    [clojure.string :as string]
@@ -21,13 +20,11 @@
   "A link to a blog-post-y rendering of a garden note"
   [{:keys [on-select is-selected?]} item]
   (let [{:org/keys      [source-file]
-         :org.prop/keys [title created-at]
-         :garden/keys   [file-name]
+         :org.prop/keys [title]
          :time/keys     [last-modified]}
 
         item
         hovering? (uix/state false)]
-    (def i item)
     [:div
      {:class (->> ["flex" "flex-row"
                    "px-2"
@@ -70,23 +67,10 @@
             (< hours-ago 24) (str hours-ago " hour(s) ago")
             :else            (str days-ago " day(s) ago")))])]))
 
-(comment
-
-  (let [last     (i :time/last-modified)
-        time-ago (t/duration {:tick/beginning (t/instant last)
-                              :tick/end       (t/now)})
-        mins-ago (t/minutes time-ago)]
-    (str mins-ago " mins ago")
-    )
-
-  )
-
 
 (defn selected-node
   [{:org/keys      [source-file body]
-    :org.prop/keys [title created-at]
-    :garden/keys   [file-name]
-    :time/keys     [last-modified]}]
+    :org.prop/keys [title]}]
 
   [:div
    {:class ["flex" "flex-col" "p-2"]}
@@ -118,15 +102,7 @@
                                (filter (comp #(string/includes? % "journal.org") :org/source-file))
                                first)
         last-selected     (uix/state default-selection)
-        open-posts        (uix/state #{default-selection})
-        d                 (router/use-data)
-        m                 (router/use-match)
-        rp                (router/use-route-parameters)]
-    (def d d)
-    (def m m)
-    (def rp rp)
-    (def op open-posts)
-
+        open-posts        (uix/state #{default-selection})]
     ;; Posts
     ;; List of post names grouped by tag
     ;; Maybe groups of linked nodes
@@ -194,26 +170,4 @@
            [:div
             (selected-node p)])]
         )
-      ;; (when @last-selected
-      ;;   [:div
-      ;;    {:class ["flex"
-      ;;             "flex-grow-1"
-      ;;             "p-2"
-      ;;             "bg-yo-blue-700"
-      ;;             ]}
-      ;;    (selected-node @last-selected)])
       ]]))
-
-(comment
-  (->> @op
-       seq
-       ;; (map :time/last-modified)
-       count
-       )
-  (->> @op
-       (sort-by :time/last-modified)
-       (reverse)
-       (take 2)
-       (map :org/name)
-       )
-  (w/toggle #{1 2} 3))
