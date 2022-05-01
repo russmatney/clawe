@@ -2,14 +2,14 @@
   (:require
    [plasma.core :refer [defhandler defstream]]
    #?@(:clj [[garden.core :as garden]
-             [doctor.util]]
+             [util]]
        :cljs [[plasma.uix :refer [with-rpc with-stream]]])))
 
 
 (defhandler get-garden-handler []
   (->>
     (garden/get-garden)
-    (map doctor.util/drop-complex-types)))
+    (map util/drop-complex-types)))
 
 (defstream garden-stream [] garden/*garden-stream*)
 

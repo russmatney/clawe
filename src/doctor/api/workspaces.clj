@@ -5,8 +5,7 @@
    [malli.transform :as mt]
    [malli.core :as m]
    [clawe.workspaces :as clawe.workspaces]
-   [doctor.util]
-   ))
+   [util]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Active workspaces
@@ -17,7 +16,7 @@
     (clawe.workspaces/all-workspaces)
     (filter :awesome.tag/name)
     (map clawe.workspaces/apply-git-status)
-    (map doctor.util/drop-complex-types)))
+    (map util/drop-complex-types)))
 
 (defsys *workspaces-stream*
   :start (s/stream)
@@ -63,6 +62,11 @@
 
 
 (comment
+  (def -w
+    (->> (clawe.workspaces/all-workspaces)
+         (filter :awesome.tag/name)
+         first
+         ))
 
   (m/decode
     fe-workspace
@@ -76,12 +80,5 @@
     first)
 
   (update-workspaces)
-
-
-  (def -w
-    (->> (clawe.workspaces/all-workspaces)
-         (filter :awesome.tag/name)
-         first
-         ))
 
   )
