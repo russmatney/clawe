@@ -15,7 +15,10 @@
 (defn ->time-string [x]
   ((some-fn #(when (string? %) %)
             :screenshot/time-string
-            :git.commit/author-date)
+            :git.commit/author-date
+            :org/closed
+            :org/scheduled
+            :org/deadline)
    x))
 
 (comment
@@ -30,13 +33,24 @@
   [x]
   (when-let [time-string (->time-string x)]
     (let [parse-attempts
-          [#(t/parse-zoned-date-time
+          [
+           #(t/parse-zoned-date-time
               % (t/formatter "yyyy-MM-dd_HH:mm:ssZ"))
            #(t/zoned-date-time
               (t/parse-date-time
                 % (t/formatter "yyyy-MM-dd_h.mm.ss a")))
            #(t/parse-zoned-date-time
-              % (t/formatter "E, d MMM yyyy HH:mm:ss Z"))]
+              % (t/formatter "E, d MMM yyyy HH:mm:ss Z"))
+           #(t/zoned-date-time
+              (t/parse-date-time
+                % (t/formatter "yyyy-MM-dd-HHmmss")))
+           #(t/zoned-date-time
+              (t/parse-date-time
+                % (t/formatter "yyyy-MM-dd E HH:mm")))
+           #(->
+              (t/parse-date % (t/formatter "yyyy-MM-dd E"))
+              (t/at (t/midnight))
+              (t/zoned-date-time))]
           wrapped-parse-attempts
           (->> parse-attempts
                (map (fn [parse]
@@ -58,9 +72,18 @@
     "Fri, 10 Dec 2021 00:35:56 -0500"
     (t/formatter "E, d MMM yyyy HH:mm:ss Z"))
 
+  (->
+    (t/parse-date
+      "2022-04-24 Sun"
+      (t/formatter "yyyy-MM-dd E"))
+    (t/at (t/midnight))
+    (t/zoned-date-time)
+    )
+
   (parse-time-string "x")
   (parse-time-string "2022-02-26_15:47:52-0500")
   (parse-time-string "2022-04-24_9.23.32 PM")
+  (parse-time-string "2022-04-24 Fri")
   (parse-time-string "Fri, 10 Dec 2021 00:35:56 -0500")
   (parse-time-string "Fri, 4 Feb 2022 15:38:14 -0500")
   )
@@ -68,23 +91,27 @@
 (defn ->event [x]
   (cond
     (->time-string x)
-    (-> x (assoc :event/timestamp (parse-time-string x)))
+    (if-let [ts (parse-time-string x)]
+      (-> x (assoc :event/timestamp ts))
+      x)
 
     :else x))
 
 (defn recent-events []
-  (println "collecting recent events")
-  (let [scrs       (c.screenshots/all-screenshots)
-        org-todos  (todos/build-org-todos)
-        db-commits (c.git/list-db-commits)]
-    (->> (concat (->> scrs
+  (let [db-commits (c.git/list-db-commits)]
+    (->> (concat (->> (c.screenshots/all-screenshots)
                       (map ->event)
                       (filter :event/timestamp)
+                      (sort-by :event/timestamp t/>)
                       (take 30))
-                 ;; (->> org-todos (take 30))
+                 (->> (todos/build-org-todos)
+                      (map ->event)
+                      (filter :event/timestamp)
+                      (sort-by :event/timestamp t/>)
+                      (take 30))
                  (->> db-commits
                       (map ->event)
-                      ;; ugh, this pulls all of them...
+                      ;; ugh, this pulls all of them, should do this at db layer
                       (filter :event/timestamp)
                       (sort-by :event/timestamp t/>)
                       (take 50)))

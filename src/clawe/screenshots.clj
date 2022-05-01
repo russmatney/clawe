@@ -23,13 +23,17 @@
 
 (defn fname->screenshot [f]
   (let [fname (fs/file-name f)]
-    {:file/full-path f
+    {:file/full-path         f
      ;; NOTE this implies a symlink between the screenshots dir and the public assets dir
      :file/web-asset-path    (str "/assets/screenshots/" fname)
      :name                   fname
      :screenshot/time-string (-> fname
                                  (string/replace #"screenshot_" "")
                                  (string/replace #"Screen Shot " "")
+                                 (string/replace #"_\d{2,4}x\d{2,4}_scrot_000" "")
+                                 (string/replace #"_\d{2,4}x\d{2,4}_scrot_001" "")
+                                 (string/replace #"_\d{2,4}x\d{2,4}_scrot_002" "")
+                                 (string/replace #"_\d{2,4}x\d{2,4}_scrot" "")
                                  (string/replace #" at " "_")
                                  (string/replace #".png" "")
                                  (string/replace #".jpg" ""))}))

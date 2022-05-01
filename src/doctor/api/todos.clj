@@ -122,8 +122,7 @@
     {:additional-roots ["~/russmatney/{doctor,clawe,org-crud}/{readme,todo}.org"]})
 
   (org-file-paths
-    {:additional-roots (->> (days) (map daily-path))})
-  )
+    {:additional-roots (->> (days) (map daily-path))}))
 
 (defn build-org-todos []
   (->> (org-file-paths
@@ -142,7 +141,9 @@
        (map (fn [[s xs]]
               [s (count xs)])))
 
-  (build-org-todos)
+  (->>
+    (build-org-todos)
+    (take 7))
 
   (some->>
     (db/query
