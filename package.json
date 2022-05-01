@@ -7,6 +7,7 @@
   },
   "dependencies": {
     "@fullhuman/postcss-purgecss": "^2.3.0",
+    "@headlessui/react": "^1.6.0",
     "@js-joda/core": "^3.2.0",
     "@js-joda/locale_en-us": "^3.2.2",
     "@js-joda/timezone": "^2.5.0",
@@ -21,7 +22,7 @@
     "xregexp": "^5.0.2"
   },
   "devDependencies": {
-    "shadow-cljs": "^2.15.2",
-    "@tauri-apps/cli": "=1.0.0-rc.7"
+    "@tauri-apps/cli": "=1.0.0-rc.7",
+    "shadow-cljs": "^2.15.2"
   }
 }
