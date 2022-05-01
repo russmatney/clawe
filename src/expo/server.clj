@@ -7,11 +7,12 @@
    [cognitect.transit :as transit]
    [ring.adapter.undertow :as undertow]
    [ring.adapter.undertow.websocket :as undertow.ws]
+
+   [dates.transit-time-literals :as ttl]
    [expo.config :as config]
    [expo.ui.views.counts :as counts]
    [expo.ui.views.garden :as views.garden]
-   [garden.core :as garden]
-   [expo.time-literals-transit :as tlt]))
+   [garden.core :as garden]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Plasma config
@@ -27,8 +28,8 @@
     {:session-atom           *sessions*
      :send-fn                #(undertow.ws/send %2 %1)
      :on-error               #(log/warn (:error %) "Error in plasma handler" {:request %})
-     :transit-read-handlers  (merge transit/default-read-handlers tlt/read-handlers)
-     :transit-write-handlers (merge transit/default-write-handlers tlt/write-handlers)
+     :transit-read-handlers  (merge transit/default-read-handlers ttl/read-handlers)
+     :transit-write-handlers (merge transit/default-write-handlers ttl/write-handlers)
      :interceptors           [(plasma.interceptors/auto-require
                                 #(do (log/info "Auto requiring namespace" {:namespace %})
                                      (systemic.core/start!)))

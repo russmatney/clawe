@@ -8,16 +8,16 @@
    [ring.adapter.undertow :as undertow]
    [ring.adapter.undertow.websocket :as undertow.ws]
 
-   [ralphie.notify :as notify]
+   [dates.transit-time-literals :as ttl]
    [doctor.config :as config]
-   [doctor.time-literals-transit :as tlt]
    [doctor.api.core :as api]
    [doctor.api.events :as events]
    [doctor.api.topbar :as topbar]
    [doctor.api.todos :as todos]
    [doctor.api.screenshots :as screenshots]
    [doctor.api.wallpapers :as wallpapers]
-   [doctor.api.workspaces :as workspaces]))
+   [doctor.api.workspaces :as workspaces]
+   [ralphie.notify :as notify]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Plasma config
@@ -34,9 +34,9 @@
      :send-fn      #(undertow.ws/send %2 %1)
      :on-error     #(log/warn (:error %) "Error in plasma handler" {:request %})
      :transit-read-handlers
-     (merge transit/default-read-handlers tlt/read-handlers)
+     (merge transit/default-read-handlers ttl/read-handlers)
      :transit-write-handlers
-     (merge transit/default-write-handlers tlt/write-handlers)
+     (merge transit/default-write-handlers ttl/write-handlers)
      :interceptors [(plasma.interceptors/auto-require
                       #(do (log/info "Auto requiring namespace" {:namespace %})
                            (systemic.core/start!)))

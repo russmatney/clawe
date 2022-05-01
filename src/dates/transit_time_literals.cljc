@@ -1,4 +1,4 @@
-(ns expo.time-literals-transit
+(ns dates.transit-time-literals
   "Connect time-literals to transit.
 
   Sourced and edited from:
