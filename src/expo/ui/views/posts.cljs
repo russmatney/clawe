@@ -3,7 +3,7 @@
    [wing.core :as w]
    [wing.uix.router :as router]
    [uix.core.alpha :as uix]
-   [hooks.garden :as hooks.garden]
+   [hooks.garden]
    [clojure.string :as string]
    [tick.core :as t]))
 

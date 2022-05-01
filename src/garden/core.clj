@@ -1,11 +1,13 @@
 (ns garden.core
   (:require
-   [systemic.core :refer [defsys] :as sys]
+   [babashka.fs :as fs]
+   [clojure.string :as string]
    [manifold.stream :as s]
    [org-crud.core :as org-crud]
+   [systemic.core :refer [defsys] :as sys]
+
    [ralphie.zsh :as r.zsh]
-   [babashka.fs :as fs]
-   [clojure.string :as string]))
+   [util]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; org helpers
@@ -70,7 +72,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn get-garden []
-  (todo-dir-files))
+  (->>
+    (todo-dir-files)
+    (map util/drop-complex-types))
+  )
 
 (comment
   (->>
@@ -85,4 +90,6 @@
   (sys/start! `*garden-stream*))
 
 (defn update-garden []
-  (s/put! *garden-stream* (get-garden)))
+  (s/put! *garden-stream*
+
+          (get-garden)))
