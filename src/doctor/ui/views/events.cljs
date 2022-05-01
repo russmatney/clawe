@@ -79,8 +79,8 @@
 
 (defn event-comp [{:keys [selected?
                           selected-ref]
-                   :as   opts
-                   } it]
+                   :as   opts}
+                  it]
   [:div
    {:class ["px-4" "pt-4" "pb-16" "flex-col"
             "hover:bg-yo-blue-600"
@@ -102,8 +102,9 @@
      [:div
       [commit-comp opts it]])
 
-   (when (:org/status it)
+   (when (:org/name it)
      [:div
+      ;; TODO non-todo version of org-item
       [todos/todo opts it]])
 
    [:div

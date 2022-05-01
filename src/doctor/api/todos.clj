@@ -113,8 +113,33 @@
 (defn daily-path [day]
   (str "~/todo/daily/" day ".org"))
 
-(defn days [] [(t/today)
-               (t/yesterday)])
+(defn days []
+  ;; TODO last 2 weeks
+  [(t/today)
+   (t/yesterday)])
+
+(defn monthly-archive-path [year-month]
+  (str "~/todo/archive/" year-month ".org")
+  )
+
+(defn months []
+  (->>
+    [
+     (t/today)
+     (t/<<
+       (t/today)
+       (t/new-period 1 :months))
+     (t/<<
+       (t/today)
+       (t/new-period 2 :months))]
+    (map (fn [t]
+           (t/format (t/formatter "yyyy-MM") t)))))
+
+(comment
+  (->> (months) (map monthly-archive-path))
+  )
+
+
 
 (comment
   (org-file-paths)
@@ -126,7 +151,8 @@
 
 (defn build-org-todos []
   (->> (org-file-paths
-         {:additional-roots (->> (days) (map daily-path))})
+         {:additional-roots
+          (concat (->> (days) (map daily-path)))})
        (map fs/file)
        (filter fs/exists?)
        (mapcat org-crud/path->flattened-items)
@@ -158,6 +184,22 @@
        (sort-by :todo/status)
        (sort-by (comp not #{:status/in-progress} :todo/status))))
 
+
+(defn recent-org-items []
+  ;; TODO consider db pulling/overwriting/syncing
+  (->> (org-file-paths
+         {:additional-roots
+          (concat
+            (->> (days) (map daily-path))
+            (->> (months) (map monthly-archive-path)))})
+       (map fs/file)
+       (filter fs/exists?)
+       (mapcat org-crud/path->flattened-items)
+       (map org-item->todo)))
+
+(comment
+  (recent-org-items))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; get-todos
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -166,8 +208,8 @@
   (let [org-todos (build-org-todos)
         db-todos  (list-todos-db)
         ;; should these be merged instead of concat/deduped?
-        all (->> (concat org-todos db-todos)
-                 (w/distinct-by :org/name))]
+        all       (->> (concat org-todos db-todos)
+                       (w/distinct-by :org/name))]
     all))
 
 (comment

@@ -18,7 +18,8 @@
             :git.commit/author-date
             :org/closed
             :org/scheduled
-            :org/deadline)
+            :org/deadline
+            :org.prop/archive-time)
    x))
 
 (comment
@@ -119,7 +120,7 @@
                (sort-by :event/timestamp t/>)
                (take 45)))]
     (->> (concat (->sorted-list c.screenshots/all-screenshots)
-                 (->sorted-list todos/build-org-todos)
+                 (->sorted-list todos/recent-org-items)
                  (->sorted-list c.git/list-db-commits))
          (sort-by :event/timestamp t/>)
          (into []))))
