@@ -4,7 +4,6 @@
    [clojure.string :as string]
    [tick.core :as t]))
 
-;; TODO unit tests
 (defn parse-time-string
   [time-string]
   (when (and time-string (string? time-string) (seq (string/trim time-string)))
@@ -39,10 +38,6 @@
           nil)))))
 
 (comment
-  ((some-fn :screenshot/time-string :y)
-   {:screenshot/time-string "x"
-    :y                      "z"})
-
   (t/parse-zoned-date-time
     "Fri, 10 Dec 2021 00:35:56 -0500"
     (t/formatter "E, d MMM yyyy HH:mm:ss Z"))
@@ -52,13 +47,12 @@
       "2022-04-24 Sun"
       (t/formatter "yyyy-MM-dd E"))
     (t/at (t/midnight))
-    (t/zoned-date-time)
-    )
+    (t/zoned-date-time))
 
   (parse-time-string "x")
   (parse-time-string "2022-02-26_15:47:52-0500")
   (parse-time-string "2022-04-24_9.23.32 PM")
-  (parse-time-string "2022-04-24 Fri")
+  (parse-time-string "2022-04-24 Sun")
   (parse-time-string "Fri, 10 Dec 2021 00:35:56 -0500")
   (parse-time-string "Fri, 4 Feb 2022 15:38:14 -0500")
   )
