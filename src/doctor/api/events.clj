@@ -6,7 +6,8 @@
    [tick.core :as t]
    [ralphie.notify :as notify]
    [doctor.api.todos :as todos]
-   [clawe.git :as c.git]))
+   [clawe.git :as c.git]
+   [clojure.string :as string]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; API
@@ -33,36 +34,37 @@
 (defn parse-time-string
   [x]
   (when-let [time-string (->time-string x)]
-    (let [parse-attempts
-          [
-           #(t/parse-zoned-date-time
-              % (t/formatter "yyyy-MM-dd_HH:mm:ssZ"))
-           #(t/zoned-date-time
-              (t/parse-date-time
-                % (t/formatter "yyyy-MM-dd_h.mm.ss a")))
-           #(t/parse-zoned-date-time
-              % (t/formatter "E, d MMM yyyy HH:mm:ss Z"))
-           #(t/zoned-date-time
-              (t/parse-date-time
-                % (t/formatter "yyyy-MM-dd-HHmmss")))
-           #(t/zoned-date-time
-              (t/parse-date-time
-                % (t/formatter "yyyy-MM-dd E HH:mm")))
-           #(->
-              (t/parse-date % (t/formatter "yyyy-MM-dd E"))
-              (t/at (t/midnight))
-              (t/zoned-date-time))]
-          wrapped-parse-attempts
-          (->> parse-attempts
-               (map (fn [parse]
-                      #(try
-                         (parse %)
-                         (catch Exception e e nil)))))]
-      (if-let [time ((apply some-fn wrapped-parse-attempts) time-string)]
-        time
-        (do
-          (notify/notify "Error parsing time string" time-string)
-          nil)))))
+    (when (and (string? time-string) (seq (string/trim time-string)))
+      (let [parse-attempts
+            [
+             #(t/parse-zoned-date-time
+                % (t/formatter "yyyy-MM-dd_HH:mm:ssZ"))
+             #(t/zoned-date-time
+                (t/parse-date-time
+                  % (t/formatter "yyyy-MM-dd_h.mm.ss a")))
+             #(t/parse-zoned-date-time
+                % (t/formatter "E, d MMM yyyy HH:mm:ss Z"))
+             #(t/zoned-date-time
+                (t/parse-date-time
+                  % (t/formatter "yyyy-MM-dd-HHmmss")))
+             #(t/zoned-date-time
+                (t/parse-date-time
+                  % (t/formatter "yyyy-MM-dd E HH:mm")))
+             #(->
+                (t/parse-date % (t/formatter "yyyy-MM-dd E"))
+                (t/at (t/midnight))
+                (t/zoned-date-time))]
+            wrapped-parse-attempts
+            (->> parse-attempts
+                 (map (fn [parse]
+                        #(try
+                           (parse %)
+                           (catch Exception e e nil)))))]
+        (if-let [time ((apply some-fn wrapped-parse-attempts) time-string)]
+          time
+          (do
+            (notify/notify "Error parsing time string" time-string)
+            nil))))))
 
 (comment
   ((some-fn :screenshot/time-string :y)
