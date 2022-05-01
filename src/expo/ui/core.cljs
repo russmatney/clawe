@@ -9,7 +9,8 @@
    [time-literals.read-write]
    [tick.timezone]
    [tick.locale-en-us]
-   [expo.time-literals-transit :as tlt]
+
+   [dates.transit-time-literals :as ttl]
    [expo.ui.views.counts :as counts]
    [expo.ui.views.garden :as garden]
    [expo.ui.views.posts :as posts]))
@@ -33,11 +34,6 @@
        :page/garden [garden/view]
        :page/posts  [posts/view]
        [:div "hi"])]))
-
-(comment
-  (+ 1 4)
-  "hi"
-  :sup)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -67,7 +63,7 @@
       {:on-open                #(log/info "on-open")
        :on-close               #(log/info "on-close")
        :on-error               #(log/info "on-error")
-       :transit-write-handlers tlt/write-handlers
-       :transit-read-handlers  tlt/read-handlers}))
+       :transit-write-handlers ttl/write-handlers
+       :transit-read-handlers  ttl/read-handlers}))
   (dev-setup)
   (mount-root))

@@ -1,7 +1,7 @@
 (ns doctor.ui.core
   (:require
    [plasma.client]
-   [doctor.time-literals-transit :as tlt]
+   [dates.transit-time-literals :as ttl]
    [taoensso.timbre :as log]
    [time-literals.data-readers]
    [time-literals.read-write]
@@ -221,6 +221,6 @@
       {:on-open                on-open
        :on-close               on-close
        :on-error               on-error
-       :transit-write-handlers tlt/write-handlers
-       :transit-read-handlers  tlt/read-handlers}))
+       :transit-write-handlers ttl/write-handlers
+       :transit-read-handlers  ttl/read-handlers}))
   (mount-root))
