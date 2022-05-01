@@ -103,19 +103,38 @@
   todo   {:doc  "Run the doctor todo window via tauri."
           :task (run-doctor-tauri-app "todo")}
 
-  restart-doctor (do
-                   (shell "systemctl --user daemon-reload")
-                   (shell "systemctl --user restart doctor-be doctor-fe doctor-topbar"))
-  doctor-restart {:depends [restart-doctor]}
+  restart-doctor        (do
+                          (shell "systemctl --user daemon-reload")
+                          (shell "systemctl --user restart doctor-be doctor-fe doctor-topbar"))
+  doctor-restart        (run 'restart-doctor)
+  restart-doctor-be     (shell "systemctl --user restart doctor-be")
+  doctor-restart-be     (run 'restart-doctor-be)
+  restart-doctor-fe     (shell "systemctl --user restart doctor-fe")
+  doctor-restart-fe     (run 'restart-doctor-fe)
+  restart-doctor-topbar (shell "systemctl --user restart doctor-topbar")
+  doctor-restart-topbar (run 'restart-doctor-topbar)
 
   stop-doctor (shell "systemctl --user stop doctor-be doctor-fe doctor-topbar")
   doctor-stop {:depends [stop-doctor]}
 
-  log-doctor   {:task (shell "journalctl --user -n 100 -f -u doctor-be -u doctor-fe -u doctor-topbar")
-                :doc  "Tail the doctor logs. FE, BE, and topbar via journalctl"}
-  tail-doctor  (run 'log-doctor)
-  doctor-log   (run 'log-doctor)
-  doctor-tail  (run 'log-doctor)
+  log-doctor         {:task (shell "journalctl --user -n 100 -f -u doctor-be -u doctor-fe -u doctor-topbar")
+                      :doc  "Tail the doctor logs. FE, BE, and topbar via journalctl"}
+  tail-doctor        (run 'log-doctor)
+  doctor-log         (run 'log-doctor)
+  doctor-tail        (run 'log-doctor)
+  log-doctor-fe      {:task (shell "journalctl --user -n 100 -f -u doctor-fe")}
+  tail-doctor-fe     (run 'log-doctor-fe)
+  doctor-log-fe      (run 'log-doctor-fe)
+  doctor-tail-fe     (run 'log-doctor-fe)
+  log-doctor-be      {:task (shell "journalctl --user -n 100 -f -u doctor-be")}
+  tail-doctor-be     (run 'log-doctor-be)
+  doctor-log-be      (run 'log-doctor-be)
+  doctor-tail-be     (run 'log-doctor-be)
+  log-doctor-topbar  {:task (shell "journalctl --user -n 100 -f -u doctor-topbar")}
+  tail-doctor-topbar (run 'log-doctor-topbar)
+  doctor-log-topbar  (run 'log-doctor-topbar)
+  doctor-tail-topbar (run 'log-doctor-topbar)
+
   log-awesome  {:task (shell "tail -f /home/russ/.cache/awesome/logs")
                 :doc  "Tail the awesome logs, via ~/.cache/awesome/logs"}
   tail-awesome (run 'log-awesome)
