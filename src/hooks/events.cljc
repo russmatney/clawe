@@ -1,4 +1,4 @@
-(ns doctor.ui.events
+(ns hooks.events
   (:require
    [plasma.core :refer [defhandler defstream]]
    #?@(:clj [[doctor.api.events :as api.events]]

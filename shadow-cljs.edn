@@ -27,8 +27,8 @@
    :dev {:closure-defines {:plasma.uix.hot-reload? true}}
 
    :closure-defines
-   {doctor.ui.events.tubes/SERVER_HOST #shadow/env "SERVER_HOST"
-    doctor.ui.events.tubes/SERVER_PORT #shadow/env "SERVER_PORT"}
+   {doctor.ui.core/SERVER_HOST #shadow/env "SERVER_HOST"
+    doctor.ui.core/SERVER_PORT #shadow/env "SERVER_PORT"}
 
    :devtools
    {:http-root   "public"
@@ -57,8 +57,8 @@
    :dev {:closure-defines {:plasma.uix.hot-reload? true}}
 
    :closure-defines
-   {expo.ui.events.tubes/SERVER_HOST #shadow/env "SERVER_HOST"
-    expo.ui.events.tubes/SERVER_PORT #shadow/env "SERVER_PORT"}
+   {expo.ui.core/SERVER_HOST #shadow/env "SERVER_HOST"
+    expo.ui.core/SERVER_PORT #shadow/env "SERVER_PORT"}
 
    :devtools
    {:http-root   "expo/public"
