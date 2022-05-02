@@ -7,7 +7,7 @@
    [tick.core :as t]
    [hooks.workspaces]
    [doctor.ui.tauri :as tauri]
-   [doctor.ui.topbar :as topbar]
+   [hooks.topbar]
    [doctor.ui.components.icons :as icons]
    [doctor.ui.components.charts :as charts]
    [doctor.ui.components.todos :as todos]))
@@ -301,7 +301,7 @@
         last-hovered-workspace (uix/state nil)
         topbar-above           (uix/state true)
         toggle-above-below     (fn []
-                                 (-> (topbar/toggle-topbar-above (not @topbar-above))
+                                 (-> (hooks.topbar/toggle-topbar-above (not @topbar-above))
                                      (.then (fn [v] (reset! topbar-above v)))))
         time                   (uix/state
                                  #_{:clj-kondo/ignore [:invalid-arity]}
@@ -334,7 +334,7 @@
      :time                   @time}))
 
 (defn widget []
-  (let [metadata                            (topbar/use-topbar-metadata)
+  (let [metadata                            (hooks.topbar/use-topbar-metadata)
         {:keys [workspaces active-clients]} (hooks.workspaces/use-workspaces)
         topbar-state                        (use-topbar-state)
         {:keys [tauri? open?] :as popup}    (tauri/use-popup)

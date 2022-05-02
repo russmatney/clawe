@@ -1,4 +1,4 @@
-(ns doctor.ui.topbar
+(ns hooks.topbar
   (:require
    [plasma.core :refer [defhandler defstream]]
    #?@(:clj [[doctor.api.topbar :as d.topbar]
