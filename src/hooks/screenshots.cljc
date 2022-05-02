@@ -1,4 +1,4 @@
-(ns doctor.ui.screenshots
+(ns hooks.screenshots
   (:require
    [plasma.core :refer [defhandler defstream]]
    #?@(:clj [[doctor.api.screenshots :as api.screenshots]]

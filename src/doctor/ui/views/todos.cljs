@@ -3,7 +3,7 @@
    [uix.core.alpha :as uix]
    [tick.core :as t]
    [hiccup-icons.fa :as fa]
-   [doctor.ui.todos :as todos]
+   [hooks.todos]
    [doctor.ui.components.todos :as components.todos]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -151,7 +151,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn widget []
-  (let [{:keys [items db-todos]} (todos/use-todos)
+  (let [{:keys [items db-todos]} (hooks.todos/use-todos)
 
         selected        (uix/state (first items))
         items-group-by  (uix/state (some->> filter-defs first first))

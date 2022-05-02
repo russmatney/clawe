@@ -1,11 +1,9 @@
 (ns doctor.ui.views.screenshots
   (:require
-   [doctor.ui.screenshots :as screenshots]
+   [hooks.screenshots]
    [uix.core.alpha :as uix]
 
-   ["@headlessui/react" :as Headless]
-
-   ))
+   ["@headlessui/react" :as Headless]))
 
 (defn ->actions
   "Note these actions are tied to the component's dialog atom"
@@ -84,7 +82,7 @@
           (:action/label ax)])]])))
 
 (defn widget []
-  (let [{:keys [items]} (screenshots/use-screenshots)]
+  (let [{:keys [items]} (hooks.screenshots/use-screenshots)]
     [:div
      {:class ["flex" "flex-row" "flex-wrap" "flex-auto"
               "min-h-screen"

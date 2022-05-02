@@ -1,4 +1,4 @@
-(ns doctor.ui.workspaces
+(ns hooks.workspaces
   (:require
    [plasma.core :refer [defhandler defstream]]
    #?@(:clj [[clawe.workspaces :as clawe.workspaces]
@@ -16,9 +16,7 @@
    (comment
      (->>
        (d.workspaces/active-workspaces)
-       (map workspace-name)
-       )
-     ))
+       (map workspace-name))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Workspaces
@@ -106,5 +104,4 @@
      (db/query
        '[:find (pull ?e [*])
          :where
-         [?e :workspace/title ?workspace-title]])
-     ))
+         [?e :workspace/title ?workspace-title]])))

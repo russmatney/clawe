@@ -1,6 +1,6 @@
 (ns doctor.ui.views.wallpapers
   (:require
-   [doctor.ui.wallpapers :as wallpapers]
+   [hooks.wallpapers]
    [uix.core.alpha :as uix]
    [tick.core :as t]))
 
@@ -14,8 +14,7 @@
       [{:action/label    "js/alert"
         :action/on-click #(js/alert item)}
        {:action/label    "Set as background"
-        :action/on-click #(wallpapers/set-wallpaper item)}
-       ]
+        :action/on-click #(hooks.wallpapers/set-wallpaper item)}]
       (remove nil?))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -66,7 +65,7 @@
           (:action/label ax)])]])))
 
 (defn widget []
-  (let [{:keys [items]} (wallpapers/use-wallpapers)]
+  (let [{:keys [items]} (hooks.wallpapers/use-wallpapers)]
     [:div
      {:class ["flex" "flex-row" "flex-wrap"
               "min-h-screen"

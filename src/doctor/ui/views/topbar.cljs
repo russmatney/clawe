@@ -5,7 +5,7 @@
    [hiccup-icons.fa :as fa]
    [hiccup-icons.mdi :as mdi]
    [tick.core :as t]
-   [doctor.ui.workspaces :as workspaces]
+   [hooks.workspaces]
    [doctor.ui.tauri :as tauri]
    [doctor.ui.topbar :as topbar]
    [doctor.ui.components.icons :as icons]
@@ -30,7 +30,7 @@
   (when (and wsp n)
     (-> wsp
         (assoc :workspace/display-name n)
-        workspaces/update-workspace)
+        hooks.workspaces/update-workspace)
     ;; TODO trigger re-fetch? eventually pull the new data? update in a frontend store?
     ))
 
@@ -59,11 +59,11 @@
         ;;                  :tooltip "Last Fetch over 3 hours ago"}})
         (when (and selected hovering?)
           {:action/label    "hide"
-           :action/on-click #(workspaces/hide-workspace wsp)
+           :action/on-click #(hooks.workspaces/hide-workspace wsp)
            :action/icon     {:icon fa/eye-slash}})
         (when (and (not selected) hovering?)
           {:action/label    "show"
-           :action/on-click #(workspaces/show-workspace wsp)
+           :action/on-click #(hooks.workspaces/show-workspace wsp)
            :action/icon     {:icon fa/eye}})]
        (remove nil?)))))
 
@@ -152,7 +152,7 @@
     :awesome.tag/keys [index clients selected urgent]}]
   (let [hovering?     (= hovered-workspace wsp)
         editing-name? (uix/state false)
-        temp-name     (uix/state (workspaces/workspace-name wsp))]
+        temp-name     (uix/state (hooks.workspaces/workspace-name wsp))]
     [:div
      {:class (conj cell-classes (cond selected "bg-opacity-60" :else "bg-opacity-10"))
       ;; :on-mouse-enter #(on-hover-workspace wsp)
@@ -178,7 +178,7 @@
             [:span
              {:on-click (fn [_e]
                           (reset! editing-name? true))}
-             (workspaces/workspace-name wsp)])
+             (hooks.workspaces/workspace-name wsp)])
           (when @editing-name?
             [:div
              [:input {:type      :text
@@ -335,7 +335,7 @@
 
 (defn widget []
   (let [metadata                            (topbar/use-topbar-metadata)
-        {:keys [workspaces active-clients]} (workspaces/use-workspaces)
+        {:keys [workspaces active-clients]} (hooks.workspaces/use-workspaces)
         topbar-state                        (use-topbar-state)
         {:keys [tauri? open?] :as popup}    (tauri/use-popup)
         dark-bg?

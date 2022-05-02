@@ -1,7 +1,7 @@
 (ns doctor.ui.views.workspaces
   (:require
    [clojure.string :as string]
-   [doctor.ui.workspaces :as workspaces]
+   [hooks.workspaces :as workspaces]
    [doctor.ui.components.icons :as icons]
    [doctor.ui.components.debug :as debug]))
 
@@ -26,7 +26,7 @@
   [{:action/label    "Update workspace display name"
     :action/on-click #(-> w
                           (assoc :workspace/display-name %)
-                          (workspaces/update-workspace))}])
+                          (hooks.workspaces/update-workspace))}])
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -83,7 +83,7 @@
           {:class ["text-left"]}
           [:div
            {:class ["flex flex-row justify-between items-center"]}
-           [:span.text-xl.font-nes (workspaces/workspace-name wsp)]
+           [:span.text-xl.font-nes (hooks.workspaces/workspace-name wsp)]
 
            [:span.ml-auto
             (str
@@ -144,7 +144,7 @@
                ]}
       [:div
        (when color {:style {:color color}})
-       (str "(" index ") " (workspaces/workspace-name wsp))]
+       (str "(" index ") " (hooks.workspaces/workspace-name wsp))]
 
       [:div
        (when scratchpad
@@ -169,7 +169,7 @@
         [:div (dir (or repo directory))])])))
 
 (defn widget []
-  (let [{:keys [workspaces active-workspaces]} (workspaces/use-workspaces)]
+  (let [{:keys [workspaces active-workspaces]} (hooks.workspaces/use-workspaces)]
     [:div
      {:class ["p-4"]}
      [:h1

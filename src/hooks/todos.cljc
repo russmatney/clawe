@@ -1,4 +1,4 @@
-(ns doctor.ui.todos
+(ns hooks.todos
   (:require
    [plasma.core :refer [defhandler defstream]]
    #?@(:clj [[doctor.api.todos :as d.todos]]

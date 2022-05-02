@@ -1,4 +1,4 @@
-(ns doctor.ui.wallpapers
+(ns hooks.wallpapers
   (:require
    [plasma.core :refer [defhandler defstream]]
    #?@(:clj [[clawe.wallpapers :as c.wallpapers]
