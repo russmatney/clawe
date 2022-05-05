@@ -66,7 +66,8 @@
         '[:find [(pull ?e [*])]
           :in $ ?n
           :where
-          [?e :name ?n]]
+          [?e :name ?n]
+          [?e :type :clawe/workspaces]]
         n)
       first)))
 
