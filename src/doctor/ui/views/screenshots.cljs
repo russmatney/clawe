@@ -44,7 +44,9 @@
      [:> Headless/Dialog.Description full-path]
 
      (when web-asset-path
-       [:img {:src web-asset-path}])]]])
+       [:img {:src      web-asset-path
+              :on-click #(on-close)
+              :class    ["cursor-pointer"]}])]]])
 
 
 (defn screenshot-comp
@@ -64,7 +66,9 @@
        :on-mouse-enter #(do (reset! hovering? true))
        :on-mouse-leave #(do (reset! hovering? false))}
       (when web-asset-path
-        [:img {:src web-asset-path}])
+        [:img {:src      web-asset-path
+               :on-click #(reset! dialog-open? true)
+               :class    ["cursor-pointer"]}])
 
       [screenshot-dialog
        {:open?    @dialog-open?
