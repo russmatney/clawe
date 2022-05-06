@@ -10,8 +10,7 @@
 
    [dates.transit-time-literals :as ttl]
    [expo.config :as config]
-   [expo.ui.views.counts :as counts]
-   [expo.ui.views.garden :as views.garden]
+   [hooks.count :as count]
    [garden.core :as garden]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -41,8 +40,7 @@
 
 (defsys *server*
   "Expo webserver"
-  :extra-deps [counts/*counts-stream*
-               views.garden/*garden-stream*
+  :extra-deps [count/*counts-stream*
                garden/*garden-stream*]
   :start
   (let [port (:server/port config/*config*)]
