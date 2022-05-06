@@ -2,7 +2,8 @@
   (:require
    [tick.core :as t]
    [hiccup-icons.fa :as fa]
-   [doctor.ui.components.todos :as components.todos]))
+   [components.actions]
+   [hooks.todos]))
 
 (defn todo
   [{:keys [on-select]} item]
@@ -28,7 +29,7 @@
          :status/cancelled   fa/ban-solid
          :status/skipped     fa/ban-solid
          (when archive-time [:div.text-sm.font-mono "Archived"]))]
-      [components.todos/action-list item]]
+      [components.actions/action-list (hooks.todos/->actions item)]]
 
      [:span
       {:class ["text-xl"]}

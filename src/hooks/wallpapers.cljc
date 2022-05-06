@@ -16,16 +16,6 @@
 (defstream wallpapers-stream [] d.wallpapers/*wallpapers-stream*)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; actions
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defhandler set-wallpaper [item]
-  (c.wallpapers/set-wallpaper item)
-  (d.wallpapers/update-wallpapers))
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; state helpers
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -41,3 +31,23 @@
        (with-rpc [] (get-wallpapers) handle-resp)
        (with-stream [] (wallpapers-stream) handle-resp)
        {:items @wallpapers})))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; actions
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defhandler set-wallpaper [item]
+  (c.wallpapers/set-wallpaper item)
+  (d.wallpapers/update-wallpapers))
+
+
+;; could move toward ->actions being clj + cljs
+#?(:cljs
+   (defn ->actions [item]
+     (let [{:keys []} item]
+       (->>
+         [{:action/label    "js/alert"
+           :action/on-click #(js/alert item)}
+          {:action/label    "Set as background"
+           :action/on-click #(set-wallpaper item)}]
+         (remove nil?)))))

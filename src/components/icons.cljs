@@ -1,4 +1,4 @@
-(ns doctor.ui.components.icons
+(ns components.icons
   (:require
    [clojure.string :as string]
    [hiccup-icons.octicons :as octicons]

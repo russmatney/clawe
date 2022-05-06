@@ -8,9 +8,10 @@
    [hooks.workspaces]
    [doctor.ui.tauri :as tauri]
    [hooks.topbar]
-   [doctor.ui.components.icons :as icons]
-   [doctor.ui.components.charts :as charts]
-   [doctor.ui.components.todos :as todos]))
+   [components.icons :as icons]
+   [components.charts :as charts]
+   [components.actions]
+   [hooks.todos]))
 
 (defn skip-bar-app? [client]
   (and
@@ -288,7 +289,7 @@
        {:class ["flex" "flex-row" "justify-center" "items-center"]}
        [:div.font-mono.pr-3 name]
 
-       [todos/action-list todo]])))
+       [components.actions/action-list (hooks.todos/->actions todo)]])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Topbar widget and state

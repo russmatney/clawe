@@ -1,4 +1,4 @@
-(ns doctor.ui.components.charts
+(ns components.charts
   (:require
    [clojure.string :as string]
    [uix.core.alpha :as uix]))

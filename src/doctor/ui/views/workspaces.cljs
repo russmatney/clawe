@@ -2,8 +2,8 @@
   (:require
    [clojure.string :as string]
    [hooks.workspaces :as workspaces]
-   [doctor.ui.components.icons :as icons]
-   [doctor.ui.components.debug :as debug]))
+   [components.icons :as icons]
+   [components.debug :as debug]))
 
 (defn dir [s]
   (-> s (string/replace #"/home/russ" "~")))

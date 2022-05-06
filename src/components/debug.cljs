@@ -1,4 +1,4 @@
-(ns doctor.ui.components.debug
+(ns components.debug
   (:require
    [uix.core.alpha :as uix]))
 

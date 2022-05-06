@@ -4,7 +4,7 @@
    [hooks.events :as events]
    [components.screenshot :as screenshot]
    [components.todo :as todo]
-   [doctor.ui.components.debug :as debug]
+   [components.debug :as debug]
    [clojure.string :as string]
 
    [keybind.core :as key]
