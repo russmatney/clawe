@@ -2,8 +2,8 @@
   (:require
    [tick.core :as t]
    [hooks.events :as events]
-   [doctor.ui.views.screenshots :as screenshots]
-   [doctor.ui.views.todos :as todos]
+   [components.screenshot :as screenshot]
+   [components.todo :as todo]
    [doctor.ui.components.debug :as debug]
    [clojure.string :as string]
 
@@ -108,7 +108,7 @@
    (when (:file/web-asset-path it)
      [:div
       {:class ["w-3/5"]}
-      [screenshots/screenshot-comp opts it]])
+      [screenshot/screenshot-comp opts it]])
 
    (when (:git.commit/hash it)
      [:div
@@ -117,7 +117,7 @@
    (when (:org/name it)
      [:div
       ;; TODO non-todo version of org-item
-      [todos/todo opts it]])
+      [todo/todo opts it]])
 
    [:div
     {:class ["flex" "pt-4"]}
