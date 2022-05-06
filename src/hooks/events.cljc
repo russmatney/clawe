@@ -1,7 +1,7 @@
 (ns hooks.events
   (:require
    [plasma.core :refer [defhandler defstream]]
-   #?@(:clj [[doctor.api.events :as api.events]]
+   #?@(:clj [[api.events]]
        :cljs [[plasma.uix :refer [with-rpc with-stream]]])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

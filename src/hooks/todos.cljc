@@ -1,7 +1,7 @@
 (ns hooks.todos
   (:require
    [plasma.core :refer [defhandler defstream]]
-   #?@(:clj [[doctor.api.todos :as d.todos]]
+   #?@(:clj [[api.todos :as todos]]
        :cljs [[hiccup-icons.fa :as fa]
               [plasma.uix :refer [with-rpc with-stream]]])))
 
@@ -9,8 +9,8 @@
 ;; Todos data api
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defhandler get-todos-handler [] (d.todos/get-todos))
-(defstream todos-stream [] d.todos/*todos-stream*)
+(defhandler get-todos-handler [] (todos/get-todos))
+(defstream todos-stream [] todos/*todos-stream*)
 
 #?(:cljs
    (defn use-todos []
@@ -29,7 +29,7 @@
 #?(:clj
    (comment
      (set! *print-length* 100)
-     (d.todos/get-todos)))
+     (todos/get-todos)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; todo actions
@@ -37,8 +37,8 @@
 
 (defhandler add-to-db [todo]
   (println "upserting-to-db" todo)
-  (d.todos/upsert-todo-db todo)
-  (d.todos/update-todos)
+  (todos/upsert-todo-db todo)
+  (todos/update-todos)
   :ok)
 
 (defhandler mark-complete [todo]
@@ -46,8 +46,8 @@
   (-> todo
       (assoc :todo/status :status/done)
       (assoc :todo/last-completed-at (System/currentTimeMillis))
-      d.todos/upsert-todo-db)
-  (d.todos/update-todos)
+      todos/upsert-todo-db)
+  (todos/update-todos)
   :ok)
 
 (defhandler mark-in-progress [todo]
@@ -55,8 +55,8 @@
   (-> todo
       (assoc :todo/status :status/in-progress)
       (assoc :todo/last-started-at (System/currentTimeMillis))
-      d.todos/upsert-todo-db)
-  (d.todos/update-todos)
+      todos/upsert-todo-db)
+  (todos/update-todos)
   :ok)
 
 (defhandler mark-not-started [todo]
@@ -64,8 +64,8 @@
   (-> todo
       (assoc :todo/status :status/not-started)
       (assoc :todo/last-stopped-at (System/currentTimeMillis))
-      d.todos/upsert-todo-db)
-  (d.todos/update-todos)
+      todos/upsert-todo-db)
+  (todos/update-todos)
   :ok)
 
 (defhandler mark-cancelled [todo]
@@ -73,8 +73,8 @@
   (-> todo
       (assoc :todo/status :status/cancelled)
       (assoc :todo/last-cancelled-at (System/currentTimeMillis))
-      d.todos/upsert-todo-db)
-  (d.todos/update-todos)
+      todos/upsert-todo-db)
+  (todos/update-todos)
   :ok)
 
 #?(:cljs

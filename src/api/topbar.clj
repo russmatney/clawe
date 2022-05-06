@@ -1,4 +1,4 @@
-(ns doctor.api.topbar
+(ns api.topbar
   (:require
    [systemic.core :refer [defsys] :as sys]
    [manifold.stream :as s]

@@ -1,11 +1,11 @@
-(ns doctor.api.core
+(ns doctor.api
   (:require
    [taoensso.timbre :as log]
-   [doctor.api.workspaces :as d.workspaces]
-   [doctor.api.topbar :as d.topbar]
-   [doctor.api.todos :as d.todos]
-   [doctor.api.screenshots :as screenshots]
-   [doctor.api.wallpapers :as d.wallpapers]))
+   [api.workspaces :as workspaces]
+   [api.topbar :as topbar]
+   [api.todos :as todos]
+   [api.screenshots :as screenshots]
+   [api.wallpapers :as wallpapers]))
 
 
 (defn route
@@ -16,13 +16,13 @@
   (cond
     (= uri "/reload")
     (do
-      (d.wallpapers/reload)
+      (wallpapers/reload)
       {:status 200 :body "reloaded doctor"})
 
     (= uri "/topbar/update")
     (do
-      (d.workspaces/update-workspaces)
-      (d.topbar/update-topbar-metadata)
+      (workspaces/update-workspaces)
+      (topbar/update-topbar-metadata)
       {:status 200 :body "updated topbar"})
 
     (= uri "/screenshots/update")
@@ -32,7 +32,7 @@
 
     (= uri "/todos/update")
     (do
-      (d.todos/update-todos)
+      (todos/update-todos)
       {:status 200 :body "updated todos"})))
 
 (comment

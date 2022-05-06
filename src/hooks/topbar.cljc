@@ -1,7 +1,7 @@
 (ns hooks.topbar
   (:require
    [plasma.core :refer [defhandler defstream]]
-   #?@(:clj [[doctor.api.topbar :as d.topbar]
+   #?@(:clj [[api.topbar]
              [ralphie.awesome :as awm]]
        :cljs [[plasma.uix :refer [with-rpc with-stream]]])))
 
@@ -9,8 +9,8 @@
 ;; Topbar metadata
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defhandler get-topbar-metadata [] (d.topbar/build-topbar-metadata))
-(defstream topbar-metadata-stream [] d.topbar/*topbar-metadata-stream*)
+(defhandler get-topbar-metadata [] (topbar/build-topbar-metadata))
+(defstream topbar-metadata-stream [] topbar/*topbar-metadata-stream*)
 
 #?(:cljs
    (defn use-topbar-metadata []

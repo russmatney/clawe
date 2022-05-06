@@ -1,4 +1,4 @@
-(ns doctor.api.todos
+(ns api.todos
   (:require
    [systemic.core :refer [defsys] :as sys]
    [manifold.stream :as s]

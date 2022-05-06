@@ -1,4 +1,4 @@
-(ns doctor.api.screenshots
+(ns api.screenshots
   (:require
    [systemic.core :refer [defsys] :as sys]
    [manifold.stream :as s]

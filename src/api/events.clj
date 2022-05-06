@@ -1,4 +1,4 @@
-(ns doctor.api.events
+(ns api.events
   (:require
    [systemic.core :refer [defsys] :as sys]
    [manifold.stream :as s]
@@ -6,7 +6,7 @@
    [tick.core :as t]
 
    [dates.tick :as dt]
-   [doctor.api.todos :as todos]
+   [api.todos :as todos]
    [clawe.git :as c.git]
    [item.core :as item]))
 

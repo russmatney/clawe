@@ -10,18 +10,21 @@
 
    [dates.transit-time-literals :as ttl]
    [doctor.config :as config]
-   [doctor.api.core :as api]
-   [doctor.api.events :as events]
-   [doctor.api.topbar :as topbar]
-   [doctor.api.todos :as todos]
-   [doctor.api.screenshots :as screenshots]
-   [doctor.api.wallpapers :as wallpapers]
-   [doctor.api.workspaces :as workspaces]
+   [doctor.api :as api]
+   [api.events :as events]
+   [api.topbar :as topbar]
+   [api.todos :as todos]
+   [api.screenshots :as screenshots]
+   [api.wallpapers :as wallpapers]
+   [api.workspaces :as workspaces]
    [ralphie.notify :as notify]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Plasma config
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(comment
+  (println "hi"))
 
 (defsys *sessions*
   "Plasma sessions"

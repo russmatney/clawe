@@ -5,7 +5,7 @@
              [clawe.scratchpad :as scratchpad]
              [defthing.db :as db]
              [defthing.defworkspace :as defworkspace]
-             [doctor.api.workspaces :as d.workspaces]]
+             [api.workspaces]]
        :cljs [[wing.core :as w]
               [plasma.uix :refer [with-rpc with-stream]]])))
 
@@ -15,15 +15,15 @@
 #?(:clj
    (comment
      (->>
-       (d.workspaces/active-workspaces)
+       (api.workspaces/active-workspaces)
        (map workspace-name))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Workspaces
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defhandler get-workspaces [] (d.workspaces/active-workspaces))
-(defstream workspaces-stream [] d.workspaces/*workspaces-stream*)
+(defhandler get-workspaces [] (api.workspaces/active-workspaces))
+(defstream workspaces-stream [] api.workspaces/*workspaces-stream*)
 
 (defn skip-bar-app? [client]
   (and
@@ -63,7 +63,7 @@
     ;; clawe.workspaces/for-name
     clawe.workspaces/merge-awm-tags
     scratchpad/toggle-scratchpad)
-  (d.workspaces/update-workspaces))
+  (api.workspaces/update-workspaces))
 
 (defhandler show-workspace [item]
   (->
@@ -72,14 +72,14 @@
     ;; clawe.workspaces/for-name
     clawe.workspaces/merge-awm-tags
     scratchpad/toggle-scratchpad)
-  (d.workspaces/update-workspaces))
+  (api.workspaces/update-workspaces))
 
 (defhandler update-workspace [item]
   (defworkspace/sync-workspaces-to-db item))
 
 #?(:clj
    (comment
-     (def --w (->> (d.workspaces/active-workspaces)
+     (def --w (->> (api.workspaces/active-workspaces)
                    (filter (comp #{"clawe"} :workspace/title))
                    first))
      (defworkspace/get-db-workspace --w)
@@ -88,7 +88,7 @@
                            ))
 
      (def --p )
-     (->> (d.workspaces/active-workspaces))
+     (->> (api.workspaces/active-workspaces))
 
      (update-workspace (-> --w
                            (assoc :workspace/display-name "ClAwE")

@@ -1,4 +1,4 @@
-(ns doctor.api.workspaces
+(ns api.workspaces
   (:require
    [systemic.core :refer [defsys] :as sys]
    [manifold.stream :as s]

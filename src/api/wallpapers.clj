@@ -1,4 +1,4 @@
-(ns doctor.api.wallpapers
+(ns api.wallpapers
   (:require
    [clawe.wallpapers :as c.wallpapers]
    [systemic.core :refer [defsys] :as sys]

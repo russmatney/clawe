@@ -2,7 +2,7 @@
   (:require
    [plasma.core :refer [defhandler defstream]]
    #?@(:clj [[clawe.wallpapers :as c.wallpapers]
-             [doctor.api.wallpapers :as d.wallpapers]]
+             [api.wallpapers]]
        :cljs [[wing.core :as w]
               [plasma.uix :refer [with-rpc with-stream]]])))
 
@@ -11,9 +11,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defhandler get-wallpapers []
-  (d.wallpapers/active-wallpapers))
+  (api.wallpapers/active-wallpapers))
 
-(defstream wallpapers-stream [] d.wallpapers/*wallpapers-stream*)
+(defstream wallpapers-stream [] api.wallpapers/*wallpapers-stream*)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; state helpers
@@ -38,7 +38,7 @@
 
 (defhandler set-wallpaper [item]
   (c.wallpapers/set-wallpaper item)
-  (d.wallpapers/update-wallpapers))
+  (api.wallpapers/update-wallpapers))
 
 
 ;; could move toward ->actions being clj + cljs
