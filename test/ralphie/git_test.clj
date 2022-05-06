@@ -48,32 +48,50 @@
                       :author-email "russell.matney@gmail.com"
                       :author-date  "Fri May 6 13:36:24 2022 -0400"})))
 
-;; some raw diff stats:
+(deftest ->stat-lines
+  (is (= (sut/->stats
+           '("3\t5\tsrc/doctor/ui/views/screenshots.cljs" "1\t1\tsrc/{doctor/ui => hooks}/screenshots.cljc"))
+         #:git.commit{:lines-added   4
+                      :lines-removed 6
+                      :files-renamed 1
+                      :stat-lines
+                      '(#:git.stat{:lines-added   3
+                                   :lines-removed 5
+                                   :raw-file-line "src/doctor/ui/views/screenshots.cljs"
+                                   :is-rename?    false}
+                         #:git.stat{:lines-added   1
+                                    :lines-removed 1
+                                    :raw-file-line "src/{doctor/ui => hooks}/screenshots.cljc"
+                                    :is-rename?    true})})))
 
-;; 17      20      src/ralphie/git.clj
-;; 7       4       src/ralphie/sh.clj
-;; 42      0       test/ralphie/git_test.clj
+(deftest ->stats-commit-test
+  (is (= (sut/->stats-commit
+           '(( "commit 7c293095d1b17f821944d28fc4e3fa38f33dcf1a" "Author: Russell Matney <russell.matney@gmail.com>" "Date:   Fri May 6 13:36:24 2022 -0400" )
+             ( "    fix: update server deps" "    " "    Could use some testing on these servers too!" "    " "    Testing a body with multiple lines." ... )
+             ( "2\t4\tsrc/expo/server.clj" )))
+         #:git.commit{:hash          "7c293095d1b17f821944d28fc4e3fa38f33dcf1a"
+                      :author-name   "Russell Matney"
+                      :author-email  "russell.matney@gmail.com"
+                      :author-date   "Fri May 6 13:36:24 2022 -0400"
+                      :lines-added   2
+                      :lines-removed 4
+                      :files-renamed 0
+                      :stat-lines
+                      '(#:git.stat{:lines-added   2
+                                   :lines-removed 4
+                                   :raw-file-line "src/expo/server.clj"
+                                   :is-rename?    false})}))
 
-;; commit c4db012ed2b5b1397ec5611f891616d74c5cf976
-;; Author: Russell Matney <russell.matney@gmail.com>
-;; Commit: Russell Matney <russell.matney@gmail.com>
-
-;; fix: ensure [?e :type :clawe/workspaces] on get-db-workspace
-
-;; 2       1       src/defthing/defworkspace.clj
-
-;; commit bff02ad57e6f79e7cf3ff5a5b502eab759ac4131
-;; Author: Russell Matney <russell.matney@gmail.com>
-;; Commit: Russell Matney <russell.matney@gmail.com>
-
-;; refactor: move doctor ui.namespaces to hooks
-
-;; 3       5       src/doctor/ui/views/screenshots.cljs
-;; 2       2       src/doctor/ui/views/todos.cljs
-;; 7       7       src/doctor/ui/views/topbar.cljs
-;; 3       4       src/doctor/ui/views/wallpapers.cljs
-;; 5       5       src/doctor/ui/views/workspaces.cljs
-;; 1       1       src/{doctor/ui => hooks}/screenshots.cljc
-;; 1       1       src/{doctor/ui => hooks}/todos.cljc
-;; 1       1       src/{doctor/ui => hooks}/wallpapers.cljc
-;; 3       6       src/{doctor/ui => hooks}/workspaces.cljc
+  (let [stats (sut/->stats-commit
+                '(("commit bff02ad57e6f79e7cf3ff5a5b502eab759ac4131" "Author: Russell Matney <russell.matney@gmail.com>" "Date:   Sun May 1 20:13:53 2022 -0400")
+                  ("    refactor: move doctor ui.namespaces to hooks")
+                  ("3\t5\tsrc/doctor/ui/views/screenshots.cljs" "2\t2\tsrc/doctor/ui/views/todos.cljs" "7\t7\tsrc/doctor/ui/views/topbar.cljs" "3\t4\tsrc/doctor/ui/views/wallpapers.cljs" "5\t5\tsrc/doctor/ui/views/workspaces.cljs" "1\t1\tsrc/{doctor/ui => hooks}/screenshots.cljc" "1\t1\tsrc/{doctor/ui => hooks}/todos.cljc" "1\t1\tsrc/{doctor/ui => hooks}/wallpapers.cljc" "3\t6\tsrc/{doctor/ui => hooks}/workspaces.cljc")))]
+    (is (= 26 (:git.commit/lines-added stats)))
+    (is (= 32 (:git.commit/lines-removed stats)))
+    (is (= 4 (:git.commit/files-renamed stats)))
+    (is (= 4 (:git.commit/files-renamed stats)))
+    (is (= {:git.stat/lines-added   3
+            :git.stat/lines-removed 5
+            :git.stat/raw-file-line "src/doctor/ui/views/screenshots.cljs"
+            :git.stat/is-rename?    false}
+           (first (:git.commit/stat-lines stats))))))

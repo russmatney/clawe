@@ -388,8 +388,7 @@
 
 (comment
   (commits-for-dir {:dir "russmatney/clawe" :n 10 :before "2022-05-06" :after "2022-05-02"})
-  (count
-    (commits-for-dir {:dir "russmatney/clawe" :n 10 :before "2022-05-06" :after "2022-05-02"}))
+  (count (commits-for-dir {:dir "russmatney/clawe" :n 10 :before "2022-05-06" :after "2022-05-02"}))
   (commits-for-dir {:dir "russmatney/clawe" :n 10})
   (commits-for-dir {:dir "/Users/russ/russmatney/clawe" :n 10})
   (commits-for-dir {:dir "/Users/russ/russmatney/dotfiles" :n 10}))
@@ -400,16 +399,46 @@
    :git.commit/author-email (some-> (re-find #"<(.+)>" author) second)
    :git.commit/author-date  (some-> (re-find #"Date: (.+)$" date) second string/trim)})
 
+(defn ->stat-line
+  "TODO: parse filenames, renamed files, symlinks, etc"
+  [stat-line]
+  (let [[added removed file-line] (string/split stat-line #"\t")
+        is-rename?                (if (re-seq #"\{" file-line) true false)]
+    {:git.stat/lines-added   (read-string added)
+     :git.stat/lines-removed (read-string removed)
+     :git.stat/raw-file-line file-line
+     :git.stat/is-rename?    is-rename?}))
+
 (comment
-  (def --header '("commit 7c293095d1b17f821944d28fc4e3fa38f33dcf1a"
-                  "Author: Russell Matney <russell.matney@gmail.com>"
-                  "Date:   Fri May 6 13:36:24 2022 -0400"))
+  (->stat-line "3\t5\tsrc/doctor/ui/views/screenshots.cljs")
+  (->stat-line "1\t1\tsrc/{doctor/ui => hooks}/screenshots.cljc"))
 
-  (->stats-header --header))
+(defn ->stats [stat-lines]
+  (let [parsed-stat-lines (map ->stat-line stat-lines)]
+    {:git.commit/lines-added   (->> parsed-stat-lines (map :git.stat/lines-added) (reduce +))
+     :git.commit/lines-removed (->> parsed-stat-lines (map :git.stat/lines-removed) (reduce +))
+     :git.commit/files-renamed (->> parsed-stat-lines (filter :git.stat/is-rename?) count)
+     :git.commit/stat-lines    parsed-stat-lines}))
 
-(defn ->stats-commit [[header message stats]]
+(comment
+  (->stats '("3\t5\tsrc/doctor/ui/views/screenshots.cljs"
+             "2\t2\tsrc/doctor/ui/views/todos.cljs"
+             "7\t7\tsrc/doctor/ui/views/topbar.cljs"
+             "3\t4\tsrc/doctor/ui/views/wallpapers.cljs"
+             "5\t5\tsrc/doctor/ui/views/workspaces.cljs"
+             "1\t1\tsrc/{doctor/ui => hooks}/screenshots.cljc"
+             "1\t1\tsrc/{doctor/ui => hooks}/todos.cljc"
+             "1\t1\tsrc/{doctor/ui => hooks}/wallpapers.cljc"
+             "3\t6\tsrc/{doctor/ui => hooks}/workspaces.cljc")))
+
+(defn ->stats-commit
+  "Parse `git log --numstat` lines.
+  We don't care for commit message here - that is handled in `commits-for-dir`.
+  "
+  [[header _msg stats]]
   (merge
-    (->stats-header header)))
+    (->stats-header header)
+    (->stats stats)))
 
 (defn commit-stats-for-dir
   "Retuns metadata for `n` commits at the specified `dir`.
@@ -425,7 +454,11 @@
       process/check :out
       string/split-lines
       util/partition-by-newlines
-      (->> (partition 3) (map ->stats-commit)))))
+      (->> (partition 3)
+           ;; (map ->stats-commit)
+           ))))
 
 (comment
-  (commit-stats-for-dir {:dir "russmatney/clawe" :n 10}))
+  (nth
+    (commit-stats-for-dir {:dir "russmatney/clawe" :n 10})
+    7))
