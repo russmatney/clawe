@@ -3,6 +3,7 @@
    [wing.core :as w]
    [uix.core.alpha :as uix]
    [hooks.garden]
+   [components.garden]
    [clojure.string :as string]
    [tick.core :as t]))
 
@@ -66,34 +67,6 @@
             (< mins-ago 60)  (str mins-ago " min(s) ago")
             (< hours-ago 24) (str hours-ago " hour(s) ago")
             :else            (str days-ago " day(s) ago")))])]))
-
-
-(defn selected-node
-  [{:org/keys      [source-file body]
-    :org.prop/keys [title]}]
-
-  [:div
-   {:class ["flex" "flex-col" "p-2"]}
-   [:span
-    {:class ["font-nes" "text-xl" "text-city-green-200" "p-2"]}
-    title]
-
-   [:span
-    {:class ["font-mono" "text-xl" "text-city-green-200" "p-2"]}
-    source-file]
-
-   [:div
-    {:class ["font-mono" "text-city-blue-400"
-             "flex" "flex-col" "p-2"
-             "bg-yo-blue-500"]}
-    (for [[i line] (map-indexed vector body)]
-      (let [{:keys [text]} line]
-        (cond
-          (= "" text)
-          ^{:key i} [:span {:class ["py-1"]} " "]
-
-          :else
-          ^{:key i} [:span text])))]])
 
 (defn view []
   (let [{:keys [items]}   (hooks.garden/use-garden)
@@ -168,6 +141,4 @@
                           (map-indexed vector))]
            ^{:key (or (:org/source-file p) i)}
            [:div
-            (selected-node p)])]
-        )
-      ]]))
+            (components.garden/selected-node p)])])]]))
