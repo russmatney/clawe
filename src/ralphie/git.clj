@@ -372,16 +372,20 @@
          (string/join " "))
     "}"))
 
+
 (defn commits-for-dir
   "Retuns metadata for `n` commits at the specified `dir`."
-  [{:keys [dir n]}]
+  [{:keys [dir n before after]}]
   (let [dir (if (string/starts-with? dir "/")
               dir (zsh/expand "~/" dir))
         n   (or n 10)]
     (->
-      ^{:out :string
-        :dir dir}
-      ($ git log -n ~n ~(str "--pretty=format:" (log-format-str)))
+      ^{:out :string :dir dir}
+      ($ git log
+         -n ~n
+         ;; ~(when before (str "--before=" before))
+         ;; ~(when after (str "--after=" after))
+         ~(str "--pretty=format:" (log-format-str)))
       check :out
       ((fn [s] (str "[" s "]")))
       (string/replace delimiter "\"")
@@ -389,6 +393,33 @@
       (->> (map #(assoc % :git.commit/directory dir))))))
 
 (comment
+  (commits-for-dir {:dir "russmatney/clawe" :n 10 :before "2022-05-06" :after "2022-05-02"})
+  (count
+    (commits-for-dir {:dir "russmatney/clawe" :n 10 :before "2022-05-06" :after "2022-05-02"}))
   (commits-for-dir {:dir "russmatney/clawe" :n 10})
   (commits-for-dir {:dir "/Users/russ/russmatney/clawe" :n 10})
   (commits-for-dir {:dir "/Users/russ/russmatney/dotfiles" :n 10}))
+
+
+;; (defn commit-stats-for-dir
+;;   "
+;;   TODO: support parsing git log -n 3 --numstat --before 2022-05-06 --after 2022-05-02
+;;   "
+;;   [{:keys [dir n before after]}]
+;;   (let [dir (if (string/starts-with? dir "/")
+;;               dir (zsh/expand "~/" dir))
+;;         n   (or n 10)]
+;;     (->
+;;       ^{:out :string
+;;         :dir dir}
+;;       ($ git log
+;;          -n ~n
+;;          (when before --before ~before)
+;;          (when after --after ~after)
+;;          ~(str "--pretty=format:" (log-format-str)))
+;;       check :out
+;;       ((fn [s] (str "[" s "]")))
+;;       (string/replace delimiter "\"")
+;;       edn/read-string
+;;       (->> (map #(assoc % :git.commit/directory dir)))))
+;;   )
