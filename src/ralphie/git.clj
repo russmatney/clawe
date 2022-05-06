@@ -368,23 +368,28 @@
   "Retuns metadata for `n` commits at the specified `dir`.
   ;; TODO support before/after
   "
-  [{:keys [dir n before after]}]
+  [{:keys [dir n before after] :as opts}]
   (let [dir (if (string/starts-with? dir "/")
               dir (zsh/expand "~/" dir))
         n   (or n 10)]
-    (->
-      ^{:out :string :dir dir}
-      (process/$
-        git log
-        -n ~n
-        ;; ~(when before (str "--before=" before))
-        ;; ~(when after (str "--after=" after))
-        ~(str "--pretty=format:" (log-format-str)))
-      process/check :out
-      ((fn [s] (str "[" s "]")))
-      (string/replace delimiter "\"")
-      edn/read-string
-      (->> (map #(assoc % :git.commit/directory dir))))))
+    (try
+      (->
+        ^{:out :string :dir dir}
+        (process/$
+          git log
+          -n ~n
+          ;; ~(when before (str "--before=" before))
+          ;; ~(when after (str "--after=" after))
+          ~(str "--pretty=format:" (log-format-str)))
+        process/check :out
+        ((fn [s] (str "[" s "]")))
+        (string/replace delimiter "\"")
+        edn/read-string
+        (->> (map #(assoc % :git.commit/directory dir))))
+      (catch Exception e
+        (println "Error fetching commits for dir" opts)
+        (println e)
+        nil))))
 
 (comment
   (commits-for-dir {:dir "russmatney/clawe" :n 10 :before "2022-05-06" :after "2022-05-02"})
@@ -404,21 +409,31 @@
   [stat-line]
   (let [[added removed file-line] (string/split stat-line #"\t")
         is-rename?                (if (re-seq #"\{" file-line) true false)]
-    {:git.stat/lines-added   (read-string added)
-     :git.stat/lines-removed (read-string removed)
-     :git.stat/raw-file-line file-line
-     :git.stat/is-rename?    is-rename?}))
+    (try
+      {:git.stat/lines-added   (read-string added)
+       :git.stat/lines-removed (read-string removed)
+       :git.stat/raw-file-line file-line
+       :git.stat/is-rename?    is-rename?}
+      (catch Exception e
+        (println "Failed to parse ->stat-line" stat-line)
+        (println e)
+        nil))))
 
 (comment
   (->stat-line "3\t5\tsrc/doctor/ui/views/screenshots.cljs")
   (->stat-line "1\t1\tsrc/{doctor/ui => hooks}/screenshots.cljc"))
 
 (defn ->stats [stat-lines]
-  (let [parsed-stat-lines (map ->stat-line stat-lines)]
-    {:git.commit/lines-added   (->> parsed-stat-lines (map :git.stat/lines-added) (reduce +))
-     :git.commit/lines-removed (->> parsed-stat-lines (map :git.stat/lines-removed) (reduce +))
-     :git.commit/files-renamed (->> parsed-stat-lines (filter :git.stat/is-rename?) count)
-     :git.commit/stat-lines    parsed-stat-lines}))
+  (try
+    (let [parsed-stat-lines (->> stat-lines (map ->stat-line) (remove nil?))]
+      {:git.commit/lines-added   (->> parsed-stat-lines (map :git.stat/lines-added) (reduce +))
+       :git.commit/lines-removed (->> parsed-stat-lines (map :git.stat/lines-removed) (reduce +))
+       :git.commit/files-renamed (->> parsed-stat-lines (filter :git.stat/is-rename?) count)
+       :git.commit/stat-lines    parsed-stat-lines})
+    (catch Exception e
+      (println "Failed to parse ->stats with lines" stat-lines)
+      (println e)
+      nil)))
 
 (comment
   (->stats '("3\t5\tsrc/doctor/ui/views/screenshots.cljs"
@@ -444,19 +459,23 @@
   "Retuns metadata for `n` commits at the specified `dir`.
   ;; TODO support before/after
   "
-  [{:keys [dir n before after]}]
+  [{:keys [dir n before after] :as opts}]
   (let [dir (if (string/starts-with? dir "/")
               dir (zsh/expand "~/" dir))
         n   (or n 10)]
-    (->
-      ^{:out :string :dir dir}
-      (process/$ git log -n ~n --numstat)
-      process/check :out
-      string/split-lines
-      util/partition-by-newlines
-      (->> (partition 3)
-           ;; (map ->stats-commit)
-           ))))
+    (try
+      (->
+        ^{:out :string :dir dir}
+        (process/$ git log -n ~n --numstat)
+        process/check :out
+        string/split-lines
+        util/partition-by-newlines
+        (->> (partition 3) (map ->stats-commit)))
+      (catch Exception e
+        (println "Error fetching commits for dir" opts)
+        (println e)
+        nil))))
+
 
 (comment
   (nth

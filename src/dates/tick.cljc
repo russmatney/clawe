@@ -7,7 +7,8 @@
 (def date-formats-with-zone
   [:iso-zoned-date-time
    "yyyy-MM-dd_HH:mm:ssZ"
-   "E, d MMM yyyy HH:mm:ss Z"])
+   "E, d MMM yyyy HH:mm:ss Z"
+   "E MMM d HH:mm:ss yyyy Z"])
 
 (def datetime-formats-without-zone
   ["yyyy-MM-dd_h.mm.ss a"
@@ -34,6 +35,7 @@
                         #(-> (t/parse-date % (t/formatter f))
                              (t/at (t/midnight))
                              (t/zoned-date-time))))))
+
           wrapped-parse-attempts
           (->> parse-attempts
                (map (fn [parse]

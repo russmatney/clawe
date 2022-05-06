@@ -1,7 +1,7 @@
 (ns doctor.ui.views.events
   (:require
    [tick.core :as t]
-   [doctor.ui.events :as events]
+   [hooks.events :as events]
    [doctor.ui.views.screenshots :as screenshots]
    [doctor.ui.views.todos :as todos]
    [doctor.ui.components.debug :as debug]
@@ -25,6 +25,8 @@
     (t/now)
     (t/>> (t/now) (t/new-duration 10 :minutes)))
 
+  (println "hi")
+
   (some->
     (re-seq #"(\w+/\w+)$" "/users/russ/blah/hello")
     first
@@ -38,8 +40,10 @@
 
 (defn commit-comp [opts it]
   (let [{:git.commit/keys
-         [body subject short-hash hash]} it
-        short-dir                        (short-repo it)
+         [body subject short-hash hash
+          lines-added lines-removed
+          ]}      it
+        short-dir (short-repo it)
         body-lines
         (->
           body
@@ -67,7 +71,15 @@
                     "hover:text-city-pink-200"
                     "hover:cursor-pointer"]
             :href  (str "https://github.com/" short-dir)}
-        short-dir]]]
+        short-dir]
+
+       [:div
+        {:class ["text-city-green-200"]}
+        (str "+" lines-added " added")]
+
+       [:div
+        {:class ["text-city-red-200"]}
+        (str "-" lines-removed " removed")]]]
 
      [:div
       {:class [(when (seq body-lines) "pt-8")]}

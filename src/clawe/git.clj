@@ -5,10 +5,13 @@
    [defthing.defworkspace :as defworkspace]
 
    [babashka.fs :as fs]
-   [wing.core :as w]))
+   [wing.core :as w]
+   [clojure.string :as string]))
 
 (defn is-git-dir? [dir]
-  (fs/exists? (str dir "/.git")))
+  (and
+    (fs/exists? (str dir "/.git"))
+    (not (string/includes? dir ".emacs.d"))))
 
 (defn git-dirs
   "Fetches git-dirs for all :workspace/directories in the db"
@@ -17,12 +20,27 @@
     (db/query
       '[:find ?directory
         ;; TODO maybe repos/workspaces opt-in to git history?
-        :where [?e :workspace/directory ?directory]])
+        :where
+        [?e :workspace/directory ?directory]
+        ])
     (map first)
     (filter is-git-dir?)))
 
 (comment
   (count (git-dirs)))
+
+(defn commits-for-dir [opts]
+  (let [commits      (r.git/commits-for-dir opts)
+        commit-stats (r.git/commit-stats-for-dir opts)]
+    ;; these should have the same :git.commit/hash, so will merge in the db
+    (->> (concat commits commit-stats)
+         (remove nil?))))
+
+(comment
+  (->>
+    (git-dirs)
+    (map (fn [dir]
+           (commits-for-dir {:dir dir :n 4})))))
 
 (defn commits-for-git-dirs
   ([] (commits-for-git-dirs {}))
@@ -30,18 +48,17 @@
    (let [n (or n 10)]
      (->>
        (git-dirs)
-       (map #(r.git/commits-for-dir {:dir % :n n}))
+       (map #(commits-for-dir {:dir % :n n}))
        (apply concat)))))
 
 (comment
   (count
-    (commits-for-git-dirs {:n 1}))
+    (commits-for-git-dirs {:n 10}))
 
   (->>
     (git-dirs)
     (map (fn [dir]
-           (r.git/commits-for-dir {:dir dir :n 10}))))
-  )
+           (r.git/commits-for-dir {:dir dir :n 10})))))
 
 (defn get-db-id-for-commit [commit]
   (when (:git.commit/hash commit)
@@ -61,14 +78,11 @@
       '[:find (pull ?e [*])
         :where [?e :git.commit/hash ?hash]])
     (map first)
-    first
-    )
+    first)
 
   (get-db-id-for-commit
     (first
-      (commits-for-git-dirs {:n 1}))
-    )
-  )
+      (commits-for-git-dirs {:n 1}))))
 
 (defn with-db-git [commit]
   (let [db-id (get-db-id-for-commit commit)]
@@ -104,10 +118,8 @@
         :where
         [?e :git.commit/hash ?hash]])
     (map first)
-    (w/distinct-by :git.commit/hash)
-    ))
+    (w/distinct-by :git.commit/hash)))
 
 (comment
   (count
-    (list-db-commits))
-  )
+    (list-db-commits)))
