@@ -40,9 +40,7 @@
 
 (comment
   (count
-    (local-repos)
-    )
-  )
+    (local-repos)))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -340,25 +338,25 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def log-format-keys
-  {:git.commit/hash         "%H"
-   :git.commit/short-hash   "%h"
+  {:git.commit/hash              "%H"
+   :git.commit/short-hash        "%h"
    ;; :git.commit/tree             "%T"
    ;; :git.commit/abbreviated-tree "%t"
-   ;; :git.commit/parent             "%P"
-   ;; :git.commit/abbreviated-parent "%p"
+   :git.commit/parent-hash       "%P"
+   :git.commit/parent-short-hash "%p"
    ;; :git.commit/refs               "%D"
    ;; :git.commit/encoding           "%e"
-   :git.commit/subject      "%s"
+   :git.commit/subject           "%s"
    ;; :git.commit/sanitized-subject-line "%f"
-   :git.commit/body         "%b"
-   :git.commit/full-message "%B"
+   :git.commit/body              "%b"
+   :git.commit/full-message      "%B"
    ;; :git.commit/commit-notes           "%N"
    ;; :git.commit/verification-flag      "%G?"
    ;; :git.commit/signer                 "%GS"
    ;; :git.commit/signer-key             "%GK"
-   :git.commit/author-name  "%aN"
-   :git.commit/author-email "%aE"
-   :git.commit/author-date  "%aD"
+   :git.commit/author-name       "%aN"
+   :git.commit/author-email      "%aE"
+   :git.commit/author-date       "%aD"
    ;; :git.commit/commiter-name          "%cN"
    ;; :git.commit/commiter-email         "%cE"
    ;; :git.commit/commiter-date "%cD"
@@ -375,12 +373,11 @@
     "}"))
 
 (defn commits-for-dir
-  "Retuns metadata for `n` commits at the specified `dir`.
-
-  TODO this could use some hardening/edge-case/test-coverage
-  "
+  "Retuns metadata for `n` commits at the specified `dir`."
   [{:keys [dir n]}]
-  (let [n (or n 10)]
+  (let [dir (if (string/starts-with? dir "/")
+              dir (zsh/expand "~/" dir))
+        n   (or n 10)]
     (->
       ^{:out :string
         :dir dir}
@@ -392,6 +389,6 @@
       (->> (map #(assoc % :git.commit/directory dir))))))
 
 (comment
+  (commits-for-dir {:dir "russmatney/clawe" :n 10})
   (commits-for-dir {:dir "/Users/russ/russmatney/clawe" :n 10})
-  (commits-for-dir {:dir "/Users/russ/russmatney/dotfiles" :n 10})
-  )
+  (commits-for-dir {:dir "/Users/russ/russmatney/dotfiles" :n 10}))

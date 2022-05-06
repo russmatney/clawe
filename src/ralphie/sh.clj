@@ -48,12 +48,15 @@
   )
 
 (defn expand
-  [path]
-  (-> (str "echo -n " path)
-      (bash)
-      :out))
+  [path & parts]
+  (let [path (apply str path parts)]
+    (-> (str "echo -n " path)
+        (bash)
+        :out)))
 
 (comment
+  (expand "~")
+  (expand "~/" "russmatney")
   (-> ($ echo -n "~")
       check :out slurp))
 
