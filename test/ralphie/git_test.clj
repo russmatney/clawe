@@ -31,17 +31,22 @@
     (let [commits (sut/commits-for-dir {:dir "russmatney/clawe" :n 10})]
       (doall
         (for [commit commits]
-          (do
-            (is (:git.commit/author-email commit)))))))
+          (is (:git.commit/author-email commit))))))
 
   (testing "commits parse dates"
     (let [commits (sut/commits-for-dir {:dir "russmatney/clawe" :n 10})]
       (doall
         (for [commit commits]
-          (do
-            (is (:git.commit/author-date commit))))))))
+          (is (:git.commit/author-date commit)))))))
 
-
+(deftest ->stats-header-test
+  (is (= (sut/->stats-header '("commit 7c293095d1b17f821944d28fc4e3fa38f33dcf1a"
+                               "Author: Russell Matney <russell.matney@gmail.com>"
+                               "Date:   Fri May 6 13:36:24 2022 -0400"))
+         #:git.commit{:hash         "7c293095d1b17f821944d28fc4e3fa38f33dcf1a"
+                      :author-name  "Russell Matney"
+                      :author-email "russell.matney@gmail.com"
+                      :author-date  "Fri May 6 13:36:24 2022 -0400"})))
 
 ;; some raw diff stats:
 

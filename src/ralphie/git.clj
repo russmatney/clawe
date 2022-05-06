@@ -14,7 +14,8 @@
    [ralphie.bb :as bb]
    [clojure.string :as string]
    [ralphie.tmux :as tmux]
-   [clojure.edn :as edn]))
+   [clojure.edn :as edn]
+   [util :as util]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; local repos
@@ -41,7 +42,6 @@
 (comment
   (count
     (local-repos)))
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; transforms
@@ -98,7 +98,6 @@
   (clone {:repo-id "metosin/eines"})
   (clone {:repo-id "russmatney/ink-mode"}))
 
-
 (defn rofi-clone-suggestions-fast []
   (concat
     (->> (clipboard/values)
@@ -107,8 +106,7 @@
                   {:repo-id        repo-id
                    :rofi/label     (str repo-id " (from clipboard)")
                    :rofi/tag       "clone"
-                   :rofi/on-select clone
-                   })))
+                   :rofi/on-select clone})))
          (filter :repo-id))
     (->> (browser/tabs)
          (map (fn [t]
@@ -274,16 +272,14 @@
   the current git status so the origin reference may be
   out of date. You can use `(git/fetch repo-path)` to update the repo's ref."
   [repo-path]
-  (-> {
-       :error-message
+  (-> {:error-message
        (str "RALPHIE ERROR for " repo-path " in git/needs-push?")}
       (bb/run-proc
         ^{:dir (zsh/expand repo-path)}
         ($ git status))
       (->>
         (filter #(re-seq #"branch is behind" %))
-        seq)
-      ))
+        seq)))
 
 (comment
   (needs-pull? "~/russmatney/dotfiles"))
@@ -304,8 +300,7 @@
 
 (comment
   (last-fetch-timestamp "~/russmatney/clawe")
-  (last-fetch-timestamp (zsh/expand "~/russmatney/lifeofbob"))
-  )
+  (last-fetch-timestamp (zsh/expand "~/russmatney/lifeofbob")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; status
@@ -331,7 +326,6 @@
   (status "~/russmatney/dotfiles")
   (status "~/russmatney/lifeofbob")
   (status "~/todo"))
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; commits
@@ -361,8 +355,6 @@
    ;; :git.commit/commiter-email         "%cE"
    ;; :git.commit/commiter-date "%cD"
    })
-
-
 (def delimiter "^^^^^")
 (defn log-format-str []
   (str
@@ -372,21 +364,23 @@
          (string/join " "))
     "}"))
 
-
 (defn commits-for-dir
-  "Retuns metadata for `n` commits at the specified `dir`."
+  "Retuns metadata for `n` commits at the specified `dir`.
+  ;; TODO support before/after
+  "
   [{:keys [dir n before after]}]
   (let [dir (if (string/starts-with? dir "/")
               dir (zsh/expand "~/" dir))
         n   (or n 10)]
     (->
       ^{:out :string :dir dir}
-      ($ git log
-         -n ~n
-         ;; ~(when before (str "--before=" before))
-         ;; ~(when after (str "--after=" after))
-         ~(str "--pretty=format:" (log-format-str)))
-      check :out
+      (process/$
+        git log
+        -n ~n
+        ;; ~(when before (str "--before=" before))
+        ;; ~(when after (str "--after=" after))
+        ~(str "--pretty=format:" (log-format-str)))
+      process/check :out
       ((fn [s] (str "[" s "]")))
       (string/replace delimiter "\"")
       edn/read-string
@@ -400,26 +394,38 @@
   (commits-for-dir {:dir "/Users/russ/russmatney/clawe" :n 10})
   (commits-for-dir {:dir "/Users/russ/russmatney/dotfiles" :n 10}))
 
+(defn ->stats-header [[commit author date]]
+  {:git.commit/hash         (-> commit (string/split #" ") second)
+   :git.commit/author-name  (some-> (re-find #"Author: (.+) <" author) second)
+   :git.commit/author-email (some-> (re-find #"<(.+)>" author) second)
+   :git.commit/author-date  (some-> (re-find #"Date: (.+)$" date) second string/trim)})
 
-;; (defn commit-stats-for-dir
-;;   "
-;;   TODO: support parsing git log -n 3 --numstat --before 2022-05-06 --after 2022-05-02
-;;   "
-;;   [{:keys [dir n before after]}]
-;;   (let [dir (if (string/starts-with? dir "/")
-;;               dir (zsh/expand "~/" dir))
-;;         n   (or n 10)]
-;;     (->
-;;       ^{:out :string
-;;         :dir dir}
-;;       ($ git log
-;;          -n ~n
-;;          (when before --before ~before)
-;;          (when after --after ~after)
-;;          ~(str "--pretty=format:" (log-format-str)))
-;;       check :out
-;;       ((fn [s] (str "[" s "]")))
-;;       (string/replace delimiter "\"")
-;;       edn/read-string
-;;       (->> (map #(assoc % :git.commit/directory dir)))))
-;;   )
+(comment
+  (def --header '("commit 7c293095d1b17f821944d28fc4e3fa38f33dcf1a"
+                  "Author: Russell Matney <russell.matney@gmail.com>"
+                  "Date:   Fri May 6 13:36:24 2022 -0400"))
+
+  (->stats-header --header))
+
+(defn ->stats-commit [[header message stats]]
+  (merge
+    (->stats-header header)))
+
+(defn commit-stats-for-dir
+  "Retuns metadata for `n` commits at the specified `dir`.
+  ;; TODO support before/after
+  "
+  [{:keys [dir n before after]}]
+  (let [dir (if (string/starts-with? dir "/")
+              dir (zsh/expand "~/" dir))
+        n   (or n 10)]
+    (->
+      ^{:out :string :dir dir}
+      (process/$ git log -n ~n --numstat)
+      process/check :out
+      string/split-lines
+      util/partition-by-newlines
+      (->> (partition 3) (map ->stats-commit)))))
+
+(comment
+  (commit-stats-for-dir {:dir "russmatney/clawe" :n 10}))
