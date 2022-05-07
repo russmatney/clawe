@@ -8,7 +8,8 @@
    [components.git]
    [components.timeline]
    [keybind.core :as key]
-   [uix.core.alpha :as uix]))
+   [uix.core.alpha :as uix]
+   [wing.core :as w]))
 
 
 (defn ->date-str [_opts it]
@@ -81,6 +82,47 @@
                (on-down @cursor-idx)))
   nil)
 
+(defn event-counts [events]
+  (let [count-by (fn [f] (->> events (filter f) count))]
+    {:screenshot-count (count-by :screenshot/time-string)
+     :commit-count     (count-by :git.commit/hash)
+     :org-note-count   (count-by :org/title)}))
+
+(defn event-count-comp [{:keys [label count]}]
+  (when (and count (> count 0))
+    [:span
+     {:class ["whitespace-nowrap"]}
+     (str count " " label)]))
+
+(defn event-date-popover [{:keys [date events]}]
+  (let [{:keys [screenshot-count
+                commit-count
+                org-note-count]}
+        (event-counts events)]
+    [:div
+     {:class ["mt-4"
+              "flex" "flex-col"
+              "bg-city-blue-800"
+              "p-4"
+              "rounded-lg"
+              "shadow-lg"]}
+
+     [:span
+      {:class ["text-center" "pb-2"]}
+      (t/format (t/formatter "MMM d") date)]
+
+     [event-count-comp {:label "screenshots"
+                        :count screenshot-count}]
+     [:span
+      {:class ["whitespace-nowrap"]}
+      [event-count-comp {:label "commits"
+                         :count commit-count}]]
+     [:span
+      {:class ["whitespace-nowrap"]}
+      [event-count-comp {:label "org-notes"
+                         :count org-note-count}]]]))
+
+
 (defn events-for-date [date events]
   (->> events
        (filter (fn [evt]
@@ -126,7 +168,10 @@
       [components.timeline/day-picker
        {:on-date-click  #(reset! selected-date %)
         :date-has-data? all-item-dates
-        :selected-date  @selected-date}
+        :selected-date  @selected-date
+        :popover-comp   (fn [{:keys [date] :as opts}]
+                          [event-date-popover
+                           (assoc opts :events (events-for-date date items))])}
        (->> items (map :event/timestamp) (remove nil?))]]
 
      ;; TODO filter by type (screenshots, commits, org items)

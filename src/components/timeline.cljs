@@ -1,6 +1,9 @@
 (ns components.timeline
-  (:require [tick.core :as t]
-            [wing.core :as w]))
+  (:require
+   [tick.core :as t]
+   [wing.core :as w]
+   ["@headlessui/react" :as Headless]
+   [uix.core.alpha :as uix]))
 
 (defn events-date-data
   ([ts] (events-date-data {} ts))
@@ -48,6 +51,31 @@
        (map (fn [date-month]
               (t/format (t/formatter "MMM") date-month)))))
 
+(defn day-popover [opts date]
+  (let [{:keys [open-popover?
+                popover-comp
+                date-has-data?
+                ]} opts
+        popover-comp
+        (or popover-comp (fn [_] [:div date]))
+        open?      (uix/state false)
+        has-data?  (uix/state (date-has-data? (t/date date)))]
+    (when @has-data?
+      [:> Headless/Popover
+       {:class ["relative"]}
+       [:> Headless/Popover.Button
+        {:on-mouse-enter (fn [_] (reset! open? true))
+         :on-mouse-leave (fn [_] (reset! open? false))
+         :class          ["w-3" "h-3" "rounded"
+                          "bg-city-pink-400"]}]
+
+       (when @open?
+         [:> Headless/Popover.Panel
+          {:static true
+           :class  ["absolute z-10" "overflow-hidden"]}
+          [popover-comp {:date date}]])])))
+
+
 (defn day-picker [opts timestamps]
   (let [{:keys [on-date-click
                 date-filter
@@ -77,23 +105,31 @@
                    "border-t"
                    "border-city-green-400"
                    "border-opacity-30"]}
-          (for [date dates]
+          (for [[idx date] (->> dates (map-indexed vector))]
             (let [is-selected? (and selected-date (t/= (t/date date) (t/date selected-date)))
                   has-data?    (date-has-data? (t/date date))]
               [:div
                {:key      (str date)
-                :class    ["flex" "flex-col"
-                           "px-4" "py-6"
-                           "justify-center"
-                           "text-center"
-                           "border-r"
-                           "border-city-green-400"
-                           "border-opacity-30"
-                           (when is-selected? "bg-yo-blue-500")
-                           (when-not has-data? "bg-city-blue-900")
-                           (when has-data? "hover:bg-yo-blue-400")
-                           (when has-data? "cursor-pointer")]
+                :class
+                ["flex" "flex-col"
+                 "w-14"
+                 "px-4" "py-6"
+                 "justify-center"
+                 "text-center"
+                 "border-r"
+                 "border-city-green-400"
+                 "border-opacity-30"
+                 (when is-selected? "bg-yo-blue-500")
+                 (when-not has-data? "bg-city-blue-900")
+                 (when has-data? "hover:bg-yo-blue-400")
+                 (when has-data? "cursor-pointer")]
                 :on-click #(on-date-click date)}
                [:span
                 (some-> (t/format (t/formatter "E") date) first)]
-               [:span (t/format (t/formatter "d") date)]]))]])]]))
+               [:span (t/format (t/formatter "d") date)]
+
+               [day-popover
+                (-> opts
+                    ;; (assoc :open-popover? (zero? idx))
+                    )
+                date]]))]])]]))
