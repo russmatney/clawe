@@ -35,7 +35,9 @@
   (plasma.server/make-server
     {:session-atom *sessions*
      :send-fn      #(undertow.ws/send %2 %1)
-     :on-error     #(log/warn (:error %) "Error in plasma handler" {:request %})
+     :on-error     #(log/warn (:error %) "Error in plasma handler"
+                              (-> % :ctx :request (select-keys
+                                                    #{:event-name :fn-var :args})))
      :transit-read-handlers
      (merge transit/default-read-handlers ttl/read-handlers)
      :transit-write-handlers
@@ -43,7 +45,14 @@
      :interceptors [(plasma.interceptors/auto-require
                       #(do (log/info "Auto requiring namespace" {:namespace %})
                            (systemic.core/start!)))
-                    (plasma.interceptors/load-metadata)]}))
+                    (plasma.interceptors/load-metadata)
+                    #_{:name :doctor-logging
+                       :enter
+                       (fn [ctx]
+                         (let [{:keys [fn-var args event-name]} (:request ctx)]
+                           (log/debug "plasma interceptor" "fn-var" fn-var "event-name" event-name)
+                           (when (seq args) (log/debug "args" args)))
+                         ctx)}]}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Server
@@ -65,7 +74,6 @@
                     :notify/id      :doctor/server})
     (undertow/run-undertow
       (fn [{:keys [uri] :as req}]
-        (log/info "request" uri (System/currentTimeMillis))
         (cond
           ;; handle plasma requests
           (= uri "/ws")

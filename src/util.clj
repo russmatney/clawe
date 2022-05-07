@@ -30,11 +30,9 @@
        (filter
          (fn [[k v]]
            (cond
-             (fn? v)
-             (do (println "dropping k-v" (type v) k v)
-                 false)
+             (fn? v) false
              ;; TODO consider whitelist of supported types
-             :else true)))
+             :else   true)))
        (into {})))
 
 (defn zp

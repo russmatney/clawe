@@ -26,7 +26,9 @@
   (plasma.server/make-server
     {:session-atom           *sessions*
      :send-fn                #(undertow.ws/send %2 %1)
-     :on-error               #(log/warn (:error %) "Error in plasma handler" {:request %})
+     :on-error               #(log/warn (:error %) "Error in plasma handler"
+                                        (-> % :ctx :request (select-keys
+                                                              #{:event-name :fn-var :args})))
      :transit-read-handlers  (merge transit/default-read-handlers ttl/read-handlers)
      :transit-write-handlers (merge transit/default-write-handlers ttl/write-handlers)
      :interceptors           [(plasma.interceptors/auto-require

@@ -9,9 +9,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defhandler get-events []
-  (println "get-events handler firing")
   (let [evts (api.events/recent-events)]
-    (println "returning evts in handler" (count evts))
     evts))
 
 (defstream events-stream [] api.events/*events-stream*)
