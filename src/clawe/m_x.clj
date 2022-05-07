@@ -69,24 +69,15 @@
    (let [wsp (or wsp (workspaces/current-workspace))]
      (->>
        (concat
-         [(when-not notify/is-mac?
-            (when wsp {:rofi/label     "Create Workspace Client"
-                       :rofi/on-select (fn [_]
-                                         ;; TODO detect if workspace client is already open
-                                         ;; wrap these in a nil-punning actions-list api
-                                         (notify/notify "Creating client for workspace")
-                                         (wsp.create/create-client wsp))}))
-
+         [
           (when-not notify/is-mac?
+            ;; TODO refactor into a git-fetch helper
             (when (and wsp (r.git/repo? (workspaces/workspace-repo wsp)))
               {:rofi/label     (str "Fetch repo upstream: " (workspaces/workspace-repo wsp))
                :rofi/on-select (fn [_]
                                  (notify/notify "Fetching upstream for workspace")
                                  ;; TODO support fetching via ssh-agent
                                  (r.git/fetch (workspaces/workspace-repo wsp)))}))]
-
-         ;; TODO current workspace app suggestions
-         ;; i.e. open godot, aseprite if in a godot-workspace
 
          ;; clone suggestions from open tabs and the clipboard
          (->>
