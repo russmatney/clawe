@@ -24,7 +24,10 @@
          #time/zoned-date-time "2021-12-30T17:52:12Z"
 
          "Fri May 6 12:33:33 2022 -0400"
-         #time/zoned-date-time "2022-05-06T12:33:33-04:00"}]
+         #time/zoned-date-time "2022-05-06T12:33:33-04:00"
+
+         "2022-04-28T23:47:51"
+         #time/zoned-date-time "2022-04-28T23:47:51-04:00[America/New_York]"}]
     (->> cases
          (map (fn [[in exp]]
                 (is (= exp (sut/parse-time-string in)))))

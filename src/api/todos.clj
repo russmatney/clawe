@@ -8,7 +8,8 @@
    [babashka.fs :as fs]
    [clojure.string :as string]
    [defthing.db :as db]
-   [wing.core :as w]))
+   [wing.core :as w]
+   [dates.tick :as dt]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; DB todo crud
@@ -82,19 +83,25 @@
   (re-seq #"^(\d\d\d\d)(\d\d)(\d\d):(\d\d)(\d\d)(\d\d)" "20210712:163730")
   (println "hi"))
 
+(def org-item-date-keys
+  #{:org/closed
+    :org/scheduled
+    :org/deadline
+    :org.prop/archive-time
+    :org.prop/created-at})
+
 (defn org-item->todo
-  [{:org/keys      [name source-file status]
-    :org.prop/keys [created-at]
-    :as            item}]
-  ;; TODO :todo/scheduled
-  ;; TODO :todo/deadline
-  (->
-    item
-    (assoc :todo/name name
-           :todo/file-name (str (-> source-file fs/parent fs/file-name) "/" (fs/file-name source-file))
-           ;; TODO transit failing to transfer tick local date times? str for now
-           :todo/created-at (str (parse-created-at created-at))
-           :todo/status status)))
+  [{:org/keys [name source-file status] :as item}]
+  (let [parsed-date-fields (->> org-item-date-keys
+                                (map (fn [k]
+                                       [k (-> item k dt/parse-time-string)]))
+                                (into {}))]
+    (->
+      item
+      (assoc :todo/name name
+             :todo/file-name (str (-> source-file fs/parent fs/file-name) "/" (fs/file-name source-file))
+             :todo/status status)
+      (merge parsed-date-fields))))
 
 (def zsh-org-roots
   ["~/todo/{journal,projects}.org"])

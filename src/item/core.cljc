@@ -6,7 +6,8 @@
     :org/closed
     :org/scheduled
     :org/deadline
-    :org.prop/archive-time})
+    :org.prop/archive-time
+    :org.prop/created-at})
 
 (defn ->time-string [item]
   ((apply some-fn

@@ -6,6 +6,7 @@
 
 (def date-formats-with-zone
   [:iso-zoned-date-time
+   :iso-offset-date-time
    "yyyy-MM-dd_HH:mm:ssZ"
    "E, d MMM yyyy HH:mm:ss Z"
    "E MMM d HH:mm:ss yyyy Z"])
@@ -13,10 +14,16 @@
 (def datetime-formats-without-zone
   ["yyyy-MM-dd_h.mm.ss a"
    "yyyy-MM-dd-HHmmss"
-   "yyyy-MM-dd E HH:mm"])
+   "yyyy-MM-ddTHH:mm:ss"
+   "yyyy-MM-dd E HH:mm"
+   :iso-local-date-time])
+
+;; :iso-local-time
+;; :iso-instant
 
 (def date-formats
-  ["yyyy-MM-dd E"])
+  ["yyyy-MM-dd E"
+   :iso-local-date])
 
 (defn parse-time-string
   [time-string]
@@ -70,5 +77,4 @@
   (parse-time-string "2022-04-24 Sun")
   (parse-time-string "Fri, 10 Dec 2021 00:35:56 -0500")
   (parse-time-string "Fri, 4 Feb 2022 15:38:14 -0500")
-  (parse-time-string "2021-12-30T17:52:12Z")
-  )
+  (parse-time-string "2021-12-30T17:52:12Z"))
