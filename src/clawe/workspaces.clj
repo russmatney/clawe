@@ -301,8 +301,6 @@
   "assumes the workspace title and tmux session are the same"
   ([wsps] (merge-tmux-sessions {} wsps))
   ([_opts wsps]
-
-   (println "[CLAWE] merge-tmux-sessions" (str "[" (System/currentTimeMillis) "]"))
    (when-let [sessions-by-name (try (r.tmux/list-sessions)
                                     (catch Exception _e
                                       (println "Tmux probably not running!")
@@ -522,10 +520,9 @@
 (defn do-yabai-correct-workspaces []
   ;; some what duplicated in clawe.restart...
   ;; maybe this belongs in c.rules...
-  (do
-    (yabai/set-space-labels)
-    (yabai/destroy-unlabelled-empty-spaces)
-    (update-workspace-indexes)))
+  (yabai/set-space-labels)
+  (yabai/destroy-unlabelled-empty-spaces)
+  (update-workspace-indexes))
 
 (defcom yabai-correct-workspaces
   (do-yabai-correct-workspaces))
