@@ -9,8 +9,8 @@
 ;; Topbar metadata
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defhandler get-topbar-metadata [] (topbar/build-topbar-metadata))
-(defstream topbar-metadata-stream [] topbar/*topbar-metadata-stream*)
+(defhandler get-topbar-metadata [] (api.topbar/build-topbar-metadata))
+(defstream topbar-metadata-stream [] api.topbar/*topbar-metadata-stream*)
 
 #?(:cljs
    (defn use-topbar-metadata []
