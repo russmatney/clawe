@@ -5,9 +5,13 @@
    ["@headlessui/react" :as Headless]
    [uix.core.alpha :as uix]))
 
-(defn events-date-data
-  ([ts] (events-date-data {} ts))
-  ([{:keys [months-ago days-ago]} timestamps]
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; misc date helpers
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn timestamps-date-data
+  ([ts] (timestamps-date-data {} ts))
+  ([{:keys [days-ago]} timestamps]
    (when (seq timestamps)
      (let [days-ago        (or days-ago 13)
            newest          (some->> timestamps (sort t/>) first)
@@ -27,32 +31,12 @@
           :all-months     (t/range oldest newest (t/new-period 1 :months))
           :dates-by-month dates-by-month})))))
 
-(comment
-  (def --dates
-    [(t/zoned-date-time)
-     (t/<< (t/zoned-date-time) (t/new-period 1 :months))
-     (t/<< (t/zoned-date-time) (t/new-period 1 :days))])
-
-  (events-date-data --dates)
-
-  (->> --dates events-date-data :dates-by-month)
-
-  (->> --dates
-       events-date-data
-       :all-dates
-       (map t/zoned-date-time)
-       (map (fn [date-month]
-              (t/format (t/formatter "EE d") date-month))))
-
-  (->> --dates
-       events-date-data
-       :all-months
-       (map t/zoned-date-time)
-       (map (fn [date-month]
-              (t/format (t/formatter "MMM") date-month)))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; popover
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn day-popover [opts date]
-  (let [{:keys [open-popover?
+  (let [{:keys [_open-popover?
                 popover-comp
                 date-has-data?
                 ]} opts
@@ -75,14 +59,17 @@
            :class  ["absolute z-10" "overflow-hidden"]}
           [popover-comp {:date date}]])])))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; day picker component
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defn day-picker [opts timestamps]
   (let [{:keys [on-date-click
-                date-filter
                 date-has-data?
                 selected-dates]} opts
-        {:keys [newest dates-by-month]}
+        {:keys [dates-by-month]}
         (->> timestamps
-             (events-date-data {:months-ago 2}))]
+             (timestamps-date-data {:months-ago 2}))]
     [:div
      {:class ["flex" "flex-col" "w-full"]}
 
@@ -97,14 +84,14 @@
                   "text-center"]}
          [:div
           {:class ["py-3"]}
-          (t/format (t/formatter "MMM") month)]
+          (t/format "MMM" month)]
 
          [:div
           {:class ["flex" "flex-row"
                    "border-t"
                    "border-city-green-400"
                    "border-opacity-30"]}
-          (for [[idx date] (->> dates (map-indexed vector))]
+          (for [[_idx date] (->> dates (map-indexed vector))]
             (let [is-selected? (and (seq selected-dates) (selected-dates date))
                   has-data?    (date-has-data? (t/date date))]
               [:div
@@ -124,11 +111,12 @@
                  (when has-data? "cursor-pointer")]
                 :on-click #(on-date-click date)}
                [:span
-                (some-> (t/format (t/formatter "E") date) first)]
-               [:span (t/format (t/formatter "d") date)]
+                (some-> (t/format "E" date) first)]
+               [:span (t/format "d" date)]
 
                [day-popover
                 (-> opts
+                    ;; useful for debugging (renders the popover for the first date)
                     ;; (assoc :open-popover? (zero? idx))
                     )
                 date]]))]])]]))

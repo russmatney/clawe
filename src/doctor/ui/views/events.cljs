@@ -15,9 +15,7 @@
 
 (defn ->date-str [_opts it]
   (when (:event/timestamp it)
-    (t/format
-      (t/formatter "MMM dd h:mm a")
-      (:event/timestamp it))))
+    (t/format "MMM dd h:mm a" (:event/timestamp it))))
 
 (comment
   (t/between
@@ -125,7 +123,7 @@
 
    [:span
     {:class ["text-center" "pb-2"]}
-    (t/format (t/formatter "MMM d") date)]
+    (t/format "MMM d" date)]
 
    [event-count-list events]])
 
@@ -187,7 +185,7 @@
        (if (seq @selected-dates)
          (str " on "
               (->> @selected-dates
-                   (map #(t/format (t/formatter "E MMM d") %))
+                   (map #(t/format "E MMM d" %))
                    (string/join ", ")))
          (str " in the last 14 days"))]
 

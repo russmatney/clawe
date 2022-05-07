@@ -22,7 +22,14 @@
      'defthing.core-test
      'defthing.defcom-test
      'defthing.db-test
-     'defthing.defworkspace-test]
+     'defthing.defworkspace-test
+     ;; 'ralphie.git-test
+     ;; 'ralphie.tmux-test
+     ;; 'ralphie.emacs-test
+     ;; 'ralphie.awesome-test
+     ;; 'components.timeline-test
+     ;; 'dates.tick-test
+     ]
     (remove nil?)))
 
 (doall
