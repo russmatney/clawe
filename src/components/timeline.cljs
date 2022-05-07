@@ -6,13 +6,14 @@
   ([ts] (events-date-data {} ts))
   ([{:keys [months-ago days-ago]} timestamps]
    (when (seq timestamps)
-     (let [months-ago (or months-ago 8)
-           days-ago   (or days-ago 20)
-           newest     (some->> timestamps (sort t/>) first)
-           oldest     (some->> timestamps (sort t/<) first)
-           all-dates  (t/range oldest
-                               (t/>> newest (t/new-period 1 :days))
-                               (t/new-period 1 :days))
+     (let [days-ago        (or days-ago 13)
+           newest          (some->> timestamps (sort t/>) first)
+           oldest          (some->> timestamps (sort t/<) first)
+           oldest-days-ago (t/<< newest (t/new-period days-ago :days))
+           oldest          (if (t/> oldest oldest-days-ago) oldest oldest-days-ago)
+           all-dates       (t/range oldest
+                                    (t/>> newest (t/new-period 1 :days))
+                                    (t/new-period 1 :days))
            dates-by-month
            (->> all-dates (w/group-by t/month))]
        (when newest
@@ -54,13 +55,7 @@
                 selected-date]} opts
         {:keys [newest dates-by-month]}
         (->> timestamps
-             (events-date-data {:months-ago 2}))
-        ;; dates-by-month
-        ;; (->> dates-by-month
-        ;;      (map (fn [[m ds]]
-        ;;             [m (->> ds (filter (comp date-filter t/date)))]))
-        ;;      (into {}))
-        ]
+             (events-date-data {:months-ago 2}))]
     [:div
      {:class ["flex" "flex-col" "w-full"]}
 
@@ -70,21 +65,15 @@
         [:div
          {:key   (str month)
           :class ["flex" "flex-col"
-                  "px-10" "py-3"
+                  "py-3"
                   "justify-center"
                   "text-center"]}
          [:div
-          {:class
-           ["py-3"
-            "border-r" "border-l"
-            "border-city-green-400"
-            "border-opacity-30"]}
+          {:class ["py-3"]}
           (t/format (t/formatter "MMM") month)]
 
          [:div
           {:class ["flex" "flex-row"
-                   "flex-wrap"
-                   "ml-auto"
                    "border-t"
                    "border-city-green-400"
                    "border-opacity-30"]}
@@ -97,7 +86,7 @@
                            "px-4" "py-6"
                            "justify-center"
                            "text-center"
-                           "border-r" "border-l"
+                           "border-r"
                            "border-city-green-400"
                            "border-opacity-30"
                            (when is-selected? "bg-yo-blue-500")
