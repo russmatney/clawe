@@ -61,32 +61,44 @@
          (assoc :exclude-key #{:git.commit/body
                                :git.commit/full-message})) it]]])
 
-(defn event-page []
-  (let [{:keys [items]}   (hooks.events/use-events)
-        event-count       (count items)
-        cursor-idx        (uix/state 0)
-        selected-elem-ref (uix/ref)]
+(defn use-keyboard-cursor [{:keys [cursor-idx
+                                   max-idx
+                                   min-idx
+                                   on-up
+                                   on-down]}]
 
-    (key/bind! "j" ::cursor-down
-               (fn [_ev]
-                 (swap! cursor-idx (fn [v]
-                                     (let [new-v (inc v)]
-                                       (if (> new-v (dec event-count))
-                                         (dec event-count)
-                                         new-v))))
-                 (when selected-elem-ref
-                   (println "hi!")
-                   (.scrollIntoView @selected-elem-ref))))
-    (key/bind! "k" ::cursor-up
-               (fn [_ev]
-                 (swap! cursor-idx
-                        (fn [v]
-                          (let [new-v (dec v)]
-                            (if (< new-v 0)
-                              0 new-v))))
-                 (when selected-elem-ref
-                   (println "hi!")
-                   (.scrollIntoView @selected-elem-ref))))
+  (key/bind! "j" ::cursor-down
+             (fn [_ev]
+               (swap! cursor-idx (fn [v]
+                                   (let [new-v (inc v)]
+                                     (if (> new-v max-idx)
+                                       (dec max-idx)
+                                       new-v))))
+               (on-up @cursor-idx)))
+  (key/bind! "k" ::cursor-up
+             (fn [_ev]
+               (swap! cursor-idx
+                      (fn [v]
+                        (let [new-v (dec v)]
+                          (if (< new-v min-idx)
+                            min-idx new-v))))
+               (on-down @cursor-idx)))
+  nil)
+
+(defn event-page []
+  (let [{:keys [items]}      (hooks.events/use-events)
+        event-count          (count items)
+        cursor-idx           (uix/state 0)
+        selected-elem-ref    (uix/ref)
+        on-cursor-up-or-down (fn [_]
+                               (when @selected-elem-ref
+                                 (.scrollIntoView @selected-elem-ref)))]
+    (use-keyboard-cursor {:cursor-idx cursor-idx
+                          :max-idx    (dec event-count)
+                          :min-idx    0
+                          :on-up      on-cursor-up-or-down
+                          :on-down    on-cursor-up-or-down})
+
 
     [:div
      {:class ["flex" "flex-col" "flex-auto"
