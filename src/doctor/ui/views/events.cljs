@@ -9,7 +9,8 @@
    [components.timeline]
    [keybind.core :as key]
    [uix.core.alpha :as uix]
-   [wing.core :as w]))
+   [wing.core :as w]
+   [clojure.string :as string]))
 
 
 (defn ->date-str [_opts it]
@@ -123,13 +124,12 @@
                          :count org-note-count}]]]))
 
 
-(defn events-for-date [date events]
-  (->> events
-       (filter (fn [evt]
-                 (let [evt-date (:event/timestamp evt)]
-                   (t/=
-                     (t/date evt-date)
-                     (t/date date)))))))
+(defn events-for-dates [dates events]
+  (let [on-at-least-one-date (->> dates (map t/date) (into #{}))]
+    (->> events
+         (remove (comp nil? :event/timestamp))
+         (filter
+           (comp on-at-least-one-date t/date :event/timestamp)))))
 
 (defn event-page []
   (let [{:keys [items]}   (hooks.events/use-events)
@@ -140,11 +140,11 @@
                                (into #{}))
         cursor-idx        (uix/state 0)
         selected-elem-ref (uix/ref)
-        selected-date     (uix/state nil)
+        selected-dates    (uix/state #{})
 
         events               (cond->> items
-                               @selected-date
-                               (events-for-date @selected-date))
+                               (seq @selected-dates)
+                               (events-for-dates @selected-dates))
         event-count          (count events)
         on-cursor-up-or-down (fn [_]
                                (when @selected-elem-ref
@@ -166,20 +166,22 @@
      [:div
       {:class ["pb-8"]}
       [components.timeline/day-picker
-       {:on-date-click  #(reset! selected-date %)
+       {:on-date-click  #(swap! selected-dates (fn [ds] (w/toggle ds %)))
         :date-has-data? all-item-dates
-        :selected-date  @selected-date
+        :selected-dates @selected-dates
         :popover-comp   (fn [{:keys [date] :as opts}]
                           [event-date-popover
-                           (assoc opts :events (events-for-date date items))])}
+                           (assoc opts :events (events-for-dates #{date} items))])}
        (->> items (map :event/timestamp) (remove nil?))]]
 
      ;; TODO filter by type (screenshots, commits, org items)
      [:div [:h1 {:class ["pb-4" "text-xl"]} event-count " Events"
-            (when @selected-date
-              (str " on " (t/format
-                            (t/formatter "E MMM d")
-                            @selected-date)))]]
+            (if (seq @selected-dates)
+              (str " on "
+                   (->> @selected-dates
+                        (map #(t/format (t/formatter "E MMM d") %))
+                        (string/join ", ")))
+              (str " in the last 14 days"))]]
 
      (for [[i evt] (->> events (map-indexed vector))]
        (let [selected? (#{i} @cursor-idx)]

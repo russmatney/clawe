@@ -75,12 +75,11 @@
            :class  ["absolute z-10" "overflow-hidden"]}
           [popover-comp {:date date}]])])))
 
-
 (defn day-picker [opts timestamps]
   (let [{:keys [on-date-click
                 date-filter
                 date-has-data?
-                selected-date]} opts
+                selected-dates]} opts
         {:keys [newest dates-by-month]}
         (->> timestamps
              (events-date-data {:months-ago 2}))]
@@ -106,7 +105,7 @@
                    "border-city-green-400"
                    "border-opacity-30"]}
           (for [[idx date] (->> dates (map-indexed vector))]
-            (let [is-selected? (and selected-date (t/= (t/date date) (t/date selected-date)))
+            (let [is-selected? (and (seq selected-dates) (selected-dates date))
                   has-data?    (date-has-data? (t/date date))]
               [:div
                {:key      (str date)
