@@ -95,33 +95,39 @@
      {:class ["whitespace-nowrap"]}
      (str count " " label)]))
 
-(defn event-date-popover [{:keys [date events]}]
-  (let [{:keys [screenshot-count
-                commit-count
-                org-note-count]}
-        (event-counts events)]
+(defn event-count-list [events]
+  (let
+      [{:keys [screenshot-count
+               commit-count
+               org-note-count]}
+       (event-counts events)]
     [:div
-     {:class ["mt-4"
-              "flex" "flex-col"
-              "bg-city-blue-800"
-              "p-4"
-              "rounded-lg"
-              "shadow-lg"]}
-
-     [:span
-      {:class ["text-center" "pb-2"]}
-      (t/format (t/formatter "MMM d") date)]
-
-     [event-count-comp {:label "screenshots"
-                        :count screenshot-count}]
+     {:class ["flex" "flex-col"]}
      [:span
       {:class ["whitespace-nowrap"]}
-      [event-count-comp {:label "commits"
-                         :count commit-count}]]
+      [event-count-comp {:label "screenshots" :count screenshot-count}]]
      [:span
       {:class ["whitespace-nowrap"]}
-      [event-count-comp {:label "org-notes"
-                         :count org-note-count}]]]))
+      [event-count-comp {:label "commits" :count commit-count}]]
+     [:span
+      {:class ["whitespace-nowrap"]}
+      [event-count-comp {:label "org-notes" :count org-note-count}]]])
+  )
+
+(defn event-date-popover [{:keys [date events]}]
+  [:div
+   {:class ["mt-4"
+            "flex" "flex-col"
+            "bg-city-blue-800"
+            "p-4"
+            "rounded-lg"
+            "shadow-lg"]}
+
+   [:span
+    {:class ["text-center" "pb-2"]}
+    (t/format (t/formatter "MMM d") date)]
+
+   [event-count-list events]])
 
 
 (defn events-for-dates [dates events]
@@ -175,13 +181,17 @@
        (->> items (map :event/timestamp) (remove nil?))]]
 
      ;; TODO filter by type (screenshots, commits, org items)
-     [:div [:h1 {:class ["pb-4" "text-xl"]} event-count " Events"
-            (if (seq @selected-dates)
-              (str " on "
-                   (->> @selected-dates
-                        (map #(t/format (t/formatter "E MMM d") %))
-                        (string/join ", ")))
-              (str " in the last 14 days"))]]
+     [:div
+      [:h1 {:class ["pb-4" "text-xl"]}
+       event-count " Events"
+       (if (seq @selected-dates)
+         (str " on "
+              (->> @selected-dates
+                   (map #(t/format (t/formatter "E MMM d") %))
+                   (string/join ", ")))
+         (str " in the last 14 days"))]
+
+      [event-count-list events]]
 
      (for [[i evt] (->> events (map-indexed vector))]
        (let [selected? (#{i} @cursor-idx)]
