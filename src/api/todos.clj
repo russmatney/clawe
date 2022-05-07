@@ -57,38 +57,13 @@
 ;; org helpers
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn parse-created-at [x]
-  (when x
-    (try
-      (->>
-        x
-        (re-seq #"^(\d\d\d\d)-?(\d\d)-?(\d\d)T?:?(\d\d):?(\d\d):?(\d\d)$")
-        first rest
-        (map read-string)
-        ((fn [[year month day hour min sec]]
-           (if (and year month day hour min sec)
-             (->
-               (t/new-date year month day)
-               (t/at
-                 (t/new-time hour min sec)))
-             (println "Strange date parse"
-                      x year month day hour min sec)))))
-      (catch Exception e
-        (println "Parse created-at error" e)
-        x))))
-
-(comment
-  (parse-created-at "20210712:163730")
-  (parse-created-at "2022-01-05T17:39:20")
-  (re-seq #"^(\d\d\d\d)(\d\d)(\d\d):(\d\d)(\d\d)(\d\d)" "20210712:163730")
-  (println "hi"))
-
 (def org-item-date-keys
   #{:org/closed
     :org/scheduled
     :org/deadline
     :org.prop/archive-time
     :org.prop/created-at})
+
 
 (defn org-item->todo
   [{:org/keys [name source-file status] :as item}]
@@ -120,10 +95,24 @@
 (defn daily-path [day]
   (str "~/todo/daily/" day ".org"))
 
-(defn days []
-  ;; TODO last 2 weeks
-  [(t/today)
-   (t/yesterday)])
+(comment
+  (count
+    (t/range
+      (-> (t/today) (t/<< (t/new-period 14 :days)))
+      (t/today)
+      (t/new-period 1 :days)
+      ))
+  )
+
+(defn days
+  "Returns dates for the last n days, including today."
+  [n]
+  (t/range
+    (-> (t/today) (t/<< (t/new-period (dec n) :days)))
+    (t/tomorrow)))
+
+(comment
+  (days 14))
 
 (defn monthly-archive-path [year-month]
   (str "~/todo/archive/" year-month ".org")
@@ -154,12 +143,12 @@
     {:additional-roots ["~/russmatney/{doctor,clawe,org-crud}/{readme,todo}.org"]})
 
   (org-file-paths
-    {:additional-roots (->> (days) (map daily-path))}))
+    {:additional-roots (->> (days 14) (map daily-path))}))
 
 (defn build-org-todos []
   (->> (org-file-paths
          {:additional-roots
-          (concat (->> (days) (map daily-path)))})
+          (concat (->> (days 14) (map daily-path)))})
        (map fs/file)
        (filter fs/exists?)
        (mapcat org-crud/path->flattened-items)
@@ -197,7 +186,7 @@
   (->> (org-file-paths
          {:additional-roots
           (concat
-            (->> (days) (map daily-path))
+            (->> (days 14) (map daily-path))
             (->> (months) (map monthly-archive-path)))})
        (map fs/file)
        (filter fs/exists?)
