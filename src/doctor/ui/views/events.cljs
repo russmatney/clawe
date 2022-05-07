@@ -6,7 +6,7 @@
    [components.todo]
    [components.debug]
    [components.git]
-
+   [components.timeline]
    [keybind.core :as key]
    [uix.core.alpha :as uix]))
 
@@ -61,18 +61,14 @@
          (assoc :exclude-key #{:git.commit/body
                                :git.commit/full-message})) it]]])
 
-(defn use-keyboard-cursor [{:keys [cursor-idx
-                                   max-idx
-                                   min-idx
-                                   on-up
-                                   on-down]}]
-
+(defn use-keyboard-cursor [{:keys [cursor-idx max-idx min-idx
+                                   on-up on-down]}]
   (key/bind! "j" ::cursor-down
              (fn [_ev]
                (swap! cursor-idx (fn [v]
                                    (let [new-v (inc v)]
                                      (if (> new-v max-idx)
-                                       (dec max-idx)
+                                       max-idx
                                        new-v))))
                (on-up @cursor-idx)))
   (key/bind! "k" ::cursor-up
@@ -85,11 +81,24 @@
                (on-down @cursor-idx)))
   nil)
 
+(defn events-for-date [date events]
+  (->> events
+       (filter (fn [evt]
+                 (let [evt-date (:event/timestamp evt)]
+                   (t/=
+                     (t/date evt-date)
+                     (t/date date)))))))
+
 (defn event-page []
-  (let [{:keys [items]}      (hooks.events/use-events)
-        event-count          (count items)
-        cursor-idx           (uix/state 0)
-        selected-elem-ref    (uix/ref)
+  (let [{:keys [items]}   (hooks.events/use-events)
+        cursor-idx        (uix/state 0)
+        selected-elem-ref (uix/ref)
+        selected-date     (uix/state nil)
+
+        events               (cond->> items
+                               @selected-date
+                               (events-for-date @selected-date))
+        event-count          (count events)
         on-cursor-up-or-down (fn [_]
                                (when @selected-elem-ref
                                  (.scrollIntoView @selected-elem-ref)))]
@@ -99,7 +108,6 @@
                           :on-up      on-cursor-up-or-down
                           :on-down    on-cursor-up-or-down})
 
-
     [:div
      {:class ["flex" "flex-col" "flex-auto"
               "min-h-screen"
@@ -107,13 +115,24 @@
               "bg-yo-blue-700"
               "text-white"
               "p-6"]}
-     ;; TODO filter by type (screenshots, commits, org items)
-     [:div [:h1 {:class ["pb-4" "text-xl"]} event-count " Events"]]
 
-     (for [[i it] (->> items (map-indexed vector))]
+     [:div
+      {:class ["pb-8"]}
+      [components.timeline/day-picker
+       {:on-date-click #(reset! selected-date %)}
+       items]]
+
+     ;; TODO filter by type (screenshots, commits, org items)
+     [:div [:h1 {:class ["pb-4" "text-xl"]} event-count " Events"
+            (when @selected-date
+              (str " on " (t/format
+                            (t/formatter "E MMM d")
+                            @selected-date)))]]
+
+     (for [[i evt] (->> events (map-indexed vector))]
        (let [selected? (#{i} @cursor-idx)]
          ^{:key i}
          [event-comp
           {:selected?    selected?
            :selected-ref (when selected? selected-elem-ref)}
-          it]))]))
+          evt]))]))
