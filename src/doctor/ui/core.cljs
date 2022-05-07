@@ -201,7 +201,8 @@
   (uix.dom/render
     [wing.uix.router/router-provider
      {:routes routes}
-     view]
+     view
+     {:x (js/Date.now)}]
     (.getElementById js/document "app")))
 
 (defn dev-setup []
