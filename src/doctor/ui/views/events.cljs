@@ -91,6 +91,11 @@
 
 (defn event-page []
   (let [{:keys [items]}   (hooks.events/use-events)
+        all-item-dates    (->> items
+                               (map :event/timestamp)
+                               (remove nil?)
+                               (map t/date)
+                               (into #{}))
         cursor-idx        (uix/state 0)
         selected-elem-ref (uix/ref)
         selected-date     (uix/state nil)
@@ -119,8 +124,10 @@
      [:div
       {:class ["pb-8"]}
       [components.timeline/day-picker
-       {:on-date-click #(reset! selected-date %)}
-       items]]
+       {:on-date-click  #(reset! selected-date %)
+        :date-has-data? all-item-dates
+        :selected-date  @selected-date}
+       (->> items (map :event/timestamp) (remove nil?))]]
 
      ;; TODO filter by type (screenshots, commits, org items)
      [:div [:h1 {:class ["pb-4" "text-xl"]} event-count " Events"
