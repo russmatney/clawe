@@ -1,18 +1,15 @@
 (ns doctor.ui.views.events
   (:require
    [tick.core :as t]
-   [hooks.events :as events]
-   [components.screenshot :as screenshot]
-   [components.todo :as todo]
-   [components.debug :as debug]
-   [clojure.string :as string]
+   [hooks.events]
+   [components.screenshot]
+   [components.todo]
+   [components.debug]
+   [components.git]
 
    [keybind.core :as key]
    [uix.core.alpha :as uix]))
 
-
-(defn ->string [_opts it]
-  [:div "event" (str it)])
 
 (defn ->date-str [_opts it]
   (when (:event/timestamp it)
@@ -23,71 +20,7 @@
 (comment
   (t/between
     (t/now)
-    (t/>> (t/now) (t/new-duration 10 :minutes)))
-
-  (println "hi")
-
-  (some->
-    (re-seq #"(\w+/\w+)$" "/users/russ/blah/hello")
-    first
-    first))
-
-(defn short-repo [it]
-  (some->
-    (re-seq #"(\w+/\w+)$" (:git.commit/directory it))
-    first
-    first))
-
-(defn commit-comp [opts it]
-  (let [{:git.commit/keys
-         [body subject short-hash hash
-          lines-added lines-removed
-          ]}      it
-        short-dir (short-repo it)
-        body-lines
-        (->
-          body
-          (string/split "\n"))]
-    [:div
-     {:class ["flex" "flex-col"]}
-
-     [:div
-      {:class ["flex" "flex-row"]}
-      [:div
-       {:class ["text-xl" "text-city-green-400"]}
-       subject]
-
-      [:div
-       {:class ["flex" "flex-col" "ml-auto"]}
-       [:a {:class ["text-city-pink-400"
-                    "hover:text-city-pink-200"
-                    "hover:cursor-pointer"]
-            ;; TODO not all commits have public repos (ignore dropbox)
-            ;; TODO include this link in db commits
-            :href  (str "https://github.com/" short-dir "/commit/" hash)}
-        short-hash]
-
-       [:a {:class ["text-city-pink-400"
-                    "hover:text-city-pink-200"
-                    "hover:cursor-pointer"]
-            :href  (str "https://github.com/" short-dir)}
-        short-dir]
-
-       [:div
-        {:class ["text-city-green-200"]}
-        (str "+" lines-added " added")]
-
-       [:div
-        {:class ["text-city-red-200"]}
-        (str "-" lines-removed " removed")]]]
-
-     [:div
-      {:class [(when (seq body-lines) "pt-8")]}
-      (for [[idx line] (->> body-lines
-                            (map-indexed vector))]
-        ^{:key idx}
-        [:p line])]]))
-
+    (t/>> (t/now) (t/new-duration 10 :minutes))))
 
 (defn event-comp [{:keys [selected?
                           selected-ref]
@@ -108,20 +41,20 @@
    (when (:file/web-asset-path it)
      [:div
       {:class ["w-3/5"]}
-      [screenshot/screenshot-comp opts it]])
+      [components.screenshot/screenshot-comp opts it]])
 
    (when (:git.commit/hash it)
      [:div
-      [commit-comp opts it]])
+      [components.git/commit-comp opts it]])
 
    (when (:org/name it)
      [:div
       ;; TODO non-todo version of org-item
-      [todo/todo opts it]])
+      [components.todo/todo opts it]])
 
    [:div
     {:class ["flex" "pt-4"]}
-    [debug/raw-metadata
+    [components.debug/raw-metadata
      (-> opts
          (assoc :label "Event metadata")
          (assoc :initial-show? false)
@@ -129,13 +62,13 @@
                                :git.commit/full-message})) it]]])
 
 (defn event-page []
-  (let [{:keys [items]}   (events/use-events)
+  (let [{:keys [items]}   (hooks.events/use-events)
         event-count       (count items)
         cursor-idx        (uix/state 0)
         selected-elem-ref (uix/ref)]
 
     (key/bind! "j" ::cursor-down
-               (fn [ev]
+               (fn [_ev]
                  (swap! cursor-idx (fn [v]
                                      (let [new-v (inc v)]
                                        (if (> new-v (dec event-count))
@@ -145,7 +78,7 @@
                    (println "hi!")
                    (.scrollIntoView @selected-elem-ref))))
     (key/bind! "k" ::cursor-up
-               (fn [ev]
+               (fn [_ev]
                  (swap! cursor-idx
                         (fn [v]
                           (let [new-v (dec v)]
