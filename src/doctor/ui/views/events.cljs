@@ -1,6 +1,7 @@
 (ns doctor.ui.views.events
   (:require
    [tick.core :as t]
+   [tick.alpha.interval :as ti]
    [hooks.events]
    [components.screenshot]
    [components.todo]
@@ -167,11 +168,136 @@
     [event-count-list events]]])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; event clusters
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+(defn collect-buckets
+  "Requires passed items to be sorted ahead of time.
+
+  Groups sequential items based on their relation with the current bucket.
+  "
+  [{:keys [items include-in-bucket? new-bucket merge-into-bucket]}]
+  (->> items
+       (reduce
+         (fn [buckets next]
+           (if-not (seq buckets)
+             (list (new-bucket next))
+             (let [[last-bucket & rest-buckets] buckets]
+               (if (include-in-bucket? last-bucket next)
+                 (cons (merge-into-bucket last-bucket next) rest-buckets)
+                 (cons (new-bucket next) buckets)))))
+         (list))))
+
+(defn event->bucket [buckets event]
+  (let [ts (:event/timestamp event)]
+    (->> buckets
+         (filter (fn [{:keys [start end]}] (and (t/>= ts start) (t/<= ts end))))
+         first)))
+
+(defn grouped-event-data [{:keys [idle-time]} events]
+  (let [idle-time      (or idle-time
+                           ;; TODO should be able to support days _and_ periods here
+                           (t/new-duration 3 :hours))
+        buckets        (collect-buckets
+                         {:items (->> events (sort-by :event/timestamp t/<))
+                          :new-bucket
+                          (fn [item] {:start (:event/timestamp item)
+                                      :end   (:event/timestamp item)})
+                          :merge-into-bucket
+                          (fn [current-bucket next]
+                            (assoc current-bucket :end (:event/timestamp next)))
+                          :include-in-bucket?
+                          (fn [current-bucket next]
+                            (t/< (t/between (:end current-bucket)
+                                            (:event/timestamp next))
+                                 idle-time))})
+        grouped-events (->> events (group-by (partial event->bucket buckets)))]
+    {:all-events     events
+     :buckets        buckets
+     :grouped-events grouped-events}))
+
+(comment
+  (t/< (t/between (t/now)
+                  (-> (t/now) (t/>> (t/new-duration 300 :minutes))))
+       (t/new-duration 2 :hours))
+
+  (->> [(t/now)
+        (-> (t/now) (t/>> (t/new-duration 30 :minutes)))
+        (-> (t/now) (t/>> (t/new-duration 3 :hours)))
+        (-> (t/now) (t/<< (t/new-duration 30 :minutes)))
+        (-> (t/now) (t/<< (t/new-duration 3 :hours)))]
+       (map (fn [t] {:event/timestamp t}))
+       (grouped-event-data {:idle-time (t/new-duration 2 :hours)}))
+
+  (defn new-range [next]
+    (let [ts (:event/timestamp next)]
+      {:start ts :end ts}))
+
+  (defn replaces-end? [last-bucket next]
+    (t/< (t/between (:end last-bucket) (:event/timestamp next))
+         (t/new-duration 2 :hours)))
+
+  (->> [(t/now)
+        (-> (t/now) (t/>> (t/new-duration 30 :minutes)))
+        (-> (t/now) (t/>> (t/new-duration 3 :hours)))
+        (-> (t/now) (t/<< (t/new-duration 30 :minutes)))
+        (-> (t/now) (t/<< (t/new-duration 3 :hours)))]
+       (sort t/<)
+       (map (fn [t] {:event/timestamp t}))
+       (reduce
+         (fn [buckets next]
+           (if-not (seq buckets)
+             (list (new-range next))
+             (let [[last-bucket & rest-buckets] buckets]
+               (if (replaces-end? (:end last-bucket) next)
+                 (cons (assoc last-bucket :end (:event/timestamp next)) rest-buckets)
+                 (cons (new-range next) buckets)))))
+         (list)))
+
+
+  (->> [6 8 12 4 0]
+       (sort)
+       (reduce
+         (fn [buckets next]
+           (if-not (seq buckets)
+             (list {:start next :end next})
+             (let [[last-bucket & rest-buckets] buckets]
+               (if (< (- next (:end last-bucket)) 3)
+                 (cons (assoc last-bucket :end next) rest-buckets)
+                 (cons {:start next :end next} buckets)))))
+         (list)))
+
+  (cons 1 '(2 3)))
+
+(defn event-clusters
+  [opts events]
+  (let [{:keys [grouped-events]}
+        (grouped-event-data opts events)]
+    [:div
+     (for [[bucket evts] grouped-events]
+       (let [{:keys [start end]} bucket
+             show-end?           (cond
+                                   (t/= start end)                 false
+                                   (t/< (t/between start end)
+                                        (t/new-duration 1 :hours)) false
+                                   :else                           true)]
+         [:div
+          {:key (str start)}
+
+          (str (t/format "MMM d ha" start)
+               (when show-end?
+                 (str " - " (t/format "ha" end))))
+
+          [event-count-list evts]]))]))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; event page
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn event-page []
   (let [{:keys [items]} (hooks.events/use-events)
+        items           (->> items (filter :event/timestamp))
         all-item-dates  (->> items
                              (map :event/timestamp)
                              (remove nil?)
@@ -230,7 +356,7 @@
 
       [event-count-list events]]
 
-     [basic-event-list {:cursor-idx      cursor-idx
-                        :cursor-elem-ref cursor-elem-ref} events]
+     [event-clusters {} events]
 
-     ]))
+     [basic-event-list {:cursor-idx      cursor-idx
+                        :cursor-elem-ref cursor-elem-ref} events]]))
