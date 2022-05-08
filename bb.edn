@@ -89,7 +89,7 @@
   doctor-be {:doc "Run the doctor backend."
              :task
              (shell {:dir (str (home-dir) "/russmatney/clawe")}
-                    "clj -M:dev:doctor-deps:doctor-server")}
+                    "clj -M:dev:full-stack-deps:doctor-server")}
   doctor-fe {:doc "Run the doctor frontend shadowcljs server."
              :task
              (shell {:dir (str (home-dir) "/russmatney/clawe")}

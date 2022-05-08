@@ -76,11 +76,10 @@
                  "justify-center"
                  "items-center"
                  "text-center"
-                 "border-r"
-                 "border-l"
+                 "border-x"
                  (when-not is-selected? "border-b")
-                 "border-city-green-400"
-                 "border-opacity-30"
+                 "border-city-green-400/30"
+                 ;; "border-opacity-30"
                  (when is-selected? "bg-yo-blue-500")]}
                [:div
                 {:class ["py-2"]}

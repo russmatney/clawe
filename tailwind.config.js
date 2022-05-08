@@ -1,4 +1,5 @@
 module.exports = {
+  content: ["./src/**/*.{cljs,cljc}"],
   theme: {
     extend: {
       fontFamily: {
@@ -271,47 +272,6 @@ module.exports = {
         },
       },
     },
-  },
-  variants: {
-    accessibility: ["responsive", "focus", "active"],
-    backgroundColor: ["responsive", "hover", "focus", "active", "group-hover"],
-    borderColor: ["responsive", "hover", "focus", "active", "group-hover"],
-    boxShadow: ["responsive", "hover", "focus", "active", "group-hover"],
-    cursor: ["responsive", "hover", "focus", "active", "group-hover"],
-    display: ["responsive", "hover", "focus", "active", "group-hover"],
-    fontSize: ["responsive", "hover", "focus", "active", "group-hover"],
-    fontWeight: ["responsive", "hover", "focus", "active", "group-hover"],
-    opacity: ["responsive", "hover", "focus", "active", "group-hover"],
-    outline: ["responsive", "hover", "focus", "active", "group-hover"],
-    placeholderColor: ["responsive", "hover", "focus", "active", "group-hover"],
-    textColor: ["responsive", "hover", "focus", "active", "group-hover"],
-    textDecoration: ["responsive", "hover", "focus", "active", "group-hover"],
-    scale: ["responsive", "hover", "focus", "active", "group-hover"],
-    rotate: ["responsive", "hover", "focus", "active", "group-hover"],
-    translate: ["responsive", "hover", "focus", "active", "group-hover"],
-    skew: ["responsive", "hover", "focus", "active", "group-hover"],
-    width: ["responsive", "hover", "focus", "active", "group-hover"],
-    transitionProperty: [
-      "responsive",
-      "hover",
-      "focus",
-      "active",
-      "group-hover",
-    ],
-    transitionTimingFunction: [
-      "responsive",
-      "hover",
-      "focus",
-      "active",
-      "group-hover",
-    ],
-    transitionDuration: [
-      "responsive",
-      "hover",
-      "focus",
-      "active",
-      "group-hover",
-    ],
   },
   plugins: [],
 };
