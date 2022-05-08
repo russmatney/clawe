@@ -3,7 +3,19 @@
    [tick.core :as t]
    [wing.core :as w]
    ["@headlessui/react" :as Headless]
-   [uix.core.alpha :as uix]))
+   [uix.core.alpha :as uix]
+
+   ["@floating-ui/react-dom-interactions" :as FUI]
+   ))
+
+;; import {useFloating} from '@floating-ui/react-dom-interactions';
+
+(comment
+
+
+                                        ;
+  )
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; misc date helpers
@@ -38,26 +50,52 @@
 (defn day-popover [opts date]
   (let [{:keys [_open-popover?
                 popover-comp
-                date-has-data?
                 ]} opts
         popover-comp
         (or popover-comp (fn [_] [:div date]))
         open?      (uix/state false)
-        has-data?  (uix/state (date-has-data? (t/date date)))]
-    (when @has-data?
-      [:> Headless/Popover
-       {:class ["relative"]}
-       [:> Headless/Popover.Button
-        {:on-mouse-enter (fn [_] (reset! open? true))
-         :on-mouse-leave (fn [_] (reset! open? false))
-         :class          ["w-3" "h-3" "rounded"
-                          "bg-city-pink-400"]}]
 
-       (when @open?
-         [:> Headless/Popover.Panel
-          {:static true
-           :class  ["absolute z-10" "overflow-hidden"]}
-          [popover-comp {:date date}]])])))
+        floating-state
+        (FUI/useFloating {:open           @open?
+                          :on-open-change #(swap! open? not)})
+
+        floating  (. floating-state -floating)
+        strategy  (. floating-state -strategy)
+        x         (. floating-state -x)
+        y         (. floating-state -y)
+        reference (. floating-state -reference)
+        context   (. floating-state -context)
+
+        ixs
+        (FUI/useInteractions
+          #js [(FUI/useHover context)
+               (FUI/useClick context)])
+
+        ref-props   (. ixs getReferenceProps
+                       #js {:ref reference})
+        float-props (. ixs getFloatingProps
+                       #js {:ref   floating
+                            :style {:position strategy
+                                    :top      (or y "")
+                                    :left     (or x "")}})]
+
+    (def --ref ref-props)
+    (def --float float-props)
+
+    [:> Headless/Popover
+     [:> Headless/Popover.Button
+      ;; (into {} ref-props)
+      {:onMouseEnter (fn [_] (reset! open? true))
+       :onMouseLeave (fn [_] (reset! open? false))
+       :class        ["w-3" "h-3" "rounded"
+                      "bg-city-pink-400"]}]
+
+     (when @open?
+       [:> Headless/Popover.Panel
+        ;; (into {} float-props)
+        {:static true
+         :class  ["absolute z-10" "overflow-hidden"]}
+        [popover-comp {:date date}]])]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; day picker component
@@ -114,9 +152,10 @@
                 (some-> (t/format "E" date) first)]
                [:span (t/format "d" date)]
 
-               [day-popover
-                (-> opts
-                    ;; useful for debugging (renders the popover for the first date)
-                    ;; (assoc :open-popover? (zero? idx))
-                    )
-                date]]))]])]]))
+               (when has-data?
+                 [day-popover
+                  (-> opts
+                      ;; useful for debugging (renders the popover for the first date)
+                      ;; (assoc :open-popover? (zero? idx))
+                      )
+                  date])]))]])]]))

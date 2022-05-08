@@ -166,11 +166,9 @@
              "bg-opacity-40"
              ;; "border"
              ;; "border-city-orange-400"
-             "drop-shadow"
-             "drop-shadow-xl"
+             ;; "drop-shadow" "drop-shadow-xl"
              "rounded-lg"
-             "px-4"
-             "p-2"]}
+             "px-4" "p-2"]}
     [event-count-list events]]])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
