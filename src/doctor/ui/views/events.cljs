@@ -79,7 +79,7 @@
 (defn basic-event-list
   [{:keys [cursor-idx cursor-elem-ref]} events]
   (for [[i evt] (->> events (map-indexed vector))]
-    (let [cursor-hovered? (#{i} @cursor-idx)]
+    (let [cursor-hovered? (when cursor-idx (#{i} @cursor-idx))]
       ^{:key i}
       [event-comp
        {:cursor-hovered? cursor-hovered?
@@ -130,7 +130,7 @@
                org-note-count]}
        (event-counts events)]
     [:div
-     {:class ["flex" "flex-col"]}
+     {:class ["flex" "flex-col" "px-4"]}
      [:span
       {:class ["whitespace-nowrap"]}
       [event-count-comp {:label "screenshots" :count screenshot-count}]]
@@ -270,12 +270,27 @@
 
   (cons 1 '(2 3)))
 
+
+(defn event-cluster [opts events]
+  [:div
+   {:class ["flex" "flex-row" "flex-wrap"]}
+   (for [[i event] (->> events (map-indexed vector))]
+     [:div
+      {:key   i
+       :class ["w-36"]}
+
+      [:div
+       {:class ["m-2" "border-city-blue-400"
+                "border-opacity-40"
+                "border"]}
+       [components.screenshot/thumbnail opts event]]])])
+
 (defn event-clusters
   [opts events]
   (let [{:keys [grouped-events]}
         (grouped-event-data opts events)]
     [:div
-     (for [[bucket evts] grouped-events]
+     (for [[i [bucket evts]] (->> grouped-events (map-indexed vector))]
        (let [{:keys [start end]} bucket
              show-end?           (cond
                                    (t/= start end)                 false
@@ -283,13 +298,21 @@
                                         (t/new-duration 1 :hours)) false
                                    :else                           true)]
          [:div
-          {:key (str start)}
+          {:key   (str start)
+           :class [(when (odd? i) "bg-yo-blue-800")
+                   "p-4"]
+           }
 
           (str (t/format "MMM d ha" start)
                (when show-end?
                  (str " - " (t/format "ha" end))))
 
-          [event-count-list evts]]))]))
+          [event-count-list evts]
+
+          [event-cluster opts evts]
+
+          #_[basic-event-list {} events]]))]))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; event page
@@ -328,10 +351,10 @@
               "overflow-hidden"
               "bg-yo-blue-700"
               "text-white"
-              "p-6"]}
+              "py-6"]}
 
      [:div
-      {:class ["pb-8"]}
+      {:class ["pb-8" "px-6"]}
       [components.timeline/day-picker
        {:on-date-click       #(swap! selected-dates (fn [ds] (w/toggle ds %)))
         :date-has-data?      all-item-dates
@@ -345,7 +368,7 @@
 
      ;; TODO filter by type (screenshots, commits, org items)
      [:div
-      [:h1 {:class ["pb-4" "text-xl"]}
+      [:h1 {:class ["px-4" "pb-4" "text-xl"]}
        event-count " Events"
        (if (seq @selected-dates)
          (str " on "
@@ -358,5 +381,5 @@
 
      [event-clusters {} events]
 
-     [basic-event-list {:cursor-idx      cursor-idx
-                        :cursor-elem-ref cursor-elem-ref} events]]))
+     #_[basic-event-list {:cursor-idx      cursor-idx
+                          :cursor-elem-ref cursor-elem-ref} events]]))

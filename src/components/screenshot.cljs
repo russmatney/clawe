@@ -83,3 +83,22 @@
                       "hover:text-yo-blue-300"]
            :on-click (:action/on-click ax)}
           (:action/label ax)])]])))
+
+(defn thumbnail
+  ([item] (screenshot-comp nil item))
+  ([_opts item]
+   (let [{:keys [file/web-asset-path]} item
+         hovering?                     (uix/state false)
+         dialog-open?                  (uix/state false)]
+     [:div
+      {:on-mouse-enter #(do (reset! hovering? true))
+       :on-mouse-leave #(do (reset! hovering? false))}
+      (when web-asset-path
+        [:img {:src      web-asset-path
+               :on-click #(reset! dialog-open? true)
+               :class    ["cursor-pointer"]}])
+
+      [screenshot-dialog
+       {:open?    @dialog-open?
+        :on-close (fn [_] (reset! dialog-open? false))}
+       item]])))
