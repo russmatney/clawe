@@ -155,20 +155,15 @@
             "shadow-lg"
             "bg-opacity-80"
             "border"
-            "border-city-green-300"]}
+            "border-city-green-300"
+            "text-city-black-100"]}
 
    [:span
     {:class ["text-center" "pb-2"]}
     (t/format "MMM d" date)]
 
    [:div
-    {:class ["bg-city-red-900"
-             "bg-opacity-40"
-             ;; "border"
-             ;; "border-city-orange-400"
-             ;; "drop-shadow" "drop-shadow-xl"
-             "rounded-lg"
-             "px-4" "p-2"]}
+    {:class ["bg-city-red-900" "rounded-lg" "px-4" "p-2"]}
     [event-count-list events]]])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -212,12 +207,14 @@
      [:div
       {:class ["pb-8"]}
       [components.timeline/day-picker
-       {:on-date-click  #(swap! selected-dates (fn [ds] (w/toggle ds %)))
-        :date-has-data? all-item-dates
-        :selected-dates @selected-dates
-        :popover-comp   (fn [{:keys [date] :as opts}]
-                          [event-timeline-popover
-                           (assoc opts :events (events-for-dates #{date} items))])}
+       {:on-date-click       #(swap! selected-dates (fn [ds] (w/toggle ds %)))
+        :date-has-data?      all-item-dates
+        :selected-dates      @selected-dates
+        :popover-anchor-comp [:button {:class ["w-3" "h-3" "rounded" "bg-city-pink-400"]}]
+        :date->popover-comp  (fn [date]
+                               [event-timeline-popover
+                                {:date   date
+                                 :events (events-for-dates #{date} items)}])}
        (->> items (map :event/timestamp) (remove nil?))]]
 
      ;; TODO filter by type (screenshots, commits, org items)
