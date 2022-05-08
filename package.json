@@ -7,24 +7,23 @@
   },
   "dependencies": {
     "@floating-ui/react-dom-interactions": "^0.5.0",
-    "@fullhuman/postcss-purgecss": "^2.3.0",
     "@headlessui/react": "^1.6.0",
-    "@js-joda/core": "^3.2.0",
-    "@js-joda/locale_en-us": "^3.2.2",
+    "@js-joda/core": "^5.2.0",
+    "@js-joda/locale_en-us": "^4.7.0",
     "@js-joda/timezone": "^2.5.0",
-    "@tauri-apps/api": "=1.0.0-rc.2",
+    "@tauri-apps/api": "=1.0.0-rc.5",
     "autoprefixer": "^10.4.7",
     "postcss": "^8.4.13",
-    "postcss-cli": "^8.3.1",
+    "postcss-cli": "^9.1.0",
     "postcss-import": "^14.1.0",
-    "react": "^16.14.0",
-    "react-dom": "^16.14.0",
+    "react": "^18.1.0",
+    "react-dom": "^18.1.0",
     "react-highlight.js": "1.0.7",
     "tailwindcss": "^3.0.24",
     "xregexp": "^5.0.2"
   },
   "devDependencies": {
-    "@tauri-apps/cli": "=1.0.0-rc.7",
-    "shadow-cljs": "^2.15.2"
+    "@tauri-apps/cli": "=1.0.0-rc.10",
+    "shadow-cljs": "^2.18.0"
   }
 }
