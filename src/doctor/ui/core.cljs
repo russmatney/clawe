@@ -94,14 +94,14 @@
                                   ((fn [xs] (.indexOf xs current-page-name)))))
         indexed-menu-items (->> menu-opts (map-indexed vector))]
     (key/bind! "J" ::cursor-down
-               (fn [ev]
+               (fn [_ev]
                  (swap! cursor-idx (fn [v]
                                      (let [new-v (inc v)]
                                        (if (> new-v (dec (count indexed-menu-items)))
                                          (dec (count indexed-menu-items))
                                          new-v))))))
     (key/bind! "K" ::cursor-up
-               (fn [ev]
+               (fn [_ev]
                  (swap! cursor-idx
                         (fn [v]
                           (let [new-v (dec v)]
