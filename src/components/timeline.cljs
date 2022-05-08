@@ -57,7 +57,8 @@
 
         floating-state
         (FUI/useFloating {:open           @open?
-                          :on-open-change #(swap! open? not)})
+                          :on-open-change #(do (reset! open? %)
+                                               (println "floating swapped open" @open?))})
 
         floating  (. floating-state -floating)
         strategy  (. floating-state -strategy)
@@ -72,30 +73,39 @@
                (FUI/useClick context)])
 
         ref-props   (. ixs getReferenceProps
-                       #js {:ref reference})
+                       (clj->js {:ref reference}))
         float-props (. ixs getFloatingProps
-                       #js {:ref   floating
-                            :style {:position strategy
-                                    :top      (or y "")
-                                    :left     (or x "")}})]
+                       (clj->js {:ref   floating
+                                 :style {:position strategy
+                                         :top      (or y "")
+                                         :left     (or x "")}}))]
 
-    (def --ref ref-props)
-    (def --float float-props)
+    (def --ref-props ref-props)
+    (def --float-props float-props)
 
-    [:> Headless/Popover
-     [:> Headless/Popover.Button
-      ;; (into {} ref-props)
-      {:onMouseEnter (fn [_] (reset! open? true))
-       :onMouseLeave (fn [_] (reset! open? false))
-       :class        ["w-3" "h-3" "rounded"
-                      "bg-city-pink-400"]}]
+    (merge (js->clj --ref-props)
+           {
+            ;; :on-mouse-enter (fn [_] (reset! open? true))
+            ;; :on-mouse-leave (fn [_] (reset! open? false))
+            :class ["w-3" "h-3" "rounded"
+                    "bg-city-pink-400"]}
+           )
 
-     (when @open?
-       [:> Headless/Popover.Panel
-        ;; (into {} float-props)
-        {:static true
-         :class  ["absolute z-10" "overflow-hidden"]}
-        [popover-comp {:date date}]])]))
+    [:div
+     [:button
+      (merge (js->clj ref-props)
+             {
+              :on-mouse-enter (fn [_] (reset! open? true))
+              :on-mouse-leave (fn [_] (reset! open? false))
+              :class          ["w-3" "h-3" "rounded" "bg-city-pink-400"]
+              ;; :on-click #(reset! open? true)
+              })]
+
+     [:> FUI/FloatingPortal
+      (when @open?
+        [:> FUI/FloatingFocusManager {:context context}
+         [:div (js->clj float-props)
+          [popover-comp {:date date}]]])]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; day picker component
