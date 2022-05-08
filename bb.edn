@@ -97,13 +97,20 @@
 
   expo-be {:doc "Run the expo backend shadowcljs server."
            :task
-           ;; TODO consider renaming 'doctor-deps'
            (shell {:dir (str (home-dir) "/russmatney/clawe")}
-                  "clj -M:dev:doctor-deps:expo-server")}
+                  "clj -M:dev:full-stack-deps:expo-server")}
   expo-fe {:doc "Run the expo frontend shadowcljs server."
            :task
            (shell {:dir (str (home-dir) "/russmatney/clawe")}
                   "npx shadow-cljs watch expo-app")}
+
+  shadow-fe {:doc "Run the doctor and expo frontends via shadowcljs."
+             :task
+             (shell {:dir (str (home-dir) "/russmatney/clawe")}
+                    "npx shadow-cljs watch expo-app doctor-app")}
+
+  styles-build (shell "yarn run postcss public/css/main.css -o public/css/main-built.css")
+  styles-watch (shell "yarn run tailwindcss -i public/css/main.css -o public/css/main-built.css --watch")
 
   topbar {:doc  "Run the doctor topbar via tauri. Consumed from systemd service."
           :task (run-doctor-tauri-app "topbar")}

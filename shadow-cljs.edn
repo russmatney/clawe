@@ -1,6 +1,5 @@
 {:deps {:aliases
-        [;; TODO rename
-         :doctor-deps]}
+        [:full-stack-deps]}
 
  :nrepl {:port 3335
          :middleware
