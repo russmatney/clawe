@@ -78,14 +78,13 @@
            on-mouse-over
            on-mouse-out
            fallback-text
-           classes
-           border?]}]
+           classes]}]
   [:div
    {:on-mouse-over on-mouse-over
     :on-mouse-out  on-mouse-out
     :class         ["flex" "flex-row" "items-center"]}
    [:div
-    {:class (concat (when border? ["border"]) [color] classes)}
+    {:class (concat [color] classes)}
     (cond
       src   [:img {:class ["w-10"] :src src}]
       icon  [:div {:class ["text-3xl"]} icon]
@@ -121,8 +120,7 @@
                                       focused "text-city-orange-400"
                                       urgent  "text-city-red-400"
                                       color   color
-                                      :else   "text-city-blue-400")]
-                          :border? true))]]))]))
+                                      :else   "text-city-blue-400")]))]]))]))
 
 (def cell-classes
   ["flex" "flex-row" "justify-center"
@@ -147,7 +145,7 @@
 
 (defn workspace-cell
   [{:as   topbar-state
-    :keys [hovered-workspace on-hover-workspace on-unhover-workspace]}
+    :keys [hovered-workspace _on-hover-workspace _on-unhover-workspace]}
    {:as               wsp
     :workspace/keys   [scratchpad]
     :awesome.tag/keys [index clients selected urgent]}]
@@ -335,24 +333,15 @@
      :time                   @time}))
 
 (defn widget []
-  (let [metadata                            (hooks.topbar/use-topbar-metadata)
-        {:keys [workspaces active-clients]} (hooks.workspaces/use-workspaces)
-        topbar-state                        (use-topbar-state)
-        {:keys [tauri? open?] :as popup}    (tauri/use-popup)
-        dark-bg?
-        (uix/state
-          ;; TODO remember it's last setting?
-          ;; TODO set from wallpapers view? correlated with a wallpaper?
-          false)]
-    ;; (println
-    ;;   (->> workspaces (remove :workspace/scratchpad)
-    ;;        (filter :awesome.tag/selected)
-    ;;        (map :name)))
-
+  (let [metadata                                      (hooks.topbar/use-topbar-metadata)
+        {:keys [topbar/background-mode] :as metadata} @metadata
+        {:keys [workspaces active-clients]}           (hooks.workspaces/use-workspaces)
+        topbar-state                                  (use-topbar-state)
+        {:keys [tauri? open?] :as popup}              (tauri/use-popup)]
     [:div
      {:class ["h-screen" "overflow-hidden" "text-city-pink-200"
-              (when @dark-bg? "bg-gray-700")
-              (when @dark-bg? "bg-opacity-50")]}
+              (when (#{:bg/dark} background-mode) "bg-gray-700")
+              (when (#{:bg/dark} background-mode) "bg-opacity-50")]}
      [:div
       {:class ["flex" "flex-row" "justify-between" "pr-3"]}
 
@@ -371,7 +360,11 @@
          [:button {:on-click (fn [_] ((:show popup)))} "Show Popup"])
 
        ;; bg toggle
-       [:button {:on-click (fn [_] (swap! dark-bg? not))} "Bg Toggle"]
+       [:button {:on-click (fn [_]
+                             (hooks.topbar/set-background-mode
+                               (if (#{:bg/dark} background-mode)
+                                 :bg/light :bg/dark)))}
+        "BG Toggle"]
        [:button {:on-click (fn [_] (js/location.reload))} "Reload"]]
 
       ;; clock/host/metadata

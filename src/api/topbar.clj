@@ -9,6 +9,44 @@
    [clojure.string :as string]
    [defthing.db :as db]))
 
+(declare update-topbar-metadata)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; background toggle
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(def topbar-id #uuid "5d4a6099-4c5c-4c0d-843b-54c48c34caee")
+
+(defn background-mode []
+  (some->>
+    (db/query '[:find [?bg-mode]
+                :in $ ?topbar-id
+                :where
+                [?e :topbar/background-mode ?bg-mode]
+                [?e :topbar/id ?topbar-id]]
+              topbar-id)
+    first))
+
+(defn set-background-mode [bg-mode]
+  (db/transact {:topbar/background-mode bg-mode
+                :topbar/id              topbar-id})
+  (update-topbar-metadata))
+
+(comment
+  (set-background-mode :bg/dark)
+  (set-background-mode :bg/light)
+  (background-mode)
+
+  (db/query '[:find (pull ?e [*])
+              :in $ ?topbar-id
+              :where
+              [?e :topbar/id ?topbar-id]]
+            topbar-id))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; todos
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defn in-progress-todos []
   (some->>
     (db/query
@@ -16,6 +54,10 @@
         :where
         [?e :todo/status :status/in-progress]])
     first))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; build metadata
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn build-topbar-metadata []
   (let [todos  (in-progress-todos)
@@ -29,7 +71,15 @@
              (r.battery/info))
       (dissoc :spotify/album-url :spotify/album)
       (assoc :todos/in-progress todos)
-      (assoc :todos/latest latest))))
+      (assoc :todos/latest latest)
+      (assoc :topbar/background-mode (background-mode)))))
+
+(comment
+  (build-topbar-metadata))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; systemic
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defsys *topbar-metadata-stream*
   :start (s/stream)
@@ -39,7 +89,6 @@
   (sys/start! `*topbar-metadata-stream*))
 
 (defn update-topbar-metadata []
-  (println "pushing to topbar-metadata stream (updating topbar-metadata)!")
   (s/put! *topbar-metadata-stream* (build-topbar-metadata)))
 
 (comment
@@ -48,5 +97,4 @@
     (sort-by :awesome.tag/index)
     first)
 
-  (update-topbar-metadata)
-  )
+  (update-topbar-metadata))

@@ -20,7 +20,7 @@
        (with-rpc [] (get-topbar-metadata) handle-resp)
        (with-stream [] (topbar-metadata-stream) handle-resp)
 
-       @topbar-metadata)))
+       topbar-metadata)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Workspace commands
@@ -55,3 +55,6 @@
               (tset c :below true)
               (tset c :ontop false)))))))
   above?)
+
+(defhandler set-background-mode [bg-mode]
+  (api.topbar/set-background-mode bg-mode))

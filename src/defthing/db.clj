@@ -12,8 +12,9 @@
 ;; TODO defsys and configuration
 (def defthing-db-filepath (zsh/expand "~/russmatney/clawe/defthingdb"))
 
-
-(def db-schema nil)
+(def db-schema
+  {:topbar/id {:db/valueType :db.type/uuid
+               :db/unique    :db.unique/identity}})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Dump
@@ -43,9 +44,7 @@
 
 (def supported-types
   (->> [6 "hi" :some-keyword true
-        ;; (random-uuid)
-        ;; TODO restore in platform agnostic way
-        ]
+        #uuid "8992970d-6c3a-4a3a-b35d-dc5cd28f1484"]
        (map type)
        (into #{})))
 
