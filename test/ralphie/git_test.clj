@@ -62,7 +62,22 @@
                          #:git.stat{:lines-added   1
                                     :lines-removed 1
                                     :raw-file-line "src/{doctor/ui => hooks}/screenshots.cljc"
-                                    :is-rename?    true})})))
+                                    :is-rename?    true})}))
+
+
+  (is (= (sut/->stats
+           '("-\t-\tassets/robot.aseprite"
+             "-\t-\tassets/robot_sheet.png"
+             "42\t8\tlevels/Arcade.tscn"
+             "25\t1\tlevels/Park.tscn"
+             "7\t5\tmobs/Mobot.tscn"
+             "4\t5\tplayer/Player.gd"
+             "48\t35\tplayer/Player.tscn"
+             "1\t1\tproject.godot"))
+         nil
+         ))
+
+  )
 
 (deftest ->stats-commit-test
   (is (= (sut/->stats-commit

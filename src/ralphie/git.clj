@@ -404,30 +404,51 @@
    :git.commit/author-email (some-> (re-find #"<(.+)>" author) second)
    :git.commit/author-date  (some-> (re-find #"Date: (.+)$" date) second string/trim)})
 
+(defn safe-read-string
+  [str message raw]
+  (try
+    (read-string str)
+    (catch Exception e
+      (println message raw)
+      (println e)
+      nil)))
+
 (defn ->stat-line
   "TODO: parse filenames, renamed files, symlinks, etc"
   [stat-line]
   (let [[added removed file-line] (string/split stat-line #"\t")
-        is-rename?                (if (re-seq #"\{" file-line) true false)]
-    (try
-      {:git.stat/lines-added   (read-string added)
-       :git.stat/lines-removed (read-string removed)
-       :git.stat/raw-file-line file-line
-       :git.stat/is-rename?    is-rename?}
-      (catch Exception e
-        (println "Failed to parse ->stat-line" stat-line)
-        (println e)
-        nil))))
+        no-added-diff             (#{"-"} added)
+        no-removed-diff           (#{"-"} removed)
+
+        added   (when-not no-added-diff
+                  (safe-read-string
+                    added "Failed to read added str in ->stat-line"
+                    stat-line))
+        removed (when-not no-removed-diff
+                  (safe-read-string
+                    removed "Failed to read removed str in ->stat-line"
+                    stat-line))
+
+        is-rename (if (re-seq #"\{" file-line) true false)]
+    (cond->
+        {:git.stat/raw-file-line file-line
+         :git.stat/is-rename    is-rename
+         :git.stat/no-diff (boolean (or no-added-diff no-removed-diff))}
+
+      added   (assoc :git.stat/lines-added added)
+      removed (assoc :git.stat/lines-removed removed))))
 
 (comment
   (->stat-line "3\t5\tsrc/doctor/ui/views/screenshots.cljs")
-  (->stat-line "1\t1\tsrc/{doctor/ui => hooks}/screenshots.cljc"))
+  (->stat-line "1\t1\tsrc/{doctor/ui => hooks}/screenshots.cljc")
+  (->stat-line "-\t-\tassets/robot_sheet.png")
+  )
 
 (defn ->stats [stat-lines]
   (try
     (let [parsed-stat-lines (->> stat-lines (map ->stat-line) (remove nil?))]
-      {:git.commit/lines-added   (->> parsed-stat-lines (map :git.stat/lines-added) (reduce +))
-       :git.commit/lines-removed (->> parsed-stat-lines (map :git.stat/lines-removed) (reduce +))
+      {:git.commit/lines-added   (->> parsed-stat-lines (map :git.stat/lines-added) (remove nil?) (reduce +))
+       :git.commit/lines-removed (->> parsed-stat-lines (map :git.stat/lines-removed) (remove nil?) (reduce +))
        :git.commit/files-renamed (->> parsed-stat-lines (filter :git.stat/is-rename?) count)
        :git.commit/stat-lines    parsed-stat-lines})
     (catch Exception e
@@ -444,7 +465,18 @@
              "1\t1\tsrc/{doctor/ui => hooks}/screenshots.cljc"
              "1\t1\tsrc/{doctor/ui => hooks}/todos.cljc"
              "1\t1\tsrc/{doctor/ui => hooks}/wallpapers.cljc"
-             "3\t6\tsrc/{doctor/ui => hooks}/workspaces.cljc")))
+             "3\t6\tsrc/{doctor/ui => hooks}/workspaces.cljc"))
+
+  (->stats '("-\t-\tassets/robot.aseprite"
+             "-\t-\tassets/robot_sheet.png"
+             "42\t8\tlevels/Arcade.tscn"
+             "25\t1\tlevels/Park.tscn"
+             "7\t5\tmobs/Mobot.tscn"
+             "4\t5\tplayer/Player.gd"
+             "48\t35\tplayer/Player.tscn"
+             "1\t1\tproject.godot"))
+
+  )
 
 (defn ->stats-commit
   "Parse `git log --numstat` lines.
@@ -480,4 +512,9 @@
 (comment
   (nth
     (commit-stats-for-dir {:dir "russmatney/clawe" :n 10})
-    7))
+    7)
+  (nth
+    (commit-stats-for-dir {:dir "russmatney/beatemup-two" :n 10})
+    7)
+
+  )
