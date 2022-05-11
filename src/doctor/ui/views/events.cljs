@@ -11,7 +11,8 @@
    [keybind.core :as key]
    [uix.core.alpha :as uix]
    [wing.core :as w]
-   [clojure.string :as string]))
+   [clojure.string :as string]
+   [components.floating :as floating]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; pure event helpers
@@ -212,7 +213,9 @@
                             (t/< (t/between (:end current-bucket)
                                             (:event/timestamp next))
                                  idle-time))})
-        grouped-events (->> events (group-by (partial event->bucket buckets)))]
+        grouped-events (->> events
+                            (group-by (partial event->bucket buckets))
+                            (sort-by (comp :start first) t/>))]
     {:all-events     events
      :buckets        buckets
      :grouped-events grouped-events}))
@@ -228,7 +231,10 @@
         (-> (t/now) (t/<< (t/new-duration 30 :minutes)))
         (-> (t/now) (t/<< (t/new-duration 3 :hours)))]
        (map (fn [t] {:event/timestamp t}))
-       (grouped-event-data {:idle-time (t/new-duration 2 :hours)}))
+       (grouped-event-data {:idle-time (t/new-duration 2 :hours)})
+       :grouped-events
+       (map (comp :start first))
+       )
 
   (defn new-range [next]
     (let [ts (:event/timestamp next)]
@@ -283,7 +289,18 @@
        {:class ["m-2" "border-city-blue-400"
                 "border-opacity-40"
                 "border"]}
-       [components.screenshot/thumbnail opts event]]])])
+
+       (when (:file/web-asset-path event)
+         [floating/popover
+          {:anchor-comp [components.screenshot/thumbnail opts event]
+           :popover-comp
+           [:div
+            {:class ["w-2/3"
+                     "shadow"
+                     "shadow-city-blue-800"
+                     "border"
+                     "border-city-blue-800"]}
+            [components.screenshot/img event]]}])]])])
 
 (defn event-clusters
   [opts events]

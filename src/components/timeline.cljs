@@ -87,23 +87,27 @@
                [:div
                 {:class ["py-2"
                          "text-mono"]}
-                [:div
-                 {:class
-                  ["flex"
-                   "items-center"
-                   "justify-center"
-                   "text-center"
-                   "w-10"
-                   "h-10"
-                   "rounded-full"
-                   (cond
-                     is-selected? "bg-city-blue-700"
-                     has-data?    "bg-city-blue-900"
-                     :else        "bg-yo-blue-900")
-                   (when has-data? "hover:bg-yo-blue-400")
-                   (when has-data? "cursor-pointer")]
-                  :on-click #(on-date-click date)}
-                 (t/format "d" date)]]
+                [floating/popover
+                 {:anchor-comp
+                  [:div
+                   {:class
+                    ["flex"
+                     "items-center"
+                     "justify-center"
+                     "text-center"
+                     "w-10"
+                     "h-10"
+                     "rounded-full"
+                     (cond
+                       is-selected? "bg-city-blue-700"
+                       has-data?    "bg-city-blue-900"
+                       :else        "bg-yo-blue-900")
+                     (when has-data? "hover:bg-yo-blue-400")
+                     (when has-data? "cursor-pointer")]
+                    :on-click #(on-date-click date)}
+                   (t/format "d" date)]
+                  :popover-comp
+                  (when has-data? (date->popover-comp date))}]]
 
                [:div.flex-1
                 {:class ["py-2"]}

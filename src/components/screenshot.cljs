@@ -1,7 +1,8 @@
 (ns components.screenshot
   (:require
    [uix.core.alpha :as uix]
-   ["@headlessui/react" :as Headless]))
+   ["@headlessui/react" :as Headless]
+   [components.floating :as floating]))
 
 
 (defn ->actions
@@ -15,6 +16,8 @@
         :action/on-click (fn [_] (reset! dialog-open? true))}]
       (remove nil?))))
 
+(defn img [{:keys [file/web-asset-path] :as _screenshot}]
+  [:img {:src web-asset-path}])
 
 (defn screenshot-dialog
   [{:keys [open? on-close]}
@@ -83,6 +86,12 @@
                       "hover:text-yo-blue-300"]
            :on-click (:action/on-click ax)}
           (:action/label ax)])]])))
+
+(defn hover-popup
+  ([item] (hover-popup {} item))
+  ([opts item]
+   [:div
+    [img item]]))
 
 (defn thumbnail
   ([item] (screenshot-comp nil item))

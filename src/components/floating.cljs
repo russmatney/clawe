@@ -8,8 +8,7 @@
         open?                              (uix/state false)
 
         floating-state (FUI/useFloating
-                         (clj->js {:open      @open? :onOpenChange #(reset! open? %)
-                                   :placement "top"
+                         (clj->js {:open @open? :onOpenChange #(reset! open? %)
                                    :middleware
                                    [(FUI/offset 30)
                                     (FUI/flip)
