@@ -6,8 +6,10 @@
 
 
 (defn short-repo [it]
-  (some->
-    (re-seq #"(\w+/\w+)$" (:git.commit/directory it))
+  (some->>
+    it
+    :git.commit/directory
+    (re-seq #"(\w+/\w+)$")
     first
     first))
 
@@ -66,8 +68,18 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn commit-thumbnail [opts commit]
-  [:div (:git.commit/short-hash commit)]
-  )
+  [:div
+   {:class ["flex" "flex-row"
+            "gap-x-4"]}
+
+   [:div
+    (short-repo commit)]
+
+   [:div
+    (:git.commit/short-hash commit)]
+
+   [:div
+    (:git.commit/subject commit)]])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; popover

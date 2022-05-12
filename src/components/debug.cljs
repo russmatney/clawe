@@ -64,7 +64,7 @@
 (defn raw-metadata
   ([metadata] [raw-metadata nil metadata])
   ([{:keys [label initial-show?] :as opts} metadata]
-   (let [label                    (or label "Show raw metadata")
+   (let [label                    (or label "Toggle raw metadata")
          show-raw-metadata?       (uix/state initial-show?)
          toggle-show-raw-metadata #(swap! show-raw-metadata? (comp boolean not))]
      [:div

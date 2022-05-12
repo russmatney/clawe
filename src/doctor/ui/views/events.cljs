@@ -280,11 +280,12 @@
 (defn event-cluster [opts events]
   [:div
    {:class ["flex" "flex-row" "flex-wrap"]}
-   (for [[i event] (->> events (map-indexed vector))]
+   (for [[i event] (->> events
+                        (sort-by :event/timestamp t/<)
+                        (map-indexed vector))]
      [:div
       {:key   i
-       :class ["m-2"]
-       }
+       :class ["m-2"]}
 
       [:div
        (when (:git.commit/hash event)
