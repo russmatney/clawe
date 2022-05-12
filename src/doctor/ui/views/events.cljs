@@ -283,16 +283,27 @@
    (for [[i event] (->> events (map-indexed vector))]
      [:div
       {:key   i
-       :class ["w-36"]}
+       :class ["m-2"]
+       }
 
       [:div
-       {:class ["m-2" "border-city-blue-400"
-                "border-opacity-40"
-                "border"]}
+       (when (:git.commit/hash event)
+         [floating/popover
+          {:anchor-comp
+           [:div
+            [components.git/commit-thumbnail opts event]]
+           :popover-comp
+           [:div
+            [components.git/commit-popover opts event]]}])
 
        (when (:file/web-asset-path event)
          [floating/popover
-          {:anchor-comp [components.screenshot/thumbnail opts event]
+          {:anchor-comp [:div
+                         {:class ["border-city-blue-400"
+                                  "border-opacity-40"
+                                  "border"
+                                  "w-36"]}
+                         [components.screenshot/thumbnail opts event]]
            :popover-comp
            [:div
             {:class ["w-2/3"

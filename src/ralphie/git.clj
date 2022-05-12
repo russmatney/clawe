@@ -515,6 +515,4 @@
     7)
   (nth
     (commit-stats-for-dir {:dir "russmatney/beatemup-two" :n 10})
-    7)
-
-  )
+    7))
