@@ -27,7 +27,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def all-filter-defs
-  {:file-name {:label            "Source File"
+  {:file-name {:label            "File"
                :group-by         :todo/file-name
                :group-filters-by (fn [fname]
                                    (some-> fname (string/split #"/") first))
@@ -37,7 +37,12 @@
                                   {:label    "All Workspaces"
                                    :match-fn (fn [fname]
                                                (some-> fname (string/split #"/") first #{"workspaces"}))}]
-               }
+               :format-label     (fn [fname]
+                                   (some-> fname (string/split #"/") second
+                                           (string/replace #".org" "")
+                                           (->>
+                                             (take 10)
+                                             (apply str))))}
    :status    {:label    "Status"
                :group-by :todo/status}
    :in-db?    {:label    "DB"
@@ -55,14 +60,14 @@
 (defn split-counts [items {:keys [set-group-by toggle-filter-by
                                   items-group-by items-filter-by]}]
   [:div.flex.flex-row.flex-wrap
+   {:class ["gap-x-3"]}
    (for [[i [filter-key filter-def]] (map-indexed vector all-filter-defs)]
      (let [split             (->> items
                                   (group-by (:group-by filter-def))
                                   (map (fn [[v xs]] [v (count xs)])))
            group-by-enabled? (= items-group-by filter-key)]
        [:div
-        {:key   i
-         :class [(when-not (zero? i) "px-8")]}
+        {:key i}
 
         [floating/popover
          {:hover true :click true
@@ -77,7 +82,8 @@
           :popover-comp
           [:div
            {:class ["bg-city-blue-800"
-                    "text-city-pink-200"]}
+                    "text-city-pink-200"
+                    "py-2" "px-4"]}
 
            ;; custom filter-opt selection
            (when (seq (:filter-options filter-def))
@@ -93,6 +99,7 @@
                                (when filter-enabled?
                                  "text-city-pink-400")]}
                    (:label filter-option)]))])
+
            (let [group-filters-by (:group-filters-by filter-def (fn [_] nil))]
              [:div
               {:class ["flex" "flex-row" "flex-wrap" "gap-x-4"]}
@@ -103,7 +110,7 @@
 
                  (when group-label
                    [:div
-                    {:class ["font-nes" "ml-auto"]}
+                    {:class ["font-nes" "mx-auto"]}
                     group-label])
 
                  (for [[i [k v]] (->> group (sort-by second >) (map-indexed vector))]
@@ -118,9 +125,9 @@
                                   (when filter-enabled?
                                     "text-city-pink-400")]
                        :on-click #(toggle-filter-by {:filter-key filter-key :match k})}
-                      [:span.p-1.text-xl.w-10.text-center v]
                       (let [format-label (:format-label filter-def str)]
-                        [:span.p-1.pl-2.text-xl.ml-auto (format-label k)])]))])])]}]]))])
+                        [:span.p-1.pl-2.text-xl.ml-auto (format-label k)])
+                      [:span.p-1.text-xl.w-10.text-center v]]))])])]}]]))])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; base widget
