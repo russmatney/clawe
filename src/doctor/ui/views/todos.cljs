@@ -2,6 +2,7 @@
   (:require
    [uix.core.alpha :as uix]
    [components.todo]
+   [components.floating :as floating]
    [hooks.todos]
    [clojure.string :as string]
    [tick.core :as t]))
@@ -49,16 +50,7 @@
   #{{:filter-key :status :match :status/not-started}
     {:filter-key :status :match :status/in-progress}
     {:filter-key :file-name :match "todo/journal.org"}
-    {:filter-key :file-name :match "todo/projects.org"}
-    ;; {:filter-key :scheduled
-    ;;  :match      nil
-    ;;  ;; :match-fn   (fn [d]
-    ;;  ;;               (if-not d true
-    ;;  ;;                       (and
-    ;;  ;;                         (t/> d (t/yesterday))
-    ;;  ;;                         (t/< d (t/tomorrow)))))
-    ;;  }
-    })
+    {:filter-key :file-name :match "todo/projects.org"}})
 
 (defn split-counts [items {:keys [set-group-by toggle-filter-by
                                   items-group-by items-filter-by]}]
@@ -68,59 +60,67 @@
                                   (group-by (:group-by filter-def))
                                   (map (fn [[v xs]] [v (count xs)])))
            group-by-enabled? (= items-group-by filter-key)]
-       ^{:key i}
        [:div
-        {:class [(when-not (zero? i) "px-8")]}
-        [:div.text-xl.font-nes
-         {:class    ["cursor-pointer"
-                     "hover:text-city-red-600"
-                     (when group-by-enabled?
-                       "text-city-pink-400")]
-          :on-click #(set-group-by filter-key)}
-         (:label filter-def)]
+        {:key   i
+         :class [(when-not (zero? i) "px-8")]}
 
-        (when (seq (:filter-options filter-def))
+        [floating/popover
+         {:hover true :click true
+          :anchor-comp
+          [:div.text-xl.font-nes
+           {:class    ["cursor-pointer"
+                       "hover:text-city-red-600"
+                       (when group-by-enabled?
+                         "text-city-pink-400")]
+            :on-click #(set-group-by filter-key)}
+           (:label filter-def)]
+          :popover-comp
           [:div
-           (for [[i filter-option] (->> filter-def :filter-options (map-indexed vector))]
-             (let [filter-enabled? (items-filter-by (assoc filter-option :filter-key filter-key))]
-               [:div
-                {:key      i
-                 :on-click #(toggle-filter-by (assoc filter-option :filter-key filter-key))
-                 :class    ["flex" "flex-row" "font-mono"
-                            "cursor-pointer"
-                            "hover:text-city-red-600"
-                            (when filter-enabled?
-                              "text-city-pink-400")]}
-                (:label filter-option)]))])
+           {:class ["bg-city-blue-800"
+                    "text-city-pink-200"]}
 
-        (let [group-filters-by (:group-filters-by filter-def (fn [_] nil))]
-          [:div
-           {:class ["flex" "flex-row" "flex-wrap" "gap-x-4"]}
-           (for [[i [group-label group]] (->> split (group-by (comp group-filters-by first)) (map-indexed vector))]
+           ;; custom filter-opt selection
+           (when (seq (:filter-options filter-def))
              [:div
-              {:key   i
-               :class ["flex" "flex-col"]}
-
-              (when group-label
-                [:div
-                 {:class ["font-nes" "ml-auto"]}
-                 group-label])
-
-              (for [[i [k v]] (->> group (sort-by second >) (map-indexed vector))]
-                (let [filter-enabled?
-                      ;; TODO refactor to support 'all dailies' or 'all workspaces' as well
-                      (items-filter-by {:filter-key filter-key :match k})]
+              (for [[i filter-option] (->> filter-def :filter-options (map-indexed vector))]
+                (let [filter-enabled? (items-filter-by (assoc filter-option :filter-key filter-key))]
                   [:div
                    {:key      i
+                    :on-click #(toggle-filter-by (assoc filter-option :filter-key filter-key))
                     :class    ["flex" "flex-row" "font-mono"
                                "cursor-pointer"
                                "hover:text-city-red-600"
                                (when filter-enabled?
-                                 "text-city-pink-400")]
-                    :on-click #(toggle-filter-by {:filter-key filter-key :match k})}
-                   [:span.p-1.text-xl.w-10.text-center v]
-                   (let [format-label (:format-label filter-def str)]
-                     [:span.p-1.pl-2.text-xl.ml-auto (format-label k)])]))])])]))])
+                                 "text-city-pink-400")]}
+                   (:label filter-option)]))])
+           (let [group-filters-by (:group-filters-by filter-def (fn [_] nil))]
+             [:div
+              {:class ["flex" "flex-row" "flex-wrap" "gap-x-4"]}
+              (for [[i [group-label group]] (->> split (group-by (comp group-filters-by first)) (map-indexed vector))]
+                [:div
+                 {:key   i
+                  :class ["flex" "flex-col"]}
+
+                 (when group-label
+                   [:div
+                    {:class ["font-nes" "ml-auto"]}
+                    group-label])
+
+                 (for [[i [k v]] (->> group (sort-by second >) (map-indexed vector))]
+                   (let [filter-enabled?
+                         ;; TODO refactor to support 'all dailies' or 'all workspaces' as well
+                         (items-filter-by {:filter-key filter-key :match k})]
+                     [:div
+                      {:key      i
+                       :class    ["flex" "flex-row" "font-mono"
+                                  "cursor-pointer"
+                                  "hover:text-city-red-600"
+                                  (when filter-enabled?
+                                    "text-city-pink-400")]
+                       :on-click #(toggle-filter-by {:filter-key filter-key :match k})}
+                      [:span.p-1.text-xl.w-10.text-center v]
+                      (let [format-label (:format-label filter-def str)]
+                        [:span.p-1.pl-2.text-xl.ml-auto (format-label k)])]))])])]}]]))])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; base widget
