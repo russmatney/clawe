@@ -150,7 +150,7 @@
         (:git.commit/subject commit)]
 
        [:div
-        {:class ["pt-2"]}
+        {:class ["pt-2" "whitespace-pre-line"]}
         (:git.commit/body commit)]
 
        [components.debug/raw-metadata commit]]]]))
