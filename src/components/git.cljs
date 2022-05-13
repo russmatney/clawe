@@ -144,13 +144,13 @@
        {:class ["bg-city-blue-800"
                 "flex"
                 "flex-col"
-                "p-4"]}
+                "p-4" "font-mono"]}
        [:div
         {:class [""]}
         (:git.commit/subject commit)]
 
        [:div
-        {:class ["pt-2" "whitespace-pre-line"]}
+        {:class ["pt-2" "whitespace-pre-line" "font-mono"]}
         (:git.commit/body commit)]
 
        [components.debug/raw-metadata commit]]]]))
