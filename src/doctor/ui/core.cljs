@@ -14,6 +14,8 @@
 
    [keybind.core :as key]
 
+   [components.floating :as floating]
+
    [doctor.ui.tauri :as tauri]
    [doctor.ui.views.todos :as views.todos]
    [doctor.ui.views.topbar :as views.topbar]
@@ -84,7 +86,25 @@
   )
 
 
-(defn home [main]
+(defn menu []
+  (let [params            (router/use-route-parameters)
+        current-page-name (-> router/*match* uix/context :data :name)]
+    [:div {:class ["flex" "flex-col" "p-6"
+                   "text-city-pink-100"
+                   "text-xxl"
+                   "font-nes"]}
+     (for [[i [page-name label]]
+           (->> menu-opts (map-indexed vector))]
+       [:a {:key  i
+            :class
+            (cond
+              (#{current-page-name} page-name)
+              ["text-city-pink-400" "text-bold"])
+            :href (router/href page-name)} label])]))
+
+(defn page
+  "Accepts a main component and wraps it in page helpers with a menu."
+  [main]
   (let [params             (router/use-route-parameters)
         main               (or main default-main)
         ;; fallback main disabled for now, seems to some issue mounting/unmounting defhandlers
@@ -93,63 +113,11 @@
                              (->> menu-opts (map first)
                                   ((fn [xs] (.indexOf xs current-page-name)))))
         indexed-menu-items (->> menu-opts (map-indexed vector))]
-    (key/bind! "J" ::cursor-down
-               (fn [_ev]
-                 (swap! cursor-idx (fn [v]
-                                     (let [new-v (inc v)]
-                                       (if (> new-v (dec (count indexed-menu-items)))
-                                         (dec (count indexed-menu-items))
-                                         new-v))))))
-    (key/bind! "K" ::cursor-up
-               (fn [_ev]
-                 (swap! cursor-idx
-                        (fn [v]
-                          (let [new-v (dec v)]
-                            (if (< new-v 0)
-                              0 new-v))))))
-    ;; (key/bind! "enter"
-    ;;            ::cursor-select
-    ;;            (fn [e]
-    ;;              (println "enter pressed")
-    ;;              (println e)
-    ;;              (when-let [[_i [page-name label]]
-    ;;                         (nth indexed-menu-items @cursor-idx)]
-    ;;                (set! (.-location js/window)
-    ;;                      (page-name->route page-name)))))
     [:div
      {:class ["bg-city-blue-900"
               "min-h-screen"
               "min-w-100"]}
-     [:div
-      {:class ["flex" "flex-row"
-               "space-between"
-               "min-w-100"]}
-      [:div {:class ["flex" "flex-col" "p-6"
-                     "text-city-pink-100"
-                     "text-xxl"
-                     "font-nes"]}
-       (for [[i [page-name label]]
-             indexed-menu-items]
-         ^{:key i}
-         [:a {:class
-              (cond
-                (#{current-page-name} page-name)
-                ["text-city-pink-400" "text-bold"]
-                (#{@cursor-idx} i)
-                ["text-city-red-400" "text-bold"])
-              :href (router/href page-name)} label])]
-      [:div {:class ["flex" "flex-col" "p-6"
-                     "text-city-pink-100" "text-xl"]}
-       [:p (str "Router:" (uix/context router/*router*))]
-       [:p (str "Match: "  @params)]]
-      (let [{:keys [tauri? open?] :as popup} (tauri/use-popup)]
-        [:div {:class ["ml-auto"
-                       "flex" "flex-col" "p-6"
-                       "text-city-pink-100" "text-xl"]}
-         (when (and tauri? @open?)
-           [:button {:on-click (fn [_] ((:hide popup)))} "Hide Popup"])
-         (when (and tauri? (not @open?))
-           [:button {:on-click (fn [_] ((:show popup)))} "Show Popup"])])]
+     [menu]
 
      (when main [main])]))
 
@@ -164,17 +132,17 @@
   []
   (let [page-name (-> router/*match* uix/context :data :name)]
     (case page-name
-      :page/home        [home views.events/event-page]
-      :page/todos       [home views.todos/widget]
-      :page/popup       [home views.popup/popup]
-      :page/events      [home views.events/event-page]
+      :page/home        [page views.events/event-page]
+      :page/todos       [page views.todos/widget]
+      :page/popup       [page views.popup/popup]
+      :page/events      [page views.events/event-page]
       :page/topbar      [views.topbar/widget]
-      :page/topbar-bg   [home views.topbar/widget]
-      :page/counter     [home counter]
-      :page/screenshots [home views.screenshots/widget]
-      :page/wallpapers  [home views.wallpapers/widget]
-      :page/workspaces  [home views.workspaces/widget]
-      [home nil])))
+      :page/topbar-bg   [page views.topbar/widget]
+      :page/counter     [page counter]
+      :page/screenshots [page views.screenshots/widget]
+      :page/wallpapers  [page views.wallpapers/widget]
+      :page/workspaces  [page views.workspaces/widget]
+      [page nil])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Websocket events
