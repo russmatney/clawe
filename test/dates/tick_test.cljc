@@ -27,6 +27,9 @@
          #time/zoned-date-time "2022-05-06T12:33:33-04:00"
 
          "2022-04-28T23:47:51"
+         #time/zoned-date-time "2022-04-28T23:47:51-04:00[America/New_York]"
+
+         "2022-04-28 23:47:51"
          #time/zoned-date-time "2022-04-28T23:47:51-04:00[America/New_York]"}]
     (->> cases
          (map (fn [[in exp]]

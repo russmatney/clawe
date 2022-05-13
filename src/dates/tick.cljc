@@ -15,6 +15,7 @@
   ["yyyy-MM-dd_h.mm.ss a"
    "yyyy-MM-dd-HHmmss"
    "yyyy-MM-ddTHH:mm:ss"
+   "yyyy-MM-dd HH:mm:ss"
    "yyyy-MM-dd E HH:mm"
    :iso-local-date-time])
 

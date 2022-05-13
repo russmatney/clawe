@@ -79,7 +79,9 @@
       (merge parsed-date-fields))))
 
 (def zsh-org-roots
-  ["~/todo/{journal,projects}.org"])
+  ["~/todo/{journal,projects}.org"
+   "~/todo/garden/workspaces/*.org"
+   ])
 
 (defn org-file-paths
   ([] (org-file-paths {}))
