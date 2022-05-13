@@ -10,11 +10,14 @@
    [wing.uix.router :as router]
    [uix.core.alpha :as uix]
 
+   [hiccup-icons.octicons :as octicons]
+
    [uix.dom.alpha :as uix.dom]
 
    [keybind.core :as key]
 
    [components.floating :as floating]
+   [components.icons]
 
    [doctor.ui.tauri :as tauri]
    [doctor.ui.views.todos :as views.todos]
@@ -65,41 +68,24 @@
               [name rt]))
        (into {})))
 
-(comment
-  (page-name->route :page/topbar)
-
-  (for [[i [name label]] (map-indexed vector menu-opts)]
-    (println i name label))
-
-  "hi"
-
-  (router/href :page/events)
-
-  (js/location "https://google.com")
-  (set! (.-location js/window) "/popup")
-
-  ;; reload:
-  (set! (.-location js/window) "somepath")
-
-  ;; set hash?
-  (set! (.-hash js/window.location) "somehash")
-  )
-
-
 (defn menu []
   (let [params            (router/use-route-parameters)
         current-page-name (-> router/*match* uix/context :data :name)]
-    [:div {:class ["flex" "flex-col" "p-6"
-                   "text-city-pink-100"
-                   "text-xxl"
-                   "font-nes"]}
+    [:div
+     {:class
+      ["flex" "flex-col" "p-6"
+       "text-city-pink-100"
+       "text-xxl"
+       "font-nes"]}
      (for [[i [page-name label]]
            (->> menu-opts (map-indexed vector))]
        [:a {:key  i
             :class
-            (cond
-              (#{current-page-name} page-name)
-              ["text-city-pink-400" "text-bold"])
+            (concat
+              ["hover:text-city-pink-500"]
+              (cond
+                (#{current-page-name} page-name)
+                ["text-city-pink-400" "text-bold"]))
             :href (router/href page-name)} label])]))
 
 (defn page
@@ -107,17 +93,42 @@
   [main]
   (let [params             (router/use-route-parameters)
         main               (or main default-main)
-        ;; fallback main disabled for now, seems to some issue mounting/unmounting defhandlers
         current-page-name  (-> router/*match* uix/context :data :name)
-        cursor-idx         (uix/state
-                             (->> menu-opts (map first)
-                                  ((fn [xs] (.indexOf xs current-page-name)))))
         indexed-menu-items (->> menu-opts (map-indexed vector))]
     [:div
      {:class ["bg-city-blue-900"
               "min-h-screen"
-              "min-w-100"]}
-     [menu]
+              "w-full"]}
+     [:div {:class ["flex" "flex-row"
+                    "bg-city-brown-600"
+                    "shadow"
+                    "shadow-city-brown-900"]}
+      [:div
+       {:class ["font-nes"
+                "pt-3" "pl-3"
+                "text-city-pink-200"
+                "capitalize"]}
+       current-page-name]
+
+      [floating/popover
+       {:click             true
+        :offset            10
+        :anchor-comp-props {:class ["ml-auto"]}
+        :anchor-comp
+        [:div
+         {:class ["p-3" "text-city-pink-100"
+                  "cursor-pointer"
+                  "hover:text-city-pink-400"]}
+         [components.icons/icon-comp
+          {:text "Menu"
+           :icon octicons/list-unordered}]]
+        :popover-comp
+        [:div
+         {:class ["bg-city-blue-800"
+                  "shadow-lg"
+                  "shadow-city-pink-800"
+                  ]}
+         [menu]]}]]
 
      (when main [main])]))
 

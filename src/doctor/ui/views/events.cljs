@@ -290,7 +290,8 @@
       [:div
        (when (:git.commit/hash event)
          [floating/popover
-          {:anchor-comp
+          {:click true :hover true
+           :anchor-comp
            [:div
             [components.git/commit-thumbnail opts event]]
            :popover-comp
@@ -299,7 +300,8 @@
 
        (when (:file/web-asset-path event)
          [floating/popover
-          {:anchor-comp [:div
+          {:click       true :hover true
+           :anchor-comp [:div
                          {:class ["border-city-blue-400"
                                   "border-opacity-40"
                                   "border"

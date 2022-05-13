@@ -4,27 +4,38 @@
    ["@floating-ui/react-dom-interactions" :as FUI]))
 
 (defn popover [opts]
-  (let [{:keys [anchor-comp popover-comp]} opts
-        open?                              (uix/state false)
+  (let [{:keys [click hover offset
+                anchor-comp
+                anchor-comp-props
+                popover-comp]} opts
+        offset                 (or offset 30)
+        open                   (uix/state false)
 
         floating-state (FUI/useFloating
-                         (clj->js {:open @open? :onOpenChange #(reset! open? %)
+                         (clj->js {:open @open :onOpenChange #(reset! open %)
                                    :middleware
                                    [(FUI/offset 30)
                                     (FUI/flip)
                                     (FUI/shift)]}))
         context        (. floating-state -context)
         ixs            (FUI/useInteractions
-                         #js [(FUI/useHover context)
-                              (FUI/useClick context)
-                              (FUI/useDismiss context)])]
+                         (clj->js
+                           (->> [(when hover (FUI/useHover context))
+                                 (when click (FUI/useClick context))
+                                 (FUI/useDismiss context)]
+                                (remove nil?)
+                                (into []))))]
 
-    [:div
-     [:div (js->clj (.getReferenceProps ixs (clj->js {:ref (.-reference floating-state)})))
+    [:<>
+     [:div
+      (merge
+        (js->clj (.getReferenceProps ixs (clj->js {:ref (.-reference floating-state)})))
+        anchor-comp-props
+        )
       anchor-comp]
 
      [:> FUI/FloatingPortal
-      (when @open?
+      (when @open
         [:> FUI/FloatingFocusManager {:context context}
          [:div (js->clj (.getFloatingProps
                           ixs (clj->js {:ref   (.-floating floating-state)

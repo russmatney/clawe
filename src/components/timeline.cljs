@@ -88,7 +88,8 @@
                 {:class ["py-2"
                          "text-mono"]}
                 [floating/popover
-                 {:anchor-comp
+                 {:click true :hover true
+                  :anchor-comp
                   [:div
                    {:class
                     ["flex"
@@ -113,5 +114,6 @@
                 {:class ["py-2"]}
                 (when has-data?
                   [floating/popover
-                   {:anchor-comp  popover-anchor-comp
+                   {:click        true :hover true
+                    :anchor-comp  popover-anchor-comp
                     :popover-comp (date->popover-comp date)}])]]))]])]]))
