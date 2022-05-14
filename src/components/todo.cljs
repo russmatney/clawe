@@ -3,6 +3,7 @@
    [tick.core :as t]
    [hiccup-icons.fa :as fa]
    [components.actions]
+   [components.floating :as floating]
    [hooks.todos]))
 
 (defn status [todo]
@@ -94,3 +95,29 @@
 
    [:div
     (:todo/name todo)]])
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; list
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn todo-list [{:keys [label selected on-select]} todos]
+  (when (seq todos)
+    [:div {:class ["flex" "flex-col"]}
+     [:div {:class ["text-2xl" "p-2" "pt-4"]} label]
+     [:div {:class ["flex" "flex-col" "justify-center"]}
+      (for [[i td] (->> todos (map-indexed vector))]
+        ^{:key i}
+        [floating/popover
+         {:hover true
+          :click true
+          :anchor-comp
+          [:div
+           {:class ["cursor-pointer"]}
+           [line {} td]]
+          :popover-comp
+          [:div
+           {:class []}
+           [todo
+            {:on-select    #(on-select td)
+             :is-selected? (= selected td)}
+            (assoc td :index i)]]}])]]))

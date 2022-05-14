@@ -8,33 +8,14 @@
    [tick.core :as t]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Todo list
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn todo-list [{:keys [label selected on-select]} todos]
-  [:div {:class ["flex" "flex-col"]}
-   [:div {:class ["text-2xl" "p-2" "pt-4"]} label]
-   [:div {:class ["flex" "flex-col" "justify-center"]}
-    (for [[i it] (->> todos (map-indexed vector))]
-      ^{:key i}
-      [floating/popover
-       {:hover true
-        :click true
-        :anchor-comp
-        [:div
-         {:class ["cursor-pointer"]}
-         [components.todo/line {} it]]
-        :popover-comp
-        [:div
-         {:class []}
-         [components.todo/todo
-          {:on-select    #(on-select it)
-           :is-selected? (= selected it)}
-          (assoc it :index i)]]}])]])
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; grouping and filtering
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn is-daily-fname [fname]
+  (some-> fname (string/split #"/") first #{"daily"}))
+
+(defn is-workspace-fname [fname]
+  (some-> fname (string/split #"/") first #{"workspaces"}))
 
 (def all-filter-defs
   {:file-name {:label            "File"
@@ -42,11 +23,9 @@
                :group-filters-by (fn [fname]
                                    (some-> fname (string/split #"/") first))
                :filter-options   [{:label    "All Dailies"
-                                   :match-fn (fn [fname]
-                                               (some-> fname (string/split #"/") first #{"daily"}))}
+                                   :match-fn is-daily-fname}
                                   {:label    "All Workspaces"
-                                   :match-fn (fn [fname]
-                                               (some-> fname (string/split #"/") first #{"workspaces"}))}]
+                                   :match-fn is-workspace-fname}]
                :format-label     (fn [fname]
                                    (some-> fname (string/split #"/") second
                                            (string/replace #".org" "")
@@ -65,10 +44,17 @@
   #{{:filter-key :status :match :status/not-started}
     {:filter-key :status :match :status/in-progress}
     {:filter-key :file-name :match "todo/journal.org"}
-    {:filter-key :file-name :match "todo/projects.org"}})
+    {:filter-key :file-name :match "todo/projects.org"}
+    {:filter-key :file-name
+     :match-fn   is-daily-fname
+     :label      "All Dailies"}
+    {:filter-key :file-name
+     :match-fn   is-workspace-fname
+     :label      "All Workspaces"}
+    })
 
-(defn split-counts [items {:keys [set-group-by toggle-filter-by
-                                  items-group-by items-filter-by]}]
+(defn filter-grouper [items {:keys [set-group-by toggle-filter-by
+                                    items-group-by items-filter-by]}]
   [:div.flex.flex-row.flex-wrap
    {:class ["gap-x-3"]}
    (for [[i [filter-key filter-def]] (map-indexed vector all-filter-defs)]
@@ -172,6 +158,7 @@
                                   (map (fn [[status its]]
                                          {:item-group its
                                           :label      status})))]
+
     [:div
      {:class ["flex" "flex-col" "flex-wrap"
               "overflow-hidden"
@@ -180,32 +167,33 @@
 
      [:div
       {:class ["p-4"]}
-      [split-counts items {:set-group-by    #(reset! items-group-by %)
-                           :toggle-filter-by
-                           (fn [f-by]
-                             (swap! items-filter-by
-                                    #(if (% f-by) (disj % f-by) (conj % f-by))))
-                           :items-filter-by @items-filter-by
-                           :items-group-by  @items-group-by}]]
+      [filter-grouper items {:set-group-by    #(reset! items-group-by %)
+                             :toggle-filter-by
+                             (fn [f-by]
+                               (swap! items-filter-by
+                                      #(if (% f-by) (disj % f-by) (conj % f-by))))
+                             :items-filter-by @items-filter-by
+                             :items-group-by  @items-group-by}]]
 
-     [todo-list
-      {:label     "In Progress"
-       :on-select (fn [it] (reset! selected it))
-       :selected  @selected}
-      (->> db-todos (filter (comp #{:status/in-progress} :todo/status)))]
+     [:div
+      {:class ["flex" "flex-row" "flex-wrap"]}
+      [components.todo/todo-list
+       {:label     "In Progress"
+        :on-select (fn [it] (reset! selected it))
+        :selected  @selected}
+       (->> db-todos (filter (comp #{:status/in-progress} :todo/status)))]
 
-     [todo-list
-      {:label     "Incomplete DB Todos"
-       :on-select (fn [it] (reset! selected it))
-       :selected  @selected}
-      (->> db-todos
-           (remove (comp #{:status/done
-                           :status/cancelled} :todo/status)))]
+      [components.todo/todo-list
+       {:label     "Incomplete DB Todos"
+        :on-select (fn [it] (reset! selected it))
+        :selected  @selected}
+       (->> db-todos (remove (comp #{:status/done
+                                     :status/cancelled} :todo/status)))]
 
-     (for [[i {:keys [item-group label]}]
-           (map-indexed vector filtered-item-groups)]
-       ^{:key i}
-       [todo-list {:label     (str label " (" (count item-group) ")")
-                   :on-select (fn [it] (reset! selected it))
-                   :selected  @selected}
-        item-group])]))
+      (for [[i {:keys [item-group label]}]
+            (map-indexed vector filtered-item-groups)]
+        ^{:key i}
+        [components.todo/todo-list {:label     (str label " (" (count item-group) ")")
+                                    :on-select (fn [it] (reset! selected it))
+                                    :selected  @selected}
+         item-group])]]))
