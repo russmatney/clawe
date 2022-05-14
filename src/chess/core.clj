@@ -7,7 +7,8 @@
    [aero.core :as aero]
    [clojure.java.io :as io]
 
-   [ralphie.zsh :as zsh]))
+   [ralphie.zsh :as zsh]
+   [wing.core :as w]))
 
 (defonce lichess-username (atom nil))
 (defonce lichess-token (atom nil))
@@ -22,6 +23,8 @@
 
 (comment
   (sys/start! '*lichess-env*)
+
+  *lichess-env*
   )
 
 (comment
@@ -63,7 +66,8 @@
   TODO check status and handle errors"
   [req-str]
   (println "Requesting from lichess!" req-str)
-  ;; (sys/start! '*lichess-env*)
+  (when-not (sys/running? `*lichess-env*)
+    (sys/start! `*lichess-env*))
   (->> (curl/get
          req-str
          {:headers {:accept        "application/x-ndjson"
@@ -75,13 +79,40 @@
 ;; Fetch lichess games
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(comment
+  (w/ns-keys "lichess.game")
+  (->>
+    --user-games
+    (take 1)
+    (map #(w/ns-keys "lichess.game" %))
+    )
+  )
+
 (defn parse-game [gm]
-  (let [{:keys [pgn id players opening]} gm]
-    (-> gm
-        (assoc :lichess/id id
-               :lichess/url (str "https://lichess.org/" id)
-               :white-user (-> players :white :user :id)
-               :black-user (-> players :black :user :id)))))
+  (let [{:keys [pgn id players opening clock]} gm]
+    (-> (w/ns-keys "lichess.game" gm)
+        (assoc
+          :lichess.game/url (str "https://lichess.org/" id)
+
+          :lichess.game/opening-name (-> opening :name)
+          :lichess.game/opening-eco (-> opening :eco)
+          :lichess.game/opening-ply (-> opening :ply)
+
+          :lichess.game/white-player (-> players :white :user :id)
+          :lichess.game/black-player (-> players :black :user :id)
+          :lichess.game/white-rating (-> players :white :rating)
+          :lichess.game/black-rating (-> players :black :rating)
+          :lichess.game/white-rating-diff (-> players :white :ratingDiff)
+          :lichess.game/black-rating-diff (-> players :black :ratingDiff)
+
+          :lichess.game/clock-initial (-> clock :initial)
+          :lichess.game/clock-increment (-> clock :increment)
+          :lichess.game/clock-total-time (-> clock :totalTime)
+
+          ;; TODO remove this usage
+          :lichess/id id
+          :lichess/url (str "https://lichess.org/" id)
+          ))))
 
 (defn parse-lichess-json [raw]
   (-> raw (string/split #"\n")
@@ -95,30 +126,35 @@
 (defn fetch-games
   ([]
    (fetch-games nil))
-  ([{:keys [username max opening evals analysis]}]
+  ([{:keys [username max opening evals analysis since until]}]
    (println "Fetching lichess games")
    (when-not (sys/running? `*lichess-env*)
      (sys/start! `*lichess-env*))
-   (let [max      (or max 5)
+   (let [max      (or max (when-not (or since until) 5))
          username (or username (:lichess/username *lichess-env*))
          endpoint+params
          (str lichess-api-base "/api/games/user/" username
               "?pgnInJson=true"
-              "&max=" max
+              (when max (str "&max=" max))
               (when opening "&opening=true")
+              (when since (str "&since=" since))
+              (when until (str "&until=" until))
               (when evals "&evals=true")
+              ;; note, analysis is a filter, not a request for more metadata
               (when analysis "&analysis=true"))]
      (->
-       (or (get @*lichess-cache endpoint+params) (lichess-request endpoint+params))
+       (or (get @*lichess-cache endpoint+params)
+           (lichess-request endpoint+params))
        ((fn [res] (swap! *lichess-cache #(assoc % endpoint+params res)) res))
        parse-lichess-json
        (->> (map parse-game))))))
 
 (comment
   (def --user-games
-    (fetch-games {:opening  true
-                  :evals    true
-                  :analysis true}))
+    (fetch-games {:opening true
+                  :evals   true
+                  :max     20
+                  }))
 
   (fetch-games)
   (clear-cache)
@@ -162,6 +198,8 @@
                   :study/comments   true
                   :study/variations true})
 
+  ;; requires oauth
+  (fetch-studies {:username "TeknqlTeam"})
   (fetch-studies)
   (clear-cache)
 

@@ -24,6 +24,9 @@
     :db/unique    :db.unique/identity}
    :git.repo/directory
    {:db/valueType :db.type/string
+    :db/unique    :db.unique/identity}
+   :lichess.game/id
+   {:db/valueType :db.type/string
     :db/unique    :db.unique/identity}})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
