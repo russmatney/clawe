@@ -1,6 +1,7 @@
 (ns components.git
   (:require
    [clojure.string :as string]
+   [components.floating :as floating]
    [components.debug]
    [tick.core :as t]))
 
@@ -154,3 +155,29 @@
         (:git.commit/body commit)]
 
        [components.debug/raw-metadata commit]]]]))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; commit list
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn commit-list [opts commits]
+  [:div
+   {:class ["flex" "flex-col"]}
+
+   (for [[i event] (->> commits
+                        (sort-by :event/timestamp t/<)
+                        (map-indexed vector))]
+     [:div
+      {:key   i
+       :class ["m-2"]}
+
+      (when (:git.commit/hash event)
+        [floating/popover
+         {:click true :hover true
+          :anchor-comp
+          [:div
+           {:class ["cursor-pointer"]}
+           [components.git/commit-thumbnail opts event]]
+          :popover-comp
+          [:div
+           [components.git/commit-popover opts event]]}])])])

@@ -10,8 +10,7 @@
    [keybind.core :as key]
    [uix.core.alpha :as uix]
    [wing.core :as w]
-   [clojure.string :as string]
-   [components.floating :as floating]))
+   [clojure.string :as string]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; pure event helpers
@@ -275,45 +274,14 @@
 
   (cons 1 '(2 3)))
 
-
 (defn event-cluster [opts events]
-  [:div
-   {:class ["flex" "flex-row" "flex-wrap"]}
-   (for [[i event] (->> events
-                        (sort-by :event/timestamp t/<)
-                        (map-indexed vector))]
-     [:div
-      {:key   i
-       :class ["m-2"]}
+  (let [screenshots (->> events (filter :file/web-asset-path))
+        commits     (->> events (filter :git.commit/hash))]
+    [:div
+     {:class ["flex" "flex-row" "flex-wrap"]}
 
-      [:div
-       (when (:git.commit/hash event)
-         [floating/popover
-          {:click true :hover true
-           :anchor-comp
-           [:div
-            [components.git/commit-thumbnail opts event]]
-           :popover-comp
-           [:div
-            [components.git/commit-popover opts event]]}])
-
-       (when (:file/web-asset-path event)
-         [floating/popover
-          {:click       true :hover true
-           :anchor-comp [:div
-                         {:class ["border-city-blue-400"
-                                  "border-opacity-40"
-                                  "border"
-                                  "w-36"]}
-                         [components.screenshot/thumbnail opts event]]
-           :popover-comp
-           [:div
-            {:class ["w-2/3"
-                     "shadow"
-                     "shadow-city-blue-800"
-                     "border"
-                     "border-city-blue-800"]}
-            [components.screenshot/img event]]}])]])])
+     [components.screenshot/cluster opts screenshots]
+     [components.git/commit-list opts commits]]))
 
 (defn event-clusters
   [opts events]
@@ -333,7 +301,7 @@
                    "p-4"]
            }
 
-          (str (t/format "MMM d ha" start)
+          (str (t/format "MMM EEEE d ha" start)
                (when show-end?
                  (str " - " (t/format "ha" end))))
 
