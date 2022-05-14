@@ -14,13 +14,15 @@
         floating-state (FUI/useFloating
                          (clj->js {:open @open :onOpenChange #(reset! open %)
                                    :middleware
-                                   [(FUI/offset 30)
+                                   [(FUI/offset offset)
                                     (FUI/flip)
                                     (FUI/shift)]}))
         context        (. floating-state -context)
         ixs            (FUI/useInteractions
                          (clj->js
-                           (->> [(when hover (FUI/useHover context))
+                           (->> [(when hover (FUI/useHover context
+                                                           #js {:restMs 150
+                                                                :delay  #js {:open 300}}))
                                  (when click (FUI/useClick context))
                                  (FUI/useDismiss context)]
                                 (remove nil?)
