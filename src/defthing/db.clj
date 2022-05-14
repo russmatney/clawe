@@ -4,7 +4,8 @@
    [babashka.pods :as pods]
    [babashka.process :as process :refer [$]]
    [clojure.string :as string]
-   [ralphie.zsh :as zsh]))
+   [ralphie.zsh :as zsh]
+   [wing.core :as w]))
 
 (pods/load-pod "dtlv")
 (require '[pod.huahaiy.datalevin :as d])
@@ -56,7 +57,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def supported-types
-  (->> [6 "hi" :some-keyword true
+  (->> [6 1.0 "hi" :some-keyword true
+        (java.lang.Integer. 3)
         #uuid "8992970d-6c3a-4a3a-b35d-dc5cd28f1484"]
        (map type)
        (into #{})))
@@ -64,23 +66,34 @@
 (defn supported-type-keys [m]
   (->>
     m
-    (filter (fn [[_k v]] (supported-types (type v))))
+    (filter (fn [[k v]]
+              (let [t (type v)]
+                (if (supported-types t)
+                  true
+                  (do
+                    (println "unsupported type" t v k)
+                    nil)))))
     (map first)))
 
 (comment
-  (supported-type-keys {:hello        "goodbye"
-                        :some-int     5
-                        :some-bool    false
-                        :some-keyword :keyword
-                        ;; :some-uuid    (random-uuid)
-                        :some-fn      (fn [] (print "complexity!"))}))
+  (supported-type-keys {:hello         "goodbye"
+                        :some-int      5
+                        :some-neg-int  -7
+                        :some-java-int (java.lang.Integer. 3)
+                        :some-float    1.0
+                        :some-bool     false
+                        :some-keyword  :keyword
+                        :some-uuid     #uuid "8992970d-6c3a-4a3a-b35d-dc5cd28f1484"
+                        :some-fn       (fn [] (print "complexity!"))}))
 
 (defn drop-unsupported-vals
   "Drops unsupported map vals. Drops nil. Only `supported` types
   get through."
   [map-tx]
-  (let [supported-keys (supported-type-keys map-tx)]
-    (->> (select-keys map-tx supported-keys)
+  (let [supported-keys   (supported-type-keys map-tx)
+        [to-tx rejected] (w/partition-keys map-tx supported-keys)]
+    (println "rejected vals" rejected)
+    (->> to-tx
          ;; might be unnecessary b/c it's not 'supported'
          (remove (comp nil? second))
          (into {}))))
@@ -100,6 +113,7 @@
                              (drop-unsupported-vals tx)
                              tx))
                   txs)
+        _    (println "txs" txs)
         res  (d/transact! conn txs)]
     (d/close conn)
     res))
