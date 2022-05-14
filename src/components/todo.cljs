@@ -5,14 +5,24 @@
    [components.actions]
    [hooks.todos]))
 
+(defn status [todo]
+  (case (:todo/status todo)
+    :status/done        fa/check-circle
+    :status/not-started fa/sticky-note
+    :status/in-progress fa/pencil-alt-solid
+    :status/cancelled   fa/ban-solid
+    :status/skipped     fa/ban-solid
+    (when (:org.prop/archive-time todo)
+      [:div.text-sm.font-mono "Archived"])))
+
 (defn todo
   [{:keys [on-select]} item]
   (let [{:db/keys       [id]
          :org/keys      [body urls]
          :org.prop/keys [archive-time]
-         :todo/keys     [status name file-name last-started-at]} item]
+         :todo/keys     [name file-name last-started-at]} item]
     [:div
-     {:class    ["py-2" "px-4" "w-1/3"
+     {:class    ["py-2" "px-4"
                  "border" "border-city-blue-600"
                  "bg-yo-blue-700"
                  "text-white"]
@@ -22,13 +32,7 @@
       {:class ["flex" "justify-between"]}
       [:div
        {:class ["text-3xl"]}
-       (case status
-         :status/done        fa/check-circle
-         :status/not-started fa/sticky-note
-         :status/in-progress fa/pencil-alt-solid
-         :status/cancelled   fa/ban-solid
-         :status/skipped     fa/ban-solid
-         (when archive-time [:div.text-sm.font-mono "Archived"]))]
+       [status item]]
       [components.actions/action-list (hooks.todos/->actions item)]]
 
      [:span
@@ -75,3 +79,18 @@
                        ]
                :href  url}
            url])])]))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; line
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn line [opts todo]
+  [:div
+   {:class ["flex" "flex-row" "items-center"]}
+
+   [:div
+    {:class ["p-2"]}
+    [status todo]]
+
+   [:div
+    (:todo/name todo)]])

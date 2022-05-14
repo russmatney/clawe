@@ -14,13 +14,23 @@
 (defn todo-list [{:keys [label selected on-select]} todos]
   [:div {:class ["flex" "flex-col"]}
    [:div {:class ["text-2xl" "p-2" "pt-4"]} label]
-   [:div {:class ["flex" "flex-row" "flex-wrap" "justify-center"]}
+   [:div {:class ["flex" "flex-col" "justify-center"]}
     (for [[i it] (->> todos (map-indexed vector))]
       ^{:key i}
-      [components.todo/todo
-       {:on-select    #(on-select it)
-        :is-selected? (= selected it)}
-       (assoc it :index i)])]])
+      [floating/popover
+       {:hover true
+        :click true
+        :anchor-comp
+        [:div
+         {:class ["cursor-pointer"]}
+         [components.todo/line {} it]]
+        :popover-comp
+        [:div
+         {:class []}
+         [components.todo/todo
+          {:on-select    #(on-select it)
+           :is-selected? (= selected it)}
+          (assoc it :index i)]]}])]])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; grouping and filtering
