@@ -1,4 +1,4 @@
-(ns doctor.ui.views.wallpapers
+(ns pages.wallpapers
   (:require
    [hooks.wallpapers]
    [components.wallpaper]))

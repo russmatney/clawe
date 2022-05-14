@@ -1,10 +1,10 @@
-(ns expo.ui.views.counts
+(ns pages.counts
   (:require
-   [uix.core.alpha :as uix]
+   ;; [uix.core.alpha :as uix]
    [hooks.count]
    [components.count]))
 
-(defn widget []
+(defn page []
   (let [{:keys [items count]} (hooks.count/use-counts)]
     (println "Count: " count)
     (when (seq items) (println (last items)))

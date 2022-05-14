@@ -1,10 +1,10 @@
-(ns expo.ui.views.garden
+(ns pages.garden
   (:require
    [hooks.garden]
    [components.garden]
    [uix.core.alpha :as uix]))
 
-(defn view []
+(defn page []
   (let [{:keys [items]} (hooks.garden/use-garden)
         selected        (uix/state (first items)) ]
     [:div

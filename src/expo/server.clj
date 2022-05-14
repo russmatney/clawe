@@ -1,14 +1,14 @@
 (ns expo.server
   (:require
-   [taoensso.timbre :as log]
-   [systemic.core :as sys :refer [defsys]]
+   [cognitect.transit :as transit]
+   [dates.transit-time-literals :as ttl]
    [plasma.server :as plasma.server]
    [plasma.server.interceptors :as plasma.interceptors]
-   [cognitect.transit :as transit]
    [ring.adapter.undertow :as undertow]
    [ring.adapter.undertow.websocket :as undertow.ws]
+   [systemic.core :as sys :refer [defsys]]
+   [taoensso.timbre :as log]
 
-   [dates.transit-time-literals :as ttl]
    [expo.config :as config]
    [hooks.count :as count]
    [garden.core :as garden]))

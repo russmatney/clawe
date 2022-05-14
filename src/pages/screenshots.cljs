@@ -1,9 +1,9 @@
-(ns doctor.ui.views.screenshots
+(ns pages.screenshots
   (:require
    [hooks.screenshots]
    [components.screenshot :as screenshot]))
 
-(defn widget []
+(defn page []
   (let [{:keys [items]} (hooks.screenshots/use-screenshots)]
     [:div
      {:class ["flex" "flex-row" "flex-wrap" "flex-auto"

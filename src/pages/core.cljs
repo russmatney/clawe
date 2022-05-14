@@ -2,20 +2,18 @@
   (:require
    [wing.uix.router :as router]
    [uix.core.alpha :as uix]
-
    [hiccup-icons.octicons :as octicons]
-
    ;; [keybind.core :as key]
 
+   [pages.events]
    [components.floating :as floating]
-   [components.icons]
-   ) )
+   [components.icons]))
 
 (defn default-main []
   [:div
    [:p.text-city-pink-100.p-4
     "No app selected, defaulting..."]
-   #_[views.events/event-page]])
+   [pages.events/event-page]])
 
 (defn menu [menu-opts]
   (when menu-opts

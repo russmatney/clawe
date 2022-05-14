@@ -1,4 +1,4 @@
-(ns doctor.ui.views.todos
+(ns pages.todos
   (:require
    [uix.core.alpha :as uix]
    [components.todo]
@@ -126,10 +126,10 @@
                       [:span.p-1.text-xl.w-10.text-center v]]))])])]}]]))])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; base widget
+;; page
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn widget []
+(defn page []
   (let [{:keys [items db-todos]} (hooks.todos/use-todos)
 
         selected        (uix/state (first items))

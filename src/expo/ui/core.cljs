@@ -11,9 +11,9 @@
    [tick.locale-en-us]
 
    [dates.transit-time-literals :as ttl]
-   [expo.ui.views.counts :as counts]
-   [expo.ui.views.garden :as garden]
-   [expo.ui.views.posts :as posts]))
+   [pages.counts]
+   [pages.garden]
+   [pages.posts]))
 
 (def routes
   [["/" {:name :page/root}]
@@ -30,9 +30,9 @@
       "Expo"]
 
      (case page-name
-       :page/root   [counts/widget]
-       :page/garden [garden/view]
-       :page/posts  [posts/view]
+       :page/root   [pages.counts/page]
+       :page/garden [pages.garden/page]
+       :page/posts  [pages.posts/page]
        [:div "hi"])]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

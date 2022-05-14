@@ -1,7 +1,6 @@
-(ns doctor.ui.views.events
+(ns pages.events
   (:require
    [tick.core :as t]
-   [tick.alpha.interval :as ti]
    [hooks.events]
    [components.screenshot]
    [components.todo]

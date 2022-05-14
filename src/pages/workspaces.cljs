@@ -1,4 +1,4 @@
-(ns doctor.ui.views.workspaces
+(ns pages.workspaces
   (:require
    [clojure.string :as string]
    [hooks.workspaces :as workspaces]

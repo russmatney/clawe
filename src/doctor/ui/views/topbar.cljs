@@ -1,17 +1,20 @@
 (ns doctor.ui.views.topbar
   (:require
    [clojure.string :as string]
-   [uix.core.alpha :as uix]
    [hiccup-icons.fa :as fa]
    [hiccup-icons.mdi :as mdi]
    [tick.core :as t]
-   [hooks.workspaces]
-   [doctor.ui.tauri :as tauri]
-   [hooks.topbar]
+   [uix.core.alpha :as uix]
+
    [components.icons :as icons]
    [components.charts :as charts]
    [components.actions]
-   [hooks.todos]))
+
+   [hooks.todos]
+   [hooks.topbar]
+   [hooks.workspaces]
+
+   [doctor.ui.tauri :as tauri]))
 
 (defn skip-bar-app? [client]
   (and

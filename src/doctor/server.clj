@@ -23,9 +23,6 @@
 ;; Plasma config
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(comment
-  (println "hi"))
-
 (defsys *sessions*
   "Plasma sessions"
   (atom {}))

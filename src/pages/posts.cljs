@@ -1,4 +1,4 @@
-(ns expo.ui.views.posts
+(ns pages.posts
   (:require
    [wing.core :as w]
    [uix.core.alpha :as uix]
@@ -68,7 +68,7 @@
             (< hours-ago 24) (str hours-ago " hour(s) ago")
             :else            (str days-ago " day(s) ago")))])]))
 
-(defn view []
+(defn page []
   (let [{:keys [items]}   (hooks.garden/use-garden)
         default-selection (->> items
                                ;; TODO read from slugs in query params
