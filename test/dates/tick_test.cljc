@@ -1,7 +1,8 @@
 (ns dates.tick-test
   (:require
    [clojure.test :refer [deftest is]]
-   [dates.tick :as sut]))
+   [dates.tick :as sut]
+   [tick.core :as t]))
 
 (deftest parse-time-string-test
   (let [cases
@@ -30,7 +31,10 @@
          #time/zoned-date-time "2022-04-28T23:47:51-04:00[America/New_York]"
 
          "2022-04-28 23:47:51"
-         #time/zoned-date-time "2022-04-28T23:47:51-04:00[America/New_York]"}]
+         #time/zoned-date-time "2022-04-28T23:47:51-04:00[America/New_York]"
+
+         1650486902722
+         #time/zoned-date-time "2022-04-20T16:35:02.722-04:00[America/New_York]"}]
     (->> cases
          (map (fn [[in exp]]
                 (is (= exp (sut/parse-time-string in)))))

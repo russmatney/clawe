@@ -26,35 +26,43 @@
   ["yyyy-MM-dd E"
    :iso-local-date])
 
+(def parse-attempts
+  (concat
+    (->> date-formats-with-zone
+         (map (fn [f]
+                #(t/parse-zoned-date-time % (t/formatter f)))))
+    (->> datetime-formats-without-zone
+         (map (fn [f]
+                #(-> (t/parse-date-time % (t/formatter f))
+                     t/zoned-date-time))))
+    (->> date-formats
+         (map (fn [f]
+                #(-> (t/parse-date % (t/formatter f))
+                     (t/at (t/midnight))
+                     (t/zoned-date-time)))))
+    (list (fn [input]
+            (when (int? input)
+              (->
+                (t/instant input)
+                (t/zoned-date-time)))))))
+
+(def wrapped-parse-attempts
+  (->> parse-attempts
+       (map (fn [parse]
+              #(try
+                 (parse %)
+                 (catch Exception e e nil))))))
+
 (defn parse-time-string
   [time-string]
-  (when (and time-string (string? time-string) (seq (string/trim time-string)))
-    (let [parse-attempts
-          (concat
-            (->> date-formats-with-zone
-                 (map (fn [f]
-                        #(t/parse-zoned-date-time % (t/formatter f)))))
-            (->> datetime-formats-without-zone
-                 (map (fn [f]
-                        #(-> (t/parse-date-time % (t/formatter f))
-                             t/zoned-date-time))))
-            (->> date-formats
-                 (map (fn [f]
-                        #(-> (t/parse-date % (t/formatter f))
-                             (t/at (t/midnight))
-                             (t/zoned-date-time))))))
-
-          wrapped-parse-attempts
-          (->> parse-attempts
-               (map (fn [parse]
-                      #(try
-                         (parse %)
-                         (catch Exception e e nil)))))]
-      (if-let [time ((apply some-fn wrapped-parse-attempts) time-string)]
-        time
-        (do
-          (notify/notify "Error parsing time string" time-string)
-          nil)))))
+  (when (and time-string
+             (or (and (string? time-string) (seq (string/trim time-string)))
+                 (int? time-string)))
+    (if-let [time ((apply some-fn wrapped-parse-attempts) time-string)]
+      time
+      (do
+        (notify/notify "Error parsing time string" time-string)
+        nil))))
 
 (comment
   (t/parse-zoned-date-time
@@ -71,6 +79,10 @@
   (t/parse-zoned-date-time
     "2021-12-30T17:52:12Z"
     (t/formatter :iso-zoned-date-time))
+
+  (t/instant 1650486902722)
+  (parse-time-string 1650486902722)
+
 
   (parse-time-string "x")
   (parse-time-string "2022-02-26_15:47:52-0500")
