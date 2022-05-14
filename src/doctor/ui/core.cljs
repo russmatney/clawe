@@ -10,16 +10,12 @@
    [wing.uix.router :as router]
    [uix.core.alpha :as uix]
 
-   [hiccup-icons.octicons :as octicons]
-
    [uix.dom.alpha :as uix.dom]
-
-   [keybind.core :as key]
-
-   [components.floating :as floating]
    [components.icons]
+   [components.debug]
 
-   [doctor.ui.tauri :as tauri]
+   [pages.core :as page]
+
    [doctor.ui.views.todos :as views.todos]
    [doctor.ui.views.topbar :as views.topbar]
    [doctor.ui.views.popup :as views.popup]
@@ -44,12 +40,6 @@
    ["/workspaces" {:name :page/workspaces}]
    ["/wallpapers" {:name :page/wallpapers}]])
 
-(defn default-main []
-  [:div
-   [:p.text-city-pink-100.p-4
-    "No app selected, defaulting..."]
-   [views.events/event-page]])
-
 (def menu-opts
   [[:page/home "Home"]
    [:page/todos "Todos"]
@@ -62,98 +52,44 @@
    [:page/workspaces "Workspaces"]
    [:page/screenshots "Screenshots"]])
 
-(def page-name->route
-  (->> routes
-       (map (fn [[rt {:keys [name]}]]
-              [name rt]))
-       (into {})))
-
-(defn menu []
-  (let [params            (router/use-route-parameters)
-        current-page-name (-> router/*match* uix/context :data :name)]
-    [:div
-     {:class
-      ["flex" "flex-col" "p-6"
-       "text-city-pink-100"
-       "text-xxl"
-       "font-nes"]}
-     (for [[i [page-name label]]
-           (->> menu-opts (map-indexed vector))]
-       [:a {:key  i
-            :class
-            (concat
-              ["hover:text-city-pink-500"]
-              (cond
-                (#{current-page-name} page-name)
-                ["text-city-pink-400" "text-bold"]))
-            :href (router/href page-name)} label])]))
-
-(defn page
-  "Accepts a main component and wraps it in page helpers with a menu."
-  [main]
-  (let [params             (router/use-route-parameters)
-        main               (or main default-main)
-        current-page-name  (-> router/*match* uix/context :data :name)
-        indexed-menu-items (->> menu-opts (map-indexed vector))]
-    [:div
-     {:class ["bg-city-blue-900"
-              "min-h-screen"
-              "w-full"]}
-     [:div {:class ["flex" "flex-row"
-                    "bg-city-brown-600"
-                    "shadow"
-                    "shadow-city-brown-900"]}
-      [:div
-       {:class ["font-nes"
-                "pt-3" "pl-3"
-                "text-city-pink-200"
-                "capitalize"]}
-       current-page-name]
-
-      [floating/popover
-       {:click             true
-        :offset            10
-        :anchor-comp-props {:class ["ml-auto"]}
-        :anchor-comp
-        [:div
-         {:class ["p-3" "text-city-pink-100"
-                  "cursor-pointer"
-                  "hover:text-city-pink-400"]}
-         [components.icons/icon-comp
-          {:text "Menu"
-           :icon octicons/list-unordered}]]
-        :popover-comp
-        [:div
-         {:class ["bg-city-blue-800"
-                  "shadow-lg"
-                  "shadow-city-pink-800"
-                  ]}
-         [menu]]}]]
-
-     (when main [main])]))
-
 (defn counter []
-  (let [page-name (-> router/*match* uix/context :data :name)
-        count     (router/use-route-parameters [:query :count])]
+  (let [page-name     (-> router/*match* uix/context :data :name)
+        query-params  (router/use-route-parameters [:query])
+        the-count     (router/use-route-parameters [:query :count])
+        the-count-int (try (js/parseInt @the-count) (catch js/Error e
+                                                      nil))]
+
     [:div
-     (when (= :page/counter page-name)
-       [:button {:on-click #(swap! count inc)} @count])]))
+     {:class ["p-6" "bg-city-orange-light-800"
+              "text-city-orange-light-200"
+              "flex" "flex-col"
+              "text-4xl"]}
+
+     [components.debug/raw-metadata {:initial-show true
+                                     :label        false}
+      (assoc (js->clj @query-params)
+             :page-name page-name
+             :the-count-int the-count-int)]
+
+     [:button {:class    ["bg-city-red-dark-700" "rounded" "shadow" "py-2" "px-4" "m-2"]
+               :on-click #(reset! the-count (inc the-count-int))}
+      (or @the-count "the-count!")]]))
 
 (defn view
   []
   (let [page-name (-> router/*match* uix/context :data :name)]
     (case page-name
-      :page/home        [page views.events/event-page]
-      :page/todos       [page views.todos/widget]
-      :page/popup       [page views.popup/popup]
-      :page/events      [page views.events/event-page]
+      :page/home        [page/page menu-opts views.events/event-page]
+      :page/todos       [page/page menu-opts views.todos/widget]
+      :page/popup       [page/page menu-opts views.popup/popup]
+      :page/events      [page/page menu-opts views.events/event-page]
       :page/topbar      [views.topbar/widget]
-      :page/topbar-bg   [page views.topbar/widget]
-      :page/counter     [page counter]
-      :page/screenshots [page views.screenshots/widget]
-      :page/wallpapers  [page views.wallpapers/widget]
-      :page/workspaces  [page views.workspaces/widget]
-      [page nil])))
+      :page/topbar-bg   [page/page menu-opts views.topbar/widget]
+      :page/counter     [page/page menu-opts counter]
+      :page/screenshots [page/page menu-opts views.screenshots/widget]
+      :page/wallpapers  [page/page menu-opts views.wallpapers/widget]
+      :page/workspaces  [page/page menu-opts views.workspaces/widget]
+      [page/page])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Websocket events
