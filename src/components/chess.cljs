@@ -106,42 +106,51 @@
         chessjs-inst                    (Chess/Chess.)
 
         board-states (->> (string/split moves #" ")
-                          (map (fn [move]
-
-                                 (let [move (.move chessjs-inst move)
-                                       f    (.fen chessjs-inst)]
-                                   {:fen  f
-                                    :move (js->clj move)}))))
+                          (map-indexed
+                            (fn [i move]
+                              (let [analysis (nth (or analysis []) i nil)
+                                    move     (.move chessjs-inst move)
+                                    f        (.fen chessjs-inst)]
+                                (merge
+                                  {:fen  f
+                                   :move (js->clj move)}
+                                  analysis)))))
 
         highlight-states (->> (concat
                                 (->> (range (dec (count board-states)))
-                                     (filter (comp zero? #(mod % 5)))
+                                     (filter (comp zero? #(mod % 10)))
                                      (map #(nth board-states % nil)))
                                 [(last board-states)])
                               (remove nil?)
                               ;; could be removing valid dupes :shrug:
-                              (w/distinct-by identity))]
+                              (w/distinct-by identity)
+                              (take 3))]
 
     ;; TODO draw mistake/best-move arrows
     ;; TODO include current eval at each position
     [:div
      {:class ["flex" "flex-row" "gap-2" "flex-wrap"]}
 
-     (when (seq analysis)
-       (println "analysis!" analysis)
-
-       [:div
-        (str analysis)])
-
-     (for [[i {:keys [fen move]}] (->> highlight-states (map-indexed vector))]
+     (for [[i {:keys [fen move
+                      best eval]}]
+           (->> highlight-states (map-indexed vector))]
        ^{:key i}
-       [:> Chessground
-        {:fen         fen
-         :lastMove    #js [(get move "from") (get move "to")]
-         :orientation (if (#{"russmatney"} white-player)
-                        "white" "black")
-         :width       "220px"
-         :height      "220px"}])]))
+       [:div
+        [:span {:class ["font-nes" "text-xl"]} eval]
+        [:span {:class ["font-nes" "text-xl"]} best]
+        [:> Chessground
+         {:fen           fen
+          :lastMove      #js [(get move "from") (get move "to")]
+          ;; :viewOnly    true
+          :coordinates   false
+          :orientation   (if (#{"russmatney"} white-player)
+                           "white" "black")
+          :width         "220px"
+          :height        "220px"
+          :setAutoShapes (fn [x]
+                           (println "setShapes x" x)
+                           (clj->js [(clj->js {:orig "e4" :dest "e7" :brush "green"})]))}
+         ]])]))
 
 (defn detail-popover [opts game]
   (let [{:lichess.game/keys
