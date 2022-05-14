@@ -335,7 +335,7 @@
      :toggle-above-below     toggle-above-below
      :time                   @time}))
 
-(defn widget []
+(defn widget [_opts]
   (let [metadata                                      (hooks.topbar/use-topbar-metadata)
         {:keys [topbar/background-mode] :as metadata} @metadata
         {:keys [workspaces active-clients]}           (hooks.workspaces/use-workspaces)

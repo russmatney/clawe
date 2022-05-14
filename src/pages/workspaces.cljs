@@ -96,7 +96,6 @@
            dir]
 
           (when session
-            (println "haz session")
             [debug/raw-metadata
              {:label "Raw Tmux Session Metadata"}
              session])
@@ -168,7 +167,7 @@
       (when (or repo directory)
         [:div (dir (or repo directory))])])))
 
-(defn widget []
+(defn page [_opts]
   (let [{:keys [workspaces active-workspaces]} (hooks.workspaces/use-workspaces)]
     [:div
      {:class ["p-4"]}

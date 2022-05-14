@@ -9,11 +9,11 @@
    [components.floating :as floating]
    [components.icons]))
 
-(defn default-main []
+(defn default-page [opts]
   [:div
    [:p.text-city-pink-100.p-4
     "No app selected, defaulting..."]
-   [pages.events/event-page]])
+   [pages.events/page]])
 
 (defn menu [menu-opts]
   (when menu-opts
@@ -37,13 +37,13 @@
 
 (defn page
   "Accepts a main component and wraps it in page helpers with a menu."
-  ([] [page default-main])
-  ([main] [page [] main])
-  ([menu-opts main]
+  ([] [page default-page {}])
+  ([main] [page [] main {}])
+  ([main opts] [page [] main opts])
+  ([menu-opts main page-opts]
    (let [params            (router/use-route-parameters)
-         main              (or main default-main)
+         main              (or main default-page)
          current-page-name (-> router/*match* uix/context :data :name)]
-     (println "params" params)
      [:div
       {:class ["bg-city-blue-900"
                "min-h-screen"
@@ -79,4 +79,4 @@
                    ]}
           [menu menu-opts]]}]]
 
-      (when main [main])])))
+      (when main [main page-opts])])))

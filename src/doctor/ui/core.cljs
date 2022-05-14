@@ -31,16 +31,16 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def route-defs
-  [{:route "/" :page-name :page/home :label "Home" :comp pages.events/event-page}
+  [{:route "/" :page-name :page/home :label "Home" :comp pages.events/page}
    {:route "/todo" :page-name :page/todos :label "Todos" :comp pages.todos/page}
-   {:route "/events" :page-name :page/events :label "Events" :comp pages.events/event-page}
+   {:route "/events" :page-name :page/events :label "Events" :comp pages.events/page}
    {:route "/topbar" :page-name :page/topbar :label "Top Bar" :comp views.topbar/widget :comp-only true}
    ;; {:route "/topbarbg":page-name :page/topbar-bg :label "Top Bar BG" :comp views.topbar/widget}
    {:route "/counter" :page-name :page/counter :label "Counter" :comp pages.counter/page}
    {:route "/counts" :page-name :page/counts :label "Counts" :comp pages.counts/page}
    {:route "/screenshots" :page-name :page/screenshots :label "Screenshots" :comp pages.screenshots/page}
-   {:route "/workspaces" :page-name :page/workspaces :label "Workspaces" :comp pages.workspaces/widget}
-   {:route "/wallpapers" :page-name :page/wallpapers :label "Wallpapers" :comp pages.wallpapers/widget}
+   {:route "/workspaces" :page-name :page/workspaces :label "Workspaces" :comp pages.workspaces/page}
+   {:route "/wallpapers" :page-name :page/wallpapers :label "Wallpapers" :comp pages.wallpapers/page}
    {:route "/garden" :page-name :page/garden :label "Garden" :comp pages.garden/page}
    {:route "/posts" :page-name :page/posts :label "Posts" :comp pages.posts/page}])
 
@@ -49,15 +49,15 @@
        (map (fn [{:keys [route page-name]}] [route {:name page-name}]))
        (into [])))
 
-(defn view []
+(defn view [opts]
   (let [page-name          (-> router/*match* uix/context :data :name)
         by-page-name       (w/index-by :page-name route-defs)
         {:keys [comp comp-only]
          :as   _route-def} (by-page-name page-name)]
     (if comp
       (if comp-only
-        [comp]
-        [pages/page route-defs comp])
+        [comp opts]
+        [pages/page route-defs comp opts])
       [pages/page])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

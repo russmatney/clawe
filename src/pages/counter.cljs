@@ -4,7 +4,7 @@
    [wing.uix.router :as router]
    [components.debug]))
 
-(defn page []
+(defn page [_opts]
   (let [page-name     (-> router/*match* uix/context :data :name)
         query-params  (router/use-route-parameters [:query])
         the-count     (router/use-route-parameters [:query :count])

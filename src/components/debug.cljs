@@ -70,7 +70,6 @@
      [:div
       {:class ["pb-4"]}
       (when label
-        (println "label" label)
         [:span.text-sm
          {:class    ["hover:text-city-pink-400" "cursor-pointer"]
           :on-click toggle-show-raw-metadata}

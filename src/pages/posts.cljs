@@ -45,7 +45,7 @@
                   "font-mono"]
        :on-click (fn [_]
                    (let [res (hooks.garden/open-in-emacs item)]
-                     (println res)
+                     (println "open-in-emacs res" res)
                      res))}
       (s-shortener source-file)]
 
@@ -68,7 +68,7 @@
             (< hours-ago 24) (str hours-ago " hour(s) ago")
             :else            (str days-ago " day(s) ago")))])]))
 
-(defn page []
+(defn page [_opts]
   (let [{:keys [items]}   (hooks.garden/use-garden)
         default-selection (->> items
                                ;; TODO read from slugs in query params

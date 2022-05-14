@@ -348,7 +348,7 @@
 ;; event page
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn event-page []
+(defn page [_opts]
   (let [{:keys [items]} (hooks.events/use-events)
         items           (->> items (filter :event/timestamp))
         all-item-dates  (->> items

@@ -129,7 +129,7 @@
 ;; page
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn page []
+(defn page [_opts]
   (let [{:keys [items db-todos]} (hooks.todos/use-todos)
 
         selected        (uix/state (first items))

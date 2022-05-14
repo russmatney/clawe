@@ -4,10 +4,8 @@
    [hooks.count]
    [components.count]))
 
-(defn page []
-  (let [{:keys [items count]} (hooks.count/use-counts)]
-    (println "Count: " count)
-    (when (seq items) (println (last items)))
+(defn page [_opts]
+  (let [{:keys [items _count]} (hooks.count/use-counts)]
     ;; TODO think about a :count/break or hydra-ish api for splitting here
     ;; TODO pull tags into suggestions for hide/show filters
     [:div

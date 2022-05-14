@@ -3,7 +3,7 @@
    [hooks.wallpapers]
    [components.wallpaper]))
 
-(defn widget []
+(defn page [_opts]
   (let [{:keys [items]} (hooks.wallpapers/use-wallpapers)]
     [:div
      {:class ["flex" "flex-row" "flex-wrap"

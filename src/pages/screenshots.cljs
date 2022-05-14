@@ -3,7 +3,7 @@
    [hooks.screenshots]
    [components.screenshot :as screenshot]))
 
-(defn page []
+(defn page [_opts]
   (let [{:keys [items]} (hooks.screenshots/use-screenshots)]
     [:div
      {:class ["flex" "flex-row" "flex-wrap" "flex-auto"

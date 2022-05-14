@@ -4,7 +4,7 @@
    [components.garden]
    [uix.core.alpha :as uix]))
 
-(defn page []
+(defn page [_opts]
   (let [{:keys [items]} (hooks.garden/use-garden)
         selected        (uix/state (first items)) ]
     [:div
