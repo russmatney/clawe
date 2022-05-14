@@ -11,7 +11,23 @@
 (defn is-git-dir? [dir]
   (and
     (fs/exists? (str dir "/.git"))
-    (not (string/includes? dir ".emacs.d"))))
+    (not
+      (or
+        (string/includes? dir ".emacs.d")
+        (string/includes? dir "bb-filewatcher-example")
+        (string/includes? dir "some-proj")
+        (string/includes? dir "canvas-toying")
+        (string/includes? dir "clojuregodottest")
+        (string/includes? dir "suit")
+        (string/includes? dir "re-dnd")
+        (string/includes? dir "find-deps")
+        (string/includes? dir "shadow-electron-starter")
+        (string/includes? dir "bb-task-completion")
+        ))
+    (or
+      (string/includes? dir "russmatney")
+      (string/includes? dir "todo")
+      (string/includes? dir "teknql"))))
 
 (defn git-dirs
   "Fetches git-dirs for all :workspace/directories in the db"
@@ -30,10 +46,17 @@
   (count (git-dirs)))
 
 (defn commits-for-dir [opts]
-  (let [commits      (r.git/commits-for-dir opts)
-        commit-stats (r.git/commit-stats-for-dir opts)]
+  (println "commits-for-dir" opts)
+  (let [commits
+        (try
+          (r.git/commits-for-dir opts)
+          (catch Exception _e nil))
+        commit-stats
+        (try
+          (r.git/commit-stats-for-dir opts)
+          (catch Exception _e nil))]
     ;; these should have the same :git.commit/hash, so will merge in the db
-    (->> (concat commits commit-stats)
+    (->> (concat [] commits commit-stats)
          (remove nil?))))
 
 (comment
@@ -49,11 +72,12 @@
      (->>
        (git-dirs)
        (map #(commits-for-dir {:dir % :n n}))
+       (remove nil?)
        (apply concat)))))
 
 (comment
   (count
-    (commits-for-git-dirs {:n 10}))
+    (commits-for-git-dirs {:n 15}))
 
   (->>
     (git-dirs)
@@ -93,12 +117,14 @@
 (defn sync-commits-to-db
   ([] (sync-commits-to-db {}))
   ([opts]
-   (->> (commits-for-git-dirs opts)
-        (map with-db-git)
-        db/transact)))
+   (doall
+     (->> (commits-for-git-dirs opts)
+          (map with-db-git)
+          (map db/transact)))))
 
 (comment
-  (sync-commits-to-db {:n 15})
+
+  (sync-commits-to-db {:n 10})
 
   (->>
     (commits-for-git-dirs)

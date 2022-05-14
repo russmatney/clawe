@@ -387,7 +387,7 @@
         edn/read-string
         (->> (map #(assoc % :git.commit/directory dir))))
       (catch Exception e
-        (println "Error fetching commits for dir" opts)
+        (println "Error fetching commits for dir" dir opts)
         (println e)
         nil))))
 
@@ -400,9 +400,9 @@
 
 (defn ->stats-header [[commit author date]]
   {:git.commit/hash         (-> commit (string/split #" ") second)
-   :git.commit/author-name  (some-> (re-find #"Author: (.+) <" author) second)
-   :git.commit/author-email (some-> (re-find #"<(.+)>" author) second)
-   :git.commit/author-date  (some-> (re-find #"Date: (.+)$" date) second string/trim)})
+   :git.commit/author-name  (when author (some-> (re-find #"Author: (.+) <" author) second))
+   :git.commit/author-email (when author (some-> (re-find #"<(.+)>" author) second))
+   :git.commit/author-date  (when date (some-> (re-find #"Date: (.+)$" date) second string/trim))})
 
 (defn safe-read-string
   [str message raw]
@@ -415,28 +415,29 @@
 
 (defn ->stat-line
   "TODO: parse filenames, renamed files, symlinks, etc"
-  [stat-line]
-  (let [[added removed file-line] (string/split stat-line #"\t")
-        no-added-diff             (#{"-"} added)
-        no-removed-diff           (#{"-"} removed)
+  ([stat-line] (->stat-line nil stat-line))
+  ([dir stat-line]
+   (let [[added removed file-line] (string/split stat-line #"\t")
+         no-added-diff             (#{"-"} added)
+         no-removed-diff           (#{"-"} removed)
 
-        added   (when-not no-added-diff
-                  (safe-read-string
-                    added "Failed to read added str in ->stat-line"
-                    stat-line))
-        removed (when-not no-removed-diff
-                  (safe-read-string
-                    removed "Failed to read removed str in ->stat-line"
-                    stat-line))
+         added   (when-not no-added-diff
+                   (safe-read-string
+                     added (str "Failed to read added str in ->stat-line " dir)
+                     stat-line))
+         removed (when-not no-removed-diff
+                   (safe-read-string
+                     removed (str "Failed to read removed str in ->stat-line " dir)
+                     stat-line))
 
-        is-rename (if (re-seq #"\{" file-line) true false)]
-    (cond->
-        {:git.stat/raw-file-line file-line
-         :git.stat/is-rename    is-rename
-         :git.stat/no-diff (boolean (or no-added-diff no-removed-diff))}
+         is-rename (if (re-seq #"\{" file-line) true false)]
+     (cond->
+         {:git.stat/raw-file-line file-line
+          :git.stat/is-rename    is-rename
+          :git.stat/no-diff (boolean (or no-added-diff no-removed-diff))}
 
-      added   (assoc :git.stat/lines-added added)
-      removed (assoc :git.stat/lines-removed removed))))
+       added   (assoc :git.stat/lines-added added)
+       removed (assoc :git.stat/lines-removed removed)))))
 
 (comment
   (->stat-line "3\t5\tsrc/doctor/ui/views/screenshots.cljs")
@@ -444,17 +445,19 @@
   (->stat-line "-\t-\tassets/robot_sheet.png")
   )
 
-(defn ->stats [stat-lines]
-  (try
-    (let [parsed-stat-lines (->> stat-lines (map ->stat-line) (remove nil?))]
-      {:git.commit/lines-added   (->> parsed-stat-lines (map :git.stat/lines-added) (remove nil?) (reduce +))
-       :git.commit/lines-removed (->> parsed-stat-lines (map :git.stat/lines-removed) (remove nil?) (reduce +))
-       :git.commit/files-renamed (->> parsed-stat-lines (filter :git.stat/is-rename?) count)
-       :git.commit/stat-lines    parsed-stat-lines})
-    (catch Exception e
-      (println "Failed to parse ->stats with lines" stat-lines)
-      (println e)
-      nil)))
+(defn ->stats
+  ([stat-lines] (->stats nil stat-lines))
+  ([dir stat-lines]
+   (try
+     (let [parsed-stat-lines (->> stat-lines (map (partial ->stat-line dir)) (remove nil?))]
+       {:git.commit/lines-added   (->> parsed-stat-lines (map :git.stat/lines-added) (remove nil?) (reduce +))
+        :git.commit/lines-removed (->> parsed-stat-lines (map :git.stat/lines-removed) (remove nil?) (reduce +))
+        :git.commit/files-renamed (->> parsed-stat-lines (filter :git.stat/is-rename?) count)
+        :git.commit/stat-lines    parsed-stat-lines})
+     (catch Exception e
+       (println "Failed to parse ->stats with lines" dir stat-lines)
+       (println e)
+       nil))))
 
 (comment
   (->stats '("3\t5\tsrc/doctor/ui/views/screenshots.cljs"
@@ -482,10 +485,11 @@
   "Parse `git log --numstat` lines.
   We don't care for commit message here - that is handled in `commits-for-dir`.
   "
-  [[header _msg stats]]
-  (merge
-    (->stats-header header)
-    (->stats stats)))
+  ([x] (->stats-commit nil x))
+  ([dir [header _msg stats]]
+   (merge
+     (->stats-header header)
+     (->stats dir stats))))
 
 (defn commit-stats-for-dir
   "Retuns metadata for `n` commits at the specified `dir`.
@@ -502,9 +506,9 @@
         process/check :out
         string/split-lines
         util/partition-by-newlines
-        (->> (partition 3) (map ->stats-commit)))
+        (->> (partition 3) (map (partial ->stats-commit dir))))
       (catch Exception e
-        (println "Error fetching commits for dir" opts)
+        (println "Error fetching commit stats for dir" dir opts)
         (println e)
         nil))))
 
