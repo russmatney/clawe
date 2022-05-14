@@ -63,19 +63,21 @@
 
 (defn raw-metadata
   ([metadata] [raw-metadata nil metadata])
-  ([{:keys [label initial-show?] :as opts} metadata]
-   (let [label                    (or label "Toggle raw metadata")
-         show-raw-metadata?       (uix/state initial-show?)
-         toggle-show-raw-metadata #(swap! show-raw-metadata? (comp boolean not))]
+  ([{:keys [label initial-show? initial-show] :as opts} metadata]
+   (let [label                    (if (= false label) nil (or label "Toggle raw metadata"))
+         show-raw-metadata        (uix/state (or initial-show? initial-show))
+         toggle-show-raw-metadata #(swap! show-raw-metadata (comp boolean not))]
      [:div
       {:class ["pb-4"]}
-      [:span.text-sm
-       {:class    ["hover:text-city-pink-400" "cursor-pointer"]
-        :on-click toggle-show-raw-metadata}
-       label]
+      (when label
+        (println "label" label)
+        [:span.text-sm
+         {:class    ["hover:text-city-pink-400" "cursor-pointer"]
+          :on-click toggle-show-raw-metadata}
+         label])
 
-      ;; TODO consider a modal?
-      (when @show-raw-metadata?
+      ;; TODO consider a modal, or floating/popover support
+      (when @show-raw-metadata
         [:div
          {:class ["mt-auto"]}
          (when metadata
