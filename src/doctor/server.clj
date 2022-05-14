@@ -8,15 +8,16 @@
    [ring.adapter.undertow :as undertow]
    [ring.adapter.undertow.websocket :as undertow.ws]
 
+   [api.events]
+   [api.repos]
+   [api.screenshots]
+   [api.topbar]
+   [api.todos]
+   [api.wallpapers]
+   [api.workspaces]
    [dates.transit-time-literals :as ttl]
-   [doctor.config :as config]
-   [doctor.api :as api]
-   [api.events :as events]
-   [api.topbar :as topbar]
-   [api.todos :as todos]
-   [api.screenshots :as screenshots]
-   [api.wallpapers :as wallpapers]
-   [api.workspaces :as workspaces]
+   [doctor.config]
+   [doctor.api]
    [ralphie.notify :as notify]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -58,14 +59,15 @@
 (defsys *server*
   "Doctor webserver"
   :extra-deps
-  [workspaces/*workspaces-stream*
-   topbar/*topbar-metadata-stream*
-   todos/*todos-stream*
-   screenshots/*screenshots-stream*
-   events/*events-stream*
-   wallpapers/*wallpapers-stream*]
+  [api.workspaces/*workspaces-stream*
+   api.topbar/*topbar-metadata-stream*
+   api.todos/*todos-stream*
+   api.screenshots/*screenshots-stream*
+   api.events/*events-stream*
+   api.repos/*repos-stream*
+   api.wallpapers/*wallpapers-stream*]
   :start
-  (let [port (:server/port config/*config*)]
+  (let [port (:server/port doctor.config/*config*)]
     (log/info "Starting *server* on port" port)
     (notify/notify {:notify/subject "Started doctor backend server!"
                     :notify/id      :doctor/server})
@@ -87,7 +89,7 @@
                            (:ws-channel %))}}
 
           ;; poor man's router
-          :else (api/route req)))
+          :else (doctor.api/route req)))
       {:port             port
        :session-manager? false
        :websocket?       true}))

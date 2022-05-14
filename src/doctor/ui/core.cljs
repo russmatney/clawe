@@ -24,6 +24,7 @@
    [pages.counts]
    [pages.garden]
    [pages.posts]
+   [pages.repos]
    [doctor.ui.views.topbar :as views.topbar]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -42,7 +43,8 @@
    {:route "/workspaces" :page-name :page/workspaces :label "Workspaces" :comp pages.workspaces/page}
    {:route "/wallpapers" :page-name :page/wallpapers :label "Wallpapers" :comp pages.wallpapers/page}
    {:route "/garden" :page-name :page/garden :label "Garden" :comp pages.garden/page}
-   {:route "/posts" :page-name :page/posts :label "Posts" :comp pages.posts/page}])
+   {:route "/posts" :page-name :page/posts :label "Posts" :comp pages.posts/page}
+   {:route "/repos" :page-name :page/repos :label "Repos" :comp pages.repos/page}])
 
 (def routes
   (->> route-defs
