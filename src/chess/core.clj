@@ -149,7 +149,7 @@
   (def --user-games
     (fetch-games {:opening true
                   :evals   true
-                  :max     20
+                  :max     5
                   }))
 
   (fetch-games)

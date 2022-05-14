@@ -23,7 +23,7 @@
     item))
 
 (defn ->sorted-list
-  ([get-items-f] (->sorted-list {} ->sorted-list))
+  ([get-items-f] (->sorted-list {} get-items-f))
   ([{:keys [take-n]} get-items-f]
    (let [take-n   (or take-n 45)
          midnight (-> (t/tomorrow) (t/at (t/midnight)) (t/zoned-date-time))]
@@ -38,14 +38,11 @@
   (->>
     (chess.db/fetch-db-games)
     (take 3)
-    (map item/->time-string)
-    )
-
+    (map item/->time-string))
 
   (->>
     (->sorted-list chess.db/fetch-db-games)
-    (take 3)
-    ))
+    (take 3)))
 
 (defn recent-events []
   (->> (concat (->sorted-list c.screenshots/all-screenshots)

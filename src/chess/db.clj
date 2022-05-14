@@ -65,12 +65,18 @@
 (comment
   (sync-games-to-db (games-since-last-month))
 
+  (->>
+    (games-since-last-month)
+    (take 3)
+    ;; (sync-games-to-db)
+    )
+
   (count
     (fetch-db-games))
 
   (->>
     (fetch-db-games)
-    (take 1)
+    (take 3)
     first)
 
   (chess/clear-cache))

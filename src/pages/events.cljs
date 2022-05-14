@@ -1,29 +1,21 @@
 (ns pages.events
   (:require
+   [clojure.string :as string]
    [tick.core :as t]
-   [hooks.events]
-   [components.screenshot]
-   [components.todo]
-   [components.debug]
-   [components.git]
-   [components.timeline]
-   [keybind.core :as key]
    [uix.core.alpha :as uix]
    [wing.core :as w]
-   [clojure.string :as string]))
+
+   [hooks.events]
+   [components.debug]
+   [components.chess]
+   [components.git]
+   [components.screenshot]
+   [components.timeline]
+   [components.todo]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; pure event helpers
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn ->date-str [_opts event]
-  (when (:event/timestamp event)
-    (t/format "MMM dd h:mm a" (:event/timestamp event))))
-
-(comment
-  (t/between
-    (t/now)
-    (t/>> (t/now) (t/new-duration 10 :minutes))))
 
 (defn events-for-dates [dates events]
   (let [on-at-least-one-date (->> dates (map t/date) (into #{}))]
@@ -33,80 +25,6 @@
            (comp on-at-least-one-date t/date :event/timestamp)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; v1 event comps and list
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn event-comp [{:keys [cursor-hovered?
-                          cursor-elem-ref]
-                   :as   opts}
-                  event]
-  [:div
-   {:class ["px-4" "pt-4" "pb-16" "flex-col"
-            "hover:bg-yo-blue-600"
-            (when cursor-hovered? "bg-yo-blue-500")]
-    :ref   cursor-elem-ref}
-   (when-let [ts (:event/timestamp event)]
-     [:div
-      {:class ["text-2xl" "pb-4"]}
-      (if-let [time-str (->date-str opts event)]
-        time-str
-        ts)])
-
-   (when (:file/web-asset-path event)
-     [:div
-      {:class ["w-3/5"]}
-      [components.screenshot/screenshot-comp opts event]])
-
-   (when (:git.commit/hash event)
-     [:div
-      [components.git/commit-comp opts event]])
-
-   (when (:org/name event)
-     [:div
-      ;; TODO non-todo version of org-item
-      [components.todo/todo opts event]])
-
-   [:div
-    {:class ["flex" "pt-4"]}
-    [components.debug/raw-metadata
-     (-> opts
-         (assoc :label "Event metadata")
-         (assoc :initial-show? false)
-         (assoc :exclude-key #{:git.commit/body
-                               :git.commit/full-message})) event]]])
-
-(defn basic-event-list
-  [{:keys [cursor-idx cursor-elem-ref]} events]
-  (for [[i evt] (->> events (map-indexed vector))]
-    (let [cursor-hovered? (when cursor-idx (#{i} @cursor-idx))]
-      ^{:key i}
-      [event-comp
-       {:cursor-hovered? cursor-hovered?
-        :cursor-elem-ref (when cursor-hovered? cursor-elem-ref)}
-       evt])))
-
-(defn use-keyboard-cursor [{:keys [cursor-idx max-idx min-idx
-                                   on-up on-down]}]
-  (key/bind! "j" ::cursor-down
-             (fn [_ev]
-               (swap! cursor-idx (fn [v]
-                                   (let [new-v (inc v)]
-                                     (if (> new-v max-idx)
-                                       max-idx
-                                       new-v))))
-               (on-up @cursor-idx)))
-  (key/bind! "k" ::cursor-up
-             (fn [_ev]
-               (swap! cursor-idx
-                      (fn [v]
-                        (let [new-v (dec v)]
-                          (if (< new-v min-idx)
-                            min-idx new-v))))
-               (on-down @cursor-idx)))
-  nil)
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; basic event counts by type
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -114,7 +32,8 @@
   (let [count-by (fn [f] (->> events (filter f) count))]
     {:screenshot-count (count-by :screenshot/time-string)
      :commit-count     (count-by :git.commit/hash)
-     :org-note-count   (count-by :org/title)}))
+     :org-note-count   (count-by :org/title)
+     :chess-game-count (count-by :lichess.game/id)}))
 
 (defn event-count-comp [{:keys [label count]}]
   (when (and count (> count 0))
@@ -126,7 +45,8 @@
   (let
       [{:keys [screenshot-count
                commit-count
-               org-note-count]}
+               org-note-count
+               chess-game-count]}
        (event-counts events)]
     [:div
      {:class ["flex" "flex-col" "px-4"]}
@@ -138,7 +58,10 @@
       [event-count-comp {:label "commits" :count commit-count}]]
      [:span
       {:class ["whitespace-nowrap"]}
-      [event-count-comp {:label "org-notes" :count org-note-count}]]]))
+      [event-count-comp {:label "org-notes" :count org-note-count}]]
+     [:span
+      {:class ["whitespace-nowrap"]}
+      [event-count-comp {:label "chess games" :count chess-game-count}]]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; event-timeline-popover
@@ -231,8 +154,7 @@
        (map (fn [t] {:event/timestamp t}))
        (grouped-event-data {:idle-time (t/new-duration 2 :hours)})
        :grouped-events
-       (map (comp :start first))
-       )
+       (map (comp :start first)))
 
   (defn new-range [next]
     (let [ts (:event/timestamp next)]
@@ -276,10 +198,13 @@
 
 (defn event-cluster [opts events]
   (let [screenshots (->> events (filter :file/web-asset-path))
-        commits     (->> events (filter :git.commit/hash))]
+        commits     (->> events (filter :git.commit/hash))
+        chess-games (->> events (filter :lichess.game/id))
+        _org-notes  (->> events (filter :org/title))]
     [:div
      {:class ["flex" "flex-row" "flex-wrap"]}
 
+     [components.chess/cluster opts chess-games]
      [components.screenshot/cluster opts screenshots]
      [components.git/commit-list opts commits]]))
 
@@ -325,23 +250,12 @@
                              (map t/date)
                              (into #{}))
 
-        cursor-idx      (uix/state 0)
-        cursor-elem-ref (uix/ref)
-        selected-dates  (uix/state #{})
+        selected-dates (uix/state #{})
 
         events      (cond->> items
                       (seq @selected-dates)
                       (events-for-dates @selected-dates))
-        event-count (count events)
-
-        on-cursor-up-or-down (fn [_]
-                               (when @cursor-elem-ref
-                                 (.scrollIntoView @cursor-elem-ref)))]
-    (use-keyboard-cursor {:cursor-idx cursor-idx
-                          :max-idx    (dec event-count)
-                          :min-idx    0
-                          :on-up      on-cursor-up-or-down
-                          :on-down    on-cursor-up-or-down})
+        event-count (count events)]
 
     [:div
      {:class ["flex" "flex-col" "flex-auto"
@@ -377,7 +291,4 @@
 
       [event-count-list events]]
 
-     [event-clusters {} events]
-
-     #_[basic-event-list {:cursor-idx      cursor-idx
-                          :cursor-elem-ref cursor-elem-ref} events]]))
+     [event-clusters {} events]]))
