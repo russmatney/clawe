@@ -13,8 +13,18 @@
 (def defthing-db-filepath (zsh/expand "~/russmatney/clawe/defthingdb"))
 
 (def db-schema
-  {:topbar/id {:db/valueType :db.type/uuid
-               :db/unique    :db.unique/identity}})
+  {:topbar/id
+   {:db/valueType :db.type/uuid
+    :db/unique    :db.unique/identity}
+   :workspace/title
+   {:db/valueType :db.type/string
+    :db/unique    :db.unique/identity}
+   :git.commit/hash
+   {:db/valueType :db.type/string
+    :db/unique    :db.unique/identity}
+   :git.repo/directory
+   {:db/valueType :db.type/string
+    :db/unique    :db.unique/identity}})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Dump

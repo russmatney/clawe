@@ -66,7 +66,7 @@
         '[:find [(pull ?e [*])]
           :in $ ?n
           :where
-          [?e :name ?n]
+          [?e :workspace/title ?n]
           [?e :type :clawe/workspaces]]
         n)
       first)))
@@ -77,39 +77,34 @@
 (defn latest-db-workspaces
   "Lists the latest entity for each :workspace/title in the db."
   []
-  (let [wsps (->>
-               (db/query
-                 '[:find (pull ?e [*])
-                   :where
-                   [?e :workspace/title ?workspace-title]])
-               (map first))]
-    ;; TODO refactor into a datalog constraint
-    (->> wsps
-         (group-by :workspace/title)
-         (map (fn [[_k vs]]
-                (->> vs
-                     (sort-by :workspace/updated-at)
-                     first))))))
+  (->>
+    (db/query
+      '[:find (pull ?e [*])
+        :where
+        [?e :workspace/title ?workspace-title]])
+    (map first)))
 
 (comment
   (count
-    (latest-db-workspaces)))
+    (latest-db-workspaces))
+
+  (->>
+    (db/query
+      '[:find (pull ?e [*])
+        :where
+        [?e :workspace/title ?workspace-title]])
+    )
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Sync/write workspaces to db
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn workspace-for-tx
-  "Prepares the workspace to be upserted.
-  If there is no `:db/id` on the passed workspace,
-  a lookup is attempted to find one."
+  "Prepares the workspace to be upserted."
   [w]
-  (let [db-id (:db/id w)
-        db-id (when-not db-id (:db/id (get-db-workspace w)))]
-
-    (cond->
-        (assoc w :workspace/updated-at (System/currentTimeMillis))
-      db-id (assoc :db/id db-id))))
+  (-> w
+      (assoc :workspace/updated-at (System/currentTimeMillis))))
 
 (defn sync-workspaces-to-db
   "Adds the passed workspaces to the db.
@@ -129,9 +124,11 @@
      (db/transact w-txs))))
 
 (comment
+  (sync-workspaces-to-db)
+
   (def w
     (->> (latest-db-workspaces)
-         (filter (comp #{"test-workspace"} :name))
+         (filter (comp #{"ink"} :name))
          first))
 
   (sync-workspaces-to-db
