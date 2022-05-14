@@ -24,7 +24,7 @@
          "text-city-pink-100"
          "text-xxl"
          "font-nes"]}
-       (for [[i [page-name label]]
+       (for [[i {:keys [page-name label]}]
              (->> menu-opts (map-indexed vector))]
          [:a {:key  i
               :class

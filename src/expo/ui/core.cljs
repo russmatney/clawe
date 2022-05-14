@@ -11,29 +11,31 @@
    [tick.locale-en-us]
 
    [dates.transit-time-literals :as ttl]
+   [pages.core :as pages]
    [pages.counts]
    [pages.garden]
    [pages.posts]))
 
+(def route-defs
+  [{:route "/" :page-name :page/home :label "Home" :comp pages.counts/page}
+   {:route "/garden" :page-name :page/garden :label "Garden" :comp pages.garden/page}
+   {:route "/posts" :page-name :page/posts :label "Posts" :comp pages.posts/page}])
+
 (def routes
-  [["/" {:name :page/root}]
-   ["/garden" {:name :page/garden}]
-   ["/posts" {:name :page/posts}]])
+  (->> route-defs
+       (map (fn [{:keys [route page-name]}] [route {:name page-name}]))
+       (into [])))
 
-(defn view
-  []
-  (let [page-name (-> router/*match* uix/context :data :name)]
-    [:div
-     {:class ["bg-yo-blue-500" "min-h-screen"]}
-     [:div
-      {:class ["font-nes" "text-lg" "p-4" "text-white"]}
-      "Expo"]
-
-     (case page-name
-       :page/root   [pages.counts/page]
-       :page/garden [pages.garden/page]
-       :page/posts  [pages.posts/page]
-       [:div "hi"])]))
+(defn view []
+  (let [page-name          (-> router/*match* uix/context :data :name)
+        by-page-name       (w/index-by :page-name route-defs)
+        {:keys [comp comp-only]
+         :as   _route-def} (by-page-name page-name)]
+    (if comp
+      (if comp-only
+        [comp]
+        [pages/page route-defs comp])
+      [pages/page])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;

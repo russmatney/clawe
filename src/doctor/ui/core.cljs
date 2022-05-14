@@ -9,11 +9,12 @@
    [tick.locale-en-us]
    [uix.core.alpha :as uix]
    [uix.dom.alpha :as uix.dom]
+   [wing.core :as w]
    [wing.uix.router :as router]
 
    [components.icons]
    [components.debug]
-   [pages.core :as page]
+   [pages.core :as pages]
    [pages.todos]
    [pages.events]
    [pages.screenshots]
@@ -29,50 +30,35 @@
 ;; routes, home
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def routes
-  [["/" {:name :page/home}]
-   ["/todo" {:name :page/todos}]
-   ["/events" {:name :page/events}]
-   ["/topbar" {:name :page/topbar}]
-   ["/topbar-bg" {:name :page/topbar-bg}]
-   ["/counter" {:name :page/counter}]
-   ["/counts" {:name :page/counts}]
-   ["/screenshots" {:name :page/screenshots}]
-   ["/workspaces" {:name :page/workspaces}]
-   ["/wallpapers" {:name :page/wallpapers}]
-   ["/garden" {:name :page/garden}]
-   ["/posts" {:name :page/posts}]])
+(def route-defs
+  [{:route "/" :page-name :page/home :label "Home" :comp pages.events/event-page}
+   {:route "/todo" :page-name :page/todos :label "Todos" :comp pages.todos/page}
+   {:route "/events" :page-name :page/events :label "Events" :comp pages.events/event-page}
+   {:route "/topbar" :page-name :page/topbar :label "Top Bar" :comp views.topbar/widget :comp-only true}
+   ;; {:route "/topbarbg":page-name :page/topbar-bg :label "Top Bar BG" :comp views.topbar/widget}
+   {:route "/counter" :page-name :page/counter :label "Counter" :comp pages.counter/page}
+   {:route "/counts" :page-name :page/counts :label "Counts" :comp pages.counts/page}
+   {:route "/screenshots" :page-name :page/screenshots :label "Screenshots" :comp pages.screenshots/page}
+   {:route "/workspaces" :page-name :page/workspaces :label "Workspaces" :comp pages.workspaces/widget}
+   {:route "/wallpapers" :page-name :page/wallpapers :label "Wallpapers" :comp pages.wallpapers/widget}
+   {:route "/garden" :page-name :page/garden :label "Garden" :comp pages.garden/page}
+   {:route "/posts" :page-name :page/posts :label "Posts" :comp pages.posts/page}])
 
-(def menu-opts
-  [[:page/home "Home"]
-   [:page/todos "Todos"]
-   [:page/events "Events"]
-   [:page/topbar "Top Bar"]
-   [:page/topbar-bg "Top Bar BG"]
-   [:page/counter "Counter"]
-   [:page/counts "Counts"]
-   [:page/garden "Garden"]
-   [:page/posts "Posts"]
-   [:page/wallpapers "Wallpapers"]
-   [:page/workspaces "Workspaces"]
-   [:page/screenshots "Screenshots"]])
+(def routes
+  (->> route-defs
+       (map (fn [{:keys [route page-name]}] [route {:name page-name}]))
+       (into [])))
 
 (defn view []
-  (let [page-name (-> router/*match* uix/context :data :name)]
-    (case page-name
-      :page/topbar      [views.topbar/widget]
-      :page/home        [page/page menu-opts pages.events/event-page]
-      :page/todos       [page/page menu-opts pages.todos/page]
-      :page/events      [page/page menu-opts pages.events/event-page]
-      :page/topbar-bg   [page/page menu-opts views.topbar/widget]
-      :page/counter     [page/page menu-opts pages.counter/page]
-      :page/counts      [page/page menu-opts pages.counts/page]
-      :page/garden      [page/page menu-opts pages.garden/page]
-      :page/posts       [page/page menu-opts pages.posts/page]
-      :page/screenshots [page/page menu-opts pages.screenshots/page]
-      :page/wallpapers  [page/page menu-opts pages.wallpapers/widget]
-      :page/workspaces  [page/page menu-opts pages.workspaces/widget]
-      [page/page])))
+  (let [page-name          (-> router/*match* uix/context :data :name)
+        by-page-name       (w/index-by :page-name route-defs)
+        {:keys [comp comp-only]
+         :as   _route-def} (by-page-name page-name)]
+    (if comp
+      (if comp-only
+        [comp]
+        [pages/page route-defs comp])
+      [pages/page])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Websocket events
