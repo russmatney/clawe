@@ -79,20 +79,17 @@
 ;; Fetch lichess games
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(comment
-  (w/ns-keys "lichess.game")
-  (->>
-    --user-games
-    (take 1)
-    (map #(w/ns-keys "lichess.game" %))
-    )
-  )
-
 (defn parse-game [gm]
-  (let [{:keys [pgn id players opening clock]} gm]
-    (-> (w/ns-keys "lichess.game" gm)
+  (let [{:keys [id players opening clock createdAt lastMoveAt]} gm]
+    (-> gm
+        (dissoc :players :opening :clock :createdAt :lastMoveAt)
+        (#(w/ns-keys "lichess.game" %))
+
         (assoc
           :lichess.game/url (str "https://lichess.org/" id)
+
+          :lichess.game/created-at createdAt
+          :lichess.game/last-move-at lastMoveAt
 
           :lichess.game/opening-name (-> opening :name)
           :lichess.game/opening-eco (-> opening :eco)
@@ -109,10 +106,9 @@
           :lichess.game/clock-increment (-> clock :increment)
           :lichess.game/clock-total-time (-> clock :totalTime)
 
-          ;; TODO remove this usage
+          ;; TODO remove this usage when other consumers are updated
           :lichess/id id
-          :lichess/url (str "https://lichess.org/" id)
-          ))))
+          :lichess/url (str "https://lichess.org/" id)))))
 
 (defn parse-lichess-json [raw]
   (-> raw (string/split #"\n")

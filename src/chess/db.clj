@@ -50,7 +50,7 @@
 ;; fetch games from db
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn fetch-games []
+(defn fetch-db-games []
   (->>
     (db/query
       '[:find (pull ?e [*])
@@ -66,23 +66,11 @@
   (sync-games-to-db (games-since-last-month))
 
   (count
-    (fetch-games))
-
-  (def --user-games
-    (chess/fetch-games
-      {:opening true
-       :evals   true
-       :since   (a-month-ago)}))
-
-  (count --user-games)
+    (fetch-db-games))
 
   (->>
-    --user-games
+    (fetch-db-games)
     (take 1)
-    (map #(w/ns-keys "lichess.game" %))
-    )
+    first)
 
-  (inst-ms (t/inst (t/at (t/yesterday) (t/midnight))))
-
-  (chess/clear-cache)
-  )
+  (chess/clear-cache))

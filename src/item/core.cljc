@@ -7,7 +7,9 @@
     :org/scheduled
     :org/deadline
     :org.prop/archive-time
-    :org.prop/created-at})
+    :org.prop/created-at
+    :lichess.game/last-move-at
+    :lichess.game/created-at})
 
 (defn ->time-string [item]
   ((apply some-fn
