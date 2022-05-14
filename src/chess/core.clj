@@ -80,13 +80,16 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn parse-game [gm]
-  (let [{:keys [id players opening clock createdAt lastMoveAt]} gm]
+  (let [{:keys [id players opening clock createdAt lastMoveAt
+                analysis]} gm]
     (-> gm
         (dissoc :players :opening :clock :createdAt :lastMoveAt)
         (#(w/ns-keys "lichess.game" %))
 
         (assoc
           :lichess.game/url (str "https://lichess.org/" id)
+
+          :lichess.game/analysis (str analysis)
 
           :lichess.game/created-at createdAt
           :lichess.game/last-move-at lastMoveAt
@@ -122,7 +125,7 @@
 (defn fetch-games
   ([]
    (fetch-games nil))
-  ([{:keys [username max opening evals analysis since until]}]
+  ([{:keys [username max opening evals analysis since until literate]}]
    (println "Fetching lichess games")
    (when-not (sys/running? `*lichess-env*)
      (sys/start! `*lichess-env*))
@@ -136,6 +139,7 @@
               (when since (str "&since=" since))
               (when until (str "&until=" until))
               (when evals "&evals=true")
+              (when literate "&literate=true")
               ;; note, analysis is a filter, not a request for more metadata
               (when analysis "&analysis=true"))]
      (->

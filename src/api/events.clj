@@ -1,14 +1,15 @@
 (ns api.events
   (:require
+   [clojure.edn :as edn]
    [systemic.core :refer [defsys] :as sys]
    [manifold.stream :as s]
-   [clawe.screenshots :as c.screenshots]
    [tick.core :as t]
 
-   [chess.db]
-   [dates.tick :as dt]
    [api.todos :as todos]
+   [chess.db]
    [clawe.git :as c.git]
+   [clawe.screenshots :as c.screenshots]
+   [dates.tick :as dt]
    [item.core :as item]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -18,7 +19,12 @@
 (defn ->event [item]
   (if-let [time-str (item/->time-string item)]
     (if-let [parsed (dt/parse-time-string time-str)]
-      (-> item (assoc :event/timestamp parsed))
+      (cond-> item
+        true
+        (assoc :event/timestamp parsed)
+
+        (-> item :lichess.game/analysis seq)
+        (update :lichess.game/analysis edn/read-string))
       item)
     item))
 

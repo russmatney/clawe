@@ -3,7 +3,8 @@
    [chess.core :as chess]
    [tick.core :as t]
    [wing.core :as w]
-   [defthing.db :as db]))
+   [defthing.db :as db]
+   [clojure.edn :as edn]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; time helpers
@@ -28,9 +29,11 @@
 
 (defn games-since [{:keys [since]}]
   (chess/fetch-games
-    {:opening true
-     :evals   true
-     :since   since}))
+    {:opening  true
+     :evals    true
+     :literate true
+     :analysis true
+     :since    since}))
 
 (defn games-since-last-week []
   (games-since {:since (a-week-ago)}))
@@ -67,6 +70,12 @@
 
   (->>
     (games-since-last-month)
+    count
+    ;; (sync-games-to-db)
+    )
+
+  (->>
+    (games-since-last-month)
     (take 3)
     ;; (sync-games-to-db)
     )
@@ -76,7 +85,14 @@
 
   (->>
     (fetch-db-games)
+    (filter (comp seq :lichess.game/analysis))
+    (map (fn [g] (update g :lichess.game/analysis edn/read-string)))
+    (take 3))
+
+  (->>
+    (games-since-last-month)
     (take 3)
-    first)
+    ;; first
+    )
 
   (chess/clear-cache))

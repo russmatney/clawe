@@ -202,7 +202,7 @@
         chess-games (->> events (filter :lichess.game/id))
         _org-notes  (->> events (filter :org/title))]
     [:div
-     {:class ["flex" "flex-row" "flex-wrap"]}
+     {:class ["flex" "flex-col"]}
 
      [components.chess/cluster opts chess-games]
      [components.screenshot/cluster opts screenshots]

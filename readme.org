@@ -116,6 +116,12 @@ cp public/css/main-built.css expo/public/css/main-built.css
 mkdir expo/public/assets
 ln -s ~/Screenshots expo/public/assets/screenshots
 #+end_src
+** Chessground
+manually copied the exported css and images into the project:
+#+begin_src sh
+cp node_modules/react-chessground/dist/styles/chessground.css public/css/.
+cp -r node_modules/react-chessground/dist/images public/.
+#+end_src
 
 * tauri conf
 
