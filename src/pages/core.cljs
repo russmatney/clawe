@@ -35,6 +35,25 @@
                   ["text-city-pink-400" "text-bold"]))
               :href (router/href page-name)} label])])))
 
+(def page-error-boundary
+  "Not sure if this is working yet....
+  seems to not work for a simple `(throw \"yo\")` in a component body."
+  (uix/create-error-boundary
+    {:error->state (fn [e] {:error e})
+     :handle-catch (fn [e info]
+                     (println "error boundary handle-catch")
+                     (println "Error!" e info))}
+    (fn [state [child]]
+      (let [{:keys [error]} @state]
+        (if error
+          [:div
+           {:class ["bg-city-blue-900"
+                    "min-h-screen"
+                    "w-full"]}
+           [:span "i'm the ghost of an error boundary"]
+           [:pre error]]
+          child)))))
+
 (defn page
   "Accepts a main component and wraps it in page helpers with a menu."
   ([] [page default-page {}])
@@ -48,35 +67,36 @@
       {:class ["bg-city-blue-900"
                "min-h-screen"
                "w-full"]}
-      [:div {:class ["flex" "flex-row"
-                     "bg-city-brown-600"
-                     "shadow"
-                     "shadow-city-brown-900"]}
-       [:div
-        {:class ["font-nes"
-                 "pt-3" "pl-3"
-                 "text-city-pink-200"
-                 "capitalize"]}
-        current-page-name]
+      [page-error-boundary
+       [:div {:class ["flex" "flex-row"
+                      "bg-city-brown-600"
+                      "shadow"
+                      "shadow-city-brown-900"]}
+        [:div
+         {:class ["font-nes"
+                  "pt-3" "pl-3"
+                  "text-city-pink-200"
+                  "capitalize"]}
+         current-page-name]
 
-       [floating/popover
-        {:click             true
-         :offset            10
-         :anchor-comp-props {:class ["ml-auto"]}
-         :anchor-comp
-         [:div
-          {:class ["p-3" "text-city-pink-100"
-                   "cursor-pointer"
-                   "hover:text-city-pink-400"]}
-          [components.icons/icon-comp
-           {:text "Menu"
-            :icon octicons/list-unordered}]]
-         :popover-comp
-         [:div
-          {:class ["bg-city-blue-800"
-                   "shadow-lg"
-                   "shadow-city-pink-800"
-                   ]}
-          [menu menu-opts]]}]]
+        [floating/popover
+         {:click             true
+          :offset            10
+          :anchor-comp-props {:class ["ml-auto"]}
+          :anchor-comp
+          [:div
+           {:class ["p-3" "text-city-pink-100"
+                    "cursor-pointer"
+                    "hover:text-city-pink-400"]}
+           [components.icons/icon-comp
+            {:text "Menu"
+             :icon octicons/list-unordered}]]
+          :popover-comp
+          [:div
+           {:class ["bg-city-blue-800"
+                    "shadow-lg"
+                    "shadow-city-pink-800"
+                    ]}
+           [menu menu-opts]]}]]]
 
       (when main [main page-opts])])))
