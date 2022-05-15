@@ -3,10 +3,10 @@
 
 (require '[clojure.test :as t]
          '[babashka.process :as p]
-         '[babashka.classpath :as cp]
-         )
+         '[babashka.classpath :as cp])
 
 (cp/add-classpath "src:test")
+(cp/add-classpath "../../teknql/wing/src")
 
 (def is-mac?
   (let [ostype
