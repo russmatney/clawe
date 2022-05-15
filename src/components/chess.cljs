@@ -145,53 +145,69 @@
                               (let [analysis (nth (or analysis []) i nil)
                                     move     (.move chessjs-inst move)
                                     f        (.fen chessjs-inst)]
+                                (println "fen at moment" f)
                                 (merge
-                                  {:fen  f
-                                   :move (js->clj move)}
+                                  {:fen         f
+                                   :move        (js->clj move)
+                                   :move-number (+ 0.5 (/ (inc i) 2))}
                                   analysis)))))
 
-        highlight-states (->> (concat
-                                (->> (range (dec (count board-states)))
-                                     (filter (comp zero? #(mod % 10)))
-                                     (map #(nth board-states % nil)))
-                                [(last board-states)])
-                              (remove nil?)
-                              ;; could be removing valid dupes :shrug:
-                              (w/distinct-by identity)
-                              (take 5))]
+        highlight-states (->>
+                           (concat
+                             (->> (range (dec (count board-states)))
+                                  (filter (comp #{4} #(mod % 10)))
+                                  (map #(nth board-states % nil)))
+                             [(last board-states)])
+                           (remove nil?)
+                           ;; could be removing valid dupes :shrug:
+                           (w/distinct-by identity)
+                           (take 4))]
 
-    ;; TODO include current eval at each position
     [:div
      {:class ["flex" "flex-row" "gap-2" "flex-wrap"]}
 
      (for [[i {:keys [fen move
-                      best eval]}]
+                      best eval
+                      judgment
+                      move-number]}]
            (->> highlight-states (map-indexed vector))]
-       ^{:key i}
-       [:div
-        [:span {:class ["font-nes" "text-xl"]} eval]
-        [:span {:class ["font-nes" "text-xl"]} best]
-        [:div
-         {:class ["w-64" "h-64"]}
-         [chessground
-          {:fen         fen
-           :lastMove    #js [(get move "from") (get move "to")]
-           ;; :viewOnly    true
-           :coordinates false
-           :orientation (if (#{"russmatney"} white-player)
-                          "white" "black")
-           :width       "220px"
-           :height      "220px"
-           :autoShapes  (->> [(when best
-                                (let [[orig dest] (->> best (partition 2 2)
-                                                       (map #(apply str %)))]
-                                  {:orig orig :dest dest :brush "blue"}))]
-                             (remove nil?))}]]])]))
+       (let [
+             ;; move-number (+ 0.5 (/ (inc i) 2))
+             ]
+         ^{:key i}
+         [:div
+          {:class ["flex" "flex-col"]}
+          [:div
+           {:class ["flex" "flex-row"]}
+           [:span {:class ["font-mono"]}
+            (str move-number ". " (get move "to"))]
+           [:span
+            {:class ["ml-auto" "font-nes"]}
+            (str (if (< eval 0) "-" "+") (/ eval 100))]]
+
+          [:div
+           {:class ["w-64" "h-64"]}
+           [chessground
+            {:fen         fen
+             :lastMove    #js [(get move "from") (get move "to")]
+             ;; :viewOnly    true
+             :coordinates false
+             :orientation (if (#{"russmatney"} white-player)
+                            "white" "black")
+             :width       "220px"
+             :height      "220px"
+             :autoShapes  (->> [(when best
+                                  (let [[orig dest] (->> best (partition 2 2)
+                                                         (map #(apply str %)))]
+                                    {:orig orig :dest dest :brush "blue"}))]
+                               (remove nil?))}]]
+
+          (when judgment [:span {:class ["font-mono"]} (:comment judgment)])]))]))
 
 (comment
-  (let [[orig dest]
-        (->> "e4e6" (partition 2 2)
-             (map #(apply str %)))]
+(let [[orig dest]
+      (->> "e4e6" (partition 2 2)
+           (map #(apply str %)))]
     [orig dest])
   )
 
