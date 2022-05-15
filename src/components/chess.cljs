@@ -5,10 +5,48 @@
    [components.debug]
    [tick.core :as t]
 
-   ["react-chessground" :default Chessground]
+   ["chessground" :as Chessground]
    ["chess.js" :as Chess]
+   ["react" :as react]
+   [uix.core.alpha :as uix]
 
    [wing.core :as w]))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; chessground wrapper
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn chessground [opts]
+  [:div (str opts)])
+
+#_(defn chessground [opts]
+    (let [;; cg-ref (uix/ref)
+          cg (uix/state nil)]
+      (println "cg" cg)
+
+      (with-meta [:div "sup"]
+        {:component-did-mount
+         (fn [el]
+           (println "component-did-mount" el)
+           (let [cg-inst (Chessground/Chessground el opts)]
+             (reset! cg cg-inst))
+           (println "cg" cg)
+           )})))
+
+#_(defn chessground [opts]
+    (react/createElement
+      (uix/create-class
+        {:constructor
+         (fn [^js/React.Component this _]
+           (println "constructor!")
+           this)
+         :static {:displayName "MyChessgroundComp"}
+         :prototype
+         {:componentDidMount
+          (fn [this] (println "comp did mount" this))
+          :render (fn [] [:div "render opts"
+                          (str opts)])}})
+      (clj->js opts)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; thumbnail
@@ -138,7 +176,7 @@
        [:div
         [:span {:class ["font-nes" "text-xl"]} eval]
         [:span {:class ["font-nes" "text-xl"]} best]
-        [:> Chessground
+        [chessground
          {:fen           fen
           :lastMove      #js [(get move "from") (get move "to")]
           ;; :viewOnly    true
