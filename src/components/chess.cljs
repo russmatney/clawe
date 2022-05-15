@@ -5,9 +5,8 @@
    [components.debug]
    [tick.core :as t]
 
-   ["chessground" :as Chessground]
+   ["chessground" :refer [Chessground]]
    ["chess.js" :as Chess]
-   ["react" :as react]
    [uix.core.alpha :as uix]
 
    [wing.core :as w]))
@@ -16,37 +15,29 @@
 ;; chessground wrapper
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn chessground [opts]
-  [:div (str opts)])
+(defn chessground [{:keys [shapes autoShapes] :as opts}]
+  (let [opts   (clj->js (dissoc opts :shapes :autoShapes))
+        cg-api (uix/state nil)
+        ref    (uix/ref)]
 
-#_(defn chessground [opts]
-    (let [;; cg-ref (uix/ref)
-          cg (uix/state nil)]
-      (println "cg" cg)
+    ;; set/destroy cg-api
+    (uix/with-effect [ref]
+      (when (and (not @cg-api) @ref)
+        (reset! cg-api (Chessground. @ref opts)))
+      #(when @cg-api (.destroy @cg-api)))
 
-      (with-meta [:div "sup"]
-        {:component-did-mount
-         (fn [el]
-           (println "component-did-mount" el)
-           (let [cg-inst (Chessground/Chessground el opts)]
-             (reset! cg cg-inst))
-           (println "cg" cg)
-           )})))
+    ;; set config once api is set
+    (uix/with-effect [@cg-api opts]
+      (when @cg-api
+        (.set @cg-api opts)
+        ;; set shapes cannot be combined with :fen, so we call it after
+        ;; https://github.com/lichess-org/chessground/issues/171
+        (when shapes
+          (.setShapes @cg-api (clj->js shapes)))
+        (when autoShapes
+          (.setAutoShapes @cg-api (clj->js autoShapes)))))
 
-#_(defn chessground [opts]
-    (react/createElement
-      (uix/create-class
-        {:constructor
-         (fn [^js/React.Component this _]
-           (println "constructor!")
-           this)
-         :static {:displayName "MyChessgroundComp"}
-         :prototype
-         {:componentDidMount
-          (fn [this] (println "comp did mount" this))
-          :render (fn [] [:div "render opts"
-                          (str opts)])}})
-      (clj->js opts)))
+    [:div {:class ["w-full" "h-full"] :ref ref}]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; thumbnail
@@ -167,9 +158,8 @@
                               (remove nil?)
                               ;; could be removing valid dupes :shrug:
                               (w/distinct-by identity)
-                              (take 3))]
+                              (take 5))]
 
-    ;; TODO draw mistake/best-move arrows
     ;; TODO include current eval at each position
     [:div
      {:class ["flex" "flex-row" "gap-2" "flex-wrap"]}
@@ -181,19 +171,30 @@
        [:div
         [:span {:class ["font-nes" "text-xl"]} eval]
         [:span {:class ["font-nes" "text-xl"]} best]
-        [chessground
-         {:fen           fen
-          :lastMove      #js [(get move "from") (get move "to")]
-          ;; :viewOnly    true
-          :coordinates   false
-          :orientation   (if (#{"russmatney"} white-player)
-                           "white" "black")
-          :width         "220px"
-          :height        "220px"
-          :setAutoShapes (fn [x]
-                           (println "setShapes x" x)
-                           (clj->js [(clj->js {:orig "e4" :dest "e7" :brush "green"})]))}
-         ]])]))
+        [:div
+         {:class ["w-64" "h-64"]}
+         [chessground
+          {:fen         fen
+           :lastMove    #js [(get move "from") (get move "to")]
+           ;; :viewOnly    true
+           :coordinates false
+           :orientation (if (#{"russmatney"} white-player)
+                          "white" "black")
+           :width       "220px"
+           :height      "220px"
+           :autoShapes  (->> [(when best
+                                (let [[orig dest] (->> best (partition 2 2)
+                                                       (map #(apply str %)))]
+                                  {:orig orig :dest dest :brush "blue"}))]
+                             (remove nil?))}]]])]))
+
+(comment
+  (let [[orig dest]
+        (->> "e4e6" (partition 2 2)
+             (map #(apply str %)))]
+    [orig dest])
+  )
+
 
 (defn detail-popover [opts game]
   (let [{:lichess.game/keys

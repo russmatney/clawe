@@ -17,7 +17,8 @@
    :output-dir       "public/js/compiled"
    :asset-path       "/js/compiled"
    :modules          {:main {:init-fn doctor.ui.core/init}}
-   :compiler-options {:output-feature-set :es-next}
+   :compiler-options {:output-feature-set :es-next
+                      :infer-externs      true}
 
    :build-hooks
    [(plasma.uix.hot-reload/compile-prepare!)
