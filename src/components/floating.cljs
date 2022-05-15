@@ -41,8 +41,8 @@
         [:> FUI/FloatingFocusManager {:context context}
          [:div (js->clj (.getFloatingProps
                           ixs (clj->js {:ref   (.-floating floating-state)
-                                        :style {:position  (.-strategy floating-state)
-                                                :top       (or (.-y floating-state) "")
-                                                :left      (or (.-x floating-state) "")
-                                                :max-width "calc(100vw - 10px)" }})))
+                                        :style {:position (.-strategy floating-state)
+                                                :top      (or (.-y floating-state) "")
+                                                :left     (or (.-x floating-state) "")
+                                                :maxWidth "calc(100vw - 10px)" }})))
           popover-comp]])]]))

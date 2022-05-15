@@ -3,7 +3,8 @@
    [clojure.string :as string]
    [components.floating :as floating]
    [components.debug]
-   [tick.core :as t]
+   [goog.string :as gstring]
+   [goog.string.format]
 
    ["chessground" :refer [Chessground]]
    ["chess.js" :as Chess]
@@ -119,22 +120,50 @@
         go-to-next-state #(swap! state-cursor
                                  (fn [current] (min max-i (inc current))))
 
-        {:keys [fen move best eval mate judgment move-number]}
+        {:keys [fen move best eval eval-diff mate judgment move-number]}
         (nth all-game-states @state-cursor nil)
 
         {:lichess.game/keys [white-player]} game
         wheel-container-ref                 (uix/ref)]
 
     [:div
-     {:class ["flex" "flex-col" "w-64"]}
+     {:class ["flex" "flex-col" "w-64" "items-center"]}
      [:div
-      {:class ["flex" "flex-row"]}
-      [:span {:class ["font-mono"]}
-       (str move-number ". " (get move "san"))]
+      {:class ["flex" "flex-row"
+               "w-full"
+               "h-12"
+               "items-center"]}
+      [:span {:class ["font-mono" "whitespace-nowrap"]}
+       (str (string/replace (str move-number) ".5" "..") ". " (get move "san"))]
+
+      (when (or mate eval-diff)
+        (println "eval-diff" eval-diff)
+        [:span
+         {:class
+          (concat ["ml-auto" "font-nes"]
+                  (cond
+                    mate              ["text-2xl" "text-city-red-500"]
+                    (< eval-diff 100) ["text-sm" "text-city-blue-500"]
+                    (> eval-diff 700) ["text-2xl" "text-city-red-400"]
+                    (> eval-diff 600) ["text-xl" "text-city-pink-700"]
+                    (> eval-diff 500) ["text-xl" "text-city-pink-600"]
+                    (> eval-diff 400) ["text-xl" "text-city-pink-500"]
+                    (> eval-diff 300) ["text-xl" "text-city-pink-400"]
+                    (> eval-diff 200) ["text-xl" "text-city-pink-300"]
+                    (> eval-diff 100) ["text-lg" "text-city-pink-200"]
+                    :else             []))}
+         (if mate
+           "Mate"
+           (gstring/format "%.1f" (/ eval-diff 100)))])
+
       (when eval
         [:span
-         {:class ["ml-auto" "font-nes"]}
-         (str (when (> eval 0) "+") (/ eval 100))])
+         {:class (concat ["ml-auto" "font-nes"]
+                         (cond
+                           (< eval 0) ["text-city-black-300"]
+                           (> eval 0) ["text-city-pink-100"]
+                           :else      []))}
+         (str (when (> eval 0) "+") (gstring/format "%.1f" (/ eval 100)))])
 
       (when mate
         [:span
@@ -190,37 +219,46 @@
     (w/distinct-by identity)
     (take 4)))
 
-(defn list-game-states
-  ([game] [list-game-states {} game])
-  ([{:keys [pick-game-states]
-     :or   {pick-game-states default-game-state-filter}}
-    game]
-   (let [{:lichess.game/keys [moves analysis]} game
-         chessjs-inst                          (Chess/Chess.)
+(defn build-game-states [game]
+  (let [{:lichess.game/keys [moves analysis]} game
+        chessjs-inst                          (Chess/Chess.)
+        all-game-states
+        (->> (string/split moves #" ")
+             (map-indexed
+               (fn [i move]
+                 (let [analysis (nth (or analysis []) i nil)
+                       move     (.move chessjs-inst move)
+                       f        (.fen chessjs-inst)]
+                   (merge
+                     {:game        game
+                      :i           i
+                      :fen         f
+                      :move        (js->clj move)
+                      :move-number (+ 0.5 (/ (inc i) 2))}
+                     analysis))))
+             (reduce (fn [acc next]
+                       (let [lst (when (seq acc) (last acc))]
+                         (if lst
+                           (conj acc
+                                 (cond
+                                   (:eval next)
+                                   (assoc next :eval-diff (js/Math.abs (- (:eval lst) (:eval next))))
 
-         all-game-states
-         (->> (string/split moves #" ")
-              (map-indexed
-                (fn [i move]
-                  (let [analysis (nth (or analysis []) i nil)
-                        move     (.move chessjs-inst move)
-                        f        (.fen chessjs-inst)]
-                    (merge
-                      {:i           i
-                       :fen         f
-                       :move        (js->clj move)
-                       :move-number (+ 0.5 (/ (inc i) 2))}
-                      analysis)))))]
+                                   :else next))
+                           (conj acc next))))
+                     []))]
+    (->> all-game-states
+         ;; attach this list to each state as well
+         (map #(assoc % :all-game-states all-game-states)))))
 
-     [:div
-      {:class ["flex" "flex-row" "gap-2" "flex-wrap"]}
-      (for [[i game-state]
-            (->> all-game-states pick-game-states (map-indexed vector))]
-        ^{:key i}
-        [display-game-state
-         (assoc game-state
-                :all-game-states all-game-states
-                :game game)])])))
+(defn display-game-states
+  ([game-states] [display-game-states {} game-states])
+  ([_opts game-states]
+   [:div
+    {:class ["grid" "grid-cols-4" "gap-2" "gap-x-8"]}
+    (for [[i game-state] (->> game-states (map-indexed vector))]
+      ^{:key i}
+      [display-game-state game-state])]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; detail-popover
@@ -232,7 +270,11 @@
           white-rating-diff black-rating-diff
           perf opening-name moves
           url analysis]}  game
-        show-all-mistakes (uix/state nil)]
+        show-all-mistakes (uix/state nil)
+        all-game-states   (build-game-states game)]
+
+    (println "all-eval-diffs" (->> all-game-states (map :eval-diff)))
+
     [:div
      {:class ["bg-yo-blue-500" "p-3"
               "text-city-blue-200"
@@ -273,7 +315,7 @@
       (str (/ (count (string/split moves #" ")) 2) " moves")]
 
      ;; highlights
-     [list-game-states {:pick-game-states default-game-state-filter} game]
+     [display-game-states (default-game-state-filter all-game-states)]
 
      ;; all mistakes
      (when (seq analysis)
@@ -284,12 +326,10 @@
         "Toggle all mistakes"])
 
      (when (and (seq analysis) @show-all-mistakes)
-       [:div
-        {:class ["w-7/8"]}
-        [list-game-states
-         {:pick-game-states
-          (fn [game-states] (->> game-states (filter :judgment)))}
-         game]])
+       [display-game-states (->> all-game-states
+                                 (filter :judgment)
+                                 (sort-by (comp js/Math.abs :eval-diff) >)
+                                 (sort-by (comp not :mate)))])
 
      [:div
       {:class ["pt-4"]}

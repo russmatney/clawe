@@ -83,7 +83,7 @@
     (fetch-db-games))
 
   (->>
-    (fetch-db-games)
+    (games-since-last-month)
     (filter (comp seq :lichess.game/analysis))
     (map (fn [g] (update g :lichess.game/analysis edn/read-string)))
     (take 3))
