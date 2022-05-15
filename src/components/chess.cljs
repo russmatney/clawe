@@ -126,7 +126,7 @@
         wheel-container-ref                 (uix/ref)]
 
     [:div
-     {:class ["flex" "flex-col"]}
+     {:class ["flex" "flex-col" "w-64"]}
      [:div
       {:class ["flex" "flex-row"]}
       [:span {:class ["font-mono"]}
@@ -134,12 +134,12 @@
       (when eval
         [:span
          {:class ["ml-auto" "font-nes"]}
-         (str (when (> eval 0) "+") (/ eval 100))])]
+         (str (when (> eval 0) "+") (/ eval 100))])
 
-     (when mate
-       [:span
-        {:class ["ml-auto" "font-nes"]}
-        (str "mate in " mate)])
+      (when mate
+        [:span
+         {:class ["ml-auto" "font-nes"]}
+         (str "#" mate)])]
 
      [:div
       {:class          ["w-64" "h-64"]
@@ -175,7 +175,7 @@
                        (string/replace (str (:name judgment) ".") ""))])]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; detail popover
+;; game-state list
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn default-game-state-filter [states]
@@ -192,9 +192,8 @@
 
 (defn list-game-states
   ([game] [list-game-states {} game])
-  ([{:keys [filter-game-states]
-     :or   {filter-game-states default-game-state-filter}
-     :as   opts}
+  ([{:keys [pick-game-states]
+     :or   {pick-game-states default-game-state-filter}}
     game]
    (let [{:lichess.game/keys [moves analysis]} game
          chessjs-inst                          (Chess/Chess.)
@@ -216,27 +215,24 @@
      [:div
       {:class ["flex" "flex-row" "gap-2" "flex-wrap"]}
       (for [[i game-state]
-            (->> all-game-states filter-game-states (map-indexed vector))]
+            (->> all-game-states pick-game-states (map-indexed vector))]
         ^{:key i}
         [display-game-state
          (assoc game-state
                 :all-game-states all-game-states
                 :game game)])])))
 
-(comment
-  (let [[orig dest]
-        (->> "e4e6" (partition 2 2)
-             (map #(apply str %)))]
-    [orig dest])
-  )
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; detail-popover
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn detail-popover [opts game]
   (let [{:lichess.game/keys
          [white-player black-player
           white-rating-diff black-rating-diff
           perf opening-name moves
-          url]} game]
+          url analysis]}  game
+        show-all-mistakes (uix/state nil)]
     [:div
      {:class ["bg-yo-blue-500" "p-3"
               "text-city-blue-200"
@@ -277,11 +273,23 @@
       (str (/ (count (string/split moves #" ")) 2) " moves")]
 
      ;; highlights
-     [list-game-states
-      ;; {:filter-game-states (fn [game-states] game-states)}
-      game]
+     [list-game-states {:pick-game-states default-game-state-filter} game]
 
      ;; all mistakes
+     (when (seq analysis)
+       [:span {:on-click #(swap! show-all-mistakes not)
+               :class    ["text-city-pink-200"
+                          "hover:text-city-pink-400"
+                          "cursor-pointer"]}
+        "Toggle all mistakes"])
+
+     (when (and (seq analysis) @show-all-mistakes)
+       [:div
+        {:class ["w-7/8"]}
+        [list-game-states
+         {:pick-game-states
+          (fn [game-states] (->> game-states (filter :judgment)))}
+         game]])
 
      [:div
       {:class ["pt-4"]}

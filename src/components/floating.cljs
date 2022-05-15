@@ -33,8 +33,7 @@
      [:div
       (merge
         (js->clj (.getReferenceProps ixs (clj->js {:ref (.-reference floating-state)})))
-        anchor-comp-props
-        )
+        anchor-comp-props)
       anchor-comp]
 
      [:> FUI/FloatingPortal
@@ -42,7 +41,8 @@
         [:> FUI/FloatingFocusManager {:context context}
          [:div (js->clj (.getFloatingProps
                           ixs (clj->js {:ref   (.-floating floating-state)
-                                        :style {:position (.-strategy floating-state)
-                                                :top      (or (.-y floating-state) "")
-                                                :left     (or (.-x floating-state) "")}})))
+                                        :style {:position  (.-strategy floating-state)
+                                                :top       (or (.-y floating-state) "")
+                                                :left      (or (.-x floating-state) "")
+                                                :max-width "calc(100vw - 10px)" }})))
           popover-comp]])]]))
