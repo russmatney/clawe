@@ -92,7 +92,8 @@
   [map-tx]
   (let [supported-keys   (supported-type-keys map-tx)
         [to-tx rejected] (w/partition-keys map-tx supported-keys)]
-    (println "rejected vals" rejected)
+    (when (seq rejected)
+      (println "defthing db transact rejected vals" rejected))
     (->> to-tx
          ;; might be unnecessary b/c it's not 'supported'
          (remove (comp nil? second))

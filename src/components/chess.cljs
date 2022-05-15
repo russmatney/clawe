@@ -76,14 +76,14 @@
   (let [{:lichess.game/keys
          [white-player black-player
           white-rating-diff black-rating-diff
-          perf
+          perf analysis
           ]} game]
     [:div
-     {:class ["p-2"]}
+     {:class ["py-2"]}
 
      [:div
       {:class ["flex" "flex-row"
-               "items-center"
+               "items-end"
                "gap-x-3"
                "font-mono"]}
       [:span
@@ -92,7 +92,12 @@
 
       [player-and-rating {:player white-player :rating-diff white-rating-diff}]
       [:span "vs"]
-      [player-and-rating {:player black-player :rating-diff black-rating-diff}]]]))
+      [player-and-rating {:player black-player :rating-diff black-rating-diff}]
+
+      (when (seq analysis)
+        [:span
+         {:class ["text-sm"]}
+         "[Analysis available]"])]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; detail popover
@@ -195,9 +200,7 @@
          [white-player black-player
           white-rating-diff black-rating-diff
           perf opening-name moves
-          url analysis
-          created-at
-          ]} game]
+          url]} game]
     [:div
      {:class ["bg-yo-blue-500" "p-3"
               "text-city-blue-200"
@@ -222,10 +225,11 @@
 
        [:div
         [:a
-         {:href  url
-          :class ["hover:city-pink-400"
-                  "city-pink-200"
-                  "cursor-pointer"]}
+         {:href   url
+          :target "_blank"
+          :class  ["hover:city-pink-400"
+                   "city-pink-200"
+                   "cursor-pointer"]}
          "View on lichess"]]]]
 
      [:div

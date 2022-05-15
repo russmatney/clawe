@@ -49,7 +49,7 @@
                chess-game-count]}
        (event-counts events)]
     [:div
-     {:class ["flex" "flex-col" "px-4"]}
+     {:class ["flex" "flex-col"]}
      [:span
       {:class ["whitespace-nowrap"]}
       [event-count-comp {:label "screenshots" :count screenshot-count}]]
@@ -222,13 +222,13 @@
                                    :else                           true)]
          [:div
           {:key   (str start)
-           :class [(when (odd? i) "bg-yo-blue-800")
-                   "p-4"]
-           }
+           :class [(when (odd? i) "bg-yo-blue-800") "p-4"]}
 
-          (str (t/format "MMM EEEE d ha" start)
-               (when show-end?
-                 (str " - " (t/format "ha" end))))
+          [:span
+           {:class ["text-xl"]}
+           (str (t/format "EEEE d ha" start)
+                (when show-end?
+                  (str " - " (t/format "ha" end))))]
 
           [event-count-list evts]
 
@@ -280,7 +280,7 @@
 
      ;; TODO filter by type (screenshots, commits, org items)
      [:div
-      [:h1 {:class ["px-4" "pb-4" "text-xl"]}
+      [:h1 {:class ["px-4" "text-xl"]}
        event-count " Events"
        (if (seq @selected-dates)
          (str " on "
@@ -289,6 +289,10 @@
                    (string/join ", ")))
          (str " in the last 14 days"))]
 
-      [event-count-list events]]
+      [:div
+       {:class ["px-4"]}
+       [event-count-list events]]]
 
-     [event-clusters {} events]]))
+     [:div
+      {:class ["pt-2"]}
+      [event-clusters {} events]]]))

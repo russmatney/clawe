@@ -2,7 +2,6 @@
   (:require
    [chess.core :as chess]
    [tick.core :as t]
-   [wing.core :as w]
    [defthing.db :as db]
    [clojure.edn :as edn]))
 
