@@ -119,8 +119,7 @@ ln -s ~/Screenshots expo/public/assets/screenshots
 ** Chessground
 manually copied the exported css and images into the project:
 #+begin_src sh
-cp node_modules/react-chessground/dist/styles/chessground.css public/css/.
-cp -r node_modules/react-chessground/dist/images public/.
+cp node_modules/chessground/assets/chessground.base.css node_modules/chessground/assets/chessground.brown.css node_modules/chessground/assets/chessground.cburnett.css public/css/.
 #+end_src
 
 * tauri conf
