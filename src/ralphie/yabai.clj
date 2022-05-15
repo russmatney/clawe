@@ -371,9 +371,7 @@
   (toggle-floating
     (->window
       {:yabai.window/app   "Emacs"
-       :yabai.window/title #(re-seq #"clawe" %)}
-      ))
-  )
+       :yabai.window/title #(re-seq #"clawe" %)})))
 
 (defn center-window
   "
@@ -387,7 +385,7 @@
   [window]
   (->
     ^{:out :string}
-    (process/$ yabai -m window ~(:yabai.window/id window) --grid "10:10:1:1:8:8")
+    (process/$ yabai -m window ~(:yabai.window/id window) --grid "50:50:1:1:48:48")
     process/check
     :out))
 
