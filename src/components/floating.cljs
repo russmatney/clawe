@@ -15,7 +15,8 @@
                          (clj->js {:open @open :onOpenChange #(reset! open %)
                                    :middleware
                                    [(FUI/offset offset)
-                                    (FUI/flip)
+                                    (FUI/autoPlacement)
+                                    ;; (FUI/flip)
                                     (FUI/shift)]}))
         context        (. floating-state -context)
         ixs            (FUI/useInteractions

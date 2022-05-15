@@ -91,23 +91,42 @@
          "[Analysis available]"])]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
+;; mouse wheel scroll prevention
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; https://stackoverflow.com/a/55543526/860787
+
+(defn prevent-default [e]
+  (let [e (or e js/window.event)]
+    (when (.-preventDefault e)
+      (.preventDefault e))))
+
+(defn enable-scroll []
+  (js/document.removeEventListener "wheel" prevent-default false))
+
+(defn disable-scroll []
+  (js/document.addEventListener "wheel" prevent-default #js {:passive false}))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; display game state
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn display-game-state
-  [{:keys [fen move best eval mate judgment move-number
-           all-game-states
-           i
-           game]
-    :as   _game-state}]
-  (let [state-cursor                        (uix/state i)
-        {:lichess.game/keys [white-player]} game]
+  [{:keys [all-game-states i game]}]
+  (let [max-i            (dec (count all-game-states))
+        state-cursor     (uix/state i)
+        go-to-prev-state #(swap! state-cursor
+                                 (fn [current] (max 0 (dec current))))
+        go-to-next-state #(swap! state-cursor
+                                 (fn [current] (min max-i (inc current))))
+
+        {:keys [fen move best eval mate judgment move-number]}
+        (nth all-game-states @state-cursor nil)
+
+        {:lichess.game/keys [white-player]} game
+        wheel-container-ref                 (uix/ref)]
+
     [:div
-     {:class     ["flex" "flex-col" "overflow-y-scroll"]
-      :on-scroll (fn [_]
-                   (println "scroll detect")
-                   )
-      }
+     {:class ["flex" "flex-col"]}
      [:div
       {:class ["flex" "flex-row"]}
       [:span {:class ["font-mono"]}
@@ -123,23 +142,29 @@
         (str "mate in " mate)])
 
      [:div
-      {:class ["w-64" "h-64"]}
-      ;; TODO scroll to move forward/back moves
-      ;; TODO click to play out variation
+      {:class          ["w-64" "h-64"]
+       :ref            wheel-container-ref
+       :on-mouse-enter #(disable-scroll)
+       :on-mouse-leave #(enable-scroll)
+       :on-wheel       (fn [ev]
+                         (if (> (.-deltaY ev) 0)
+                           (go-to-next-state)
+                           (go-to-prev-state)))}
       [chessground
-       {:fen         fen
-        :lastMove    #js [(get move "from") (get move "to")]
+       {:fen              fen
+        :lastMove         #js [(get move "from") (get move "to")]
+        :blockTouchScroll true
         ;; :viewOnly    true
-        :coordinates false
-        :orientation (if (#{"russmatney"} white-player)
-                       "white" "black")
-        :width       "220px"
-        :height      "220px"
-        :autoShapes  (->> [(when best
-                             (let [[orig dest] (->> best (partition 2 2)
-                                                    (map #(apply str %)))]
-                               {:orig orig :dest dest :brush "blue"}))]
-                          (remove nil?))}]]
+        :coordinates      false
+        :orientation      (if (#{"russmatney"} white-player)
+                            "white" "black")
+        :width            "220px"
+        :height           "220px"
+        :autoShapes       (->> [(when best
+                                  (let [[orig dest] (->> best (partition 2 2)
+                                                         (map #(apply str %)))]
+                                    {:orig orig :dest dest :brush "blue"}))]
+                               (remove nil?))}]]
 
      (when judgment [:span {:class ["font-mono"]}
                      ;; the name is sometimes repeated in the comment, so we
