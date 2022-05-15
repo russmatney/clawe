@@ -91,123 +91,117 @@
          "[Analysis available]"])]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn display-game-state
+  [{:keys [fen move best eval mate judgment move-number
+           all-game-states
+           i
+           game]
+    :as   _game-state}]
+  (let [state-cursor                        (uix/state i)
+        {:lichess.game/keys [white-player]} game]
+    [:div
+     {:class     ["flex" "flex-col" "overflow-y-scroll"]
+      :on-scroll (fn [_]
+                   (println "scroll detect")
+                   )
+      }
+     [:div
+      {:class ["flex" "flex-row"]}
+      [:span {:class ["font-mono"]}
+       (str move-number ". " (get move "san"))]
+      (when eval
+        [:span
+         {:class ["ml-auto" "font-nes"]}
+         (str (when (> eval 0) "+") (/ eval 100))])]
+
+     (when mate
+       [:span
+        {:class ["ml-auto" "font-nes"]}
+        (str "mate in " mate)])
+
+     [:div
+      {:class ["w-64" "h-64"]}
+      ;; TODO scroll to move forward/back moves
+      ;; TODO click to play out variation
+      [chessground
+       {:fen         fen
+        :lastMove    #js [(get move "from") (get move "to")]
+        ;; :viewOnly    true
+        :coordinates false
+        :orientation (if (#{"russmatney"} white-player)
+                       "white" "black")
+        :width       "220px"
+        :height      "220px"
+        :autoShapes  (->> [(when best
+                             (let [[orig dest] (->> best (partition 2 2)
+                                                    (map #(apply str %)))]
+                               {:orig orig :dest dest :brush "blue"}))]
+                          (remove nil?))}]]
+
+     (when judgment [:span {:class ["font-mono"]}
+                     ;; the name is sometimes repeated in the comment, so we
+                     ;; remove it
+                     (str (:name judgment) ".")
+                     (->
+                       (:comment judgment)
+                       (string/replace (str (:name judgment) ".") ""))])]))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; detail popover
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(comment
-  (def pgn
-    (->>
-      ["[Event \"Casual Game\"]",
-       "[Site \"Berlin GER\"]",
-       "[Date \"1852.??.??\"]",
-       "[EventDate \"?\"]",
-       "[Round \"?\"]",
-       "[Result \"1-0\"]",
-       "[White \"Adolf Anderssen\"]",
-       "[Black \"Jean Dufresne\"]",
-       "[ECO \"C52\"]",
-       "[WhiteElo \"?\"]",
-       "[BlackElo \"?\"]",
-       "[PlyCount \"47\"]",
-       "",
-       "1.e4 e5 2.Nf3 Nc6 3.Bc4 Bc5 4.b4 Bxb4 5.c3 Ba5 6.d4 exd4 7.O-O",
-       "d3 8.Qb3 Qf6 9.e5 Qg6 10.Re1 Nge7 11.Ba3 b5 12.Qxb5 Rb8 13.Qa4",
-       "Bb6 14.Nbd2 Bb7 15.Ne4 Qf5 16.Bxd3 Qh5 17.Nf6+ gxf6 18.exf6",
-       "Rg8 19.Rad1 Qxf3 20.Rxe7+ Nxe7 21.Qxd7+ Kxd7 22.Bf5+ Ke8",
-       "23.Bd7+ Kf8 24.Bxe7# 1-0"
-       ]
-      (string/join "\n"))
-    )
+(defn default-game-state-filter [states]
+  (->>
+    (concat
+      (->> (range (dec (count states)))
+           (filter (comp #{4} #(mod % 10)))
+           (map #(nth states % nil)))
+      [(last states)])
+    (remove nil?)
+    ;; could be removing valid dupes :shrug:
+    (w/distinct-by identity)
+    (take 4)))
 
-  (def chess-inst (Chess/Chess.))
+(defn list-game-states
+  ([game] [list-game-states {} game])
+  ([{:keys [filter-game-states]
+     :or   {filter-game-states default-game-state-filter}
+     :as   opts}
+    game]
+   (let [{:lichess.game/keys [moves analysis]} game
+         chessjs-inst                          (Chess/Chess.)
 
-  (def moves (.history chess-inst))
+         all-game-states
+         (->> (string/split moves #" ")
+              (map-indexed
+                (fn [i move]
+                  (let [analysis (nth (or analysis []) i nil)
+                        move     (.move chessjs-inst move)
+                        f        (.fen chessjs-inst)]
+                    (merge
+                      {:i           i
+                       :fen         f
+                       :move        (js->clj move)
+                       :move-number (+ 0.5 (/ (inc i) 2))}
+                      analysis)))))]
 
-  (.load_pgn chess-inst pgn)
-  (.fen chess-inst)
-
-  (for [move (.history chess-inst)]
-    (do
-      (println "move" move)
-      (.move chess-inst move)
-      (.fen chess-inst)))
-
-  )
-
-(defn game-highlights [opts game]
-  (let [{:lichess.game/keys
-         [white-player moves analysis]} game
-        chessjs-inst                    (Chess/Chess.)
-
-        board-states (->> (string/split moves #" ")
-                          (map-indexed
-                            (fn [i move]
-                              (let [analysis (nth (or analysis []) i nil)
-                                    move     (.move chessjs-inst move)
-                                    f        (.fen chessjs-inst)]
-                                (println "fen at moment" f)
-                                (merge
-                                  {:fen         f
-                                   :move        (js->clj move)
-                                   :move-number (+ 0.5 (/ (inc i) 2))}
-                                  analysis)))))
-
-        highlight-states (->>
-                           (concat
-                             (->> (range (dec (count board-states)))
-                                  (filter (comp #{4} #(mod % 10)))
-                                  (map #(nth board-states % nil)))
-                             [(last board-states)])
-                           (remove nil?)
-                           ;; could be removing valid dupes :shrug:
-                           (w/distinct-by identity)
-                           (take 4))]
-
-    [:div
-     {:class ["flex" "flex-row" "gap-2" "flex-wrap"]}
-
-     (for [[i {:keys [fen move
-                      best eval
-                      judgment
-                      move-number]}]
-           (->> highlight-states (map-indexed vector))]
-       (let [
-             ;; move-number (+ 0.5 (/ (inc i) 2))
-             ]
-         ^{:key i}
-         [:div
-          {:class ["flex" "flex-col"]}
-          [:div
-           {:class ["flex" "flex-row"]}
-           [:span {:class ["font-mono"]}
-            (str move-number ". " (get move "to"))]
-           [:span
-            {:class ["ml-auto" "font-nes"]}
-            (str (if (< eval 0) "-" "+") (/ eval 100))]]
-
-          [:div
-           {:class ["w-64" "h-64"]}
-           [chessground
-            {:fen         fen
-             :lastMove    #js [(get move "from") (get move "to")]
-             ;; :viewOnly    true
-             :coordinates false
-             :orientation (if (#{"russmatney"} white-player)
-                            "white" "black")
-             :width       "220px"
-             :height      "220px"
-             :autoShapes  (->> [(when best
-                                  (let [[orig dest] (->> best (partition 2 2)
-                                                         (map #(apply str %)))]
-                                    {:orig orig :dest dest :brush "blue"}))]
-                               (remove nil?))}]]
-
-          (when judgment [:span {:class ["font-mono"]} (:comment judgment)])]))]))
+     [:div
+      {:class ["flex" "flex-row" "gap-2" "flex-wrap"]}
+      (for [[i game-state]
+            (->> all-game-states filter-game-states (map-indexed vector))]
+        ^{:key i}
+        [display-game-state
+         (assoc game-state
+                :all-game-states all-game-states
+                :game game)])])))
 
 (comment
-(let [[orig dest]
-      (->> "e4e6" (partition 2 2)
-           (map #(apply str %)))]
+  (let [[orig dest]
+        (->> "e4e6" (partition 2 2)
+             (map #(apply str %)))]
     [orig dest])
   )
 
@@ -257,7 +251,12 @@
       {:class []}
       (str (/ (count (string/split moves #" ")) 2) " moves")]
 
-     [game-highlights opts game]
+     ;; highlights
+     [list-game-states
+      ;; {:filter-game-states (fn [game-states] game-states)}
+      game]
+
+     ;; all mistakes
 
      [:div
       {:class ["pt-4"]}
@@ -278,12 +277,11 @@
          :class []}
 
         [floating/popover
-         {:hover true
-          :click true
+         {:offset 5
+          :click  true
           :anchor-comp
           [:div
            {:class ["cursor-pointer"]}
            [thumbnail opts game]]
           :popover-comp
-          [detail-popover opts game]
-          }]])]))
+          [detail-popover opts game]}]])]))
