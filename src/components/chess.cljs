@@ -142,11 +142,17 @@
          {:class
           (concat ["ml-auto" "font-nes"]
                   (cond
-                    mate              ["text-2xl" "text-city-red-500"]
+                    mate              ["text-2xl" "text-city-red-500"
+                                       "animate__animated" "animate__tada"
+                                       "animate__repeat-3"]
                     (< eval-diff 100) ["text-sm" "text-city-blue-500"]
-                    (> eval-diff 700) ["text-2xl" "text-city-red-400"]
-                    (> eval-diff 600) ["text-xl" "text-city-pink-700"]
-                    (> eval-diff 500) ["text-xl" "text-city-pink-600"]
+                    (> eval-diff 700) ["text-2xl" "text-city-red-600"
+                                       "animate__animated" "animate__tada"
+                                       "animate__repeat-2"]
+                    (> eval-diff 600) ["text-xl" "text-city-red-500"
+                                       "animate__animated" "animate__tada"
+                                       "animate__repeat-1"]
+                    (> eval-diff 500) ["text-xl" "text-city-red-400"]
                     (> eval-diff 400) ["text-xl" "text-city-pink-500"]
                     (> eval-diff 300) ["text-xl" "text-city-pink-400"]
                     (> eval-diff 200) ["text-xl" "text-city-pink-300"]
@@ -158,7 +164,7 @@
 
       (when eval
         [:span
-         {:class (concat ["ml-auto" "font-nes"]
+         {:class (concat ["ml-auto" "font-nes" "decoration-4" "underline"]
                          (cond
                            (< eval 0) ["text-city-black-300"]
                            (> eval 0) ["text-city-pink-100"]
