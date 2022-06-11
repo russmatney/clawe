@@ -130,5 +130,20 @@
       (open {:emacs/workspace-name n})
       (open))))
 
+(defn open-in-emacs
+  "Opens a file in an existing emacs client.
+  Expects an absolute file-path.
+  "
+  [opts]
+  (let [file-path (some opts [:emacs/file-path])
+        eval-str  (str
+                    "(progn " (when file-path (str " (find-file \"" file-path "\") " " ")) " )")]
+    (-> ($ emacsclient --no-wait --eval ~eval-str)
+        check)))
+
 (comment
-  (defcom/exec open-emacs))
+  (def --file "/Users/russ/russmatney/clawe/src/api/emacs.clj")
+
+  (open-in-emacs
+    {:emacs/file-path --file})
+  )
