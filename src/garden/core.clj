@@ -35,9 +35,9 @@
       item
       (dissoc :org/items)
       (assoc :garden/file-name (fs/file-name source-file)
-             :org/source-file (-> source-file
-                                  (string/replace-first "/home/russ/todo/" "")
-                                  (string/replace-first "/Users/russ/todo/" ""))
+             :org/short-path (-> source-file
+                                 (string/replace-first "/home/russ/todo/" "")
+                                 (string/replace-first "/Users/russ/todo/" ""))
              :org.prop/created-at (parse-created-at created-at)
              :org.prop/title (or title (fs/file-name source-file))
              :time/last-modified last-modified))))

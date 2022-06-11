@@ -37,8 +37,9 @@
       source-file]]))
 
 (defn selected-node
-  [{:org/keys      [source-file body]
-    :org.prop/keys [title]}]
+  [{:org/keys      [short-path body]
+    :org.prop/keys [title]
+    :as            item}]
 
   [:div
    {:class ["flex" "flex-col" "p-2"]}
@@ -47,8 +48,14 @@
     title]
 
    [:span
-    {:class ["font-mono" "text-xl" "text-city-green-200" "p-2"]}
-    source-file]
+    {:class    ["font-mono" "text-xl" "text-city-green-200" "p-2"
+                "hover:text-city-pink-400"
+                "cursor-pointer"]
+     :on-click (fn [_]
+                 (let [res (hooks.garden/open-in-emacs item)]
+                   (println "open-in-emacs res" res)
+                   res))}
+    short-path]
 
    [:div
     {:class ["font-mono" "text-city-blue-400"

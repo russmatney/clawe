@@ -1,7 +1,8 @@
 (ns hooks.garden
   (:require
    [plasma.core :refer [defhandler defstream]]
-   #?@(:clj [[garden.core :as garden]]
+   #?@(:clj [[garden.core :as garden]
+             [api.emacs]]
        :cljs [[plasma.uix :refer [with-rpc with-stream]]])))
 
 (defhandler get-garden-handler []
@@ -17,6 +18,7 @@
 (defhandler open-in-emacs [item]
   (println "open in emacs!!!")
   (println "opening file:" item)
+  (api.emacs/open-in-emacs item)
   :ok)
 
 (comment

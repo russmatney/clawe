@@ -7,27 +7,36 @@
    [clojure.string :as string]
    [tick.core :as t]))
 
-(defn s-shortener [s]
-  (if (< (count s) 30)
-    s
-    (let [start (take 15 s)
-          end   (->> s reverse (take 15) reverse)]
-      (apply str (concat start "..." end)))))
+(defn s-shortener
+  ([s] (s-shortener nil s))
+  ([opts s]
+   (let [total-len (:length opts 30)
+         half-len  (/ total-len 2)]
+     (if (< (count s) total-len)
+       s
+       (let [start (take half-len s)
+             end   (->> s reverse (take half-len) reverse)]
+         (apply str (concat start "..." end)))))))
 
 (comment
-  (s-shortener "some really long string with lots of thoughts that never end"))
+  (s-shortener "some really long string with lots of thoughts that never end")
+  (s-shortener
+    {:length 20}
+    "some really long string with lots of thoughts that never end")
+  )
 
 (defn post-link
   "A link to a blog-post-y rendering of a garden note"
   [{:keys [on-select is-selected?]} item]
-  (let [{:org/keys      [source-file]
+  (def --item item)
+  (let [{:org/keys      [tags]
          :org.prop/keys [title]
          :time/keys     [last-modified]}
 
         item
         hovering? (uix/state false)]
     [:div
-     {:class (->> ["flex" "flex-row"
+     {:class (->> ["flex" "flex-row" "flex-wrap"
                    "px-2"
                    "align-items"
                    (when is-selected? "border border-city-blue-600")
@@ -40,39 +49,36 @@
       :on-mouse-enter #(reset! hovering? true)
       :on-mouse-leave #(reset! hovering? false)}
 
-     [:div
-      {:class    [
-                  "font-mono"]
-       :on-click (fn [_]
-                   (let [res (hooks.garden/open-in-emacs item)]
-                     (println "open-in-emacs res" res)
-                     res))}
-      (s-shortener source-file)]
+     [:span.px-2.font-mono (s-shortener {:length 18} title)]
 
-     [:span.px-4]
+     ;; filename
+     #_[:div
+        {:class ["font-mono"]}
+        (s-shortener source-file)]
 
-     (s-shortener title)
+     [:span.px-2 tags]
 
-     [:span.px-4]
-     (when last-modified
-       [:div
-        {:class ["font-mono"
-                 "text-gray-500"]}
-        (let [time-ago  (t/duration {:tick/beginning (t/instant last-modified)
-                                     :tick/end       (t/now)})
-              mins-ago  (t/minutes time-ago)
-              hours-ago (t/hours time-ago)
-              days-ago  (t/days time-ago)]
-          (cond
-            (< mins-ago 60)  (str mins-ago " min(s) ago")
-            (< hours-ago 24) (str hours-ago " hour(s) ago")
-            :else            (str days-ago " day(s) ago")))])]))
+     [:span.ml-auto
+      (when last-modified
+        [:div
+         {:class ["font-mono"
+                  "text-gray-500"]}
+         (let [time-ago  (t/duration {:tick/beginning (t/instant last-modified)
+                                      :tick/end       (t/now)})
+               mins-ago  (t/minutes time-ago)
+               hours-ago (t/hours time-ago)
+               days-ago  (t/days time-ago)]
+           (cond
+             (< mins-ago 60)  (str mins-ago " min(s) ago")
+             (< hours-ago 24) (str hours-ago " hour(s) ago")
+             :else            (str days-ago " day(s) ago")))])]]))
 
 (defn page [_opts]
   (let [{:keys [items]}   (hooks.garden/use-garden)
         default-selection (->> items
                                ;; TODO read from slugs in query params
-                               (filter (comp #(string/includes? % "journal.org") :org/source-file))
+                               (filter (comp #(string/includes? % "journal.org")
+                                             :org/source-file))
                                first)
         last-selected     (uix/state default-selection)
         open-posts        (uix/state #{default-selection})]
@@ -85,16 +91,11 @@
      {:class ["bg-yo-blue-500"
               "flex" "flex-col" "flex-wrap"
               "min-h-screen"
-              "overflow-y-auto"
-              ]}
+              "overflow-y-auto"]}
 
      ;; top bar
      [:div
       {:class ["flex" "flex-col" "p-2"]}
-      [:span
-       {:class ["font-nes" "text-xl" "text-city-pink-200" "p-2"]}
-       "Posts"]
-
       (when (#{0} (count items))
         [:div
          {:class ["p-6" "text-lg" "text-white"]}
