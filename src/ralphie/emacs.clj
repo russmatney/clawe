@@ -131,9 +131,8 @@
       (open))))
 
 (defn open-in-emacs
-  "Opens a file in an existing emacs client.
-  Expects an absolute file-path.
-  "
+  "Opens a file in the last-focused existing emacs client.
+  Expects an absolute file-path."
   [opts]
   (let [file-path (some opts [:emacs/file-path])
         eval-str  (str

@@ -1,11 +1,14 @@
 (ns pages.posts
   (:require
    [wing.core :as w]
+   [wing.uix.router :as router]
    [uix.core.alpha :as uix]
    [hooks.garden]
    [components.garden]
    [clojure.string :as string]
-   [tick.core :as t]))
+   [tick.core :as t]
+   [promesa.core :as promesa]
+   ))
 
 (defn s-shortener
   ([s] (s-shortener nil s))
@@ -73,15 +76,25 @@
              (< hours-ago 24) (str hours-ago " hour(s) ago")
              :else            (str days-ago " day(s) ago")))])]]))
 
+
 (defn page [_opts]
-  (let [{:keys [items]}   (hooks.garden/use-garden)
-        default-selection (->> items
-                               ;; TODO read from slugs in query params
-                               (filter (comp #(string/includes? % "journal.org")
-                                             :org/source-file))
-                               first)
-        last-selected     (uix/state default-selection)
-        open-posts        (uix/state #{default-selection})]
+  (let [selected-item-name (router/use-route-parameters [:query :item-name])
+        {:keys [items]}    (hooks.garden/use-garden)
+        default-selection  (cond->> items
+                             @selected-item-name
+                             (filter (comp #{@selected-item-name} :org/name))
+
+                             ;; TODO read from slugs in query params
+                             (not @selected-item-name)
+                             (filter (comp #(string/includes? % "journal.org")
+                                           :org/source-file))
+                             true
+                             first)
+        ;; TODO preserve selection (query params?)
+        last-selected (uix/state default-selection)
+        full-item     (uix/state nil)
+        open-posts    (uix/state #{default-selection})]
+    (println "item-name" @selected-item-name)
     ;; Posts
     ;; List of post names grouped by tag
     ;; Maybe groups of linked nodes
@@ -119,16 +132,21 @@
                          ;; TODO some fancy grouping/sorting/filtering feats
                          (sort-by :time/last-modified >)
                          (map-indexed vector))]
+
          ^{:key i}
          [post-link
           {:on-select    (fn [_]
                            ;; TODO set slugs in query params
                            (swap! open-posts (fn [op] (w/toggle op it)))
-                           (reset! last-selected it))
+                           (reset! last-selected it)
+                           (reset! selected-item-name (:org/name it))
+                           (promesa/handle
+                             (hooks.garden/full-item it)
+                             #(reset! full-item %)))
            :is-selected? (@open-posts it)}
           (assoc it :index i)])]
 
-      (when (seq @open-posts)
+      (when (and false (seq @open-posts))
         [:div
          {:class ["flex"
                   "flex-grow-1"
@@ -142,4 +160,12 @@
                           (map-indexed vector))]
            ^{:key (or (:org/source-file p) i)}
            [:div
-            (components.garden/selected-node p)])])]]))
+            (components.garden/selected-node p)])])
+
+      (when @full-item
+        [:div
+         {:class ["flex"
+                  "flex-grow-1"
+                  "p-2"
+                  "bg-yo-blue-700"]}
+         [components.garden/org-file @full-item]])]]))

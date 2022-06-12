@@ -5,15 +5,12 @@
    [manifold.stream :as s]
    [org-crud.core :as org-crud]
    [systemic.core :refer [defsys] :as sys]
-
    [ralphie.zsh :as r.zsh]
    [util]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; org helpers
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn parse-created-at [x] x)
 
 (defn get-last-modified
   [item]
@@ -38,7 +35,7 @@
              :org/short-path (-> source-file
                                  (string/replace-first "/home/russ/todo/" "")
                                  (string/replace-first "/Users/russ/todo/" ""))
-             :org.prop/created-at (parse-created-at created-at)
+             :org.prop/created-at created-at
              :org.prop/title (or title (fs/file-name source-file))
              :time/last-modified last-modified))))
 
@@ -93,3 +90,18 @@
   (s/put! *garden-stream*
 
           (get-garden)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; get-full-item
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn full-item
+  [{:org/keys [source-file]
+    :as       item}]
+  (def --item item)
+  (println "garden.core full-item" item)
+  (org-crud/path->nested-item source-file))
+
+(comment
+  (full-item --item)
+  )

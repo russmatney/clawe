@@ -5,6 +5,18 @@
              [api.emacs]]
        :cljs [[plasma.uix :refer [with-rpc with-stream]]])))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; fetch full org items
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defhandler full-item [item]
+  (println "fetching full item" item)
+  (garden/full-item item))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; fetch garden
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defhandler get-garden-handler []
   (garden/get-garden))
 
@@ -14,7 +26,6 @@
 ;; open-in-emacs
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; TODO refactor into another hook
 (defhandler open-in-emacs [item]
   (println "open in emacs!!!")
   (println "opening file:" item)
@@ -32,6 +43,8 @@
    (defn use-garden []
      (let [items       (plasma.uix/state [])
            handle-resp (fn [its] (reset! items its))]
+
+       ;; TODO fetch full-item if param passed
 
        (with-rpc [] (get-garden-handler) handle-resp)
        (with-stream [] (garden-stream) handle-resp)
