@@ -126,9 +126,9 @@
 
 (deftest install-repo-workspaces-test
   (let [repo-paths
-        {"clawe-test"    "russmatney/clawe-test"
-         "wing-test"     "/home/russ/teknql/wing-test"
-         "wing-test-two" "/home/russ/teknql/wing-test-two"}]
+        {"some-test"          "russmatney/some-test"
+         "something-test"     "/home/russ/teknql/something-test"
+         "something-test-two" "/home/russ/teknql/something-test-two"}]
     (let [res (sut/install-repo-workspaces (vals repo-paths))]
       (is res)
       ;; some datoms, at least
