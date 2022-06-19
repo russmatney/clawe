@@ -6,6 +6,8 @@ tmp/
 .cpcache
 .nrepl-port
 .clj-kondo/.cache
+.clj-kondo/babashka
+.clj-kondo/metosin
 log/
 
 awesome/**/.luacheckcache
@@ -28,6 +30,7 @@ sxhkd/sxhkdrc
 
 clawedb
 defthingdb
+commands.json
 
 .nrepl-port
 .shadow-cljs
@@ -35,6 +38,9 @@ node_modules/
 yarn.lock
 public/js/
 public/css/main-built.css
+public/css/chessground*
+public/images/board/
+public/images/pieces/
 public/assets/candy-icons
 public/assets/screenshots
 public/assets/wallpapers
