@@ -145,3 +145,6 @@ binary for datalevin required
 #+begin_src osx
 brew install huahaiy/brew/datalevin
 #+end_src
+* osx
+** ubersicht
+~/Library/Application Support/Übersicht/widgets
