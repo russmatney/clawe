@@ -137,7 +137,6 @@
        (str (string/replace (str move-number) ".5" "..") ". " (get move "san"))]
 
       (when (or mate eval-diff)
-        (println "eval-diff" eval-diff)
         [:span
          {:class
           (concat ["ml-auto" "font-nes"]
@@ -278,8 +277,6 @@
           url analysis]}  game
         show-all-mistakes (uix/state nil)
         all-game-states   (build-game-states game)]
-
-    (println "all-eval-diffs" (->> all-game-states (map :eval-diff)))
 
     [:div
      {:class ["bg-yo-blue-500" "p-3"
