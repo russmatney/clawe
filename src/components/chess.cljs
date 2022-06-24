@@ -124,7 +124,8 @@
         (nth all-game-states @state-cursor nil)
 
         {:lichess.game/keys [white-player]} game
-        wheel-container-ref                 (uix/ref)]
+        ;; wheel-container-ref                 (uix/ref)
+        ]
 
     [:div
      {:class ["flex" "flex-col" "w-64" "items-center"]}
@@ -177,7 +178,7 @@
 
      [:div
       {:class          ["w-64" "h-64"]
-       :ref            wheel-container-ref
+       ;; :ref            wheel-container-ref
        :on-mouse-enter #(disable-scroll)
        :on-mouse-leave #(enable-scroll)
        :on-wheel       (fn [ev]

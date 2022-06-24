@@ -140,7 +140,6 @@
               (when until (str "&until=" until))
               (when evals "&evals=true")
               (when literate "&literate=true")
-              ;; note, analysis is a filter, not a request for more metadata
               (when analysis "&analysis=true"))]
      (->
        (or (get @*lichess-cache endpoint+params)

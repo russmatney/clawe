@@ -31,7 +31,6 @@
 (defn post-link
   "A link to a blog-post-y rendering of a garden note"
   [{:keys [on-select is-selected?]} item]
-  (def --item item)
   (let [{:org/keys      [tags]
          :org.prop/keys [title]
          :time/keys     [last-modified]}
@@ -52,7 +51,13 @@
       :on-mouse-enter #(reset! hovering? true)
       :on-mouse-leave #(reset! hovering? false)}
 
-     [:span.px-2.font-mono (s-shortener {:length 18} title)]
+     [:span
+      {:class    ["px-2" "font-mono"]
+        :on-click (fn [_]
+                    (let [res (hooks.garden/open-in-emacs item)]
+                      (println "open-in-emacs res" res)
+                      res))}
+      (s-shortener {:length 18} title)]
 
      ;; filename
      #_[:div
@@ -75,7 +80,6 @@
              (< mins-ago 60)  (str mins-ago " min(s) ago")
              (< hours-ago 24) (str hours-ago " hour(s) ago")
              :else            (str days-ago " day(s) ago")))])]]))
-
 
 (defn page [_opts]
   (let [selected-item-name (router/use-route-parameters [:query :item-name])
