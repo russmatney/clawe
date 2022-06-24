@@ -7,8 +7,7 @@
    [components.garden]
    [clojure.string :as string]
    [tick.core :as t]
-   [promesa.core :as promesa]
-   ))
+   [promesa.core :as promesa]))
 
 (defn s-shortener
   ([s] (s-shortener nil s))

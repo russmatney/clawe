@@ -23,14 +23,9 @@
      (let [repos       (plasma.uix/state [])
            handle-resp (fn [new-items]
                          (println "new repos!" (count new-items))
-                         (swap! repos
-                                (fn [_]
-                                  (->> new-items
-                                       ;; TODO this is not right
-                                       ;; (w/distinct-by :events/timestamp)
-                                       ))))]
+                         (reset! repos new-items))]
 
        (with-rpc [] (get-repos) handle-resp)
        (with-stream [] (repos-stream) handle-resp)
 
-       {:repos @repos})))
+       {:items @repos})))

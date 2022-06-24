@@ -16,6 +16,7 @@
    [components.debug]
    [pages.core :as pages]
    [pages.todos]
+   [pages.commits]
    [pages.events]
    [pages.screenshots]
    [pages.wallpapers]
@@ -34,6 +35,7 @@
 (def route-defs
   [{:route "/" :page-name :page/home :label "Home" :comp pages.events/page}
    {:route "/todo" :page-name :page/todos :label "Todos" :comp pages.todos/page}
+   {:route "/commits" :page-name :page/commits :label "Commits" :comp pages.commits/page}
    {:route "/events" :page-name :page/events :label "Events" :comp pages.events/page}
    {:route "/topbar" :page-name :page/topbar :label "Top Bar" :comp views.topbar/widget :comp-only true}
    ;; {:route "/topbarbg":page-name :page/topbar-bg :label "Top Bar BG" :comp views.topbar/widget}

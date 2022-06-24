@@ -1,10 +1,20 @@
 (ns api.repos
   (:require
    [systemic.core :refer [defsys] :as sys]
-   [manifold.stream :as s]))
+   [manifold.stream :as s]
+   [clawe.git]))
+
+(defn ->repo [path]
+  {:repo/path path})
 
 (defn active-repos []
-  [])
+  (->>
+    (clawe.git/git-dirs)
+    (map ->repo)))
+
+(comment
+  (clawe.git/git-dirs)
+  (clawe.git/list-db-commits))
 
 (defsys *repos-stream*
   :start (s/stream)
