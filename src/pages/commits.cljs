@@ -1,11 +1,12 @@
-(ns pages.events
+(ns pages.commits
   (:require
    [clojure.string :as string]
    [tick.core :as t]
    [uix.core.alpha :as uix]
    [wing.core :as w]
 
-   [hooks.events]
+   [hooks.commits]
+   [hooks.repos]
    [components.debug]
    [components.chess]
    [components.git]
@@ -40,12 +41,15 @@
     {:class ["bg-city-red-900" "rounded-lg" "px-4" "p-2"]}
     [components.events/event-count-list events]]])
 
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; event page
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn page [_opts]
-  (let [{:keys [items]} (hooks.events/use-events)
+  (let [repo-resp       (hooks.repos/use-repos)
+        repos           (:items repo-resp)
+        {:keys [items]} (hooks.commits/use-commits)
         items           (->> items (filter :event/timestamp))
         all-item-dates  (->> items
                              (map :event/timestamp)
@@ -81,7 +85,6 @@
                                  :events (components.events/events-for-dates #{date} items)}])}
        (->> items (map :event/timestamp) (remove nil?))]]
 
-     ;; TODO filter by type (screenshots, commits, org items)
      [:div
       [:h1 {:class ["px-4" "text-xl"]}
        event-count " Events"
@@ -98,4 +101,10 @@
 
      [:div
       {:class ["pt-2"]}
-      [components.events/event-clusters {} events]]]))
+      [components.events/event-clusters {} events]]
+
+     [:div
+      {:class ["flex" "flex-col" "text-white"]}
+      (for [repo repos]
+        ^{:key (:repo/path repo)}
+        [:div (:repo/path repo)])]]))
