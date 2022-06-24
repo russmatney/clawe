@@ -7,9 +7,11 @@
   (let [{:keys [click hover offset
                 anchor-comp
                 anchor-comp-props
-                popover-comp]} opts
-        offset                 (or offset 30)
-        open                   (uix/state false)
+                popover-comp
+                popover-comp-props
+                ]} opts
+        offset     (or offset 30)
+        open       (uix/state false)
 
         floating-state (FUI/useFloating
                          (clj->js {:open @open :onOpenChange #(reset! open %)
@@ -39,10 +41,13 @@
      [:> FUI/FloatingPortal
       (when @open
         [:> FUI/FloatingFocusManager {:context context}
-         [:div (js->clj (.getFloatingProps
-                          ixs (clj->js {:ref   (.-floating floating-state)
-                                        :style {:position (.-strategy floating-state)
-                                                :top      (or (.-y floating-state) "")
-                                                :left     (or (.-x floating-state) "")
-                                                :maxWidth "calc(100vw - 10px)" }})))
+         [:div
+          (merge
+            (js->clj (.getFloatingProps
+                       ixs (clj->js {:ref   (.-floating floating-state)
+                                     :style {:position (.-strategy floating-state)
+                                             :top      (or (.-y floating-state) "")
+                                             :left     (or (.-x floating-state) "")
+                                             :maxWidth "calc(100vw - 10px)" }})))
+            popover-comp-props)
           popover-comp]])]]))
