@@ -1,12 +1,93 @@
 (ns components.garden
   (:require
    [hooks.garden]
+   [components.debug]
    [uix.core.alpha :as uix]))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; body
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn org-body
+  "Renders an org body.
+
+  Recursively renders the items nested content, if items are found
+  as :org/items on the passed org node."
+  ([item] (org-body nil item))
+  ([{:keys [nested?]} {:org/keys [body items word-count] :as item}]
+   [:div
+    {:class (concat ["font-mono"])}
+
+    (when (seq body)
+      [:div
+       {:class ["text-city-blue-400"
+                "flex" "flex-col" "p-2"
+                "bg-yo-blue-500"]}
+       [:div
+        [:div
+         {:class ["text-sm"]}
+         word-count " words"]]
+
+       (for [[i line] (map-indexed vector body)]
+         (let [{:keys [text]} line]
+           (cond
+             (= "" text)
+             ^{:key i} [:span {:class ["py-1"]} " "]
+
+             :else
+             ^{:key i} [:span text])))])
+
+    [components.debug/raw-metadata {:label "Raw org item"}
+     (dissoc item :org/items)]
+
+    [:div
+     (for [[i item] (map-indexed vector items)]
+       ^{:key i}
+       [:div
+        {:class
+         (concat
+           ["pb-4"]
+           (when (and (:org/level item) (= (:org/level item) 1))
+             ["border" "border-city-blue-800"])
+           (cond
+             (and (:org/level item) (= (:org/level item) 1)) ["pl-2"]
+             (and (:org/level item) (= (:org/level item) 2)) ["pl-4"]
+             (and (:org/level item) (= (:org/level item) 3)) ["pl-8"]
+             (and (:org/level item) (> (:org/level item) 3)) ["pl-16"]))}
+
+        ;; name
+        (when (:org/name item)
+          [:div
+           {:class
+            (concat
+              ["text-lg" "font-mono"])}
+           (:org/name item)])
+
+        ;; body
+        [org-body {:nested? true} item]])]]))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; org link components
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn source-file-link
+  "A 'link' source-file that fires open-in-emacs on click."
+  [{:org/keys [source-file short-path]
+    :as       item}]
+
+  [:span
+   {:class    ["font-mono" "text-xl" "text-city-green-200" "p-2"
+               "hover:text-city-pink-400"
+               "cursor-pointer"]
+    :on-click (fn [_] (hooks.garden/open-in-emacs item))}
+   (or short-path source-file)])
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn garden-node
   [{:keys [on-select]} item]
-  (let [{:org/keys      [source-file]
-         :org.prop/keys [title created-at]}
+  (let [{:org.prop/keys [title created-at]}
 
         item
         hovering? (uix/state false)]
@@ -27,18 +108,10 @@
         {:class ["font-mono"]}
         created-at])
 
-     [:div
-      {:class    ["font-mono"
-                  "hover:text-city-blue-400"]
-       :on-click (fn [_]
-                   (let [res (hooks.garden/open-in-emacs item)]
-                     (println res)
-                     res))}
-      source-file]]))
+     [source-file-link item]]))
 
 (defn selected-node
-  [{:org/keys      [short-path body]
-    :org.prop/keys [title]
+  [{:org.prop/keys [title]
     :as            item}]
 
   [:div
@@ -47,36 +120,35 @@
     {:class ["font-nes" "text-xl" "text-city-green-200" "p-2"]}
     title]
 
-   [:span
-    {:class    ["font-mono" "text-xl" "text-city-green-200" "p-2"
-                "hover:text-city-pink-400"
-                "cursor-pointer"]
-     :on-click (fn [_]
-                 (let [res (hooks.garden/open-in-emacs item)]
-                   (println "open-in-emacs res" res)
-                   res))}
-    short-path]
+   [source-file-link item]
 
-   [:div
-    {:class ["font-mono" "text-city-blue-400"
-             "flex" "flex-col" "p-2"
-             "bg-yo-blue-500"]}
-    (for [[i line] (map-indexed vector body)]
-      (let [{:keys [text]} line]
-        (cond
-          (= "" text)
-          ^{:key i} [:span {:class ["py-1"]} " "]
-
-          :else
-          ^{:key i} [:span text])))]])
+   [org-body item]])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Org file
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn org-file [{:keys     []
-                 :org/keys [name]
-                 :as       item}]
+(defn org-file [{:org/keys      [name tags urls word-count]
+                 :org.prop/keys [filetags created-at title]
+                 :as            item}]
   [:div
-   "name"
-   name])
+   {:class ["text-white"]}
+
+   [:div
+    {:class ["text-lg"]}
+    created-at]
+
+   [source-file-link item]
+
+   [:div
+    {:class ["text-xl"]}
+    (or title name)]
+
+   [:div
+    {:class ["text-lg"]}
+    ;; TODO parse filetags into tags?
+    filetags
+    (when (seq tags) tags)
+    (when (seq urls) urls)]
+
+   [org-body item]])

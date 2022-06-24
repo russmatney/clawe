@@ -3,29 +3,14 @@
    [wing.core :as w]
    [wing.uix.router :as router]
    [uix.core.alpha :as uix]
+   [promesa.core :as promesa]
+
    [hooks.garden]
    [components.garden]
+   [components.floating]
+   [components.format]
    [clojure.string :as string]
-   [tick.core :as t]
-   [promesa.core :as promesa]))
-
-(defn s-shortener
-  ([s] (s-shortener nil s))
-  ([opts s]
-   (let [total-len (:length opts 30)
-         half-len  (/ total-len 2)]
-     (if (< (count s) total-len)
-       s
-       (let [start (take half-len s)
-             end   (->> s reverse (take half-len) reverse)]
-         (apply str (concat start "..." end)))))))
-
-(comment
-  (s-shortener "some really long string with lots of thoughts that never end")
-  (s-shortener
-    {:length 20}
-    "some really long string with lots of thoughts that never end")
-  )
+   [tick.core :as t]))
 
 (defn post-link
   "A link to a blog-post-y rendering of a garden note"
@@ -51,17 +36,13 @@
       :on-mouse-leave #(reset! hovering? false)}
 
      [:span
-      {:class    ["px-2" "font-mono"]
-        :on-click (fn [_]
-                    (let [res (hooks.garden/open-in-emacs item)]
-                      (println "open-in-emacs res" res)
-                      res))}
-      (s-shortener {:length 18} title)]
+      {:class ["px-2" "font-mono"]}
+      (components.format/s-shortener {:length 18} title)]
 
      ;; filename
      #_[:div
         {:class ["font-mono"]}
-        (s-shortener source-file)]
+        (components.format/s-shortener source-file)]
 
      [:span.px-2 tags]
 
@@ -122,7 +103,6 @@
      [:div
       {:class ["flex" "flex-row"]}
 
-
       [:div
        {:class ["flex"
                 "flex-grow-0"
@@ -137,17 +117,26 @@
                          (map-indexed vector))]
 
          ^{:key i}
-         [post-link
-          {:on-select    (fn [_]
-                           ;; TODO set slugs in query params
-                           (swap! open-posts (fn [op] (w/toggle op it)))
-                           (reset! last-selected it)
-                           (reset! selected-item-name (:org/name it))
-                           (promesa/handle
-                             (hooks.garden/full-item it)
-                             #(reset! full-item %)))
-           :is-selected? (@open-posts it)}
-          (assoc it :index i)])]
+
+         [components.floating/popover
+          {:hover true
+           :click true
+           :anchor-comp
+           [post-link
+            {:on-select    (fn [_]
+                             ;; TODO set slugs in query params
+                             (swap! open-posts (fn [op] (w/toggle op it)))
+                             (reset! last-selected it)
+                             (reset! selected-item-name (:org/name it))
+                             (promesa/handle
+                               (hooks.garden/full-item it)
+                               #(reset! full-item %)))
+             :is-selected? (@open-posts it)}
+            (assoc it :index i)]
+           :popover-comp
+           [:div
+            {:class ["p-6 bg-yo-blue-700"]}
+            [components.garden/org-file it]]}])]
 
       (when (and false (seq @open-posts))
         [:div

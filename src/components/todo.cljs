@@ -76,8 +76,7 @@
           ^{:key i}
           [:a {:class ["py-1"
                        "cursor-pointer"
-                       "hover:text-yo-blue-400"
-                       ]
+                       "hover:text-yo-blue-400"]
                :href  url}
            url])])]))
 
