@@ -66,7 +66,7 @@
 
 (defn raw-metadata
   ([metadata] [raw-metadata nil metadata])
-  ([{:keys [label initial-show? initial-show] :as opts} metadata]
+  ([{:keys [label] :as opts} metadata]
    (let [label (if (= false label) nil (or label "Toggle raw metadata"))]
      [components.floating/popover
       {:hover true :click true
@@ -78,7 +78,9 @@
        :popover-comp-props {:class ["max-w-7xl"]}
        :popover-comp
        [:div
-        {:class ["mt-auto" "p-4" "bg-yo-blue-700"]}
+        {:class ["mt-auto" "p-4" "bg-yo-blue-700"
+                 "border"
+                 "border-city-blue-800"]}
         (when metadata
           (->> metadata
                map-key-sort

@@ -14,9 +14,16 @@
   Recursively renders the items nested content, if items are found
   as :org/items on the passed org node."
   ([item] (org-body nil item))
-  ([{:keys [nested?]} {:org/keys [body items word-count] :as item}]
+  ([{:keys [nested?]} {:org/keys [body items word-count status] :as item}]
    [:div
     {:class (concat ["font-mono"])}
+
+    (when status
+      [:div
+       [:div
+        {:class ["text-sm"]}
+        "todo: "
+        status]])
 
     (when (seq body)
       [:div
@@ -37,7 +44,8 @@
              :else
              ^{:key i} [:span text])))])
 
-    [components.debug/raw-metadata {:label "Raw org item"}
+    [components.debug/raw-metadata
+     {:label "Raw org item"}
      (dissoc item :org/items)]
 
     [:div
@@ -46,7 +54,7 @@
        [:div
         {:class
          (concat
-           ["pb-4"]
+           [(when-not nested? "pb-4")]
            (when (and (:org/level item) (= (:org/level item) 1))
              ["border" "border-city-blue-800"])
            (cond
