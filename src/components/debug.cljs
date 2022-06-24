@@ -1,6 +1,7 @@
 (ns components.debug
   (:require
-   [uix.core.alpha :as uix]))
+   [components.floating]
+   [components.format]))
 
 (defn colls-last [m]
   (->> m
@@ -12,8 +13,7 @@
   (->> m (sort-by first) colls-last))
 
 (comment
-  (colls-last {:some-v 5 :some-coll [5]})
-  )
+  (colls-last {:some-v 5 :some-coll [5]}))
 
 
 (defn colorized-metadata
@@ -48,7 +48,9 @@
               (->> v (map (partial colorized-metadata (inc level) opts)))
 
               :else
-              [:span {:class ["text-city-green-400"]}
+              [:span {:class ["text-city-green-400"
+                              "max-w-xs"
+                              ]}
                (cond
                  (and (map? v) (empty? v))  "{}"
                  (and (list? v) (empty? v)) "[]"
@@ -56,7 +58,8 @@
                  (nil? v) "nil"
 
                  :else
-                 (str v))])
+                 (when v
+                   (components.format/s-shortener (str v))))])
 
             "] "]))))))
 
@@ -64,22 +67,20 @@
 (defn raw-metadata
   ([metadata] [raw-metadata nil metadata])
   ([{:keys [label initial-show? initial-show] :as opts} metadata]
-   (let [label                    (if (= false label) nil (or label "Toggle raw metadata"))
-         show-raw-metadata        (uix/state (or initial-show? initial-show))
-         toggle-show-raw-metadata #(swap! show-raw-metadata (comp boolean not))]
-     [:div
-      {:class ["pb-4"]}
-      (when label
+   (let [label (if (= false label) nil (or label "Toggle raw metadata"))]
+     [components.floating/popover
+      {:hover true :click true
+       :anchor-comp
+       [:div
         [:span.text-sm
-         {:class    ["hover:text-city-pink-400" "cursor-pointer"]
-          :on-click toggle-show-raw-metadata}
-         label])
+         {:class ["hover:text-city-pink-400" "cursor-pointer"]}
+         label]]
 
-      ;; TODO consider a modal, or floating/popover support
-      (when @show-raw-metadata
-        [:div
-         {:class ["mt-auto"]}
-         (when metadata
-           (->> metadata
-                map-key-sort
-                (map #(colorized-metadata opts %))))])])))
+       :popover-comp-props {:class ["max-w-7xl"]}
+       :popover-comp
+       [:div
+        {:class ["mt-auto" "p-4" "bg-yo-blue-700"]}
+        (when metadata
+          (->> metadata
+               map-key-sort
+               (map #(colorized-metadata opts %))))]}])))
