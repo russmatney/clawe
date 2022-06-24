@@ -35,6 +35,7 @@
      [:div
       (merge
         (js->clj (.getReferenceProps ixs (clj->js {:ref (.-reference floating-state)})))
+        {:class ["max-w-max"]}
         anchor-comp-props)
       anchor-comp]
 

@@ -71,10 +71,9 @@
      [components.floating/popover
       {:hover true :click true
        :anchor-comp
-       [:div
-        [:span.text-sm
-         {:class ["hover:text-city-pink-400" "cursor-pointer"]}
-         label]]
+       [:span.text-sm
+        {:class ["hover:text-city-pink-400" "cursor-pointer"]}
+        label]
 
        :popover-comp-props {:class ["max-w-7xl"]}
        :popover-comp
