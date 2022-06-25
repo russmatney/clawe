@@ -107,4 +107,8 @@
       {:class ["flex" "flex-col" "text-white"]}
       (for [repo repos]
         ^{:key (:repo/path repo)}
-        [:div (:repo/path repo)])]]))
+        [:div
+         {:class    ["hover:text-city-blue-800"
+                     "cursor-pointer"]
+          :on-click (fn [_] (hooks.repos/fetch-commits repo))}
+         (:repo/path repo)])]]))

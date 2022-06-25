@@ -8,6 +8,10 @@
 ;; API
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defhandler fetch-commits [repo]
+  (api.repos/fetch-commits repo)
+  repo)
+
 (defhandler get-repos []
   (let [evts (api.repos/active-repos)]
     evts))

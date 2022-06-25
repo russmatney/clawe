@@ -22,3 +22,6 @@
 
 (defn push-repo-update []
   (s/put! *repos-stream* (active-repos)))
+
+(defn fetch-commits [repo]
+  (clawe.git/sync-commits-to-db {:dirs [(:repo/path repo)]}))

@@ -56,10 +56,10 @@
 
 (defn commits-for-git-dirs
   ([] (commits-for-git-dirs {}))
-  ([{:keys [n]}]
+  ([{:keys [n dirs]}]
    (let [n (or n 10)]
      (->>
-       (git-dirs)
+       (or dirs (git-dirs))
        (map #(commits-for-dir {:dir % :n n}))
        (remove nil?)
        (apply concat)))))
