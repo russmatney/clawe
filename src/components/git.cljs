@@ -8,7 +8,6 @@
    [hooks.commits]))
 
 
-(declare repo-label)
 (declare repo-popover-content)
 
 (defn short-repo [it]
@@ -48,7 +47,10 @@
   ([commit] [commit-popover-content nil commit])
   ([_opts commit]
    (let [repo-name (short-repo commit)
-         repo      (:commit/repo commit)]
+         ;; TODO fetch full repo? or attach to commit?
+         repo      (or (:commit/repo commit)
+                       ;; TODO should come out of local datastore
+                       {:repo/path (:git.commit/directory commit)})]
      [:div
       {:class ["bg-city-blue-900"
                "border"
@@ -77,7 +79,7 @@
                      (when repo-name "hover:text-city-pink-200")
                      (when repo-name "hover:cursor-pointer")]
              ;; TODO not all commits have public repos (ignore dropbox)
-             ;; TODO include this link in db commits
+             ;; TODO build this link for db commits when ingested
              :href  (when repo-name (str "https://github.com/"
                                          repo-name "/commit/"
                                          (:git.commit/hash commit)))}
@@ -152,11 +154,6 @@
 ;; repos
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn repo-label [repo]
-  [:div
-   {:class ["text-white"]}
-   (:repo/path repo)])
-
 (defn repo-popover-content
   ([repo] [repo-popover-content nil repo])
   ([_opts repo]
@@ -169,15 +166,19 @@
                "p-6"
                "border"
                "border-city-blue-800"]}
-      [repo-label repo]
+      [:div
+       {:class ["text-white"
+                "text-xl"]}
+       (or
+         (short-repo repo)
+         (:repo/path repo))]
 
       [commit-list nil commits]])))
 
 (defn repo-popover [repo]
   [:div
    {:class    ["hover:text-city-blue-800"
-               "cursor-pointer"
-               ]
+               "cursor-pointer"]
     :on-click (fn [_] (hooks.repos/fetch-commits repo))}
    [components.floating/popover
     {:hover true :click true

@@ -35,4 +35,6 @@
          {:class ["p-2"]}
          [components.git/repo-popover repo]])]
 
-     [components.events/events-cluster nil (:items commits-resp)]]))
+     (if (seq (:items commits-resp))
+       [components.events/events-cluster nil (:items commits-resp)]
+       [:div "No commits found!"])]))
