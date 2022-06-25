@@ -7,7 +7,6 @@
    [components.events]
    [components.git]
    [components.floating]
-   [components.repo]
    [components.screenshot]
    [components.timeline]
    [components.todo]))
@@ -31,17 +30,6 @@
       {:class ["flex" "flex-col" "text-white"]}
       (for [repo repos]
         ^{:key (:repo/path repo)}
-        [:div
-         {:class    ["hover:text-city-blue-800"
-                     "cursor-pointer"]
-          :on-click (fn [_] (hooks.repos/fetch-commits repo))}
-         [components.floating/popover
-          {:hover true :click true
-           :anchor-comp
-           [:div
-            {:class ["text-white"]}
-            (:repo/path repo)]
-           :popover-comp
-           [components.repo/popover repo]}]])]
+        [components.git/repo-popover repo])]
 
      [components.events/events-cluster nil (:items commits-resp)]]))
