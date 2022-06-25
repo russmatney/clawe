@@ -19,9 +19,9 @@
 
 (defn short-repo [it]
   (some->>
-    it
-    :git.commit/directory
-    (re-seq #"(\w+/\w+)$")
+    (or (:git.commit/directory it)
+        (:repo/path it))
+    (re-seq #"([A-Za-z-]+/[A-Za-z-]+)$")
     first
     first))
 
@@ -123,7 +123,7 @@
            [components.floating/popover
             {:hover true :click true
              :anchor-comp
-             [:div {} repo-name]
+             [:div repo-name]
              :popover-comp
              [repo-popover-content repo]}]
            repo-name)]
@@ -216,7 +216,8 @@
   ([repo] [repo-popover-content nil repo])
   ([_opts repo]
    (let [commits-resp (hooks.commits/use-commits)
-         commits      (:items commits-resp)]
+         commits      (:items commits-resp)
+         commits      (->> commits (filter (comp #{(:repo/path repo)} :git.commit/directory)))]
      [:div
       {:class ["text-white"
                "bg-yo-blue-800"
@@ -230,13 +231,17 @@
 (defn repo-popover [repo]
   [:div
    {:class    ["hover:text-city-blue-800"
-               "cursor-pointer"]
+               "cursor-pointer"
+               ]
     :on-click (fn [_] (hooks.repos/fetch-commits repo))}
    [components.floating/popover
     {:hover true :click true
      :anchor-comp
      [:div
-      {:class ["text-white"]}
-      (:repo/path repo)]
+      {:class ["text-white"
+               "hover:text-city-pink-400"]}
+      (or
+        (short-repo repo)
+        (:repo/path repo))]
      :popover-comp
      [repo-popover-content repo]}]])

@@ -24,12 +24,15 @@
      {:class ["flex" "flex-col" "flex-auto"
               "min-h-screen"
               "overflow-hidden"
-              "bg-yo-blue-700"]}
+              "bg-yo-blue-700"
+              "text-white"]}
 
      [:div
-      {:class ["flex" "flex-col" "text-white"]}
+      {:class ["grid" "grid-cols-4 gap-4"]}
       (for [repo repos]
         ^{:key (:repo/path repo)}
-        [components.git/repo-popover repo])]
+        [:div
+         {:class ["p-2"]}
+         [components.git/repo-popover repo]])]
 
      [components.events/events-cluster nil (:items commits-resp)]]))
