@@ -147,7 +147,7 @@
          (awm/move-client-to-tag (:awesome.client/window steam-client) "steam"))))})
 
 (defworkspace zoom
-  {:awesome/rules (awm-workspace-rules "zoom" "Zoom" "Slack call")}
+  {:awesome/rules (awm-workspace-rules "zoom" "Zoom" "Zoom Meeting" "Slack call")}
   {:rules/apply (fn []
                   (let [slack-call (awm/client-for-name "Slack call")]
                     (when slack-call
@@ -158,12 +158,14 @@
                       (awm/move-client-to-tag (:awesome.client/window slack-call) "zoom"))))
    :rules/is-my-client?
    (fn [c]
-     (let [matches                             #{"zoom" "Zoom" "Slack call"}
+     (let [matches                             #{"zoom" "Zoom" "Zoom Meeting" "Slack call"}
            {:awesome.client/keys [name class]} c]
        (or (matches name) (matches class)
+           (string/includes? name "Zoom")
            (string/includes? name "Slack call"))))}
   {:workspace/scratchpad         true
-   :workspace/scratchpad-classes #{"zoom" "Slack"}})
+   :workspace/scratchpad-names   #{"Zoom Meeting"}
+   :workspace/scratchpad-classes #{"zoom" "Zoom Meeting" "Slack"}})
 
 (defworkspace one-password
   {:awesome/rules (awm-workspace-rules "1password" "1Password")}
