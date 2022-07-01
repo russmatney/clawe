@@ -26,7 +26,7 @@
                            :sha     "df552797a198b6701fb2d92390fce7c59205ea77"}}
              :jvm-opts   ["-XX:-OmitStackTraceInFastThrow"]
              :main-opts  ["-m" "carve.main"]}
-  :outdated {:extra-deps {com.github.liquidz/antq {:mvn/version "1.7.804"}}
+  :outdated {:extra-deps {com.github.liquidz/antq {:mvn/version "1.8.847"}}
              :main-opts  ["-m" "antq.core"]}
 
   ;; exclude these from uberjar builds
