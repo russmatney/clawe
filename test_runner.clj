@@ -29,6 +29,7 @@
      ;; 'ralphie.awesome-test
      ;; 'components.timeline-test
      ;; 'dates.tick-test
+     'clawe.scratchpad-test
      ]
     (remove nil?)))
 
