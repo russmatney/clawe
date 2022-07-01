@@ -141,6 +141,12 @@
     (map :awesome.client/class))
   )
 
+(defn client->name [c] (:awesome.client/name c))
+(defn client->class [c] (:awesome.client/class c))
+(defn client->is-on-workspace [c wsp]
+  (if-let [tag-name-set (:awesome.client/tag-names c)]
+    (tag-name-set (:workspace/title wsp))
+    nil))
 
 ;; TODO move to pure input/output, return a description of the actions to take (some event type?)
 (defn toggle-scratchpad-2
@@ -158,17 +164,34 @@
      scratchpad-wsp
      {:current-workspaces (workspaces/current-workspaces)
       ;; TODO move to workspaces/all-clients ? something generic?
-      :all-clients (awm/all-clients)}))
+      :all-clients        (awm/all-clients)}))
 
   ([scratchpad-wsp {:keys [current-workspaces all-clients]}]
    (let [current-clients (->> current-workspaces
                               (map :awesome.tag/clients)
                               (apply concat))
 
-         is-scratchpad-client? (:scratchpad/is-my-client? scratchpad-wsp)
+         is-scratchpad-client?
+         (or ;; prefer a function
+           (:scratchpad/is-my-client? scratchpad-wsp)
+           ;; fallback to matching on name/class
+           (let [match-client-name  (->> scratchpad-wsp :scratchpad/client-names (into #{}))
+                 match-client-class (->> scratchpad-wsp :scratchpad/client-classes (into #{}))]
+             (if (or (seq match-client-name) (seq match-client-class))
+               (fn [client]
+                 (let [n (client->name client)
+                       c (client->class client)]
+                   (or (match-client-name n)
+                       (match-client-class c))))
+               nil)))
 
-         scratchpad-clients (->> all-clients
-                                 (filter is-scratchpad-client?))
+         _ (def --is? is-scratchpad-client?)
+         _ (println is-scratchpad-client?)
+         _ (println scratchpad-wsp)
+
+         scratchpad-clients (when is-scratchpad-client?
+                              (->> all-clients
+                                   (filter is-scratchpad-client?)))
 
          on-wrong-tag? (->> scratchpad-clients
                             (filter (comp
@@ -191,32 +214,33 @@
              first
              #{(:awesome.tag/name scratchpad-wsp)})
 
-         ]
 
-     ;; client exists, but is on the wrong tag - lets correct that
-     (when (and scratchpad-clients on-wrong-tag?)
-       (->> scratchpad-clients
-            (map
-              ;; TODO create awm tag if it doesn't exist
-              #(awm/move-client-to-tag (:awesome.client/window %)
-                                       (:awesome.tag/name scratchpad-wsp)))))
+         events
+         (if (and scratchpad-clients on-wrong-tag?)
+           ;; client exists, but is on the wrong tag - lets correct that
+           (->> scratchpad-clients
+                (map
+                  ;; TODO create awm tag if it doesn't exist
+                  (fn [client]
+                    [:move-client-to-workspace client scratchpad-wsp])))
+           [])]
 
-     (cond
-       (and scratchpad-client-current is-focused?)
-       ;; hide the scratchpad tag
-       (awm/toggle-tag (:awesome.tag/name scratchpad-wsp))
+     (concat
+       events
 
-       (and scratchpad-client-current (not is-focused?))
-       ;; focus/center the scratchpad tag
-       (awm/toggle-tag (:awesome.tag/name scratchpad-wsp))
+       (cond
+         (and scratchpad-client-current is-focused?)
+         ;; hide the scratchpad tag
+         [:hide-workspace scratchpad-wsp]
 
-       :else
-       (do
-         ;; TODO nothing
-         )
-       )
-     )
-   ))
+         (and scratchpad-client-current (not is-focused?))
+         ;; focus/center the scratchpad tag
+         [:focus-workspace scratchpad-wsp {:center true}]
+
+         :else
+         (do
+           ;; TODO nothing
+           [:no-op scratchpad-wsp]))))))
 
 (comment
   (->>

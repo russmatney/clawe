@@ -1,114 +1,58 @@
 (ns clawe.scratchpad-test
   (:require
-   [clojure.test :refer [deftest is]]
-   [malli.transform :as mt]
-   [malli.core :as m]
-   [lambdaisland.specmonstah.malli :as sm-malli]
-   [reifyhealth.specmonstah.core :as sm]
+   [clojure.test :refer [deftest is testing]]
    [clawe.scratchpad :as subject]
    [clawe.workspaces :as clawe.workspaces]
-   [loom.io :as lio]))
+   [clawe.schema-test :refer [gen-data]]
+   [reifyhealth.specmonstah.core :as sm]))
 
 ;; TODO generate workspace (scratchpad?) shapes
 ;; TODO mock/pass in (workspaces/current-workspaces)
 ;; TODO mock/pass in (awm/all-clients) (or some generic all-clients call)
 ;; TODO flesh out conditional use cases from doc string
 
-(def workspace-schema
-  "Basic workspace-schema"
-  ;; TODO improve these types/generators
-  [:map
-   ;; [:rules/is-my-client? fn?]
-   ;; [:awesome/rules ]
-   [:workspace/readme string?] ;; TODO optional filepath
-   [:defthing.core/registry-key keyword?]
-   [:ns string?]
-   [:name string?]
-   [:type keyword?] ;; TODO :clawe/workspaces
-   [:git/repo string?] ;; TODO directory
-   [:awesome.tag/selected boolean?]
-   [:workspace/initial-file string?] ;; TODO optional filepath
-   [:workspace/updated-at int?] ;; TODO time
-   [:workspace/scratchpad boolean?]
-   [:workspace/directory string?] ;; TODO directory
-   [:workspace/exec string?] ;; TODO string or tmux/fire map
-   [:awesome.tag/index int?] ;; TODO relation to awesome clients spec
-   [:db/id int?] ;; TODO relation to links in db
-   [:workspace/scratchpad-class string?] ;; TODO probably an enum
-   [:awesome.tag/layout [:enum "tile" "centerwork"]]
-   ;; [:awesome.tag/clients ]
-   [:awesome.tag/name string?] ;; TODO from a workspace title enum
-   [:workspace/title string?] ;; TODO from a workspace title enum
-   ;; [:awesome/tag ]
-   [:awesome.tag/empty boolean?]
-   [:awesome.tag/urgent boolean?]])
+(deftest toggle-scratchpad-test
+  (testing "no-ops when there's nothing to do"
+    (let [data    (gen-data {:clawe/workspace [[1 {:refs {:scratchpad/client-names ::sm/omit}}]]
+                             :clawe/client    [[1]]})
+          wsp     (-> data :clawe/workspace vals first)
+          wsps    (-> data :clawe/workspace vals)
+          clients (-> data :clawe/client vals)]
+      (is (:workspace/title wsp))
+      (is (:awesome.client/name (first clients)))
+      (is (= [:no-op wsp]
+             (subject/toggle-scratchpad-2
+               wsp {:current-workspaces wsps
+                    :all-clients        clients})))))
 
-(def client-schema
-  [:map
-   [:name string?]])
+  ;; (testing "corrects client workspace when client is on the wrong workspace"
+  ;;   (let [data    (gen-data {:clawe/workspace [[1]]})
+  ;;         wsp     (-> data :clawe/workspace vals first)
+  ;;         wsps    (-> data :clawe/workspace vals)
+  ;;         clients (-> data :clawe/client vals)]
+  ;;     (is (:workspace/title wsp))
+  ;;     ;; a client is generated using the specmonstah :scratchpad/names relation
+  ;;     (is (:awesome.client/name (first clients)))
 
-(def specmonstah-schema
-  {:clawe/workspace {:prefix :workspace
-                     :schema workspace-schema}
-   :clawe/client    {:prefix :client
-                     :schema client-schema}
 
-   :user      {:prefix :u
-               :schema [:map
-                        [:foo/id uuid?]
-                        [:user/name string?]]}
-   :procedure {:prefix      :p
-               :schema      [:map
-                             [:foo/id uuid?]
-                             [:procedure/id uuid?]]
-               :relations   {:procflow.procedure/owner [:user :foo/id]
-                             :procflow.procedure/steps [:step :foo/id]}
-               :constraints {:procflow.procedure/steps #{:coll :uniq}} }
-   :step      {:prefix :s
-               :schema [:map
-                        [:foo/id uuid?]
-                        [:step/name string?]]}})
+  ;;     ;; TODO write smart test
+  ;;     (let [events (subject/toggle-scratchpad-2
+  ;;                    wsp {:current-workspaces wsps
+  ;;                         :all-clients        clients})]
+  ;;       ;; These events
 
-(defn gen-data [opts]
-  (let [ent-db    (sm-malli/ent-db-spec-gen {:schema specmonstah-schema} opts)
-        by-type   (-> ent-db sm/ents-by-type)
-        with-data (-> ent-db (sm/attr-map :spec-gen))]
-    (->> by-type
-         (map (fn [[type ents]]
-                [type (->> ents
-                           (map (fn [ent-name]
-                                  [ent-name (get with-data ent-name)]))
-                           (into {}))]))
-         (into {}))))
+  ;;       (is (= [:no-op wsp] events)))))
+  )
 
+;; TODO when workspace is not one of the current
+;; If it exists anywhere, it will be found and pulled into the current workspace.
+;; (this includes 'correcting' the scratchpad's tag if it is wrong)
+;; If it is already in the current workspace but not focused, it will be focused.
+;; If it is in focus, it will be removed (hidden).
+;; Once removed, a previously focused, just-buried scratchpad will have its focus restored.
 
 (comment
-  (-> (sm-malli/ent-db-spec-gen
-        {:schema specmonstah-schema}
-        {:clawe/workspace [[1]]
-         :clawe/client    [[1]]})
-      (sm/ents-by-type))
-
-  (-> (sm-malli/ent-db-spec-gen
-        {:schema specmonstah-schema}
-        {:clawe/workspace [[1]]
-         :clawe/client    [[1]]})
-      (sm/attr-map :spec-gen))
-
-  (lio/view
-    (:data (sm/add-ents
-             {:schema specmonstah-schema}
-             {:clawe/workspace [[2]]
-              :clawe/client    [[1]]})))
-
-  (gen-data
-    {:clawe/workspace [[1]]
-     :clawe/client    [[1]]}))
-
-(deftest toggle-scratchpad-2-test
-  (let [wsp-count 6 client-count 5
-        {:keys [:clawe/workspace :clawe/client]}
-        (gen-data {:clawe/workspace [[wsp-count]]
-                   :clawe/client    [[client-count]]})]
-    (is (= (count workspace) wsp-count))
-    (is (= (count client) client-count))))
+  (->> {}
+       (map :some-key)
+       (apply concat))
+  )
