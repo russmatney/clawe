@@ -16,10 +16,9 @@
   cheshire/cheshire                  {:mvn/version "5.11.0"}
   org.clojure/tools.reader           {:mvn/version "1.3.6"}
   backtick/backtick                  {:mvn/version "0.3.4"}
+  aysylu/loom                        {:mvn/version "1.0.2"}
 
-  russmatney/org-crud {:local/root "../org-crud"}
-
-  org.clojure/spec.alpha {:mvn/version "0.3.218"}}
+  russmatney/org-crud {:local/root "../org-crud"}}
  :aliases
  {:dev      {:jvm-opts ["-XX:-OmitStackTraceInFastThrow"]}
   :carve    {:extra-deps {borkdude/carve

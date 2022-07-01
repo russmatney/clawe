@@ -6,7 +6,8 @@
    [lambdaisland.specmonstah.malli :as sm-malli]
    [reifyhealth.specmonstah.core :as sm]
    [clawe.scratchpad :as subject]
-   [clawe.workspaces :as clawe.workspaces]))
+   [clawe.workspaces :as clawe.workspaces]
+   [loom.io :as lio]))
 
 ;; TODO generate workspace (scratchpad?) shapes
 ;; TODO mock/pass in (workspaces/current-workspaces)
@@ -68,41 +69,37 @@
                         [:foo/id uuid?]
                         [:step/name string?]]}})
 
-(defn generate-vals [opts]
+(defn ->ent-db [opts]
   (-> (sm-malli/ent-db-spec-gen {:schema specmonstah-schema}
                                 opts
                                 ;; {:clawe/workspace [[1]]
                                 ;;  :clawe/client    [[1]]}
-                                )
-      (sm/attr-map :spec-gen)))
+                                )))
 
 
 (comment
-  (-> (sm-malli/ent-db-spec-gen {:schema specmonstah-schema}
-                                {:clawe/workspace [[1]]
-                                 :clawe/client    [[1]]})
-      (sm/attr-map :spec-gen)
-      )
+  (-> (sm-malli/ent-db-spec-gen
+        {:schema specmonstah-schema}
+        {:clawe/workspace [[1]]
+         :clawe/client    [[1]]})
+      (sm/ents-by-type))
 
-  (generate-vals
-    {:clawe/workspace [[1]]
-     :clawe/client    [[1]]})
+  (lio/view
+    (:data (sm/add-ents {:schema specmonstah-schema} {:clawe/workspace [[2]]
+                                                      :clawe/client    [[1]]})))
 
-
-  (def -w
-    (->> (clawe.workspaces/all-workspaces)
-         (filter :awesome.tag/name)
-         first
-         ))
-
-  (m/decode
-    workspace-schema
-    -w
-    (mt/strip-extra-keys-transformer)))
+  (->
+    (->ent-db
+      {:clawe/workspace [[1]]
+       :clawe/client    [[1]]})
+    (sm/ents-by-type)))
 
 (deftest toggle-scratchpad-2-test
-  (let [])
-  (is (= nil
-         nil
-         ;; (subject/toggle-scratchpad-2 nil)
-         )))
+  (let [wsp-count    6
+        client-count 5
+        data         (->ent-db {:clawe/workspace [[wsp-count]]
+                                :clawe/client    [[client-count]]})
+        workspaces   (-> data sm/ents-by-type :clawe/workspace)
+        clients      (-> data sm/ents-by-type :clawe/client)]
+    (is (= (count workspaces) wsp-count))
+    (is (= (count clients) client-count))))
