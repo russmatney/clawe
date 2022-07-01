@@ -13,61 +13,46 @@
 ;; TODO mock/pass in (awm/all-clients) (or some generic all-clients call)
 ;; TODO flesh out conditional use cases from doc string
 
-(deftest toggle-scratchpad-2-test
-  (is (= nil
-         nil
-         ;; (subject/toggle-scratchpad-2 nil)
-         )))
-
 (def workspace-schema
-  "A basic workspace-schema"
+  "Basic workspace-schema"
+  ;; TODO improve these types/generators
   [:map
    ;; [:rules/is-my-client? fn?]
    ;; [:awesome/rules ]
-   [:workspace/readme string?]
+   [:workspace/readme string?] ;; TODO optional filepath
    [:defthing.core/registry-key keyword?]
    [:ns string?]
    [:name string?]
-   [:type keyword?]
-   [:git/repo string?]
+   [:type keyword?] ;; TODO :clawe/workspaces
+   [:git/repo string?] ;; TODO directory
    [:awesome.tag/selected boolean?]
-   [:workspace/initial-file string?]
+   [:workspace/initial-file string?] ;; TODO optional filepath
    [:workspace/updated-at int?] ;; TODO time
    [:workspace/scratchpad boolean?]
-   [:workspace/directory string?]
-   [:workspace/exec string?] ;; TODO or tmux/fire map?
-   [:awesome.tag/index int?]
-   [:db/id int?]
-   [:workspace/scratchpad-class string?]
-   [:awesome.tag/layout string?]
+   [:workspace/directory string?] ;; TODO directory
+   [:workspace/exec string?] ;; TODO string or tmux/fire map
+   [:awesome.tag/index int?] ;; TODO relation to awesome clients spec
+   [:db/id int?] ;; TODO relation to links in db
+   [:workspace/scratchpad-class string?] ;; TODO probably set/an enum
+   [:awesome.tag/layout string?] ;; TODO from an enum? `tile`, `centerwork` ?
    ;; [:awesome.tag/clients ]
-   [:awesome.tag/name string?]
-   [:workspace/title string?]
+   [:awesome.tag/name string?] ;; TODO from a workspace title enum
+   [:workspace/title string?] ;; TODO from a workspace title enum
    ;; [:awesome/tag ]
    [:awesome.tag/empty boolean?]
    [:awesome.tag/urgent boolean?]])
 
-(def thing-schema
+(def client-schema
   [:map
-   [:some/string string?]
-   [:some/keyword keyword?]
-   [:some/int int?]])
-
-(deftest malli-test
-  (is (= (m/decode
-           thing-schema
-           {:some/string    "hi"
-            :some/keyword   :yo
-            :some/int       5
-            :something/else "blah"}
-           (mt/strip-extra-keys-transformer))
-         {:some/string  "hi"
-          :some/keyword :yo
-          :some/int     5})))
-
+   [:name string?]])
 
 (def specmonstah-schema
-  {:user      {:prefix :u
+  {:clawe/workspace {:prefix :workspace
+                     :schema workspace-schema}
+   :clawe/client    {:prefix :client
+                     :schema client-schema}
+
+   :user      {:prefix :u
                :schema [:map
                         [:foo/id uuid?]
                         [:user/name string?]]}
@@ -83,38 +68,41 @@
                         [:foo/id uuid?]
                         [:step/name string?]]}})
 
+(defn generate-vals [opts]
+  (-> (sm-malli/ent-db-spec-gen {:schema specmonstah-schema}
+                                opts
+                                ;; {:clawe/workspace [[1]]
+                                ;;  :clawe/client    [[1]]}
+                                )
+      (sm/attr-map :spec-gen)))
+
+
 (comment
   (-> (sm-malli/ent-db-spec-gen {:schema specmonstah-schema}
-                                {
-                                 :user      [[1]]
-                                 :procedure [[3]]
-                                 :step      [[10]]})
+                                {:clawe/workspace [[1]]
+                                 :clawe/client    [[1]]})
       (sm/attr-map :spec-gen)
-      vals))
+      )
 
-(deftest specmonstah-malli-test
-  (is (=
-        (count
-          (-> (sm-malli/ent-db-spec-gen {:schema specmonstah-schema}
-                                        {
-                                         :user      [[1]]
-                                         :procedure [[3]]
-                                         :step      [[10]]})
-              (sm/attr-map :spec-gen)
-              vals))
-        14)))
+  (generate-vals
+    {:clawe/workspace [[1]]
+     :clawe/client    [[1]]})
 
-(comment
+
   (def -w
     (->> (clawe.workspaces/all-workspaces)
          (filter :awesome.tag/name)
          first
          ))
 
-
   (m/decode
     workspace-schema
     -w
-    (mt/strip-extra-keys-transformer))
+    (mt/strip-extra-keys-transformer)))
 
-  )
+(deftest toggle-scratchpad-2-test
+  (let [])
+  (is (= nil
+         nil
+         ;; (subject/toggle-scratchpad-2 nil)
+         )))
