@@ -6,13 +6,13 @@
  {teknql/systemic          {:local/root "../../teknql/systemic"}
   teknql/wing              {:local/root "../../teknql/wing"}
   aero/aero                {:mvn/version "1.1.6"}
-  babashka/babashka        {:mvn/version "0.8.2"}
+  babashka/babashka        {:mvn/version "0.8.157"}
   babashka/babashka.pods   {:mvn/version "0.1.0"}
   babashka/babashka.curl   {:mvn/version "0.1.2"}
-  babashka/process         {:mvn/version "0.1.1"}
+  babashka/process         {:mvn/version "0.1.4"}
   babashka/fs              {:mvn/version "0.1.6"}
-  metosin/malli            {:mvn/version "0.8.4"}
-  cheshire/cheshire        {:mvn/version "5.10.2"}
+  metosin/malli            {:mvn/version "0.8.9"}
+  cheshire/cheshire        {:mvn/version "5.11.0"}
   org.clojure/tools.reader {:mvn/version "1.3.6"}
   backtick/backtick        {:mvn/version "0.3.4"}
 
@@ -24,7 +24,7 @@
                            :sha     "df552797a198b6701fb2d92390fce7c59205ea77"}}
              :jvm-opts   ["-XX:-OmitStackTraceInFastThrow"]
              :main-opts  ["-m" "carve.main"]}
-  :outdated {:extra-deps {com.github.liquidz/antq {:mvn/version "1.6.1"}}
+  :outdated {:extra-deps {com.github.liquidz/antq {:mvn/version "1.7.804"}}
              :main-opts  ["-m" "antq.core"]}
 
   ;; exclude these from uberjar builds
@@ -40,16 +40,16 @@
   :full-stack-deps
   {:extra-deps
    {;; dev
-    cider/cider-nrepl             {:mvn/version "0.28.3"}
+    cider/cider-nrepl             {:mvn/version "0.28.5"}
     refactor-nrepl/refactor-nrepl {:mvn/version "3.5.2"}
 
-    datalevin/datalevin {:mvn/version "0.6.8"}
+    datalevin/datalevin {:mvn/version "0.6.15"}
 
     ;; core
     org.clojure/core.async {:mvn/version "1.5.648"}
 
     ;; web
-    luminus/ring-undertow-adapter {:mvn/version "1.2.5"}
+    luminus/ring-undertow-adapter {:mvn/version "1.2.6"}
 
     ;; logging
     com.taoensso/timbre {:mvn/version "5.2.1"}
@@ -70,7 +70,7 @@
                    :local/root "../../teknql/plasma"}
 
     ;; ui dev env
-    thheller/shadow-cljs {:mvn/version "2.18.0"}
+    thheller/shadow-cljs {:mvn/version "2.19.5"}
 
     ;; ui core
     uix/uix.core {:git/url   "https://github.com/rschmukler/uix.git"
@@ -90,5 +90,4 @@
     hiccup-icons/hiccup-icons {:mvn/version "0.4.4"}
 
     ;; benchmarking
-    criterium/criterium {:mvn/version "0.4.6"}
-    }}}}
+    criterium/criterium {:mvn/version "0.4.6"}}}}}

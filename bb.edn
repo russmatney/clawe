@@ -1,5 +1,6 @@
 {:paths ["src" "test"]
- :deps  {}
+ :deps  {babashka/fs   {:mvn/version "0.1.6"}
+         metosin/malli {:mvn/version "0.8.9"}}
  :tasks
  {:requires ([clojure.string :as string]
              [clojure.pprint :as pprint]
@@ -48,6 +49,9 @@
    :task (let [cp (-> ^{:out :string} (p/$ clojure -A:remove-clojure -Spath) p/check :out)]
            (shell (str "bb -cp " cp " --uberjar clawe.jar -m clawe.core")))}
   install-clawe {:depends [clawe-install]}
+
+
+  outdated (clojure "-M:outdated")
 
   dev-doctor
   {:doc "Assess the local environment for any issues"
