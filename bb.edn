@@ -1,7 +1,7 @@
 {:paths ["src" "test"]
  :deps  {babashka/fs                        {:mvn/version "0.1.6"}
          metosin/malli                      {:mvn/version "0.8.9"}
-         com.lambdaisland/specmonstah-malli {:local/root "../../lambdaisland/specmonstah-malli"}
+         com.lambdaisland/specmonstah-malli {:mvn/version "0.0.7"}
 
          ;; found these in specmonstah's bb.edn: https://github.com/reifyhealth/specmonstah/blob/develop/bb.edn
          org.clojure/core.specs.alpha {:mvn/version "0.2.62"}
