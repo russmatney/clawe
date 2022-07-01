@@ -34,8 +34,8 @@
    [:workspace/exec string?] ;; TODO string or tmux/fire map
    [:awesome.tag/index int?] ;; TODO relation to awesome clients spec
    [:db/id int?] ;; TODO relation to links in db
-   [:workspace/scratchpad-class string?] ;; TODO probably set/an enum
-   [:awesome.tag/layout string?] ;; TODO from an enum? `tile`, `centerwork` ?
+   [:workspace/scratchpad-class string?] ;; TODO probably an enum
+   [:awesome.tag/layout [:enum "tile" "centerwork"]]
    ;; [:awesome.tag/clients ]
    [:awesome.tag/name string?] ;; TODO from a workspace title enum
    [:workspace/title string?] ;; TODO from a workspace title enum
@@ -69,12 +69,17 @@
                         [:foo/id uuid?]
                         [:step/name string?]]}})
 
-(defn ->ent-db [opts]
-  (-> (sm-malli/ent-db-spec-gen {:schema specmonstah-schema}
-                                opts
-                                ;; {:clawe/workspace [[1]]
-                                ;;  :clawe/client    [[1]]}
-                                )))
+(defn gen-data [opts]
+  (let [ent-db    (sm-malli/ent-db-spec-gen {:schema specmonstah-schema} opts)
+        by-type   (-> ent-db sm/ents-by-type)
+        with-data (-> ent-db (sm/attr-map :spec-gen))]
+    (->> by-type
+         (map (fn [[type ents]]
+                [type (->> ents
+                           (map (fn [ent-name]
+                                  [ent-name (get with-data ent-name)]))
+                           (into {}))]))
+         (into {}))))
 
 
 (comment
@@ -84,22 +89,26 @@
          :clawe/client    [[1]]})
       (sm/ents-by-type))
 
-  (lio/view
-    (:data (sm/add-ents {:schema specmonstah-schema} {:clawe/workspace [[2]]
-                                                      :clawe/client    [[1]]})))
+  (-> (sm-malli/ent-db-spec-gen
+        {:schema specmonstah-schema}
+        {:clawe/workspace [[1]]
+         :clawe/client    [[1]]})
+      (sm/attr-map :spec-gen))
 
-  (->
-    (->ent-db
-      {:clawe/workspace [[1]]
-       :clawe/client    [[1]]})
-    (sm/ents-by-type)))
+  (lio/view
+    (:data (sm/add-ents
+             {:schema specmonstah-schema}
+             {:clawe/workspace [[2]]
+              :clawe/client    [[1]]})))
+
+  (gen-data
+    {:clawe/workspace [[1]]
+     :clawe/client    [[1]]}))
 
 (deftest toggle-scratchpad-2-test
-  (let [wsp-count    6
-        client-count 5
-        data         (->ent-db {:clawe/workspace [[wsp-count]]
-                                :clawe/client    [[client-count]]})
-        workspaces   (-> data sm/ents-by-type :clawe/workspace)
-        clients      (-> data sm/ents-by-type :clawe/client)]
-    (is (= (count workspaces) wsp-count))
-    (is (= (count clients) client-count))))
+  (let [wsp-count 6 client-count 5
+        {:keys [:clawe/workspace :clawe/client]}
+        (gen-data {:clawe/workspace [[wsp-count]]
+                   :clawe/client    [[client-count]]})]
+    (is (= (count workspace) wsp-count))
+    (is (= (count client) client-count))))
