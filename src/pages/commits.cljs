@@ -2,14 +2,8 @@
   (:require
    [hooks.commits]
    [hooks.repos]
-   [components.chess]
-   [components.debug]
    [components.events]
-   [components.git]
-   [components.floating]
-   [components.screenshot]
-   [components.timeline]
-   [components.todo]))
+   [components.git]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; event page

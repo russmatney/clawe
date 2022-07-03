@@ -1,5 +1,7 @@
 #+TITLE: Todo
 
-* [ ] print keybindings command
-* [ ] print workspaces (tags and clients)
-* [ ] create workspace from open github repo in browser (or recent star)
+* [ ] faster osx topbar
+right now it's a yabai-based ubersicht bar
+and it's quite featureful
+but i need the update to be faster when scrolling workspaces
+i ought to be able to spam mod+n/mod+p to go next/previous
