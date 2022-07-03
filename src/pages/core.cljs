@@ -56,6 +56,7 @@
 
 (defn page
   "Accepts a main component and wraps it in page helpers with a menu."
+  ;; TODO reduce this crazy arity nonsense
   ([] [page default-page {}])
   ([main] [page [] main {}])
   ([main opts] [page [] main opts])

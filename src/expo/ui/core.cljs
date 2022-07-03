@@ -9,6 +9,7 @@
    [time-literals.read-write]
    [tick.timezone]
    [tick.locale-en-us]
+   [wing.core :as w]
 
    [dates.transit-time-literals :as ttl]
    [pages.core :as pages]
@@ -26,15 +27,15 @@
        (map (fn [{:keys [route page-name]}] [route {:name page-name}]))
        (into [])))
 
-(defn view []
+(defn view [opts]
   (let [page-name          (-> router/*match* uix/context :data :name)
         by-page-name       (w/index-by :page-name route-defs)
         {:keys [comp comp-only]
          :as   _route-def} (by-page-name page-name)]
     (if comp
       (if comp-only
-        [comp]
-        [pages/page route-defs comp])
+        [comp opts]
+        [pages/page route-defs comp opts])
       [pages/page])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -46,7 +47,8 @@
   (uix.dom/render
     [wing.uix.router/router-provider
      {:routes routes}
-     view]
+     view
+     {:x (js/Date.now)}]
     (.getElementById js/document "app")))
 
 (defn dev-setup []

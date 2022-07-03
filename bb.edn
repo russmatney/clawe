@@ -32,6 +32,13 @@
       (binding [pprint/*print-right-margin* 130]
         (pprint/pprint x)))
 
+    (defn shelll
+      ([args]
+       (shelll nil args))
+      ([opts args]
+       (pp args)
+       (shell opts args)))
+
     (defn run-doctor-tauri-app [name]
       (let [url   (str doctor-fe-url "/" name)
             title (str "tauri/doctor-" name)
@@ -75,19 +82,15 @@
    ;; build towards a dev-env doctor command
    (do
      ;; install yarn deps
-     (shell "yarn install")
-
-     ;; build tailwind styles
-     (log/info "TODO Consider bb/fs modified since for caching/faster re-builds")
-     (shell "yarn build")
+     (shelll "yarn install")
 
      ;; local symlinks
      (log/info "TODO impl ensure local symlinks (ln -s ~/Screenshots public/assets/screenshots)")
-     (shell "l public/assets")
+     (shelll "l public/assets")
 
      ;; tauri
-     (shell {:dir "./src-tauri"}
-            "cargo install tauri-cli --git https://github.com/tauri-apps/tauri"))}
+     (shelll {:dir "./src-tauri"}
+             "cargo install tauri-cli --git https://github.com/tauri-apps/tauri"))}
 
   tauri-dev
   {:doc "Run tauri in dev mode, rebuilding the exec on local rust changes."
@@ -98,27 +101,32 @@
 
   doctor-be {:doc "Run the doctor backend."
              :task
-             (shell {:dir (str (home-dir) "/russmatney/clawe")}
-                    "clj -M:dev:full-stack-deps:doctor-server")}
+             (shelll {:dir (str (home-dir) "/russmatney/clawe")}
+                     "clj -M:dev:full-stack-deps:doctor-server")}
   doctor-fe {:doc "Run the doctor frontend shadowcljs server."
              :task
-             (shell {:dir (str (home-dir) "/russmatney/clawe")}
-                    "npx shadow-cljs watch doctor-app")}
+             (shelll {:dir (str (home-dir) "/russmatney/clawe")}
+                     "npx shadow-cljs watch doctor-app")}
 
   expo-be {:doc "Run the expo backend shadowcljs server."
            :task
-           (shell {:dir (str (home-dir) "/russmatney/clawe")}
-                  "clj -M:dev:full-stack-deps:expo-server")}
+           (shelll {:dir (str (home-dir) "/russmatney/clawe")}
+                   "clj -M:dev:full-stack-deps:expo-server")}
   expo-fe {:doc "Run the expo frontend shadowcljs server."
            :task
-           (shell {:dir (str (home-dir) "/russmatney/clawe")}
-                  "npx shadow-cljs watch expo-app")}
+           (shelll {:dir (str (home-dir) "/russmatney/clawe")}
+                   "npx shadow-cljs watch expo-app")}
 
-  shadow-fe {:doc "Run the doctor and expo frontends via shadowcljs."
-             :task
-             (shell {:dir (str (home-dir) "/russmatney/clawe")}
-                    "npx shadow-cljs watch expo-app doctor-app")}
-
+  clawe-be          {:doc "Run the doctor and expo backends."
+                     :task
+                     (run '-clawe-be {:parallel true})}
+  -clawe-be         {:depends [doctor-be expo-be]}
+  clawe-fe          {:doc "Run the doctor and expo frontends via shadowcljs."
+                     :task
+                     (shelll {:dir (str (home-dir) "/russmatney/clawe")}
+                             "npx shadow-cljs watch expo-app doctor-app")}
+  clawe-full-stack  (run '-clawe-full-stack {:parallel true})
+  -clawe-full-stack {:depends [clawe-be clawe-fe]}
 
   topbar {:doc  "Run the doctor topbar via tauri. Consumed from systemd service."
           :task (run-doctor-tauri-app "topbar")}
