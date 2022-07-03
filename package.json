@@ -1,10 +1,6 @@
 {
-  "name": "doctor",
+  "name": "clawe",
   "description": "description",
-  "scripts": {
-    "build": "postcss public/css/main.css -o public/css/main-built.css",
-    "watch": "tailwindcss -i public/css/main.css -o public/css/main-built.css --watch"
-  },
   "dependencies": {
     "@floating-ui/react-dom-interactions": "^0.5.0",
     "@headlessui/react": "^1.6.0",
@@ -21,7 +17,7 @@
     "react": "^18.1.0",
     "react-dom": "^18.1.0",
     "react-highlight.js": "1.0.7",
-    "tailwindcss": "^3.0.24",
+    "tailwindcss": "^3.1.2",
     "xregexp": "^5.0.2"
   },
   "devDependencies": {

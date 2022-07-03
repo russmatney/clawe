@@ -24,7 +24,12 @@
    [(plasma.uix.hot-reload/compile-prepare!)
     (plasma.uix.hot-reload/compile-finish!)]
 
-   :dev {:closure-defines {:plasma.uix.hot-reload? true}}
+   :dev
+   {:closure-defines {:plasma.uix.hot-reload? true}
+    :build-hooks     [(teknql.tailwind/start-watch!)]}
+
+   :release
+   {:build-hooks [(teknql.tailwind/compile-release!)]}
 
    :closure-defines
    {doctor.ui.core/SERVER_HOST #shadow/env "SERVER_HOST"
@@ -35,7 +40,12 @@
     :http-port   3333
     :loader-mode :eval
     :after-load  doctor.ui/mount-root
-    :repl-pprint true}}
+    :repl-pprint true}
+
+   :tailwind/output "public/css/main-built.css"
+   :tailwind/files
+   {:base-path    "." ;; Path to directory housing `tailwind.config.js`
+    :tailwind.css "public/css/main.css"}}
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; expo
@@ -46,7 +56,8 @@
    :output-dir       "expo/public/js/compiled"
    :asset-path       "/js/compiled"
    :modules          {:main {:init-fn expo.ui.core/init}}
-   :compiler-options {:output-feature-set :es-next}
+   :compiler-options {:output-feature-set :es-next
+                      :infer-externs      true}
 
    :nrepl {:port 3332}
 
@@ -54,7 +65,12 @@
    [(plasma.uix.hot-reload/compile-prepare!)
     (plasma.uix.hot-reload/compile-finish!)]
 
-   :dev {:closure-defines {:plasma.uix.hot-reload? true}}
+   :dev
+   {:closure-defines {:plasma.uix.hot-reload? true}
+    :build-hooks     [(teknql.tailwind/start-watch!)]}
+
+   :release
+   {:build-hooks [(teknql.tailwind/compile-release!)]}
 
    :closure-defines
    {expo.ui.core/SERVER_HOST #shadow/env "SERVER_HOST"
@@ -65,4 +81,9 @@
     :http-port   4444
     :loader-mode :eval
     :after-load  expo.ui/mount-root
-    :repl-pprint true}}}}
+    :repl-pprint true}
+
+   :tailwind/output "expo/public/css/main-built.css"
+   :tailwind/files
+   {:base-path    "." ;; Path to directory housing `tailwind.config.js`
+    :tailwind.css "expo/public/css/main.css"}}}}
