@@ -64,6 +64,10 @@
       {:color "text-city-green-400"
        :src   "/assets/candy-icons/slack.svg"}
 
+      (= "discord" class)
+      {:color "text-city-green-400"
+       :src   "/assets/candy-icons/discord.svg"}
+
       (= "Rofi" class)
       {:color "text-city-green-400"
        :src   "/assets/candy-icons/kmenuedit.svg"}
