@@ -156,7 +156,8 @@ uberjar. Otherwise this might need to be called twice."
         (awm.rules/write-awesome-rules)
         (log "reapplying rules")
         (c.rules/apply-rules)
-        (c.rules/correct-clients-and-workspaces)))
+        (c.rules/correct-clients-and-workspaces)
+        (log "finished rules")))
 
 
     ;; Notifications

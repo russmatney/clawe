@@ -157,6 +157,7 @@ to the passed client obj."
                    cs))))
       doall)
 
+    (log "Cleaning, consolidating, and updating indexes")
     (workspaces/clean-workspaces)
     (workspaces/consolidate-workspaces)
     (workspaces/update-workspace-indexes)
