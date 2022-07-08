@@ -88,12 +88,24 @@
   (count
     (latest-db-workspaces))
 
-  (->>
-    (db/query
-      '[:find (pull ?e [*])
-        :where
-        [?e :workspace/title ?workspace-title]])
-    )
+  (def --w
+    (->>
+      (db/query
+        '[:find (pull ?e [*])
+          :where
+          [?e :workspace/title ?workspace-title]])
+
+      (map first)
+      ;; (filter :awesome.tag/name)
+      (filter (comp #{"protomoon-two"} :workspace/title))
+      first
+      ))
+
+  ;; TODO create helper for doing this
+  (db/transact [[:db/retract (:db/id --w) :awesome.tag/name]])
+
+  ;; does not work
+  (sync-workspaces-to-db (assoc --w :awesome.tag/name nil))
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -104,6 +116,8 @@
   "Prepares the workspace to be upserted."
   [w]
   (-> w
+      ;; TODO dissociate awm/yabai attrs?
+      ;; TODO filter to our desired db-workspace schema
       (assoc :workspace/updated-at (System/currentTimeMillis))))
 
 (defn sync-workspaces-to-db

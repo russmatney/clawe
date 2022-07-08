@@ -14,9 +14,13 @@
 (defn active-workspaces []
   (->>
     (clawe.workspaces/all-workspaces)
-    (filter :awesome.tag/name)
+    (filter :awesome.tag/name) ;; TODO um, this might not mean this wsp is active
     (map clawe.workspaces/apply-git-status)
     (map util/drop-complex-types)))
+
+(comment
+  (active-workspaces)
+  )
 
 (defsys *workspaces-stream*
   :start (s/stream)

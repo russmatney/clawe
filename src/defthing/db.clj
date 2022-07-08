@@ -162,3 +162,17 @@
            :where (or
                     [?e :name "Datalevin"]
                     [?e :last "value"])]))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Retract
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; (defn retract [ent attr value]
+;;   (let [conn (d/get-conn defthing-db-filepath db-schema)
+;;         res
+;;         (if value
+;;           (apply d/retract ent (d/db conn) args)
+;;           (d/retract q (d/db conn)))]
+;;     (d/close conn)
+;;     res)
+;;   )
