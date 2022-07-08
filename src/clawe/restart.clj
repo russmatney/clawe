@@ -105,14 +105,18 @@ uberjar. Otherwise this might need to be called twice."
     ;; TODO detect if the current uberjar is out of date
     ;; maybe using git status, or some local timestamp?
     ;; then provide a force rebuild option
-    (c.install/build-uberjar)
-    (log "rebuilt uberjar...")
+    (log "rebuilding uberjar...")
+    (try
+      (c.install/build-uberjar)
+      (catch Exception e
+        (notify/notify "Caught Exception rebuilding uberjar")
+        (println e)))
     ;; maybe a pause or file read/watch, something that shows it's new?
     ;; or at least some log that reveals whether it is new or not
     ;; log and compare the checksum of the uberjar, with a fallback
 
     ;; if nothing has changed, maybe just call rewrite-and-reload from here
-    (log "reloading...")
+    (log "reloading clawe...")
     (->
       ;; kicking to process here could mean we use the new uberjar
       ;; (if the prev command waits for completion, which it seems to)
