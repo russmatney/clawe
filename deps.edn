@@ -9,7 +9,7 @@
   babashka/babashka                  {:mvn/version "0.8.157"}
   babashka/babashka.pods             {:mvn/version "0.1.0"}
   babashka/babashka.curl             {:mvn/version "0.1.2"}
-  babashka/process                   {:mvn/version "0.1.4"}
+  babashka/process                   {:mvn/version "0.1.7"}
   babashka/fs                        {:mvn/version "0.1.6"}
   metosin/malli                      {:mvn/version "0.8.9"}
   com.lambdaisland/specmonstah-malli {:mvn/version "0.0.7"}
@@ -26,7 +26,7 @@
                            :sha     "df552797a198b6701fb2d92390fce7c59205ea77"}}
              :jvm-opts   ["-XX:-OmitStackTraceInFastThrow"]
              :main-opts  ["-m" "carve.main"]}
-  :outdated {:extra-deps {com.github.liquidz/antq {:mvn/version "1.8.847"}}
+  :outdated {:extra-deps {com.github.liquidz/antq {:mvn/version "1.9.867"}}
              :main-opts  ["-m" "antq.core"]}
 
   ;; exclude these from uberjar builds
@@ -43,7 +43,7 @@
   {:extra-deps
    {;; dev
     cider/cider-nrepl             {:mvn/version "0.28.5"}
-    refactor-nrepl/refactor-nrepl {:mvn/version "3.5.2"}
+    refactor-nrepl/refactor-nrepl {:mvn/version "3.5.3"}
 
     datalevin/datalevin {:mvn/version "0.6.15"}
 
@@ -61,7 +61,7 @@
 
     ;; time
     time-literals/time-literals {:mvn/version "0.1.5"}
-    tick/tick                   {:mvn/version "0.5.0-RC5"}
+    tick/tick                   {:mvn/version "0.5.0"}
     com.cognitect/transit-clj   {:mvn/version "1.0.329"}
 
     ;; required (along with joda npm deps) for tick to work in cljs
@@ -72,7 +72,7 @@
                    :local/root "../../teknql/plasma"}
 
     ;; ui dev env
-    thheller/shadow-cljs {:mvn/version "2.19.5"}
+    thheller/shadow-cljs {:mvn/version "2.19.8"}
 
     ;; tailwind
     com.teknql/shadow-cljs-tailwind-jit {:mvn/version "1.0.0"}
