@@ -5,9 +5,9 @@
    [babashka.process :as process :refer [$]]
    [clojure.string :as string]
    [ralphie.zsh :as zsh]
-   [wing.core :as w]
-   [dates.tick :as dates.tick]
-   [tick.core :as t]))
+   [wing.core :as w])
+  ;; (:import (java.date ZonedDateTime))
+  )
 
 (pods/load-pod "dtlv")
 (require '[pod.huahaiy.datalevin :as d])
@@ -68,7 +68,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def converted-type-map
-  {(type (dates.tick/now)) t/inst})
+  ;; TODO bb compatability
+  ;; {ZonedDateTime t/inst}
+  {}
+  )
 
 (defn convert-matching-types [map-tx]
   (->> map-tx
@@ -82,7 +85,8 @@
   (->> [6 1.0 "hi" :some-keyword true
         (java.lang.Integer. 3)
         #uuid "8992970d-6c3a-4a3a-b35d-dc5cd28f1484"
-        (t/inst)]
+        ;; (t/inst)
+        ]
        (map type)
        (into #{})))
 
