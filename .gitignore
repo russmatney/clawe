@@ -30,6 +30,7 @@ sxhkd/sxhkdrc
 
 clawedb
 defthingdb
+newdb
 commands.json
 
 .nrepl-port

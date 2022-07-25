@@ -11,7 +11,7 @@
 (require '[pod.huahaiy.datalevin :as d])
 
 ;; TODO defsys and configuration
-(def defthing-db-filepath (zsh/expand "~/russmatney/clawe/defthingdb"))
+(def defthing-db-filepath (zsh/expand "~/russmatney/clawe/newdb"))
 
 (def db-schema
   {:topbar/id
