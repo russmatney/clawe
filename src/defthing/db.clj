@@ -5,7 +5,9 @@
    [babashka.process :as process :refer [$]]
    [clojure.string :as string]
    [ralphie.zsh :as zsh]
-   [wing.core :as w]))
+   [wing.core :as w]
+   [dates.tick :as dates.tick]
+   [tick.core :as t]))
 
 (pods/load-pod "dtlv")
 (require '[pod.huahaiy.datalevin :as d])
@@ -15,6 +17,12 @@
 
 (def db-schema
   {:topbar/id
+   {:db/valueType :db.type/uuid
+    :db/unique    :db.unique/identity}
+   :test/id
+   {:db/valueType :db.type/uuid
+    :db/unique    :db.unique/identity}
+   :misc/id
    {:db/valueType :db.type/uuid
     :db/unique    :db.unique/identity}
    :workspace/title
@@ -28,7 +36,10 @@
     :db/unique    :db.unique/identity}
    :lichess.game/id
    {:db/valueType :db.type/string
-    :db/unique    :db.unique/identity}})
+    :db/unique    :db.unique/identity}
+
+   :time/rn
+   {:db/valueType :db.type/instant}})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Dump
@@ -59,7 +70,8 @@
 (def supported-types
   (->> [6 1.0 "hi" :some-keyword true
         (java.lang.Integer. 3)
-        #uuid "8992970d-6c3a-4a3a-b35d-dc5cd28f1484"]
+        #uuid "8992970d-6c3a-4a3a-b35d-dc5cd28f1484"
+        (t/inst)]
        (map type)
        (into #{})))
 

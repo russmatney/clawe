@@ -7,15 +7,48 @@
    [ralphie.spotify :as r.spotify]
    [babashka.process :as process]
    [clojure.string :as string]
-   [defthing.db :as db]))
+   [defthing.db :as db]
+   [dates.tick :as dates.tick]
+   [tick.core :as t]))
 
 (declare update-topbar-metadata)
+
+(def topbar-id #uuid "5d4a6099-4c5c-4c0d-843b-54c48c34caee")
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; topbar timers
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn active-timer []
+  (some->>
+    (db/query '[:find (pull ?e [*])
+                :in $ ?topbar-id
+                :where
+                [(not (nil? ?started-at))]
+                [?e :topbar/started-at ?started-at]
+                [?e :topbar/id ?topbar-id]]
+              topbar-id)
+    first))
+
+(defn start-timer []
+  (db/transact {:topbar/started-at (t/inst (dates.tick/now))
+                :topbar/id         topbar-id})
+  (update-topbar-metadata))
+
+(comment
+  (active-timer)
+
+  (start-timer)
+
+  (db/query '[:find (pull ?e [*])
+              :in $ ?topbar-id
+              :where
+              [?e :topbar/id ?topbar-id]]
+            topbar-id))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; background toggle
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(def topbar-id #uuid "5d4a6099-4c5c-4c0d-843b-54c48c34caee")
 
 (defn background-mode []
   (some->>
