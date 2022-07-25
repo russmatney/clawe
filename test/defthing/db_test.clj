@@ -27,20 +27,39 @@
   (sut/dump))
 
 
-(deftest transacting-dates
-  (testing "dates can be written to and read from the db"
+(deftest transacting-date-times
+  (testing "insts can be written to and read from the db"
     (let [rn           (t/inst)
           my-test-uuid (random-uuid)
           ent          {:test/id my-test-uuid :time/rn rn}
           res          (sut/transact [ent])]
       (is (= res {:datoms-transacted 2}))
 
-      (let [fetched (sut/query '[:find [(pull ?e [*])]
-                                 :in $ ?id
-                                 :where [?e :test/id ?id]])]
-        (is (= fetched ent))
-        (is (= (:time/rn fetched) rn))))
-    ))
+      (let [fetched (-> (sut/query '[:find [(pull ?e [*])]
+                                     :in $ ?id
+                                     :where [?e :test/id ?id]]
+                                   my-test-uuid)
+                        first)]
+        (is (= (:test/id fetched) my-test-uuid))
+        (is (= (:time/rn fetched) rn)))))
+
+  (testing "zoned-date-times get converted to insts"
+    (let [;; convert to an instant and back so we hit the same precision
+          ;; otherwise the original ZDT has milliseconds, but the db one drops those
+          rn           (-> (dates.tick/now) t/inst t/zoned-date-time)
+          my-test-uuid (random-uuid)
+          ent          {:test/id my-test-uuid :time/rn rn}
+          res          (sut/transact [ent])]
+      (is (= res {:datoms-transacted 2}))
+
+      (let [fetched (-> (sut/query '[:find [(pull ?e [*])]
+                                     :in $ ?id
+                                     :where [?e :test/id ?id]]
+                                   my-test-uuid)
+                        first)]
+        (is (= (:test/id fetched) my-test-uuid))
+        (is (= (-> fetched :time/rn t/zoned-date-time) rn)))))
+  )
 
 (comment
   (println "hi")

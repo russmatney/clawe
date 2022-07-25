@@ -67,6 +67,17 @@
 ;; transact helpers
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(def converted-type-map
+  {(type (dates.tick/now)) t/inst})
+
+(defn convert-matching-types [map-tx]
+  (->> map-tx
+       (map (fn [[k v]]
+              (if-let [convert-fn (get converted-type-map (type v))]
+                [k (convert-fn v)]
+                [k v])))
+       (into {})))
+
 (def supported-types
   (->> [6 1.0 "hi" :some-keyword true
         (java.lang.Integer. 3)
@@ -123,7 +134,9 @@
                  (->> txs (into [])))
         conn (d/get-conn defthing-db-filepath db-schema)
         txs  (map (fn [tx] (if (map? tx)
-                             (drop-unsupported-vals tx)
+                             (->> tx
+                                  convert-matching-types
+                                  drop-unsupported-vals)
                              tx))
                   txs)
         _    (println "txs" txs)
