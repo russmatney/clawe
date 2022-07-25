@@ -26,7 +26,9 @@
 
    :dev
    {:closure-defines {:plasma.uix.hot-reload? true}
-    :build-hooks     [(teknql.tailwind/start-watch!)]}
+    ;; TODO notify when cljs build started/complete
+    :build-hooks     [(teknql.tailwind/start-watch!)
+                      (doctor.build-hooks/notify-complete)]}
 
    :release
    {:build-hooks [(teknql.tailwind/compile-release!)]}
@@ -67,7 +69,8 @@
 
    :dev
    {:closure-defines {:plasma.uix.hot-reload? true}
-    :build-hooks     [(teknql.tailwind/start-watch!)]}
+    :build-hooks     [(teknql.tailwind/start-watch!)
+                      (doctor.build-hooks/notify-complete)]}
 
    :release
    {:build-hooks [(teknql.tailwind/compile-release!)]}
