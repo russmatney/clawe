@@ -141,6 +141,8 @@ uberjar. Otherwise this might need to be called twice."
   (do
     (log "reloading...")
 
+    ;; TODO try/catch these reload sections
+
     ;; Bindings
     (when-not notify/is-mac?
       (log "rewriting awm bindings")

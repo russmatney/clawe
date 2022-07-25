@@ -96,13 +96,14 @@
           [?e :workspace/title ?workspace-title]])
 
       (map first)
-      ;; (filter :awesome.tag/name)
-      (filter (comp #{"protomoon-two"} :workspace/title))
-      first
-      ))
+      (filter :awesome.tag/name)
+      ;; (filter (comp #{"protomoon-two"} :workspace/title))
+      ;; (filter (comp #{"a-little-game-called-mario"} :workspace/title))
+      first))
 
   ;; TODO create helper for doing this
-  (db/transact [[:db/retract (:db/id --w) :awesome.tag/name]])
+  (db/transact [[:db/retract (:db/id --w) :awesome.tag/name]
+                [:db/retract (:db/id --w) :awesome.tag/index]])
 
   ;; does not work
   (sync-workspaces-to-db (assoc --w :awesome.tag/name nil))
