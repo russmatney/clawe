@@ -31,9 +31,7 @@
                                                               #{:event-name :fn-var :args})))
      :transit-read-handlers  (merge transit/default-read-handlers ttl/read-handlers)
      :transit-write-handlers (merge transit/default-write-handlers ttl/write-handlers)
-     :interceptors           [(plasma.interceptors/auto-require
-                                #(do (log/info "Auto requiring namespace" {:namespace %})
-                                     (systemic.core/start!)))
+     :interceptors           [(plasma.interceptors/auto-require)
                               (plasma.interceptors/load-metadata)]}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -8,6 +8,7 @@
    [ring.adapter.undertow :as undertow]
    [ring.adapter.undertow.websocket :as undertow.ws]
 
+   [api.commits]
    [api.events]
    [api.repos]
    [api.screenshots]
@@ -40,15 +41,13 @@
      (merge transit/default-read-handlers ttl/read-handlers)
      :transit-write-handlers
      (merge transit/default-write-handlers ttl/write-handlers)
-     :interceptors [(plasma.interceptors/auto-require
-                      #(do (log/info "Auto requiring namespace" {:namespace %})
-                           (systemic.core/start!)))
+     :interceptors [(plasma.interceptors/auto-require)
                     (plasma.interceptors/load-metadata)
                     #_{:name :doctor-logging
                        :enter
                        (fn [ctx]
                          (let [{:keys [fn-var args event-name]} (:request ctx)]
-                           (log/debug "plasma interceptor" "fn-var" fn-var "event-name" event-name)
+                           (log/debug "\nplasma interceptor" "fn-var" fn-var "event-name" event-name)
                            (when (seq args) (log/debug "args" args)))
                          ctx)}]}))
 
@@ -64,37 +63,43 @@
    api.todos/*todos-stream*
    api.screenshots/*screenshots-stream*
    api.events/*events-stream*
+   api.commits/*commits-stream*
    api.repos/*repos-stream*
    api.wallpapers/*wallpapers-stream*]
   :start
   (let [port (:server/port doctor.config/*config*)]
     (log/info "Starting *server* on port" port)
-    (notify/notify {:notify/subject "Started doctor backend server!"
-                    :notify/id      :doctor/server})
-    (undertow/run-undertow
-      (fn [{:keys [uri] :as req}]
-        (cond
-          ;; handle plasma requests
-          (= uri "/ws")
-          {:undertow/websocket
-           {:on-open #(do (log/info "Client connected")
-                          (plasma.server/on-connect! *plasma-server* %))
+    (let [server
+          (undertow/run-undertow
+            (fn [{:keys [uri] :as req}]
+              (cond
+                ;; handle plasma requests
+                (= uri "/ws")
+                {:undertow/websocket
+                 {:on-open #(do (log/info "Client connected")
+                                (plasma.server/on-connect! *plasma-server* %))
 
-            :on-message #(plasma.server/on-message!
-                           *plasma-server*
-                           (:channel %)
-                           (:data %))
-            :on-close   #(plasma.server/on-disconnect!
-                           *plasma-server*
-                           (:ws-channel %))}}
+                  :on-message #(plasma.server/on-message!
+                                 *plasma-server*
+                                 (:channel %)
+                                 (:data %))
+                  :on-close   #(plasma.server/on-disconnect!
+                                 *plasma-server*
+                                 (:ws-channel %))}}
 
-          ;; poor man's router
-          :else (doctor.api/route req)))
-      {:port             port
-       :session-manager? false
-       :websocket?       true}))
+                ;; poor man's router
+                :else (doctor.api/route req)))
+            {:port             port
+             :session-manager? false
+             :websocket?       true})]
+      (notify/notify {:notify/subject "Started doctor backend server!"
+                      :notify/body    (str "On port: " port)
+                      :notify/id      :doctor/server})
+      ;; be sure to return the server as the system
+      server))
   :stop
   (.stop *server*))
+
 
 (comment
   @sys/*registry*
