@@ -276,6 +276,10 @@
   [[:mod] "a"]
   (toggle-workspace defs.workspaces/slack))
 
+(defkbd toggle-workspace-discord
+  [[:mod :shift] "d"]
+  (toggle-workspace defs.workspaces/discord))
+
 (defkbd toggle-workspace-spotify
   [[:mod] "s"]
   (toggle-workspace defs.workspaces/spotify))

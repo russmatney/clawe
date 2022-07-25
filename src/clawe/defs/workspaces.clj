@@ -61,9 +61,20 @@
            {:awesome.client/keys [name class]} c]
        (or (matches name) (matches class))))})
 
+(defworkspace audacity
+  {:awesome/rules
+   (awm-workspace-rules "audacity")}
+  {:workspace/scratchpad       true
+   :workspace/scratchpad-class "audacity"
+   :rules/is-my-client?
+   (fn [c]
+     (let [matches                             #{"audacity"}
+           {:awesome.client/keys [name class]} c]
+       (or (matches name) (matches class))))})
+
 (defworkspace slack
   {:awesome/rules
-   (awm-workspace-rules "slack" "discord")}
+   (awm-workspace-rules "slack")}
   {:workspace/exec             "slack"
    :workspace/scratchpad       true
    :workspace/scratchpad-class "Slack"
@@ -71,6 +82,18 @@
    (fn [c]
      ;; TODO ignore 'Slack call' clients
      (let [matches                             #{"slack" "Slack"}
+           {:awesome.client/keys [name class]} c]
+       (or (matches name) (matches class))))})
+
+(defworkspace discord
+  {:awesome/rules
+   (awm-workspace-rules "discord")}
+  {
+   :workspace/scratchpad       true
+   :workspace/scratchpad-class "discord"
+   :rules/is-my-client?
+   (fn [c]
+     (let [matches                             #{"discord"}
            {:awesome.client/keys [name class]} c]
        (or (matches name) (matches class))))})
 
