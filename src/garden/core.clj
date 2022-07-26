@@ -84,7 +84,6 @@
     "~/todo/*"
     r.zsh/expand-many
     (filter (fn [source-file]
-              (println source-file)
               (or
                 (string/includes? source-file "journal.org")
                 (string/includes? source-file "projects.org"))))

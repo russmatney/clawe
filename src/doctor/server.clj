@@ -79,7 +79,7 @@
                 ;; handle plasma requests
                 (= uri "/ws")
                 {:undertow/websocket
-                 {:on-open #(do (log/info "Client connected")
+                 {:on-open #(do #_(log/info "Client connected")
                                 (plasma.server/on-connect! *plasma-server* %))
 
                   :on-message #(plasma.server/on-message!
