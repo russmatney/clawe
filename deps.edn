@@ -61,7 +61,7 @@
 
     ;; time
     time-literals/time-literals {:mvn/version "0.1.5"}
-    tick/tick                   {:mvn/version "0.5.0"}
+    tick/tick                   {:mvn/version "0.5.0-RC5"}
     com.cognitect/transit-clj   {:mvn/version "1.0.329"}
 
     ;; required (along with joda npm deps) for tick to work in cljs
