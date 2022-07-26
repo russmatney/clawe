@@ -5,15 +5,8 @@
    [hiccup-icons.octicons :as octicons]
    ;; [keybind.core :as key]
 
-   [pages.events]
    [components.floating :as floating]
-   [components.icons]))
-
-(defn default-page [opts]
-  [:div
-   [:p.text-city-pink-100.p-4
-    "No app selected, defaulting..."]
-   [pages.events/page]])
+   [components.icons :as components.icons]))
 
 (defn menu [menu-opts]
   (when menu-opts
@@ -57,12 +50,10 @@
 (defn page
   "Accepts a main component and wraps it in page helpers with a menu."
   ;; TODO reduce this crazy arity nonsense
-  ([] [page default-page {}])
   ([main] [page [] main {}])
   ([main opts] [page [] main opts])
   ([menu-opts main page-opts]
    (let [params            (router/use-route-parameters)
-         main              (or main default-page)
          current-page-name (-> router/*match* uix/context :data :name)]
      [:div
       {:class ["bg-city-blue-900"

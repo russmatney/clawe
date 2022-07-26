@@ -59,25 +59,18 @@
    :asset-path       "/js/compiled"
    :modules          {:main {:init-fn expo.ui.core/init}}
    :compiler-options {:output-feature-set :es-next
-                      :infer-externs      true}
+                      :infer-externs      :auto
+                      ;; :externs            ["datascript/externs.js"]
+                      }
 
    :nrepl {:port 3332}
 
-   :build-hooks
-   [(plasma.uix.hot-reload/compile-prepare!)
-    (plasma.uix.hot-reload/compile-finish!)]
-
    :dev
-   {:closure-defines {:plasma.uix.hot-reload? true}
-    :build-hooks     [(teknql.tailwind/start-watch!)
-                      (doctor.build-hooks/notify-complete)]}
+   {:build-hooks [(teknql.tailwind/start-watch!)
+                  (doctor.build-hooks/notify-complete)]}
 
    :release
    {:build-hooks [(teknql.tailwind/compile-release!)]}
-
-   :closure-defines
-   {expo.ui.core/SERVER_HOST #shadow/env "SERVER_HOST"
-    expo.ui.core/SERVER_PORT #shadow/env "SERVER_PORT"}
 
    :devtools
    {:http-root   "expo/public"

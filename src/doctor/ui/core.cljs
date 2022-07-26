@@ -48,8 +48,7 @@
    {:route "/garden" :page-name :page/garden :label "Garden" :comp pages.garden/page}
    {:route "/posts" :page-name :page/posts :label "Posts" :comp pages.posts/page}
    {:route "/repos" :page-name :page/repos :label "Repos" :comp pages.repos/page}
-   {:route "/journal" :page-name :page/journal :label "Journal" :comp pages.journal/page}
-   ])
+   {:route "/journal" :page-name :page/journal :label "Journal" :comp pages.journal/page}])
 
 (def routes
   (->> route-defs
@@ -65,7 +64,7 @@
       (if comp-only
         [comp opts]
         [pages/page route-defs comp opts])
-      [pages/page])))
+      [:div "no page"])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Websocket events
