@@ -60,8 +60,7 @@
    :modules          {:main {:init-fn expo.ui.core/init}}
    :compiler-options {:output-feature-set :es-next
                       :infer-externs      :auto
-                      ;; :externs            ["datascript/externs.js"]
-                      }
+                      :externs            ["datascript/externs.js"]}
 
    :nrepl {:port 3332}
 
