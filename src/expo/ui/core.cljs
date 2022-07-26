@@ -30,8 +30,7 @@
                      (reset! db (edn/read-string %))
                      (reset! conn (-> % edn/read-string d/conn-from-db))))))
     {:conn @conn
-     :db   @db
-     }))
+     :db   @db}))
 
 (defn view [opts]
   (let [{:keys [conn db]}  (db-hook)
