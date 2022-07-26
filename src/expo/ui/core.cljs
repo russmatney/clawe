@@ -6,6 +6,8 @@
    [taoensso.timbre :as log]
    [wing.core :as w]
    [datascript.core :as d]
+   [cljs.reader :as cljs.reader]
+   [clojure.edn :as edn]
    [pages.core :as pages]
    [expo.pages.home :as home]
    [promesa.core :as p]))
@@ -19,22 +21,23 @@
        (into [])))
 
 (defn db-hook []
-  (let [db (uix/state nil)]
-    (uix/with-effect [db]
-
+  (let [conn (uix/state nil)
+        db   (uix/state nil)]
+    (uix/with-effect [conn]
       (-> (.fetch js/window "/expo-db.edn")
           (p/then #(.text %))
-          (p/then (fn [raw-edn]
-                    (println "conn-from-db" (d/conn-from-db raw-edn))
-                    (reset! db (d/conn-from-db raw-edn))
-                    ;; (reset! db "some-val")
-                    (println "db reset" db)))))
-
-    {:db @db}))
+          (p/then #(do
+                     (reset! db (edn/read-string %))
+                     (reset! conn (-> % edn/read-string d/conn-from-db))))))
+    {:conn @conn
+     :db   @db
+     }))
 
 (defn view [opts]
-  (let [{:keys [db]}       (db-hook)
-        opts               (assoc opts :db db)
+  (let [{:keys [conn db]}  (db-hook)
+        opts               (-> opts
+                               (assoc :db/conn conn)
+                               (assoc :db/db db))
         page-name          (-> router/*match* uix/context :data :name)
         by-page-name       (w/index-by :page-name route-defs)
         {:keys [comp comp-only]
