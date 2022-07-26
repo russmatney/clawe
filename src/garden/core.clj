@@ -44,6 +44,7 @@
     "~/todo"
     r.zsh/expand
     (org-crud/dir->nested-items {:recursive? true})
+    ;; TODO refactor to filter on filename before parsing via org-crud
     (remove (fn [{:org/keys [source-file]}]
               (or
                 (string/includes? source-file "/journal/")
@@ -63,6 +64,47 @@
   (->>
     (todo-dir-files)
     (take 3)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; journal
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn active-journals
+  "Returns currently active journal notes.
+
+  - journal.org
+  - projects.org
+
+  ;; TODO
+
+  - dailies for the last 3 days (today inclusive)
+  "
+  []
+  (->>
+    "~/todo/*"
+    r.zsh/expand-many
+    (filter (fn [source-file]
+              (println source-file)
+              (or
+                (string/includes? source-file "journal.org")
+                (string/includes? source-file "projects.org"))))
+    (map org-crud/path->nested-item)
+    (map org->garden-node)
+    (sort-by :org/source-file)
+    (map util/drop-complex-types)))
+
+(comment
+  (active-journals))
+
+(defsys *journals-stream*
+  :start (s/stream)
+  :stop (s/close! *journals-stream*))
+
+(defn update-journals []
+  (s/put! *journals-stream* (active-journals)))
+
+(comment
+  (update-journals))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; get-garden
@@ -87,9 +129,10 @@
   (sys/start! `*garden-stream*))
 
 (defn update-garden []
-  (s/put! *garden-stream*
+  (s/put! *garden-stream* (get-garden)))
 
-          (get-garden)))
+(comment
+  (update-garden))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; get-full-item

@@ -14,9 +14,4 @@
          :class [""]
          }
 
-        [:div (:git.repo/name repo)]]
-       )
-     ])
-
-
-  )
+        [:div (:git.repo/name repo)]])]))

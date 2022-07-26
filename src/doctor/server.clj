@@ -16,6 +16,7 @@
    [api.todos]
    [api.wallpapers]
    [api.workspaces]
+   [garden.core :as garden]
    [dates.transit-time-literals :as ttl]
    [doctor.config]
    [doctor.api]
@@ -65,7 +66,9 @@
    api.events/*events-stream*
    api.commits/*commits-stream*
    api.repos/*repos-stream*
-   api.wallpapers/*wallpapers-stream*]
+   api.wallpapers/*wallpapers-stream*
+   garden/*garden-stream*
+   garden/*journals-stream*]
   :start
   (let [port (:server/port doctor.config/*config*)]
     (log/info "Starting *server* on port" port)
