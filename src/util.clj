@@ -39,3 +39,7 @@
   "Zero Pad numbers - takes a number and the length to pad to as arguments"
   [n c]
   (format (str "%0" c "d") n))
+
+(comment
+  (zp 5 3) ;; => "005"
+  )

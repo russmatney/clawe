@@ -6,7 +6,7 @@
    [tick.core :as t]
 
    [api.todos :as todos]
-   [chess.db]
+   [chess.db :as chess.db]
    [clawe.git :as c.git]
    [clawe.screenshots :as c.screenshots]
    [dates.tick :as dt]

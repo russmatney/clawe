@@ -2,7 +2,7 @@
   (:require
    [systemic.core :refer [defsys] :as sys]
    [manifold.stream :as s]
-   [clawe.git]))
+   [clawe.git :as clawe.git]))
 
 (defn ->repo [path]
   {:repo/path path})

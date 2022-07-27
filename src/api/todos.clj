@@ -23,21 +23,23 @@
       '[:find (pull ?e [*])
         :in $ ?name
         :where
-        [?e :org/name ?name]]
+        [?e :org/name ?name]
+        [?e :doctor/type :type/todo]]
       (:org/name item))
     ffirst))
 
 (defn upsert-todo-db [item]
   (let [existing (get-todo-db item)
         merged   (merge existing item)
-        merged   (update merged :org/id #(or % (java.util.UUID/randomUUID)))]
+        merged   (update merged :org/id #(or % (java.util.UUID/randomUUID)))
+        merged   (assoc merged :doctor/type :type/todo)]
     (db/transact [merged])))
 
 (defn list-todos-db []
   (some->>
     (db/query
       '[:find (pull ?e [*])
-        :where [?e :todo/name ?name]])
+        :where [?e :doctor/type :type/todo]])
     (map first)))
 
 (comment
