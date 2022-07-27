@@ -133,14 +133,16 @@
   (db/query '[:find (pull ?e [*])
               :where [?e :doctor/type :type/garden]]))
 
-(defn fetch-db-garden-notes-with-tag
-  [tag-name]
-  (db/query '[:find (pull ?e [*])
-              :in $ ?tag-name
-              :where
-              [?e :doctor/type :type/garden]
-              [?e :org/tags ?tag-name]]
-            tag-name))
+(defn notes-with-tags [tags]
+  (->>
+    (db/query '[:find (pull ?e [*])
+                :in $ ?tags
+                :where
+                [?e :doctor/type :type/garden]
+                [?e :org/tags ?tag]
+                [(?tags ?tag)]]
+              tags)
+    (map first)))
 
 (comment
   (sync-garden-notes-to-db)
@@ -155,5 +157,5 @@
   (count (garden/all-garden-notes-flattened))
   (count (fetch-db-garden-notes))
 
-  (fetch-db-garden-notes-with-tag "pomo")
+  (notes-with-tags #{"post"})
   )

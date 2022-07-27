@@ -5,13 +5,10 @@
    [uix.core.alpha :as uix]
    [wing.core :as w]
 
-   [hooks.events]
-   [components.debug]
-   [components.chess]
-   [components.git]
-   [components.screenshot]
-   [components.timeline]
-   [components.todo]))
+   [components.chess :as components.chess]
+   [components.git :as components.git]
+   [components.screenshot :as components.screenshot]
+   [components.timeline :as components.timeline]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; pure event helpers

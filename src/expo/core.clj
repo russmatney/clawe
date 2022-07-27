@@ -1,13 +1,40 @@
 (ns expo.core
   (:require
    [datascript.core :as d]
-   [ralphie.zsh :as zsh]))
+   [ralphie.zsh :as zsh]
+   [garden.db :as garden.db]
+   [defthing.db :as db]))
+
+;; TODO config
+(def expo-db-path (zsh/expand "~/russmatney/clawe/expo/public/expo-db.edn"))
+
+;; TODO systemic
+(def conn
+  (->
+    (d/empty-db)
+    (d/conn-from-db)))
+
+(defn print-db []
+  (pr-str (d/db conn)))
+
+(defn write-db-to-file []
+  (spit expo-db-path (print-db)))
+
+
+(defn notes-for-tags [tags]
+  (->>
+    (db/query '[:find (pull ?e [*])
+                :in $ ?tags
+                :where
+                [?e :doctor/type :type/garden]
+                ;; TODO parse file-tags to :org/tags in org-crud
+                ;; [?e :org/level :level/root]
+                [?e :org/tags ?tag]
+                [(?tags ?tag)]]
+              tags)
+    (map first)))
 
 (comment
-  (def conn
-    (->
-      (d/empty-db)
-      (d/conn-from-db)))
 
   (d/transact! conn [{:some/new   :piece/of-data
                       :with/attrs 23
@@ -16,6 +43,53 @@
   ;; pr-str the db to get it stringified
   (pr-str (d/db conn))
 
-  (def expo-db-path (zsh/expand "~/russmatney/clawe/expo/public/expo-db.edn"))
   (def db-str (pr-str (d/db conn)))
-  (spit expo-db-path db-str))
+  (spit expo-db-path db-str)
+
+  (garden.db/fetch-db-garden-notes)
+
+
+  (def org-tags
+    (->>
+      (db/query '[:find ?tag
+                  :where [_ :org/tags ?tag]])
+      (map first)
+      (into #{})))
+
+  (->>
+    org-tags
+    sort)
+
+  (def ignore-tags #{"archived"})
+
+  (notes-for-tags #{"til" "post" "posts" "blog"})
+
+
+
+
+  (def notes-tagged-til
+    (->>
+      (db/query '[:find (pull ?e [*])
+                  :where [?e :org/tags "til"]])
+      (map first)))
+
+  (def notes-tagged-post
+    (->>
+      (db/query '[:find (pull ?e [*])
+                  :where (or [?e :org/tags "post"]
+                             [?e :org/tags "posts"])])
+      (map first)))
+
+  notes-tagged-post
+
+
+  (->>
+    (notes-for-tags #{"til"})
+    (d/transact! conn)
+    )
+
+  (write-db-to-file)
+
+
+
+  )

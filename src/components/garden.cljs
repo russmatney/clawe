@@ -1,7 +1,7 @@
 (ns components.garden
   (:require
-   [hooks.garden]
-   [components.debug]
+   ;; [hooks.garden :as hooks.garden]
+   [components.debug :as components.debug]
    [uix.core.alpha :as uix]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -85,38 +85,40 @@
     :as       item}]
 
   [:span
-   {:class    ["font-mono" "text-xl" "text-city-green-200" "p-2"
-               "hover:text-city-pink-400"
-               "cursor-pointer"]
-    :on-click (fn [_] (hooks.garden/open-in-emacs item))}
+   {:class ["font-mono" "text-xl" "text-city-green-200" "p-2"
+            "hover:text-city-pink-400"
+            "cursor-pointer"]
+    ;; TODO some other strat that keeps hooks out of comps
+    :on-click (fn [_] #_(hooks.garden/open-in-emacs item))}
    (or short-path source-file)])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn garden-node
-  [{:keys [on-select]} item]
-  (let [{:org.prop/keys [title created-at]}
+  ([item] (garden-node nil item))
+  ([{:keys [on-select]} item]
+   (let [{:org.prop/keys [title created-at]}
 
-        item
-        hovering? (uix/state false)]
-    [:div
-     {:class          ["m-1" "p-4"
-                       "border" "border-city-blue-600"
-                       "bg-yo-blue-700"
-                       "text-white"
-                       (when @hovering? "cursor-pointer")]
-      :on-click       #(on-select)
-      :on-mouse-enter #(reset! hovering? true)
-      :on-mouse-leave #(reset! hovering? false)}
+         item
+         hovering? (uix/state false)]
+     [:div
+      {:class          ["m-1" "p-4"
+                        "border" "border-city-blue-600"
+                        "bg-yo-blue-700"
+                        "text-white"
+                        (when @hovering? "cursor-pointer")]
+       :on-click       #(on-select)
+       :on-mouse-enter #(reset! hovering? true)
+       :on-mouse-leave #(reset! hovering? false)}
 
-     title
+      title
 
-     (when created-at
-       [:div
-        {:class ["font-mono"]}
-        created-at])
+      (when created-at
+        [:div
+         {:class ["font-mono"]}
+         created-at])
 
-     [source-file-link item]]))
+      [source-file-link item]])))
 
 (defn selected-node
   [{:org.prop/keys [title]
