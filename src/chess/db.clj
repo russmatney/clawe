@@ -1,26 +1,9 @@
 (ns chess.db
   (:require
    [chess.core :as chess]
-   [tick.core :as t]
+   [dates.tick :as dates.tick]
    [defthing.db :as db]
    [clojure.edn :as edn]))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; time helpers
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn an-x-ago [duration]
-  (-> (t/today)
-      (t/at (t/midnight))
-      (t/<< duration)
-      t/inst
-      inst-ms) )
-
-(defn a-week-ago []
-  (an-x-ago (t/new-duration 7 :days)))
-
-(defn a-month-ago []
-  (an-x-ago (t/new-duration 31 :days)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; fetch games
@@ -35,10 +18,10 @@
      :since    since}))
 
 (defn games-since-last-week []
-  (games-since {:since (a-week-ago)}))
+  (games-since {:since (dates.tick/a-week-ago-ms)}))
 
 (defn games-since-last-month []
-  (games-since {:since (a-month-ago)}))
+  (games-since {:since (dates.tick/a-month-ago-ms)}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; sync to db

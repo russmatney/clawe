@@ -99,3 +99,26 @@
 
 (defn now []
   (t/zoned-date-time))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; ago
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn an-x-ago-ms
+  "Returns duration-ago as milliseconds."
+  [duration]
+  (-> (t/today)
+      (t/at (t/midnight))
+      (t/<< duration)
+      t/inst
+      inst-ms))
+
+(defn a-week-ago-ms
+  "Returns a-week-ago as milliseconds."
+  []
+  (an-x-ago-ms (t/new-duration 7 :days)))
+
+(defn a-month-ago-ms
+  "Returns a-month-ago as milliseconds."
+  []
+  (an-x-ago-ms (t/new-duration 31 :days)))
