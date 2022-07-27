@@ -11,7 +11,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
+;; ->db-item
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn fallback-id
@@ -38,6 +38,8 @@
   (let [fallback (fallback-id item)]
     (if (or id fallback)
       (cond-> item
+        id (assoc :org/id (if (uuid? id) id (java.util.UUID/fromString id)))
+
         fallback
         (assoc :org/fallback-id fallback)
 
@@ -88,7 +90,7 @@
      (->>
        garden-notes
        (map garden-note->db-item)
-       (map db/transact)))))
+       (db/transact)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; fetch
@@ -103,5 +105,4 @@
   (sync-garden-notes-to-db)
 
   5
-  (fetch-db-garden-notes)
-  )
+  (fetch-db-garden-notes))
