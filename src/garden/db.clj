@@ -1,7 +1,8 @@
 (ns garden.db
   (:require [defthing.db :as db]
             [garden.core :as garden]
-            [clojure.string :as string]))
+            [clojure.string :as string]
+            [taoensso.timbre :as log]))
 
 (defn default-garden-sync-notes
   "Notes for the last 7 dailies."
@@ -45,7 +46,7 @@
 
         true
         (assoc :doctor/type :type/garden))
-      (println "Could not create fallback id for org item" item))))
+      (log/info "Could not create fallback id for org item" item))))
 
 
 (defn -compare-db-notes
@@ -101,8 +102,20 @@
   (db/query '[:find (pull ?e [*])
               :where [?e :doctor/type :type/garden]]))
 
+(defn fetch-db-garden-notes-with-tag
+  [tag-name]
+  (db/query '[:find (pull ?e [*])
+              :in $ ?tag-name
+              :where
+              [?e :doctor/type :type/garden]
+              [?e :org/tags ?tag-name]]
+            tag-name))
+
 (comment
   (sync-garden-notes-to-db)
 
   5
-  (fetch-db-garden-notes))
+  (fetch-db-garden-notes)
+
+  (fetch-db-garden-notes-with-tag "pomo")
+  )

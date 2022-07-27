@@ -8,7 +8,8 @@
    [wing.core :as w]
    [systemic.core :refer [defsys] :as sys]
 
-   [pod.huahaiy.datalevin :as d]))
+   [pod.huahaiy.datalevin :as d]
+   [taoensso.timbre :as log]))
 
 
 (def db-schema
@@ -54,7 +55,7 @@
 ;; TODO clean up dead connections at startup?
 (defsys *db-conn*
   :start (do
-           (println "starting new db conn")
+           (log/info "Starting new datalevin db conn")
            (d/get-conn (defthing.config/db-path) db-schema))
   :stop (d/close *db-conn*))
 
@@ -112,7 +113,7 @@
         (java.lang.Integer. 3)
         #uuid "8992970d-6c3a-4a3a-b35d-dc5cd28f1484"
         ;; (t/inst)
-        ]
+        #{"some" "set" :of/things 5}]
        (map type)
        (into #{})))
 
@@ -124,7 +125,8 @@
                 (if (supported-types t)
                   true
                   (do
-                    (println "unsupported type" t v k)
+                    (when-not (nil? v)
+                      (log/debug "unsupported type" t v k))
                     nil)))))
     (map first)))
 
@@ -137,7 +139,8 @@
                         :some-bool     false
                         :some-keyword  :keyword
                         :some-uuid     #uuid "8992970d-6c3a-4a3a-b35d-dc5cd28f1484"
-                        :some-fn       (fn [] (print "complexity!"))}))
+                        :some-fn       (fn [] (print "complexity!"))
+                        :some-set      #{"hi" "there"}}))
 
 (defn drop-unsupported-vals
   "Drops unsupported map vals. Drops nil. Only `supported` types
@@ -146,7 +149,7 @@
   (let [supported-keys   (supported-type-keys map-tx)
         [to-tx rejected] (w/partition-keys map-tx supported-keys)]
     (when (seq rejected)
-      (println "defthing db transact rejected vals" rejected))
+      (log/debug "defthing db transact rejected vals" rejected))
     (->> to-tx
          ;; might be unnecessary b/c it's not 'supported'
          (remove (comp nil? second))
@@ -169,7 +172,7 @@
                                  drop-unsupported-vals)
                             tx))
                  txs)
-        _   (println "txs" txs)
+        _   (println "txs count" (count txs))
         res (d/transact! *db-conn* txs)]
     res))
 
