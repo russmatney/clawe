@@ -122,3 +122,41 @@
   "Returns a-month-ago as milliseconds."
   []
   (an-x-ago-ms (t/new-duration 31 :days)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; days
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn days
+  "Returns dates for the last n days, including today."
+  [n]
+  (t/range
+    (-> (t/today) (t/<< (t/new-period (dec n) :days)))
+    (t/tomorrow)))
+
+(comment
+  (count
+    (t/range
+      (-> (t/today) (t/<< (t/new-period 14 :days)))
+      (t/today)
+      (t/new-period 1 :days)
+      ))
+
+  (days 14))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; months
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn months
+  ([] (months 3))
+  ([n]
+   (->>
+     (range n)
+     (map (fn [x] (t/<< (t/today) (t/new-period x :months))))
+     (map (fn [t] (t/format (t/formatter "yyyy-MM") t))))))
+
+(comment
+  (months)
+  (months 5))

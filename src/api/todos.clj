@@ -9,7 +9,8 @@
    [clojure.string :as string]
    [defthing.db :as db]
    [wing.core :as w]
-   [dates.tick :as dt]))
+   [dates.tick :as dt]
+   [garden.core :as garden]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; DB todo crud
@@ -80,85 +81,17 @@
              :todo/status status)
       (merge parsed-date-fields))))
 
-(def zsh-org-roots
-  ["~/todo/{journal,projects}.org"
-   "~/todo/garden/workspaces/*.org"
-   ])
-
-(defn org-file-paths
-  ([] (org-file-paths {}))
-  ([{:keys [additional-roots]}]
-   (let [additional-roots (or additional-roots [])]
-     (->> zsh-org-roots
-          (concat additional-roots)
-          (mapcat #(-> %
-                       r.zsh/expand
-                       (string/split #" ")))
-          concat))))
-
-(defn daily-path [day]
-  (str "~/todo/daily/" day ".org"))
-
-(comment
-  (count
-    (t/range
-      (-> (t/today) (t/<< (t/new-period 14 :days)))
-      (t/today)
-      (t/new-period 1 :days)
-      ))
-  )
-
-(defn days
-  "Returns dates for the last n days, including today."
-  [n]
-  (t/range
-    (-> (t/today) (t/<< (t/new-period (dec n) :days)))
-    (t/tomorrow)))
-
-(comment
-  (days 14))
-
-(defn monthly-archive-path [year-month]
-  (str "~/todo/archive/" year-month ".org")
-  )
-
-(defn months []
-  (->>
-    [
-     (t/today)
-     (t/<<
-       (t/today)
-       (t/new-period 1 :months))
-     (t/<<
-       (t/today)
-       (t/new-period 2 :months))]
-    (map (fn [t]
-           (t/format (t/formatter "yyyy-MM") t)))))
-
-(comment
-  (->> (months) (map monthly-archive-path))
-  )
-
-
-
-(comment
-  (org-file-paths)
-  (org-file-paths
-    {:additional-roots ["~/russmatney/{doctor,clawe,org-crud}/{readme,todo}.org"]})
-
-  (org-file-paths
-    {:additional-roots (->> (days 14) (map daily-path))}))
-
 (defn build-org-todos []
-  (->> (org-file-paths
-         {:additional-roots
-          (concat (->> (days 14) (map daily-path)))})
-       (map fs/file)
-       (filter fs/exists?)
-       (mapcat org-crud/path->flattened-items)
-       (filter :org/status) ;; this is set for org items with a todo state
-       (map org-item->todo)
-       (map #(merge % (get-todo-db %)))))
+  (->>
+    (garden/org-file-paths
+      (concat
+        (garden/daily-paths 14)
+        (garden/workspace-paths)
+        (garden/basic-todo-paths)))
+    (mapcat org-crud/path->flattened-items)
+    (filter :org/status) ;; this is set for org items with a todo state
+    (map org-item->todo)
+    (map #(merge % (get-todo-db %)))))
 
 (comment
   (->> (build-org-todos)
@@ -187,15 +120,15 @@
 
 (defn recent-org-items []
   ;; TODO consider db pulling/overwriting/syncing
-  (->> (org-file-paths
-         {:additional-roots
-          (concat
-            (->> (days 14) (map daily-path))
-            (->> (months) (map monthly-archive-path)))})
-       (map fs/file)
-       (filter fs/exists?)
-       (mapcat org-crud/path->flattened-items)
-       (map org-item->todo)))
+  (->>
+    (garden/org-file-paths
+      (concat
+        (garden/daily-paths 14)
+        (garden/monthly-archive-paths 3)
+        (garden/workspace-paths)
+        (garden/basic-todo-paths)))
+    (mapcat org-crud/path->flattened-items)
+    (map org-item->todo)))
 
 (comment
   (recent-org-items))

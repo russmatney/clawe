@@ -6,10 +6,104 @@
    [org-crud.core :as org-crud]
    [systemic.core :refer [defsys] :as sys]
    [ralphie.zsh :as r.zsh]
-   [util]))
+   [util]
+   [dates.tick :as dates.tick]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; org helpers
+;; org file paths
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; daily
+
+(defn daily-path
+  "Returns a path for the passed day. Defaults to today."
+  ([] (daily-path (first (dates.tick/days 1))))
+  ([day]
+   (->
+     (str "~/todo/daily/" day ".org")
+     r.zsh/expand)))
+
+(comment
+  (daily-path))
+
+(defn daily-paths
+  ([] [(daily-path)])
+  ([n] (->> (dates.tick/days n) (map daily-path))))
+
+(comment
+  (daily-paths)
+  (daily-paths 6))
+
+;; monthly archive
+
+(defn monthly-archive-path
+  "Returns a path to the org archive for the passed month.
+  Defaults to this month."
+  ([] (monthly-archive-path (first (dates.tick/months 1))))
+  ([year-month]
+   (->
+     (str "~/todo/archive/" year-month ".org")
+     r.zsh/expand)))
+
+(comment
+  (monthly-archive-path))
+
+(defn monthly-archive-paths
+  ([] [(monthly-archive-path)])
+  ([n] (->> (dates.tick/months n) (map monthly-archive-path))))
+
+(comment
+  (monthly-archive-paths)
+  (monthly-archive-paths 6))
+
+;; todos
+
+(defn basic-todo-paths []
+  (-> "~/todo/{journal,projects}.org" r.zsh/expand-many))
+
+(defn repo-todo-paths [repo-ids]
+  (->> repo-ids
+       (map #(str "~/" % "/{readme,todo}.org"))
+       (mapcat r.zsh/expand-many)))
+
+(comment
+  (repo-todo-paths #{"russmatney/clawe" "teknql/fabb" "russmatney/dino" "doesnot/exist"}))
+
+;; workspaces
+
+(defn workspace-paths []
+  ;; could find matches in non-workspace dir same-root paths
+  (-> "~/todo/garden/workspaces/*.org" r.zsh/expand-many))
+
+;; garden
+
+(defn flat-garden-paths
+  "Paths to files in ~/todo/garden/*.org"
+  []
+  (-> "~/todo/garden/*.org" r.zsh/expand-many))
+
+(comment
+  (flat-garden-paths))
+
+;; general helper
+
+(defn org-file-paths
+  "Helper for getting a list of org Files. Ensures they all exist.
+  Defaults to some recent dailies, journal.org, projects.org."
+  ([] (org-file-paths (concat (basic-todo-paths) (daily-paths 3))))
+  ([org-paths]
+   (->> org-paths
+        (map fs/file)
+        (filter fs/exists?))))
+
+(comment
+  (org-file-paths)
+  (org-file-paths (repo-todo-paths #{"russmatney/clawe" "russmatney/org-crud" "doesnot-exist"}))
+  (org-file-paths (daily-paths 14)))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; org item
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn get-last-modified
