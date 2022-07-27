@@ -39,7 +39,17 @@
     :db/unique    :db.unique/identity}
 
    :time/rn
-   {:db/valueType :db.type/instant}})
+   {:db/valueType :db.type/instant}
+
+
+   ;; org attrs
+   :org/id
+   {:db/valueType :db.type/uuid
+    :db/unique    :db.unique/identity}
+   :org/fallback-id
+   {:db/valueType :db.type/string
+    :db/unique    :db.unique/identity}
+   })
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Dump

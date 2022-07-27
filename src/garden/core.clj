@@ -155,7 +155,7 @@
                                   "/" (fs/file-name source-file))
              :org.prop/created-at created-at
              :org.prop/title (or title (fs/file-name source-file))
-             :time/last-modified last-modified))))
+             :file/last-modified last-modified))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; paths -> org items

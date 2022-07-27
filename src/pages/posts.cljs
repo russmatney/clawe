@@ -113,7 +113,7 @@
                 "max-w-100"]}
        (for [[i it] (->> items
                          ;; TODO some fancy grouping/sorting/filtering feats
-                         (sort-by :time/last-modified >)
+                         (sort-by :file/last-modified >)
                          (map-indexed vector))]
 
          ^{:key i}
@@ -147,7 +147,7 @@
          (for [[i p] (->> @open-posts
                           seq
                           ;; TODO some fancy sorting/filtering feats
-                          ;; (sort-by :time/last-modified)
+                          ;; (sort-by :file/last-modified)
 
                           (map-indexed vector))]
            ^{:key (or (:org/source-file p) i)}
