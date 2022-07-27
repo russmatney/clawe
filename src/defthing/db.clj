@@ -1,19 +1,23 @@
 (ns defthing.db
-  "Exposes functions for working with a datalevin database via `dtlv`."
+  "Exposes functions for working with a datalevin database."
   (:require
-   [babashka.pods :as pods]
    [babashka.process :as process :refer [$]]
    [clojure.string :as string]
+   [defthing.defcom :refer [defcom]]
    [ralphie.zsh :as zsh]
-   [wing.core :as w])
+   [wing.core :as w]
+   [systemic.core :refer [defsys] :as sys]
+
+   [pod.huahaiy.datalevin :as d])
   ;; (:import (java.date ZonedDateTime))
   )
 
-(pods/load-pod "dtlv")
-(require '[pod.huahaiy.datalevin :as d])
+
+;; (pods/load-pod 'huahaiy/datalevin "0.6.14")
+;; (require '[pod.huahaiy.datalevin :as d])
 
 ;; TODO defsys and configuration
-(def defthing-db-filepath (zsh/expand "~/russmatney/clawe/newdb"))
+(def defthing-db-filepath (zsh/expand "~/russmatney/dbs/newdb"))
 
 (def db-schema
   {:topbar/id
@@ -49,7 +53,30 @@
    :org/fallback-id
    {:db/valueType :db.type/string
     :db/unique    :db.unique/identity}
-   })
+
+   :org/tags
+   {:db/cardinality :db.cardinality/many}})
+
+
+;; TODO close connections on server shutdown?
+;; TODO clean up dead connections at startup?
+(defsys *db-conn*
+  :start (do
+           (println "starting new db conn")
+           (d/get-conn defthing-db-filepath db-schema))
+  :stop (d/close *db-conn*))
+
+
+(comment
+  *db-conn*
+
+  (d/get-conn defthing-db-filepath db-schema)
+  (d/create-conn defthing-db-filepath db-schema)
+
+
+  (sys/start! `*db-conn*)
+  )
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Dump
@@ -59,6 +86,7 @@
   "Return the database.
 
   TODO could be parsed...
+  TODO this seemes to flatline ... maybe needs to stream?
   "
   []
   (->
@@ -72,6 +100,8 @@
   (->>
     (dump)
     (take-last 5)))
+
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; transact helpers
@@ -141,21 +171,20 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn transact [txs]
-  ;; TODO refactor into defsys conn ?
-  (let [txs  (if (map? txs) [txs]
-                 ;; force seq/vec before grabbing the connection
-                 ;; in case lazySeq needs to use the db
-                 (->> txs (into [])))
-        conn (d/get-conn defthing-db-filepath db-schema)
-        txs  (map (fn [tx] (if (map? tx)
-                             (->> tx
-                                  convert-matching-types
-                                  drop-unsupported-vals)
-                             tx))
-                  txs)
-        _    (println "txs" txs)
-        res  (d/transact! conn txs)]
-    (d/close conn)
+  ;; no-ops if already started
+  (sys/start! `*db-conn*)
+  (let [txs (if (map? txs) [txs]
+                ;; force seq/vec before grabbing the connection
+                ;; in case lazySeq needs to use the db
+                (->> txs (into [])))
+        txs (map (fn [tx] (if (map? tx)
+                            (->> tx
+                                 convert-matching-types
+                                 drop-unsupported-vals)
+                            tx))
+                 txs)
+        _   (println "txs" txs)
+        res (d/transact! *db-conn* txs)]
     res))
 
 (comment
@@ -171,12 +200,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn query [q & args]
-  (let [conn (d/get-conn defthing-db-filepath db-schema)
-        res
-        (if args
-          (apply d/q q (d/db conn) args)
-          (d/q q (d/db conn)))]
-    (d/close conn)
+  (sys/start! `*db-conn*)
+  (let [res (if args
+              (apply d/q q (d/db *db-conn*) args)
+              (d/q q (d/db *db-conn*)))]
     res))
 
 (comment
@@ -207,11 +234,34 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; (defn retract [ent attr value]
-;;   (let [conn (d/get-conn defthing-db-filepath db-schema)
-;;         res
+;;   (sys/start! `*db-conn*)
+;;   (let [res
 ;;         (if value
-;;           (apply d/retract ent (d/db conn) args)
-;;           (d/retract q (d/db conn)))]
-;;     (d/close conn)
+;;           (apply d/retract ent (d/db *db-conn*) args)
+;;           (d/retract q (d/db *db-conn*)))]
 ;;     res)
 ;;   )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; cli
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defcom dump-db
+  "Dump the datalevin db"
+  (do
+    (println "defthing.db/dump-db called")
+    (doall
+      (->>
+        (dump)
+        (map println)))))
+
+(defcom query-db
+  "Query the datalevin db"
+  (fn [_ args]
+    (println "defthing.db/query-db called" args)
+    (doall
+      (->>
+        (query '[:find (pull ?e [*])
+                 :where [?e :doctor/type :type/garden]])
+        (take 3)
+        (map println)))))
