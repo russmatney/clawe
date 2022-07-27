@@ -39,10 +39,16 @@
     (if (or id fallback)
       (cond-> item
         fallback
-        (assoc :org/fallback-id fallback))
+        (assoc :org/fallback-id fallback)
+
+        true
+        (assoc :doctor/type :type/garden))
       (println "Could not create fallback id for org item" item))))
 
-(defn -compare-db-notes [notes]
+
+(defn -compare-db-notes
+  "Helper for researching :org/fallback-id's implementation/implications."
+  [notes]
   (let [db-note-fallback-ids (->> notes
                                   (map garden-note->db-item)
                                   (remove nil?)
@@ -73,9 +79,29 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn sync-garden-notes-to-db
-  ([] (sync-garden-notes-to-db []))
+  "Adds the passed garden notes to the db, after mapping them via `garden-note->db-item`.
+
+  Defaults to whatever `default-garden-sync-notes` indicates."
+  ([] (sync-garden-notes-to-db nil))
   ([garden-notes]
-   (->>
-     garden-notes
-     (map garden-note->db-item)
-     (db/transact))))
+   (let [garden-notes (or garden-notes (default-garden-sync-notes))]
+     (->>
+       garden-notes
+       (map garden-note->db-item)
+       (map db/transact)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; fetch
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn fetch-db-garden-notes
+  []
+  (db/query '[:find (pull ?e [*])
+              :where [?e :doctor/type :type/garden]]))
+
+(comment
+  (sync-garden-notes-to-db)
+
+  5
+  (fetch-db-garden-notes)
+  )
