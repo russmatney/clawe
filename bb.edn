@@ -121,9 +121,13 @@
            (shelll {:dir (str (home-dir) "/russmatney/clawe")}
                    "npx shadow-cljs watch expo-app")}
 
-  expo-deploy (do
-                (shelll "rm -rf expo/public/js/compiled/cljs-runtime")
-                (shelll "aws s3 sync expo/public s3://danger.russmatney.com"))
+  expo-deploy
+  {:doc "Build and deploy expo-fe"
+   :task
+   (do
+     ;; (shelll "rm -rf expo/public/js/compiled/cljs-runtime")
+     (shelll "npx shadow-cljs release expo-app")
+     (shelll "aws s3 sync expo/public s3://danger.russmatney.com"))}
 
 
   clawe-be          {:doc "Run the doctor and expo backends."
