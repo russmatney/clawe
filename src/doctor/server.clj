@@ -42,7 +42,7 @@
      (merge transit/default-read-handlers ttl/read-handlers)
      :transit-write-handlers
      (merge transit/default-write-handlers ttl/write-handlers)
-     :interceptors [(plasma.interceptors/auto-require)
+     :interceptors [(plasma.interceptors/auto-require (fn [_] (sys/start!)))
                     (plasma.interceptors/load-metadata)
                     #_{:name :doctor-logging
                        :enter
