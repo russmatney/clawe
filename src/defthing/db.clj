@@ -48,6 +48,8 @@
     :db/unique    :db.unique/identity}
 
    :org/tags
+   {:db/cardinality :db.cardinality/many}
+   :org/urls
    {:db/cardinality :db.cardinality/many}})
 
 
@@ -87,8 +89,6 @@
   (->>
     (dump)
     (take-last 5)))
-
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; transact helpers
@@ -159,22 +159,28 @@
 ;; Transact
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn transact [txs]
-  ;; no-ops if already started
-  (sys/start! `*db-conn*)
-  (let [txs (if (map? txs) [txs]
-                ;; force seq/vec before grabbing the connection
-                ;; in case lazySeq needs to use the db
-                (->> txs (into [])))
-        txs (map (fn [tx] (if (map? tx)
-                            (->> tx
-                                 convert-matching-types
-                                 drop-unsupported-vals)
-                            tx))
-                 txs)
-        _   (println "txs count" (count txs))
-        res (d/transact! *db-conn* txs)]
-    res))
+(defn transact
+  ([txs] (transact txs nil))
+  ([txs opts]
+   (sys/start! `*db-conn*)
+   (let [on-error (:on-error opts)
+         txs      (->>
+                    (if (map? txs) [txs] txs)
+                    (map (fn [tx] (if (map? tx)
+                                    (->> tx
+                                         convert-matching-types
+                                         drop-unsupported-vals)
+                                    tx)))
+                    (into []))]
+     (log/debug "Transacting records" (count txs))
+     (try
+       (let [res (d/transact! *db-conn* txs)]
+         ;; (when (> (:datoms-transacted res) 0)
+         ;;   (log/info "txs" txs))
+         res)
+       (catch Exception e
+         (log/warn "Exception while transacting data!" e)
+         (when on-error (on-error txs)))))))
 
 (comment
   (transact [{:name "Datalevin"}])

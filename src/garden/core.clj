@@ -184,14 +184,19 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; TODO wtf is this?
-(defn all-garden-notes-nested []
+(defn all-garden-notes-nested
+  "All relevant org items from the garden, nested
+  (a note per file, with nested headline as children)."
+  []
   (->>
     (org-file-paths
       (all-garden-paths))
     (map org-crud/path->nested-item)
     (map org->garden-note)))
 
-(defn all-garden-notes-flattened []
+(defn all-garden-notes-flattened
+  "All relevant org items from the garden, flattened (a note per headline)."
+  []
   (->>
     (org-file-paths
       (all-garden-paths))
@@ -202,9 +207,16 @@
   (->>
     (all-garden-notes-nested)
     (take 3))
+
   (->>
     (all-garden-notes-flattened)
-    (take 3)))
+    (take 3))
+
+  (count
+    (all-garden-notes-nested))
+
+  (count
+    (all-garden-notes-flattened)))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

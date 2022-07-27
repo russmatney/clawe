@@ -81,6 +81,17 @@
 ;; sync
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn -on-error-log-notes [txs]
+  (doall
+    (->> txs
+         (map
+           (fn [item]
+             (log/info (str "\n" (:org/source-file item) " - " (:org/fallback-id item))
+                       item))))) )
+
+(comment
+  (-on-error-log-notes []))
+
 (defn sync-garden-notes-to-db
   "Adds the passed garden notes to the db, after mapping them via `garden-note->db-item`.
 
@@ -88,10 +99,30 @@
   ([] (sync-garden-notes-to-db nil))
   ([garden-notes]
    (let [garden-notes (or garden-notes (default-garden-sync-notes))]
-     (->>
-       garden-notes
+     (doall
+       (->>
+         garden-notes
+         (map garden-note->db-item)
+         (sort-by :org/source-file)
+         (sort-by :org/fallback-id)
+         (partition-all 200)
+         (map #(db/transact % #_{:on-error -on-error-log-notes})))))))
+
+(comment
+  (->> (default-garden-sync-notes)
        (map garden-note->db-item)
-       (db/transact)))))
+       (sort-by :org/fallback-id)
+       (partition-all 50)
+       (take 1)))
+
+(defn sync-garden-paths-to-db [paths]
+  (->> paths
+       garden/paths->flattened-garden-notes
+       sync-garden-notes-to-db))
+
+(comment
+  (sync-garden-paths-to-db
+    (garden/daily-paths)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; fetch
@@ -114,8 +145,15 @@
 (comment
   (sync-garden-notes-to-db)
 
+  (log/set-level! :info)
+  ;; the big one!!
+  (sync-garden-notes-to-db
+    (garden/all-garden-notes-flattened))
+
+
   5
-  (fetch-db-garden-notes)
+  (count (garden/all-garden-notes-flattened))
+  (count (fetch-db-garden-notes))
 
   (fetch-db-garden-notes-with-tag "pomo")
   )
