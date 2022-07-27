@@ -2,11 +2,7 @@
   (:require
    [systemic.core :refer [defsys] :as sys]
    [manifold.stream :as s]
-   [org-crud.core :as org-crud]
-   [ralphie.zsh :as r.zsh]
-   [tick.core :as t]
    [babashka.fs :as fs]
-   [clojure.string :as string]
    [defthing.db :as db]
    [wing.core :as w]
    [dates.tick :as dt]
@@ -44,13 +40,6 @@
     (map first)))
 
 (comment
-  ;; (db/query
-  ;;   '[:find (pull ?e [*])
-  ;;     :in $ ?name
-  ;;     :where
-  ;;     [?e :org/name ?name]]
-  ;;   (:org/name --i))
-
   (db/query
     '[:find (pull ?e [*])
       :where
@@ -67,14 +56,15 @@
     :org.prop/archive-time
     :org.prop/created-at})
 
+(defn item->parsed-date-fields [item]
+  (->> org-item-date-keys
+       (map (fn [k]
+              [k (-> item k dt/parse-time-string)]))
+       (into {})))
 
-;; TODO combine with garden-note type
-(defn org-item->todo
+(defn garden-note->todo
   [{:org/keys [name source-file status] :as item}]
-  (let [parsed-date-fields (->> org-item-date-keys
-                                (map (fn [k]
-                                       [k (-> item k dt/parse-time-string)]))
-                                (into {}))]
+  (let [parsed-date-fields (item->parsed-date-fields item)]
     (->
       item
       (assoc :todo/name name
@@ -84,14 +74,13 @@
 
 (defn build-org-todos []
   (->>
-    (garden/org-file-paths
+    (garden/paths->flat-garden-notes
       (concat
         (garden/daily-paths 14)
         (garden/workspace-paths)
         (garden/basic-todo-paths)))
-    (mapcat org-crud/path->flattened-items)
     (filter :org/status) ;; this is set for org items with a todo state
-    (map org-item->todo)
+    (map garden-note->todo)
     (map #(merge % (get-todo-db %)))))
 
 (comment
@@ -118,18 +107,19 @@
        (sort-by :todo/status)
        (sort-by (comp not #{:status/in-progress} :todo/status))))
 
+(comment
+  (sorted-todos))
 
 (defn recent-org-items []
   ;; TODO consider db pulling/overwriting/syncing
   (->>
-    (garden/org-file-paths
+    (garden/paths->flat-garden-notes
       (concat
         (garden/daily-paths 14)
         (garden/monthly-archive-paths 3)
         (garden/workspace-paths)
         (garden/basic-todo-paths)))
-    (mapcat org-crud/path->flattened-items)
-    (map org-item->todo)))
+    (map garden-note->todo)))
 
 (comment
   (recent-org-items))
