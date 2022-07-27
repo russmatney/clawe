@@ -1,7 +1,6 @@
 (ns garden.core
   (:require
    [babashka.fs :as fs]
-   [clojure.string :as string]
    [manifold.stream :as s]
    [org-crud.core :as org-crud]
    [systemic.core :refer [defsys] :as sys]
@@ -12,6 +11,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; org file paths
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; TODO quite alot of zsh/expand in here
+;; probably lots of room to improve performance when collecting all these files
+;; we need a monad!
 
 ;; daily
 
@@ -33,6 +36,9 @@
 (comment
   (daily-paths)
   (daily-paths 6))
+
+(defn all-daily-paths []
+  (r.zsh/expand-many "~/todo/daily/*.org"))
 
 ;; monthly archive
 
@@ -56,10 +62,13 @@
   (monthly-archive-paths)
   (monthly-archive-paths 6))
 
+(defn all-monthly-archive-paths []
+  (r.zsh/expand-many "~/todo/archive/*.org"))
+
 ;; todos
 
 (defn basic-todo-paths []
-  (-> "~/todo/{journal,projects}.org" r.zsh/expand-many))
+  (-> "~/todo/{journal,projects,icebox}.org" r.zsh/expand-many))
 
 (defn repo-todo-paths [repo-ids]
   (->> repo-ids
@@ -85,18 +94,45 @@
 (comment
   (flat-garden-paths))
 
+;; all of these
+
+(defn all-garden-paths
+  "All of them!
+
+  Well, kind of: a few from ~/todo/ via (basic-todo-paths), all the dailies and archives,
+  the whole garden, and all the workspace-garden files.
+  "
+  []
+  (concat
+    (basic-todo-paths)
+    (all-daily-paths)
+    (workspace-paths)
+    (flat-garden-paths)
+    (all-monthly-archive-paths)))
+
+(comment
+  (count
+    (all-garden-paths)))
+
 ;; general helper
 
 (defn org-file-paths
   "Helper for getting a list of org Files. Ensures they all exist.
   Defaults to some recent dailies, journal.org, projects.org."
   ([] (org-file-paths (concat (basic-todo-paths) (daily-paths 3))))
-  ([org-paths] (->> org-paths (map fs/file) (filter fs/exists?))))
+  ([org-paths] (->> org-paths (map fs/file)
+                    ;; b/c we project out dailies, we might be missing some of these
+                    ;; so this removes files that don't exist
+                    (filter fs/exists?))))
 
 (comment
   (org-file-paths)
   (org-file-paths (repo-todo-paths #{"russmatney/clawe" "russmatney/org-crud" "doesnot-exist"}))
-  (org-file-paths (daily-paths 14)))
+  (org-file-paths (daily-paths 14))
+
+  (count
+    (org-file-paths
+      (all-garden-paths))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -105,14 +141,7 @@
 
 (defn get-last-modified
   [item]
-  ;; TODO include this format in parser
-  (def i item)
   (-> item :org/source-file fs/last-modified-time str))
-
-(comment
-  (-> (daily-path) fs/last-modified-time)
-  (-> i :org/source-file fs/last-modified-time str)
-  (-> i :org/source-file fs/file-name))
 
 (defn org->garden-note
   [{:org/keys      [source-file]
@@ -121,11 +150,9 @@
   (let [last-modified (get-last-modified item)]
     (->
       item
-      ;; (dissoc :org/items)
       (assoc :garden/file-name (fs/file-name source-file)
-             :org/short-path (-> source-file
-                                 (string/replace-first "/home/russ/todo/" "")
-                                 (string/replace-first "/Users/russ/todo/" ""))
+             :org/short-path (str (-> source-file fs/parent fs/file-name)
+                                  "/" (fs/file-name source-file))
              :org.prop/created-at created-at
              :org.prop/title (or title (fs/file-name source-file))
              :time/last-modified last-modified))))
@@ -143,45 +170,42 @@
 (comment
   (paths->nested-garden-notes (daily-paths)))
 
-(defn paths->flat-garden-notes [paths]
+(defn paths->flattened-garden-notes [paths]
   (->> paths
        org-file-paths
        (mapcat org-crud/path->flattened-items)
        (map org->garden-note)))
 
 (comment
-  (paths->flat-garden-notes (daily-paths)))
+  (paths->flattened-garden-notes (daily-paths)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; todo-dir-files
+;; all-garden-notes
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; TODO wtf is this?
-(defn todo-dir-files []
+(defn all-garden-notes-nested []
   (->>
-    "~/todo"
-    r.zsh/expand
-    (org-crud/dir->nested-items {:recursive? true})
-    ;; TODO refactor to filter on filename before parsing via org-crud
-    (remove (fn [{:org/keys [source-file]}]
-              (or
-                (string/includes? source-file "/journal/")
-                (string/includes? source-file "/urbint/")
-                (string/includes? source-file "/archive/")
-                (string/includes? source-file "/old/")
-                (string/includes? source-file "/old-nov-2020/")
-                (string/includes? source-file "/kata/")
-                (string/includes? source-file "/standup/")
-                (string/includes? source-file "/drafts-journal/")
-                ;; (string/includes? source-file "/daily/")
-                )))
-    (map org->garden-note)
-    (sort-by :org/source-file)))
+    (org-file-paths
+      (all-garden-paths))
+    (map org-crud/path->nested-item)
+    (map org->garden-note)))
+
+(defn all-garden-notes-flattened []
+  (->>
+    (org-file-paths
+      (all-garden-paths))
+    (mapcat org-crud/path->flattened-items)
+    (map org->garden-note)))
 
 (comment
   (->>
-    (todo-dir-files)
+    (all-garden-notes-nested)
+    (take 3))
+  (->>
+    (all-garden-notes-flattened)
     (take 3)))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; journal
@@ -222,13 +246,12 @@
 
 (defn get-garden []
   (->>
-    (todo-dir-files)
-    (map util/drop-complex-types))
-  )
+    (all-garden-notes-nested)
+    (map util/drop-complex-types)))
 
 (comment
   (->>
-    (todo-dir-files)
+    (get-garden)
     (count)))
 
 (defsys *garden-stream*
@@ -249,12 +272,5 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn full-item
-  [{:org/keys [source-file]
-    :as       item}]
-  (def --item item)
-  (println "garden.core full-item" item)
+  [{:org/keys [source-file]}]
   (org-crud/path->nested-item source-file))
-
-(comment
-  (full-item --item)
-  )

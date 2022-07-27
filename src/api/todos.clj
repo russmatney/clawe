@@ -2,7 +2,6 @@
   (:require
    [systemic.core :refer [defsys] :as sys]
    [manifold.stream :as s]
-   [babashka.fs :as fs]
    [defthing.db :as db]
    [wing.core :as w]
    [dates.tick :as dt]
@@ -63,18 +62,18 @@
        (into {})))
 
 (defn garden-note->todo
-  [{:org/keys [name source-file status] :as item}]
+  [{:org/keys [name status short-path] :as item}]
   (let [parsed-date-fields (item->parsed-date-fields item)]
     (->
       item
       (assoc :todo/name name
-             :todo/file-name (str (-> source-file fs/parent fs/file-name) "/" (fs/file-name source-file))
+             :todo/file-name short-path
              :todo/status status)
       (merge parsed-date-fields))))
 
 (defn build-org-todos []
   (->>
-    (garden/paths->flat-garden-notes
+    (garden/paths->flattened-garden-notes
       (concat
         (garden/daily-paths 14)
         (garden/workspace-paths)
@@ -113,7 +112,7 @@
 (defn recent-org-items []
   ;; TODO consider db pulling/overwriting/syncing
   (->>
-    (garden/paths->flat-garden-notes
+    (garden/paths->flattened-garden-notes
       (concat
         (garden/daily-paths 14)
         (garden/monthly-archive-paths 3)
