@@ -91,10 +91,7 @@
   "Helper for getting a list of org Files. Ensures they all exist.
   Defaults to some recent dailies, journal.org, projects.org."
   ([] (org-file-paths (concat (basic-todo-paths) (daily-paths 3))))
-  ([org-paths]
-   (->> org-paths
-        (map fs/file)
-        (filter fs/exists?))))
+  ([org-paths] (->> org-paths (map fs/file) (filter fs/exists?))))
 
 (comment
   (org-file-paths)
@@ -113,18 +110,18 @@
   (-> item :org/source-file fs/last-modified-time str))
 
 (comment
+  (-> (daily-path) fs/last-modified-time)
   (-> i :org/source-file fs/last-modified-time str)
-
   (-> i :org/source-file fs/file-name))
 
-(defn org->garden-node
+(defn org->garden-note
   [{:org/keys      [source-file]
     :org.prop/keys [title created-at]
     :as            item}]
   (let [last-modified (get-last-modified item)]
     (->
       item
-      (dissoc :org/items)
+      ;; (dissoc :org/items)
       (assoc :garden/file-name (fs/file-name source-file)
              :org/short-path (-> source-file
                                  (string/replace-first "/home/russ/todo/" "")
@@ -133,6 +130,33 @@
              :org.prop/title (or title (fs/file-name source-file))
              :time/last-modified last-modified))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; paths -> org items
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn paths->nested-garden-notes [paths]
+  (->> paths
+       org-file-paths
+       (map org-crud/path->nested-item)
+       (map org->garden-note)))
+
+(comment
+  (paths->nested-garden-notes (daily-paths)))
+
+(defn paths->flat-garden-notes [paths]
+  (->> paths
+       org-file-paths
+       (mapcat org-crud/path->flattened-items)
+       (map org->garden-note)))
+
+(comment
+  (paths->flat-garden-notes (daily-paths)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; todo-dir-files
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; TODO wtf is this?
 (defn todo-dir-files []
   (->>
     "~/todo"
@@ -151,7 +175,7 @@
                 (string/includes? source-file "/drafts-journal/")
                 ;; (string/includes? source-file "/daily/")
                 )))
-    (map org->garden-node)
+    (map org->garden-note)
     (sort-by :org/source-file)))
 
 (comment
@@ -168,21 +192,14 @@
 
   - journal.org
   - projects.org
-
-  ;; TODO
-
   - dailies for the last 3 days (today inclusive)
   "
   []
   (->>
-    "~/todo/*"
-    r.zsh/expand-many
-    (filter (fn [source-file]
-              (or
-                (string/includes? source-file "journal.org")
-                (string/includes? source-file "projects.org"))))
-    (map org-crud/path->nested-item)
-    (map org->garden-node)
+    (paths->nested-garden-notes
+      (concat
+        (daily-paths 3)
+        (basic-todo-paths)))
     (sort-by :org/source-file)
     (map util/drop-complex-types)))
 

@@ -68,6 +68,7 @@
     :org.prop/created-at})
 
 
+;; TODO combine with garden-note type
 (defn org-item->todo
   [{:org/keys [name source-file status] :as item}]
   (let [parsed-date-fields (->> org-item-date-keys
