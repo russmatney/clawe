@@ -2,9 +2,6 @@
   (:require
    [datascript.core :as d]))
 
-;; db when this worked:
-;; #datascript/DB {:schema nil, :datoms [[1 :other :attrs/enum 536870913] [1 :some/new :piece/of-data 536870913] [1 :with/attrs 23 536870913]]}
-
 (defn page [{:db/keys [conn db]}]
   [:div
    "Home"
@@ -33,5 +30,4 @@
                   :in    [$ ?attr ?value]}
                 db :some/new :piece/of-data)]
        (println "res" res)
-       [:div "query example" (str res)]))
-   ])
+       [:div "query example" (str res)]))])
