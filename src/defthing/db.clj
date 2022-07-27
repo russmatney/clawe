@@ -4,20 +4,12 @@
    [babashka.process :as process :refer [$]]
    [clojure.string :as string]
    [defthing.defcom :refer [defcom]]
-   [ralphie.zsh :as zsh]
+   [defthing.config :as defthing.config]
    [wing.core :as w]
    [systemic.core :refer [defsys] :as sys]
 
-   [pod.huahaiy.datalevin :as d])
-  ;; (:import (java.date ZonedDateTime))
-  )
+   [pod.huahaiy.datalevin :as d]))
 
-
-;; (pods/load-pod 'huahaiy/datalevin "0.6.14")
-;; (require '[pod.huahaiy.datalevin :as d])
-
-;; TODO defsys and configuration
-(def defthing-db-filepath (zsh/expand "~/russmatney/dbs/newdb"))
 
 (def db-schema
   {:topbar/id
@@ -63,19 +55,13 @@
 (defsys *db-conn*
   :start (do
            (println "starting new db conn")
-           (d/get-conn defthing-db-filepath db-schema))
+           (d/get-conn (defthing.config/db-path) db-schema))
   :stop (d/close *db-conn*))
 
 
 (comment
   *db-conn*
-
-  (d/get-conn defthing-db-filepath db-schema)
-  (d/create-conn defthing-db-filepath db-schema)
-
-
-  (sys/start! `*db-conn*)
-  )
+  (sys/start! `*db-conn*))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -90,7 +76,7 @@
   "
   []
   (->
-    ($ dtlv -d ~defthing-db-filepath -g dump)
+    ($ dtlv -d ~(defthing.config/db-path) -g dump)
     process/check
     :out
     slurp
@@ -239,8 +225,7 @@
 ;;         (if value
 ;;           (apply d/retract ent (d/db *db-conn*) args)
 ;;           (d/retract q (d/db *db-conn*)))]
-;;     res)
-;;   )
+;;     res))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; cli
