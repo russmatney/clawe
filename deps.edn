@@ -37,7 +37,7 @@
   ;;   org.clojure/core.specs.alpha nil}}
 
   :doctor-server {:main-opts ["-m" "doctor.main"]}
-  :expo-server   {:main-opts ["-m" "expo.main"]}
+  ;; :expo-server   {:main-opts ["-m" "expo.main"]}
 
   :full-stack-deps
   {:extra-deps

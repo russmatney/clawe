@@ -16,37 +16,49 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn fallback-id
-  "Used as a backup for dumping org items into the defthing.db.
+  "Used as a backup for dumping unique org items into the defthing.db.
 
-  There are some gotchas - same-name items will clobber each other.
-  For now you can add an org id to items with `org-id-get-create`.
-
-  Could upgrade org-crud to provide a bit more context to improve this fallback
-  ;; TODO include #, as in which child am i?
-  ;; TODO include parents-names (all names to root)
-
-  Handling changing names/re-arranging org-files without the uuids is a hairy...
+  Handling changing names/re-arranging org-files without the uuids is a bit hairy...
   We could 'retire'/'archive' all nodes per :org/source-file every time a
-  source-file is ingested, then try to match up/combine/re-link the missing ones
+  source-file is ingested, then try to match-up/combine/re-link the missing ones
   when things move around...
   "
-  [{:org/keys [short-path name word-count]}]
+  [{:org/keys [short-path name parent-name relative-index]}]
   (when (and short-path name)
-    (str name " " word-count " > " short-path)))
+    (str name " " relative-index " " parent-name " > " short-path)))
 
 (defn garden-note->db-item
   [{:org/keys [id] :as item}]
   (let [fallback (fallback-id item)]
     (if (or id fallback)
       (cond-> item
-        id (assoc :org/id (if (uuid? id) id (java.util.UUID/fromString id)))
+        id (assoc :org/id id)
 
         fallback
         (assoc :org/fallback-id fallback)
 
+        (seq (:org/links-to item))
+        (assoc :org/link-ids (->> (:org/links-to item)
+                                  (map :link/id)))
+
         true
         (assoc :doctor/type :type/garden))
       (log/info "Could not create fallback id for org item" item))))
+
+(defn other-db-updates [{:org/keys [links-to id parent-ids]}]
+  ;; TODO if no `id`, we probably want to link to the nearest parent
+  (when id
+    (concat
+
+      (->> links-to (map (fn [link]
+                           ;; TODO consider creating a first-class link object?
+                           {:org/id          (:link/id link)
+                            :org/link-text   (:link/text link)
+                            :org/linked-from id})))
+      (->> parent-ids (map (fn [parent-id]
+                             ;; TODO consider creating a first-class link object?
+                             {:org/id        parent-id
+                              :org/child-ids id}))))))
 
 
 (defn -compare-db-notes
@@ -103,10 +115,12 @@
        (->>
          garden-notes
          (map garden-note->db-item)
+         (mapcat (fn [item]
+                   (concat [item] (other-db-updates item))))
          (sort-by :org/source-file)
          (sort-by :org/fallback-id)
          (partition-all 200)
-         (map #(db/transact % #_{:on-error -on-error-log-notes})))))))
+         (map #(db/transact % {:on-error -on-error-log-notes})))))))
 
 (comment
   (->> (default-garden-sync-notes)
@@ -122,7 +136,17 @@
 
 (comment
   (sync-garden-paths-to-db
-    (garden/daily-paths)))
+    (garden/daily-paths 3))
+
+  (sync-garden-notes-to-db)
+
+  (log/set-level! :info)
+  ;; the big one!!
+  (sync-garden-notes-to-db
+    (garden/all-garden-notes-flattened))
+
+  #_(count (fetch-db-garden-notes))
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; fetch
@@ -145,15 +169,6 @@
     (map first)))
 
 (comment
-  (sync-garden-notes-to-db)
-
-  (log/set-level! :info)
-  ;; the big one!!
-  (sync-garden-notes-to-db
-    (garden/all-garden-notes-flattened))
-
-
-  5
   (count (garden/all-garden-notes-flattened))
   (count (fetch-db-garden-notes))
 

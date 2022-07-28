@@ -11,7 +11,6 @@
    [pod.huahaiy.datalevin :as d]
    [taoensso.timbre :as log]))
 
-
 (def db-schema
   {:topbar/id
    {:db/valueType :db.type/uuid
@@ -47,6 +46,15 @@
    {:db/valueType :db.type/string
     :db/unique    :db.unique/identity}
 
+   :org/link-text
+   {:db/cardinality :db.cardinality/many}
+   :org/linked-from
+   {:db/cardinality :db.cardinality/many}
+
+   :org/link-ids
+   {:db/cardinality :db.cardinality/many}
+   :org/parent-ids
+   {:db/cardinality :db.cardinality/many}
    :org/tags
    {:db/cardinality :db.cardinality/many}
    :org/urls
@@ -60,7 +68,6 @@
            (log/info "Starting new datalevin db conn")
            (d/get-conn (defthing.config/db-path) db-schema))
   :stop (d/close *db-conn*))
-
 
 (comment
   *db-conn*
@@ -223,6 +230,7 @@
            :where (or
                     [?e :name "Datalevin"]
                     [?e :last "value"])]))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Retract
