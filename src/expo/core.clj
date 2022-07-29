@@ -34,6 +34,7 @@
               tags)
     (map first)))
 
+
 (comment
 
   (d/transact! conn [{:some/new   :piece/of-data
@@ -76,11 +77,17 @@
   (def notes-tagged-post
     (->>
       (db/query '[:find (pull ?e [*])
-                  :where (or [?e :org/tags "post"]
-                             [?e :org/tags "posts"])])
+                  :where
+                  [?e :org/tags ?tag]
+                  [(contains? #{"post" "posts"} ?tag)]
+                  [?e :org/level :level/root]
+                  ])
       (map first)))
 
-  notes-tagged-post
+
+  (d/transact! conn notes-tagged-post)
+
+  (pr-str (d/db conn))
 
 
   (->>
