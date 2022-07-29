@@ -39,24 +39,41 @@
 
         (seq (:org/links-to item))
         (assoc :org/link-ids (->> (:org/links-to item)
-                                  (map :link/id)))
+                                  (map :link/id)
+                                  (into #{})))
 
         true
-        (assoc :doctor/type :type/garden))
+        (->>
+          ;; quick attempt to un-lazy some seqs
+          (map (fn [[k v]]
+                 [k (if (coll? v) (->> v (into []))
+                        v)]))
+          (into {}))
+
+        true
+        (->
+          (assoc :doctor/type :type/garden)
+          (dissoc :org/body
+                  :org/items
+                  :org.prop/link-ids ;; old linking props
+                  :org.prop/begin-src ;; TODO proper source block handling
+                  :org.prop/end-src
+                  )))
       (log/info "Could not create fallback id for org item" item))))
 
-(defn other-db-updates [{:org/keys [links-to id parent-ids]}]
+(defn other-db-updates
+  [{:org/keys [links-to id parent-ids]}]
   ;; TODO if no `id`, we probably want to link to the nearest parent
   (when id
     (concat
 
       (->> links-to (map (fn [link]
-                           ;; TODO consider creating a first-class link object?
+                           ;; TODO consider creating a first-class link/edge entity?
                            {:org/id          (:link/id link)
                             :org/link-text   (:link/text link)
                             :org/linked-from id})))
       (->> parent-ids (map (fn [parent-id]
-                             ;; TODO consider creating a first-class link object?
+                             ;; TODO consider creating a first-class link/edge entity?
                              {:org/id        parent-id
                               :org/child-ids id}))))))
 
@@ -119,15 +136,31 @@
                    (concat [item] (other-db-updates item))))
          (sort-by :org/source-file)
          (sort-by :org/fallback-id)
-         (partition-all 200)
-         (map #(db/transact % {:on-error -on-error-log-notes})))))))
+         (partition-all 2000)
+         (map (fn transact-garden-notes [notes]
+                (db/transact
+                  notes
+                  {:on-error            -on-error-log-notes
+                   :on-unsupported-type (fn [note]
+                                          (log/debug "Unsupported type on note" note))
+                   ;; retry logic that narrows in on bad records
+                   ;; NOTE not ideal if we care about things belonging to the same transaction
+                   :on-retry            (fn [notes]
+                                          (let [size (count notes)
+                                                half (/ size 2)]
+                                            (if (> size 1)
+                                              (do
+                                                (log/info "Retrying with smaller groups." (count notes))
+                                                (transact-garden-notes (->> notes (take half)))
+                                                (transact-garden-notes (->> notes (drop half) (take half))))
+                                              (log/info "Problemmatic record:" notes))))}))))))))
 
 (comment
-  (->> (default-garden-sync-notes)
-       (map garden-note->db-item)
-       (sort-by :org/fallback-id)
-       (partition-all 50)
-       (take 1)))
+  (let [x         [2 3 4 5 6 7 8]
+        size      (count x)
+        half-size (/ size 2)]
+    (->> x (drop half-size) (take half-size))
+    (->> x (take (/ 1 2)))))
 
 (defn sync-garden-paths-to-db [paths]
   (->> paths
@@ -136,16 +169,22 @@
 
 (comment
   (sync-garden-paths-to-db
-    (garden/daily-paths 3))
+    (garden/daily-paths 50))
 
   (sync-garden-notes-to-db)
 
   (log/set-level! :info)
+  log/*config*
   ;; the big one!!
   (sync-garden-notes-to-db
+    (->>
+      (garden/all-garden-notes-flattened)
+      ;; (drop 15000)
+      ))
+
+  (count
     (garden/all-garden-notes-flattened))
 
-  #_(count (fetch-db-garden-notes))
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

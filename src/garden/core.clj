@@ -112,7 +112,8 @@
 
 (comment
   (count
-    (all-garden-paths)))
+    (all-garden-paths))
+  )
 
 ;; general helper
 
@@ -213,10 +214,14 @@
     (take 3))
 
   (count
-    (all-garden-notes-nested))
+    (all-garden-notes-flattened))
 
-  (count
-    (all-garden-notes-flattened)))
+  (->> (all-garden-notes-flattened)
+       (remove (comp uuid? :org/id))
+       (map :org/level)
+       (frequencies)
+       )
+  )
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
