@@ -54,11 +54,11 @@
        :notify/body    :clawe.restart})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; check if unit tests pass, throw/notify otherwise
+;; check if unit tests are passing
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn check-unit-tests
-  "Run the unit tests, raising and notifying if they fail."
+  "Run the unit tests, return [:success ...] or [:fail ....]."
   []
   (let [proc               ^{:out :string
                              ;; TODO use clawe-dir (config?)
@@ -69,12 +69,12 @@
     (if (#{0} exit)
       (do
         (notify/notify "Unit Test PASS :)")
-        out)
+        [:success out])
       (do
         (notify/notify "Unit Test FAIL :(")
         (notify/notify out)
         (notify/notify exit)
-        (throw (Exception. "Unit test fail! Stopping."))))))
+        [:fail out exit]))))
 
 (comment
   (do
@@ -90,32 +90,43 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defcom restart
-  "Rebuilds the clawe executable, which is an uberjar.
+  "Rebuild clawe, plus Reload.
 
-Fires `clawe reload`, which is implemented below.
+At system startup, `clawe reload` is important, as it ensures that a number
+of things are in place, most critially the sxhkd service and tmux session.
 
-We want to make sure the new config is written with the updated
-uberjar. Otherwise this might need to be called twice."
+Rebuild requires the unit tests to pass before rebuilding the clawe executable, which is an uberjar.
+
+The uberjar can be manually rebuilt on the command line with:
+
+bb -cp $(clojure -Spath) --uberjar clawe.jar -m clawe.core # rebuild clawe
+
+See `clawe.install/build-uberjar`.
+"
   (do
-    ;; make sure the unit tests pass before reinstalling
-    (log "checking unit tests...")
-    (check-unit-tests)
+    (log "Restarting...")
+    (let [res (-> (check-unit-tests) first)]
 
-    (log "restarting...")
-    ;; TODO detect if the current uberjar is out of date
-    ;; maybe using git status, or some local timestamp?
-    ;; then provide a force rebuild option
-    (log "rebuilding uberjar...")
-    (try
-      (c.install/build-uberjar)
-      (catch Exception e
-        (notify/notify "Caught Exception rebuilding uberjar")
-        (println e)))
-    ;; maybe a pause or file read/watch, something that shows it's new?
-    ;; or at least some log that reveals whether it is new or not
-    ;; log and compare the checksum of the uberjar, with a fallback
+      (cond
+        (#{:fail} res)
+        (log "Unit tests failed, skipping uberjar rebuild")
 
-    ;; if nothing has changed, maybe just call rewrite-and-reload from here
+        (#{:success} res)
+        (do
+          ;; TODO detect if the current uberjar is out of date
+          ;; maybe using git status, or some local timestamp?
+          ;; TODO provide a force rebuild option
+          (log "Rebuilding uberjar...")
+          ;; TODO could also skip if nothing has changed
+          (try
+            (c.install/build-uberjar)
+            (catch Exception e
+              (notify/notify "Exception while rebuilding uberjar")
+              (println e))))
+
+        :else
+        (log "Strange unit tests response...")))
+
     (log "reloading clawe...")
     (->
       ;; kicking to process here could mean we use the new uberjar
@@ -148,6 +159,7 @@ uberjar. Otherwise this might need to be called twice."
       (log "rewriting awm bindings")
       (awm.bindings/write-awesome-bindings)
       (log "resetting sxhkd bindings")
+      ;; NOTE this ensures the sxhkd tmux session as well, which is required for keybindings to work!
       (sxhkd.bindings/reset-bindings))
 
     ;; Rules

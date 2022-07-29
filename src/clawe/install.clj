@@ -17,7 +17,13 @@
 ;; Build Clawe Uberjar
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn build-uberjar []
+(defn build-uberjar
+  "Rebuilds the clawe uberjar. Equivalent to:
+
+bb -cp $(clojure -Spath) --uberjar clawe.jar -m clawe.core # rebuild clawe
+
+  on the command line."
+  []
   (let [notif (fn [s] (r.notify/notify
                         {:subject s :replaces-process "rebuilding-clawe-uberjar"}))
         dir   (r.sh/expand "~/russmatney/clawe")]
