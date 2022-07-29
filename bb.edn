@@ -1,7 +1,8 @@
-{:paths ["src" "test"]
+{:paths ["src" "test" "resources"]
  :deps  {babashka/fs                        {:mvn/version "0.1.6"}
          metosin/malli                      {:mvn/version "0.8.9"}
          com.lambdaisland/specmonstah-malli {:mvn/version "0.0.7"}
+         aero/aero                          {:mvn/version "1.1.6"}
 
          teknql/systemic {:local/root "../../teknql/systemic"}
          teknql/wing     {:local/root "../../teknql/wing"}
