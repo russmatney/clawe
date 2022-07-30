@@ -4,26 +4,44 @@
    [garden.db :as garden.db]
    [defthing.db :as db]))
 
+(def ignored-tags #{"archived"})
 
 (defn notes-for-tags [tags]
   (->>
     (db/query '[:find (pull ?e [*])
-                :in $ ?tags
+                :in $ ?tags ?ignored-tags
                 :where
                 [?e :doctor/type :type/garden]
                 ;; TODO parse file-tags to :org/tags in org-crud
                 ;; [?e :org/level :level/root]
                 [?e :org/tags ?tag]
-                [(?tags ?tag)]]
-              tags)
+                [(?tags ?tag)]
+                [(not (contains? ?ignored-tags ?tag))]]
+              tags ignored-tags)
     (map first)))
 
+(def post-tags #{"til" "post" "posts" "blog"})
+
+(defn note->expo-post [{:keys [] :as note}]
+  (-> note
+      (assoc :expo/type :type/post)
+      (assoc :expo/title (:org/name note))))
+
+(defn update-posts []
+  (->>
+    (notes-for-tags post-tags)
+    (map note->expo-post)
+    (expo.db/transact)))
 
 (comment
+
+  (update-posts)
+
+
+
   (notes-for-tags #{"til" "post" "posts" "blog"})
 
   (garden.db/fetch-db-garden-notes)
-
 
   (def org-tags
     (->>
@@ -54,6 +72,4 @@
 
   (->>
     (notes-for-tags #{"til"})
-    (expo.db/transact))
-
-  )
+    (expo.db/transact)))

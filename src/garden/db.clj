@@ -164,9 +164,8 @@
 
 (comment
   (sync-garden-paths-to-db
-    {:page-size 100}
-    (garden/daily-paths 2))
-
+    {:page-size 20}
+    (garden/daily-paths 1))
   (log/set-level! :info)
   log/*config*
   (sync-garden-notes-to-db

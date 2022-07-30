@@ -19,6 +19,8 @@
 
 (declare write-db-to-file)
 
+;; TODO handle no-db case (i.e. no file?)
+;; TODO handle schema updates
 (defsys *conn*
   :start (let [conn (-> (read-db-from-file) (ds/conn-from-db))]
            (ds/listen! conn :db-writer (fn [_] (write-db-to-file)))
