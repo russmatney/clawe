@@ -26,7 +26,7 @@
                    tx)))))
   :stop
   (try
-    (log/info "Removing :garden->expo db listener")
+    (log/debug "Removing :garden->expo db listener")
     (datalevin/unlisten! db/*db-conn* :garden->expo)
     (catch Exception e
       (log/debug "err removing listener" e)

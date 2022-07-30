@@ -8,18 +8,20 @@
    [ring.adapter.undertow :as undertow]
    [ring.adapter.undertow.websocket :as undertow.ws]
 
-   [api.commits]
-   [api.events]
-   [api.repos]
-   [api.screenshots]
-   [api.topbar]
-   [api.todos]
-   [api.wallpapers]
-   [api.workspaces]
-   [garden.core :as garden]
+   [api.commits :as api.commits]
+   [api.events :as api.events]
+   [api.repos :as api.repos]
+   [api.screenshots :as api.screenshots]
+   [api.topbar :as api.topbar]
+   [api.todos :as api.todos]
+   [api.wallpapers :as api.wallpapers]
+   [api.workspaces :as api.workspaces]
    [dates.transit-time-literals :as ttl]
-   [doctor.config]
-   [doctor.api]
+   [defthing.listeners :as defthing.listeners]
+   [doctor.config :as doctor.config]
+   [doctor.api :as doctor.api]
+   [garden.core :as garden]
+   [garden.watcher :as garden.watcher]
    [ralphie.notify :as notify]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -68,7 +70,9 @@
    api.repos/*repos-stream*
    api.wallpapers/*wallpapers-stream*
    garden/*garden-stream*
-   garden/*journals-stream*]
+   garden/*journals-stream*
+   garden.watcher/*garden-watcher*
+   defthing.listeners/*garden->expo*]
   :start
   (let [port (:server/port doctor.config/*config*)]
     (log/info "Starting *server* on port" port)
