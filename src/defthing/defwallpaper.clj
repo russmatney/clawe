@@ -1,11 +1,7 @@
 (ns defthing.defwallpaper
   (:require
    [ralphie.zsh :as zsh]
-   [clojure.string :as string]
-   [babashka.fs :as fs]
-   [babashka.process :as process]
-   [defthing.db :as db]
-   [ralphie.notify :as notify]))
+   [defthing.db :as db]))
 
 
 (comment
@@ -19,12 +15,27 @@
       '[:find [(pull ?e [*])]
         :in $ ?full-path
         :where
-        [?e :file/full-path ?full-path]
-        [?e :background/last-time-set ?t]]
-      (:file/full-path f))
+        [?e :doctor/type :type/wallpaper]
+        [?e :wallpaper/full-path ?full-path]
+        [?e :wallpaper/last-time-set ?t]]
+      (:wallpaper/full-path f))
     first))
 
 (comment
-
   (defwallpaper/get-wallpaper --f)
+  )
+
+
+(defn all-wallpapers []
+  (->>
+    (db/query
+      '[:find (pull ?e [*])
+        :where
+        [?e :doctor/type :type/wallpaper]])
+    (map first)))
+
+(comment
+  (all-wallpapers)
+
+  6
   )

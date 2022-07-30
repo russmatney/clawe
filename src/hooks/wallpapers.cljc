@@ -26,7 +26,7 @@
                          (swap! wallpapers
                                 (fn [_]
                                   (println (some-> new-items first))
-                                  (->> new-items (w/distinct-by :file/full-path)))))]
+                                  (->> new-items (w/distinct-by :wallpaper/full-path)))))]
 
        (with-rpc [] (get-wallpapers) handle-resp)
        (with-stream [] (wallpapers-stream) handle-resp)
@@ -44,10 +44,11 @@
 ;; could move toward ->actions being clj + cljs
 #?(:cljs
    (defn ->actions [item]
-     (let [{:keys []} item]
-       (->>
-         [{:action/label    "js/alert"
-           :action/on-click #(js/alert item)}
-          {:action/label    "Set as background"
-           :action/on-click #(set-wallpaper item)}]
-         (remove nil?)))))
+     (when (= (:doctor/type item) :type/wallpaper)
+       (let [{:keys []} item]
+         (->>
+           [{:action/label    "js/alert"
+             :action/on-click #(js/alert item)}
+            {:action/label    "Set as background"
+             :action/on-click #(set-wallpaper item)}]
+           (remove nil?))))))

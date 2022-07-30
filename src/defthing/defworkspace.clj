@@ -20,7 +20,8 @@
   "
   [{:keys [name]}]
   {:workspace/title     name
-   :workspace/directory home-dir})
+   :workspace/directory home-dir
+   :doctor/type         :type/workspace})
 
 (defn absolute-workspace-directory
   "Expects at least a :workspace/directory as a string relative to $HOME.
@@ -67,7 +68,10 @@
           :in $ ?n
           :where
           [?e :workspace/title ?n]
-          [?e :type :clawe/workspaces]]
+          ;; doctor type? clawe type?
+          [?e :doctor/type :type/workspace]
+          ;; [?e :type :clawe/workspaces]
+          ]
         n)
       first)))
 
@@ -104,6 +108,8 @@
   ;; TODO create helper for doing this
   (db/transact [[:db/retract (:db/id --w) :awesome.tag/name]
                 [:db/retract (:db/id --w) :awesome.tag/index]])
+
+  (declare sync-workspaces-to-db)
 
   ;; does not work
   (sync-workspaces-to-db (assoc --w :awesome.tag/name nil))
@@ -186,10 +192,16 @@
   and adds them to the db."
   [repo-paths]
   (let [paths (if (string? repo-paths) [repo-paths] repo-paths)]
+    (println "installing wsps for paths" repo-paths)
     (->> paths
          (map path->repo-workspace)
          (remove nil?)
-         sync-workspaces-to-db)))
+         ;; sync-workspaces-to-db
+         )))
+
+(comment
+  (install-repo-workspaces #{"russmatney/dontexist"})
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; defworkspace

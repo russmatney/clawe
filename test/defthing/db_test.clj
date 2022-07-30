@@ -1,10 +1,20 @@
 (ns defthing.db-test
   (:require
-   [clojure.test :refer [deftest is testing]]
+   [clojure.test :refer [deftest is testing] :as t]
    [defthing.db :as sut]
+   [defthing.config :as defthing.config]
    ;; [dates.tick :as dates.tick]
    ;; [tick.core :as t]
-   ))
+
+   [systemic.core :as sys]))
+
+(t/use-fixtures
+  :once
+  (fn [f]
+    (sys/with-system
+      [defthing.config/*config* {:db-path "~/russmatney/dbs/testdb"}]
+      (f))))
+
 
 (deftest transact-and-query-test
   (testing "transact"

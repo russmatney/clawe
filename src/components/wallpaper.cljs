@@ -2,18 +2,18 @@
   (:require
    [uix.core.alpha :as uix]
    [tick.core :as t]
-   [hooks.wallpapers]))
+   [hooks.wallpapers :as hooks.wallpaper]))
 
 (defn wallpaper-comp
   ([item] (wallpaper-comp nil item))
   ([_opts item]
    (let [{:keys [#_name
                  db/id
-                 file/full-path
-                 file/common-path
+                 #_wallpaper/full-path
+                 wallpaper/short-path
                  file/web-asset-path
-                 background/last-time-set
-                 background/used-count
+                 wallpaper/last-time-set
+                 wallpaper/used-count
                  ]} item
          hovering?  (uix/state false)]
      [:div
@@ -29,7 +29,7 @@
                :class ["max-w-xl"
                        "max-h-72"]}])
 
-      [:div {:class ["font-nes" "text-lg"]} common-path]
+      [:div {:class ["font-nes" "text-lg"]} short-path]
       [:div {:class ["text-lg"]} id]
       (when last-time-set
         [:div {:class ["text-lg"]}

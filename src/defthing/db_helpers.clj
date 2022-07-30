@@ -60,7 +60,8 @@
                         :some-uuid     #uuid "8992970d-6c3a-4a3a-b35d-dc5cd28f1484"
                         :some-fn       (fn [] (print "complexity!"))
                         :some-set      #{"hi" "there"}
-                        :some-vector   [3]}))
+                        :some-vector   [3]
+                        nil            "nil-str"}))
 
 (defn drop-unsupported-vals
   "Drops unsupported map vals. Drops nil. Only `supported` types
@@ -74,4 +75,5 @@
      (->> to-tx
           ;; might be unnecessary b/c it's not 'supported'
           (remove (comp nil? second))
+          (remove (comp nil? first)) ;; may want to log this
           (into {})))))

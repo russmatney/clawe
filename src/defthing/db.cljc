@@ -77,16 +77,19 @@
 ;; TODO close connections on server shutdown?
 ;; TODO clean up dead connections at startup?
 (defsys *db-conn*
-  :start (do
-           (log/info "Starting datalevin db conn")
-           (d/get-conn (defthing.config/db-path) db-schema))
+  :start
+  (let [path (defthing.config/db-path)]
+    (log/info "Starting datalevin db conn" path)
+    (d/get-conn path db-schema))
   :stop (d/close *db-conn*))
 
 (comment
   *db-conn*
   (sys/start! `*db-conn*)
 
-  (d/clear *db-conn*))
+  (d/clear *db-conn*)
+
+  )
 
 
 
@@ -163,6 +166,12 @@
     res))
 
 (comment
+  *db-conn*
+  (->>
+    (query '[:find (pull ?e [*]) :where [?e _ _]])
+    (map first)
+    (sort-by :db/id))
+
   ;; pull just ent ids
   (query '[:find ?e :where [?e :name ?n]])
 

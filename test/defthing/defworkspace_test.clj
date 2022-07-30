@@ -1,10 +1,19 @@
 (ns defthing.defworkspace-test
   (:require
-   [clojure.test :refer [deftest is testing]]
+   [clojure.test :refer [deftest is testing] :as t]
    [defthing.defworkspace :as sut]
-   [ralphie.zsh :as zsh]))
+   [ralphie.zsh :as zsh]
+   [systemic.core :as sys]
+   [defthing.config :as defthing.config]))
 
 (def home-dir (zsh/expand "~"))
+
+(t/use-fixtures
+  :once
+  (fn [f]
+    (sys/with-system
+      [defthing.config/*config* {:db-path "~/russmatney/dbs/testdb"}]
+      (f))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; defworkspace

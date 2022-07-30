@@ -7,8 +7,8 @@
 (defn last-used-wallpaper []
   (->>
     (c.wallpapers/all-wallpapers)
-    (filter :background/last-time-set)
-    (sort-by :background/last-time-set)
+    (filter :wallpaper/last-time-set)
+    (sort-by :wallpaper/last-time-set)
     reverse
     first))
 
@@ -16,7 +16,7 @@
   (let [all (c.wallpapers/all-wallpapers)]
     (->>
       all
-      (sort-by :background/last-time-set)
+      (sort-by :wallpaper/last-time-set)
       reverse
       (take 30)
       (into []))))
