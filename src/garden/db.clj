@@ -1,15 +1,9 @@
 (ns garden.db
-  (:require [defthing.db :as db]
-            [garden.core :as garden]
-            [clojure.string :as string]
-            [taoensso.timbre :as log]))
-
-(defn default-garden-sync-notes
-  "Notes for the last 7 dailies."
-  []
-  (garden/paths->flattened-garden-notes
-    (garden/daily-paths 7)))
-
+  (:require
+   [defthing.db :as db]
+   [garden.core :as garden]
+   [clojure.string :as string]
+   [taoensso.timbre :as log]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ->db-item
@@ -95,7 +89,6 @@
                              )})))
 
 (comment
-  (-compare-db-notes (default-garden-sync-notes))
   (-compare-db-notes (garden/paths->flattened-garden-notes
                        (garden/daily-paths 1)))
   (->>
@@ -103,7 +96,9 @@
     :duped-fallbacks
     (remove (comp #(string/includes? % "archive") first)))
 
-  (->> (default-garden-sync-notes) (map garden-note->db-item)))
+  (->> (garden/daily-paths 3)
+       garden/paths->flattened-garden-notes
+       (map garden-note->db-item)))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -122,12 +117,10 @@
   (-on-error-log-notes []))
 
 (defn sync-garden-notes-to-db
-  "Adds the passed garden notes to the db, after mapping them via `garden-note->db-item`.
-
-  Defaults to whatever `default-garden-sync-notes` indicates."
-  ([] (sync-garden-notes-to-db nil))
-  ([garden-notes]
-   (let [garden-notes (or garden-notes (default-garden-sync-notes))]
+  "Adds the passed garden notes to the db, after mapping them via `garden-note->db-item`."
+  ([notes] (sync-garden-notes-to-db nil notes))
+  ([opts garden-notes]
+   (let [page-size (:page-size opts 5)]
      (doall
        (->>
          garden-notes
@@ -136,7 +129,7 @@
                    (concat [item] (other-db-updates item))))
          (sort-by :org/source-file)
          (sort-by :org/fallback-id)
-         (partition-all 2000)
+         (partition-all page-size)
          (map (fn transact-garden-notes [notes]
                 (db/transact
                   notes
@@ -162,30 +155,30 @@
     (->> x (drop half-size) (take half-size))
     (->> x (take (/ 1 2)))))
 
-(defn sync-garden-paths-to-db [paths]
-  (->> paths
-       garden/paths->flattened-garden-notes
-       sync-garden-notes-to-db))
+(defn sync-garden-paths-to-db
+  ([paths] (sync-garden-paths-to-db nil paths))
+  ([opts paths]
+   (->> paths
+        garden/paths->flattened-garden-notes
+        (sync-garden-notes-to-db opts))))
 
 (comment
   (sync-garden-paths-to-db
-    (garden/daily-paths 50))
-
-  (sync-garden-notes-to-db)
+    {:page-size 100}
+    (garden/daily-paths 2))
 
   (log/set-level! :info)
   log/*config*
-  ;; the big one!!
   (sync-garden-notes-to-db
+    {:page-size 2000}
     (->>
+      ;; the big one!!
       (garden/all-garden-notes-flattened)
       ;; (drop 15000)
       ))
 
   (count
-    (garden/all-garden-notes-flattened))
-
-  )
+    (garden/all-garden-notes-flattened)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; fetch

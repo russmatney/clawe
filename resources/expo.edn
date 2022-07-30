@@ -1,2 +1,3 @@
-{:prod     #env "PROD"
- :home-dir "/home/russ"}
+{:prod         #env "PROD"
+ :home-dir     "/home/russ"
+ :expo-db-path "~/russmatney/clawe/expo/public/expo-db.edn"}

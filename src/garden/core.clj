@@ -244,9 +244,6 @@
     (sort-by :org/source-file)
     (map util/drop-complex-types)))
 
-(comment
-  (active-journals))
-
 (defsys *journals-stream*
   :start (s/stream)
   :stop (s/close! *journals-stream*))
@@ -255,6 +252,7 @@
   (s/put! *journals-stream* (active-journals)))
 
 (comment
+  (active-journals)
   (update-journals))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -266,22 +264,16 @@
     (all-garden-notes-nested)
     (map util/drop-complex-types)))
 
-(comment
-  (->>
-    (get-garden)
-    (count)))
-
 (defsys *garden-stream*
   :start (s/stream)
   :stop (s/close! *garden-stream*))
-
-(comment
-  (sys/start! `*garden-stream*))
 
 (defn update-garden []
   (s/put! *garden-stream* (get-garden)))
 
 (comment
+  (sys/start! `*garden-stream*)
+  (->> (get-garden) (count))
   (update-garden))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

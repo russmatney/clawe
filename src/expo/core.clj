@@ -1,24 +1,8 @@
 (ns expo.core
   (:require
-   [datascript.core :as d]
-   [ralphie.zsh :as zsh]
+   [expo.db :as expo.db]
    [garden.db :as garden.db]
    [defthing.db :as db]))
-
-;; TODO config
-(def expo-db-path (zsh/expand "~/russmatney/clawe/expo/public/expo-db.edn"))
-
-;; TODO systemic
-(def conn
-  (->
-    (d/empty-db)
-    (d/conn-from-db)))
-
-(defn print-db []
-  (pr-str (d/db conn)))
-
-(defn write-db-to-file []
-  (spit expo-db-path (print-db)))
 
 
 (defn notes-for-tags [tags]
@@ -36,16 +20,7 @@
 
 
 (comment
-
-  (d/transact! conn [{:some/new   :piece/of-data
-                      :with/attrs 23
-                      :and/other  :attrs/enum}])
-
-  ;; pr-str the db to get it stringified
-  (pr-str (d/db conn))
-
-  (def db-str (pr-str (d/db conn)))
-  (spit expo-db-path db-str)
+  (notes-for-tags #{"til" "post" "posts" "blog"})
 
   (garden.db/fetch-db-garden-notes)
 
@@ -56,17 +31,7 @@
                   :where [_ :org/tags ?tag]])
       (map first)
       (into #{})))
-
-  (->>
-    org-tags
-    sort)
-
-  (def ignore-tags #{"archived"})
-
-  (notes-for-tags #{"til" "post" "posts" "blog"})
-
-
-
+  (->> org-tags sort)
 
   (def notes-tagged-til
     (->>
@@ -85,18 +50,10 @@
       (map first)))
 
 
-  (d/transact! conn notes-tagged-post)
-
-  (pr-str (d/db conn))
-
+  (expo.db/transact notes-tagged-post)
 
   (->>
     (notes-for-tags #{"til"})
-    (d/transact! conn)
-    )
-
-  (write-db-to-file)
-
-
+    (expo.db/transact))
 
   )
