@@ -11,14 +11,14 @@
   babashka/babashka.curl             {:mvn/version "0.1.2"}
   babashka/process                   {:mvn/version "0.1.7"}
   babashka/fs                        {:mvn/version "0.1.6"}
+  juxt/dirwatch                      {:mvn/version "0.2.5"}
   metosin/malli                      {:mvn/version "0.8.9"}
   com.lambdaisland/specmonstah-malli {:mvn/version "0.0.7"}
   cheshire/cheshire                  {:mvn/version "5.11.0"}
   org.clojure/tools.reader           {:mvn/version "1.3.6"}
   backtick/backtick                  {:mvn/version "0.3.4"}
   aysylu/loom                        {:mvn/version "1.0.2"}
-
-  russmatney/org-crud {:local/root "../org-crud"}}
+  russmatney/org-crud                {:local/root "../org-crud"}}
  :aliases
  {:dev      {:jvm-opts ["-XX:-OmitStackTraceInFastThrow"]}
   :carve    {:extra-deps {borkdude/carve
