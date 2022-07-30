@@ -14,7 +14,9 @@
 
 
 (def db-schema
-  {:topbar/id
+  {
+   ;; uuids
+   :topbar/id
    {:db/valueType :db.type/uuid
     :db/unique    :db.unique/identity}
    :test/id
@@ -22,6 +24,11 @@
     :db/unique    :db.unique/identity}
    :misc/id
    {:db/valueType :db.type/uuid
+    :db/unique    :db.unique/identity}
+
+   ;; unique string ids
+   :scratchpad.db/id
+   {:db/valueType :db.type/string
     :db/unique    :db.unique/identity}
    :workspace/title
    {:db/valueType :db.type/string
@@ -39,7 +46,6 @@
    :time/rn
    {:db/valueType :db.type/instant}
 
-
    ;; org attrs
    :org/id
    {:db/valueType :db.type/uuid
@@ -48,6 +54,7 @@
    {:db/valueType :db.type/string
     :db/unique    :db.unique/identity}
 
+   ;; manys
    :org/link-text
    {:db/cardinality :db.cardinality/many}
    :org/linked-from

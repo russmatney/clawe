@@ -32,10 +32,11 @@
                                   :pid      c.pid
                                   :role     c.role}))
                view))]
-    (->> floating-clients
-         (remove ignore-client?)
-         (map #(db.scratchpad/mark-buried (str (:window %)) %))
-         doall)))
+    ;; (->> floating-clients
+    ;;      (remove ignore-client?)
+    ;;      (map #(db.scratchpad/mark-buried (str (:window %)) %))
+    ;;      doall)
+    ))
 
 (defn focus-client
   "

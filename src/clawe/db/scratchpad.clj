@@ -20,7 +20,7 @@
 
 (defn mark-all-restored
   "Marks all :scratchpad.db/id items restored, so no more will be found in
-  future restore attempts (unless something else is buried!)"
+  future restore attempts (until something else is buried!)"
   []
   ;; TODO implement
   (db/transact []))
@@ -55,6 +55,7 @@
 
   (mark-buried (:some/name wsp1) wsp1)
   (next-restore)
+
   (mark-buried (:some/name wsp2) wsp2)
   (db/dump)
 
