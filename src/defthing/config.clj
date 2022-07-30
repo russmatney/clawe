@@ -16,8 +16,8 @@
 (defn db-path []
   (sys/start! `*config*)
 
-  #_(r.zsh/expand (:db-path *config*))
-  "dtlv://datalevin:datalevin@localhost:8898/newdb")
+  (r.zsh/expand (:db-path *config*))
+  #_"dtlv://datalevin:datalevin@localhost:8898/newdb")
 
 (comment
   (db-path))

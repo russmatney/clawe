@@ -12,11 +12,12 @@
 
 (defsys *garden->expo*
   :start (do
-           (log/info "Starting :garden->expo db listener")
+           (log/info "Adding :garden->expo db listener")
            (sys/start! `db/*db-conn*)
            (datalevin/listen!
              db/*db-conn* :garden->expo
              (fn [tx]
+               (def tx tx)
                ;; NOTE don't you dare try to get a :datoms-transacted off of this tx!
                (try
                  (log/info "garden note transacted!" tx)

@@ -196,8 +196,7 @@
     (->> paths
          (map path->repo-workspace)
          (remove nil?)
-         ;; sync-workspaces-to-db
-         )))
+         sync-workspaces-to-db)))
 
 (comment
   (install-repo-workspaces #{"russmatney/dontexist"})

@@ -58,20 +58,27 @@
    :org/link-text
    {:db/cardinality :db.cardinality/many}
    :org/linked-from
-   {:db/cardinality :db.cardinality/many}
+   {:db/cardinality :db.cardinality/many
+    :db/valueType   :db.type/ref}
 
-   :org/link-ids
-   {:db/cardinality :db.cardinality/many}
-   :org/parent-ids
-   {:db/cardinality :db.cardinality/many}
+   :org/links-to
+   {:db/cardinality :db.cardinality/many
+    :db/valueType   :db.type/ref}
+   :org/parents
+   {:db/cardinality :db.cardinality/many
+    :db/valueType   :db.type/ref}
 
+   ;; TODO how to do many, but still unique?
    :org/parent-names
    {:db/cardinality :db.cardinality/many}
 
+   ;; TODO one day create unique tag entities with metadata
    :org/tags
    {:db/cardinality :db.cardinality/many}
+   ;; TODO one day create unique url entities with metadata
    :org/urls
    {:db/cardinality :db.cardinality/many}})
+
 
 
 ;; TODO close connections on server shutdown?
@@ -81,7 +88,10 @@
   (let [path (defthing.config/db-path)]
     (log/info "Starting datalevin db conn" path)
     (d/get-conn path db-schema))
-  :stop (d/close *db-conn*))
+  :stop
+  (when *db-conn*
+    (d/close *db-conn*))
+  nil)
 
 (comment
   *db-conn*
@@ -89,6 +99,23 @@
 
   (d/clear *db-conn*)
 
+  )
+
+(defn restart-conn
+  "Restart the connection - required when another connection transacts records.
+  (e.g. install-workspaces from clawe directly)
+  "
+  []
+  (when (sys/running? `*db-conn*)
+    (log/info "Resetting defthing.db/*conn*")
+    (sys/restart! `*db-conn*)))
+
+
+(comment
+  5
+  (restart-conn)
+
+  (sys/start! `*db-conn*)
   )
 
 

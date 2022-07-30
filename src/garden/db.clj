@@ -22,7 +22,7 @@
     (str name " " relative-index " " parent-name " > " short-path)))
 
 (defn garden-note->db-item
-  [{:org/keys [id] :as item}]
+  [{:org/keys [id links-to parent-ids] :as item}]
   (let [fallback (fallback-id item)]
     (if (or id fallback)
       (cond-> item
@@ -31,10 +31,21 @@
         fallback
         (assoc :org/fallback-id fallback)
 
-        (seq (:org/links-to item))
-        (assoc :org/link-ids (->> (:org/links-to item)
-                                  (map :link/id)
-                                  (into #{})))
+        (seq links-to)
+        (assoc :org/links-to (->> links-to
+                                  (map (fn [link]
+                                         ;; build ref for what this refers to
+                                         {:org/id        (:link/id link)
+                                          :org/link-text (:link/text link)}))
+                                  (into [])))
+
+        (seq parent-ids)
+        (assoc :org/parents (->> parent-ids
+                                 (map (fn [parent-id]
+                                        ;; build ref for what this refers to
+                                        {:org/id parent-id}))
+                                 (into [])
+                                 ))
 
         true
         (->>
@@ -55,21 +66,22 @@
                   )))
       (log/info "Could not create fallback id for org item" item))))
 
-(defn other-db-updates
-  [{:org/keys [links-to id parent-ids]}]
-  ;; TODO if no `id`, we probably want to link to the nearest parent
-  (when id
-    (concat
+;; this should not be necessary
+;; (defn other-db-updates
+;;   [{:org/keys [links-to id parent-ids]}]
+;;   ;; TODO if no `id`, we probably want to link to the nearest parent
+;;   (when id
+;;     (concat
 
-      (->> links-to (map (fn [link]
-                           ;; TODO consider creating a first-class link/edge entity?
-                           {:org/id          (:link/id link)
-                            :org/link-text   (:link/text link)
-                            :org/linked-from id})))
-      (->> parent-ids (map (fn [parent-id]
-                             ;; TODO consider creating a first-class link/edge entity?
-                             {:org/id        parent-id
-                              :org/child-ids id}))))))
+;;       (->> links-to (map (fn [link]
+;;                            ;; TODO consider creating a first-class link/edge entity?
+;;                            {:org/id          (:link/id link)
+;;                             :org/link-text   (:link/text link)
+;;                             :org/linked-from id})))
+;;       (->> parent-ids (map (fn [parent-id]
+;;                              ;; TODO consider creating a first-class link/edge entity?
+;;                              {:org/id        parent-id
+;;                               :org/child-ids id}))))))
 
 
 (defn -compare-db-notes
@@ -125,8 +137,8 @@
        (->>
          garden-notes
          (map garden-note->db-item)
-         (mapcat (fn [item]
-                   (concat [item] (other-db-updates item))))
+         ;; (mapcat (fn [item]
+         ;;           (concat [item] (other-db-updates item))))
          (sort-by :org/source-file)
          (sort-by :org/fallback-id)
          (partition-all page-size)
@@ -168,6 +180,8 @@
     (garden/daily-paths 1))
   (log/set-level! :info)
   log/*config*
+
+
   (sync-garden-notes-to-db
     {:page-size 2000}
     (->>

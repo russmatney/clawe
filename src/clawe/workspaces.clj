@@ -208,7 +208,11 @@
         (notify/notify "installing workspace" (:path selected))
         ;; TODO notify w/ datoms-txed result when osx can handle it
         (defworkspace/install-repo-workspaces (:path selected))
-        (notify/notify "Installed workspace" (:path selected))))))
+        (notify/notify "Installed workspace" (:path selected))))
+
+    ;; restart doctor db connection after transacting
+    ;; TODO clean up this doctor api usage with a clawe.doctor client
+    (slurp "http://localhost:3334/db/restart-conn")))
 
 (defcom install-workspaces do-install-workspaces)
 
