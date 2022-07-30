@@ -4,25 +4,68 @@
    [datascript.core :as ds]
    [expo.config :as config]
    [clojure.edn :as edn]
-   [taoensso.timbre :as log]))
+   [taoensso.timbre :as log]
+   [babashka.fs :as fs]))
 
 ;; NOTE this is the datascript db that is serialized for the blog, not the internal datalevin db
+
+(def db-schema
+  {
+   ;; unique string ids
+   :git.commit/hash
+   {:db/valueType :db.type/ref
+    :db/unique    :db.unique/identity}
+   :git.repo/directory
+   {:db/valueType :db.type/ref
+    :db/unique    :db.unique/identity}
+   :lichess.game/id
+   {:db/valueType :db.type/ref
+    :db/unique    :db.unique/identity}
+   :org/fallback-id
+   {:db/valueType :db.type/ref
+    :db/unique    :db.unique/identity}
+   :org/id
+   {:db/valueType :db.type/ref
+    :db/unique    :db.unique/identity}
+
+   ;; manys
+   :org/link-text
+   {:db/cardinality :db.cardinality/many}
+   :org/linked-from
+   {:db/cardinality :db.cardinality/many}
+
+   :org/link-ids
+   {:db/cardinality :db.cardinality/many}
+   :org/parent-ids
+   {:db/cardinality :db.cardinality/many}
+
+   :org/parent-names
+   {:db/cardinality :db.cardinality/many}
+
+   :org/tags
+   {:db/cardinality :db.cardinality/many}
+   :org/urls
+   {:db/cardinality :db.cardinality/many}})
+
+(comment
+  (ds/empty-db db-schema))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; clj datascript api
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn read-db-from-file []
-  (->>
-    (slurp (config/expo-db-path))
-    (edn/read-string {:readers ds/data-readers})))
+  (let [db-file (config/expo-db-path)]
+    (when (fs/exists? db-file)
+      (->>
+        (slurp db-file)
+        (edn/read-string {:readers ds/data-readers})))))
 
 (declare write-db-to-file)
 
-;; TODO handle no-db case (i.e. no file?)
-;; TODO handle schema updates
 (defsys *conn*
-  :start (let [conn (-> (read-db-from-file) (ds/conn-from-db))]
+  :start (let [raw-db (read-db-from-file)
+               conn   (-> (or raw-db (ds/empty-db db-schema)) (ds/conn-from-db))]
            (ds/listen! conn :db-writer (fn [_] (write-db-to-file)))
            conn)
   :stop
@@ -35,6 +78,15 @@
 (defn write-db-to-file []
   (log/info "Writing Expo DB to file")
   (spit (config/expo-db-path) (print-db)))
+
+(defn clear-db []
+  (fs/delete-if-exists (fs/file (config/expo-db-path))))
+
+(comment
+  (clear-db)
+  (sys/restart! `*conn*)
+
+  (write-db-to-file))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; transact
