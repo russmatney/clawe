@@ -7,7 +7,7 @@
 
    [api.todos :as todos]
    [chess.db :as chess.db]
-   [clawe.git :as c.git]
+   [git.core :as git]
    [clawe.screenshots :as c.screenshots]
    [dates.tick :as dt]
    [item.core :as item]))
@@ -53,7 +53,7 @@
 (defn recent-events []
   (->> (concat (->sorted-list c.screenshots/all-screenshots)
                (->sorted-list todos/recent-org-items)
-               (->sorted-list c.git/list-db-commits)
+               (->sorted-list git/list-db-commits)
                (->sorted-list {:take-n 50} chess.db/fetch-db-games))
        (sort-by :event/timestamp t/>)
        (into [])))

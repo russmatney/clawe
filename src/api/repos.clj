@@ -2,7 +2,7 @@
   (:require
    [systemic.core :refer [defsys] :as sys]
    [manifold.stream :as s]
-   [clawe.git :as clawe.git]
+   [git.core :as git]
    [defthing.db :as db]
    [babashka.fs :as fs]))
 
@@ -50,12 +50,12 @@
 
 (defn active-repos []
   (->>
-    (clawe.git/git-dirs)
+    (git/db-git-dirs)
     (map ->repo)))
 
 (comment
-  (clawe.git/git-dirs)
-  (clawe.git/list-db-commits))
+  (git/db-git-dirs)
+  (git/list-db-commits))
 
 (defsys *repos-stream*
   :start (s/stream)
@@ -65,4 +65,4 @@
   (s/put! *repos-stream* (active-repos)))
 
 (defn fetch-commits [repo]
-  (clawe.git/sync-commits-to-db {:dirs [(:repo/path repo)]}))
+  (git/sync-commits-to-db {:dirs [(:repo/path repo)]}))

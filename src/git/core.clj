@@ -1,4 +1,4 @@
-(ns clawe.git
+(ns git.core
   (:require
    [ralphie.git :as r.git]
    [defthing.db :as db]
@@ -28,7 +28,8 @@
       (string/includes? dir "todo")
       (string/includes? dir "teknql"))))
 
-(defn git-dirs
+;; TODO move to git/db ns
+(defn db-git-dirs
   "Fetches git-dirs for all :workspace/directories in the db"
   []
   (->>
@@ -59,7 +60,7 @@
   ([{:keys [n dirs]}]
    (let [n (or n 10)]
      (->>
-       (or dirs (git-dirs))
+       (or dirs (db-git-dirs))
        (map #(commits-for-dir {:dir % :n n}))
        (remove nil?)
        (apply concat)))))

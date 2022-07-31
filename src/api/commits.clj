@@ -4,7 +4,7 @@
    [manifold.stream :as s]
    [tick.core :as t]
 
-   [clawe.git :as c.git]
+   [git.core :as git]
    [dates.tick :as dt]
    [item.core :as item]))
 
@@ -32,7 +32,7 @@
           (take take-n)))))
 
 (defn recent-commits []
-  (->> (->sorted-list c.git/list-db-commits)
+  (->> (->sorted-list git/list-db-commits)
        (sort-by :event/timestamp t/>)
        (into [])))
 
