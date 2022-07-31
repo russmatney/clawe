@@ -5,13 +5,31 @@
    [ralphie.awesome :as awm]
    [ralphie.notify :as notify]
    [wing.repl :as repl]
-   [clawe.workspaces :as workspaces]))
+   [clawe.workspaces :as workspaces]
+   [ralphie.zsh :as zsh]))
 
 (comment
   (repl/sync-libs!))
 
 (comment
   "yo"
+
+
+  (binding
+      [*data-readers*
+       (->
+         *data-readers*
+         (assoc `sh/expand #'ralphie.zsh/expand)
+         (assoc `sh/expand-many #'ralphie.zsh/expand-many))]
+    *data-readers*
+
+    )
+
+  #zsh/expand "~/todo"
+  #zsh/expand-many "~/todo/{projects,journal}.org"
+  #to/upper "hi there"
+  #to/lower "HI THERE"
+
 
   (def test-nses ['ralphie.awesome-test
                   'defthing.core-test
