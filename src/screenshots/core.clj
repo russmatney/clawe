@@ -1,4 +1,4 @@
-(ns clawe.screenshots
+(ns screenshots.core
   (:require [babashka.process :as proc]
             [ralphie.zsh :as zsh]
             [clojure.string :as string]

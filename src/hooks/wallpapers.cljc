@@ -1,7 +1,7 @@
 (ns hooks.wallpapers
   (:require
    [plasma.core :refer [defhandler defstream]]
-   #?@(:clj [[clawe.wallpapers :as c.wallpapers]
+   #?@(:clj [[wallpapers.core :as wallpapers]
              [api.wallpapers]]
        :cljs [[wing.core :as w]
               [plasma.uix :refer [with-rpc with-stream]]])))
@@ -37,7 +37,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defhandler set-wallpaper [item]
-  (c.wallpapers/set-wallpaper item)
+  (wallpapers/set-wallpaper item)
   (api.wallpapers/update-wallpapers))
 
 

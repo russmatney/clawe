@@ -1,33 +1,14 @@
 (ns clawe.rules
   (:require
+   [clojure.edn :as edn]
+   [clojure.walk :as w]
+   [clojure.string :as string]
+
    [clawe.workspaces :as workspaces]
    [defthing.defcom :refer [defcom]]
    [ralphie.notify :as notify]
-   [clojure.edn :as edn]
    [ralphie.awesome :as awm]
-   [clojure.walk :as w]
-   [clojure.string :as string]))
-
-
-(defcom apply-rules-to-client
-  "Fired from various awesomeWM signals, asking clawe to apply rules
-to the passed client obj."
-  (fn [_ & arguments]
-    ;; (notify/notify "apply-rules" arguments)
-    (let [
-          ;; arg (some-> arguments first first str edn/read-string)
-          ]
-      ;; TODO figure out which workspace this client is relevant for
-      ;; check if it already belongs to that workpace
-      ;; move it if necessary
-      ;; might also just call :rules/apply if there's a scratchpad-classes hit
-      ;; longer term - maybe drop awesome rules completely and apply them in here
-      ;; need to be sure all clients are captured here,
-      ;; and that tag destinations are deterministic
-      ;; (println "client-tagged signal" arg)
-      ;; (notify/notify "client-tagged signal" arg)
-      )))
-
+   [clawe.doctor :as clawe.doctor]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Apply rules
@@ -161,7 +142,7 @@ to the passed client obj."
     (workspaces/clean-workspaces)
     (workspaces/consolidate-workspaces)
     (workspaces/update-workspace-indexes)
-    (slurp "http://localhost:3334/topbar/update")))
+    (clawe.doctor/update-topbar)))
 
 (comment
   (->>

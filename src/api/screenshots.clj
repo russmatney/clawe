@@ -2,14 +2,14 @@
   (:require
    [systemic.core :refer [defsys] :as sys]
    [manifold.stream :as s]
-   [clawe.screenshots :as c.screenshots]))
+   [screenshots.core :as screenshots]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; API
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn active-screenshots []
-  (let [all (c.screenshots/all-screenshots)]
+  (let [all (screenshots/all-screenshots)]
     (->> all (take 30) (into []))))
 
 (defsys *screenshots-stream*

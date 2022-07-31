@@ -1,4 +1,4 @@
-(ns clawe.wallpapers
+(ns wallpapers.core
   (:require
    [ralphie.zsh :as zsh]
    [clojure.string :as string]

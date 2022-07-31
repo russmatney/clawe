@@ -7,3 +7,6 @@
 
 (defn db-restart-conn []
   (slurp (str (clawe.config/doctor-base-url) "/db/restart-conn")))
+
+(defn reload []
+  (slurp (str (clawe.config/doctor-base-url) "/reload")))

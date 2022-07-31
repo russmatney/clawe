@@ -1,19 +1,19 @@
 (ns api.wallpapers
   (:require
-   [clawe.wallpapers :as c.wallpapers]
+   [wallpapers.core :as wallpapers]
    [systemic.core :refer [defsys] :as sys]
    [manifold.stream :as s]))
 
 (defn last-used-wallpaper []
   (->>
-    (c.wallpapers/all-wallpapers)
+    (wallpapers/all-wallpapers)
     (filter :wallpaper/last-time-set)
     (sort-by :wallpaper/last-time-set)
     reverse
     first))
 
 (defn active-wallpapers []
-  (let [all (c.wallpapers/all-wallpapers)]
+  (let [all (wallpapers/all-wallpapers)]
     (->>
       all
       (sort-by :wallpaper/last-time-set)
@@ -25,11 +25,7 @@
   "Reloads the current wallpaper. Falls back to the last-set wp."
   []
   (println "wallpapers-reload hit!")
-  (c.wallpapers/set-wallpaper (last-used-wallpaper) {:skip-count true}))
-
-(comment
-  (def y (last-used-wallpaper))
-  (def x (last-used-wallpaper)))
+  (wallpapers/set-wallpaper (last-used-wallpaper) {:skip-count true}))
 
 (defsys *wallpapers-stream*
   :start (s/stream)
