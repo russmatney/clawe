@@ -12,7 +12,7 @@
    [ralphie.spotify :as r.spotify]
    [ralphie.pulseaudio :as r.pulseaudio]
 
-   [clawe.awesome :as c.awm] ;; DEPRECATED
+   [clawe.client :as client]
    [clawe.defs.workspaces :as defs.workspaces]
    [clawe.doctor :as clawe.doctor]
    [clawe.m-x :as c.m-x]
@@ -158,9 +158,9 @@
       ;; using this to take advantage of focus-client's :bury-all? option
       ;; that function could use a refactor
       ;; - maybe it's just an update-client-state function
-      (c.awm/focus-client {:center?   true
-                           :float?    true
-                           :bury-all? true} current-client))
+      (client/focus-client {:center?   true
+                            :float?    true
+                            :bury-all? true} current-client))
     (awm/awm-fnl
       '(let [c _G.client.focus]
          (tset c :ontop true)
@@ -175,9 +175,9 @@
 (comment
   (let [current-window (awm/awm-fnl '(view _G.client.focus.window))
         current-client {:awesome.client/window current-window}]
-    (c.awm/focus-client {:center?   true
-                         :float?    true
-                         :bury-all? true} current-client)))
+    (client/focus-client {:center?   true
+                          :float?    true
+                          :bury-all? true} current-client)))
 
 (defkbd center-window-large
   [[:mod :shift] "c"]

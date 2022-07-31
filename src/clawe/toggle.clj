@@ -3,17 +3,16 @@
    [defthing.defcom :as defcom :refer [defcom]]
    [defthing.defkbd :refer [defkbd]]
 
+   [ralphie.awesome :as awm]
+   [ralphie.browser :as r.browser]
+   [ralphie.emacs :as r.emacs]
    [ralphie.notify :as notify]
    [ralphie.tmux :as r.tmux]
+   [ralphie.yabai :as yabai]
    [ralphie.zsh :as r.zsh]
-   [ralphie.emacs :as r.emacs]
-   [ralphie.browser :as r.browser]
 
-   [clawe.awesome :as c.awm] ;; DEPRECATED
-   [clawe.workspaces :as workspaces]
-
-   [ralphie.awesome :as awm]
-   [ralphie.yabai :as yabai]))
+   [clawe.client :as client]
+   [clawe.workspaces :as workspaces]))
 
 
 (defn is-journal? [_wsp c]
@@ -31,12 +30,10 @@
     (-> c :yabai.window/app #{"Safari"})))
 
 (defn is-dev-web? [_wsp c]
-  (or
-    (-> c :yabai.window/app #{"Firefox Developer Edition"})))
+  (-> c :yabai.window/app #{"Firefox Developer Edition"}))
 
 (defn is-aseprite? [_wsp c]
-  (or
-    (-> c :yabai.window/app #{"Aseprite"})))
+  (-> c :yabai.window/app #{"Aseprite"}))
 
 (defn is-slack? [_wsp c]
   (or
@@ -130,9 +127,9 @@
 
         :else
         ;; DEPRECATED
-        (c.awm/focus-client {:center?   false
-                             :float?    false
-                             :bury-all? false} client))
+        (client/focus-client {:center?   false
+                              :float?    false
+                              :bury-all? false} client))
 
       ;; we have a current workspace, but no client in it
       ;; (not client)

@@ -12,8 +12,7 @@
    [ralphie.awesome :as r.awm]
    [ralphie.systemd :as r.systemd]
 
-   [clawe.workspaces :as workspaces]
-   [clawe.workspaces.create :as wsp.create]))
+   [clawe.workspaces :as workspaces]))
 
 (defn godot-repo-actions [wsp]
   (when-let [dir (:workspace/directory wsp)]

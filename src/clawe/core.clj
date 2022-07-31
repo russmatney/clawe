@@ -3,6 +3,7 @@
    [defthing.defcom :as defcom :refer [defcom]]
    [ralphie.awesome :as awm]
    clawe.awesome.rules
+   clawe.client
    clawe.defs.bindings
    clawe.defs.workspaces
    clawe.doctor
@@ -11,27 +12,8 @@
    clawe.rules
    clawe.m-x
    clawe.workspaces
-   clawe.workspaces.create
    ralphie.core ;; so we include all ralphie commands
-   [malli.transform :as mt]
-   [malli.core :as m]))
-
-(def simple-schema
-  [:map
-   [:some/string string?]
-   [:some/keyword keyword?]
-   [:some/int int?]])
-
-(println
-  "malli decode!"
-  (m/decode
-    simple-schema
-    {:some/string    "hi"
-     :some/keyword   :yo
-     :some/int       5
-     :something/else "blah"}
-    (mt/strip-extra-keys-transformer)))
-
+   ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; awm-cli wrapper

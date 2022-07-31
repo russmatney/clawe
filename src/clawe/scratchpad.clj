@@ -1,11 +1,9 @@
 (ns clawe.scratchpad
   (:require
+   [clojure.set :as set]
    [ralphie.awesome :as awm]
-   [clawe.awesome :as c.awm] ;; DEPRECATED
-   [clawe.workspaces :as workspaces]
-   [clawe.workspaces.create :as wsp.create]
-   [clawe.db.scratchpad :as db.scratchpad]
-   [clojure.set :as set]))
+   [clawe.client :as client]
+   [clawe.workspaces :as workspaces]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; toggle scratchpad
@@ -15,8 +13,7 @@
   "Passes opts to focus-client ensuring that all other windows are buried/tiled,
   the passed client is floated, put ontop, and centered."
   [client]
-  ;; DEPRECATED
-  (c.awm/focus-client
+  (client/focus-client
     {:bury-all? true
      :float?    true
      :center?   true}
@@ -70,32 +67,9 @@
             ;; hide this tag
             (awm/toggle-tag wsp-name)
 
-            ;; restore last buried client
-            ;; NOTE seems like this doesn't work - need to refactor scratchpads
-            ;; i'm not seeing how awm/client-on-tag? can return true b/c
-            ;; to restore never has the fields it uses
-            #_(let [to-restore (db.scratchpad/next-restore)]
-                (when (and to-restore
-                           ;; TODO shouldn't we already be able to answer this via fetch-tags ?
-                           (awm/client-on-tag?
-                             to-restore
-                             (awm/awm-fnl
-                               {:quiet? true}
-                               '(-> (awful.screen.focused)
-                                    (. :selected_tags)
-                                    (lume.map (fn [t] {:name t.name}))
-                                    (lume.first)
-                                    (. :name)))))
-                  ;; DEPRECATED
-                  (c.awm/focus-client
-                    {:bury-all? true
-                     :float?    true
-                     :center?   false}
-                    client)
-
-                  (db.scratchpad/mark-restored to-restore))))
-          ;; DEPRECATED
-          (c.awm/focus-client
+            ;; TODO restore last buried client
+            )
+          (client/focus-client
             {:bury-all? true
              :float?    true
              :center?   false}
@@ -106,8 +80,7 @@
         (do
           (awm/toggle-tag wsp-name)
 
-          ;; DEPRECATED
-          (c.awm/focus-client
+          (client/focus-client
             {:bury-all? true
              :float?    true
              :center?   false}
@@ -120,14 +93,14 @@
         ;; tag exists, no client
         (and tag? (not client))
         ;; create the client
-        (wsp.create/create-client wsp)
+        (client/create-client wsp)
 
         ;; tag does not exist, presumably no client either
         (not tag?)
         (do
           (awm/create-tag! wsp-name)
           (awm/toggle-tag wsp-name)
-          (wsp.create/create-client wsp))))))
+          (client/create-client wsp))))))
 
 (comment
   (println "hi")

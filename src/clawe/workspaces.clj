@@ -12,7 +12,7 @@
    ;; be sure to require all workspaces here
    ;; otherwise (all-workspaces) will be incomplete from consumers like doctor
    clawe.defs.workspaces
-   [clawe.workspaces.create :as wsp.create]
+   [clawe.client :as client]
    [clawe.doctor :as clawe.doctor]
 
    [clojure.string :as string]
@@ -620,7 +620,7 @@
             (:awesome.tag/empty wsp)
             ;; or had no tag
             (not (:awesome.tag/name wsp)))
-      (wsp.create/create-client wsp))
+      (client/create-client wsp))
 
     ;; update workspace indexes
     (update-workspace-indexes)
