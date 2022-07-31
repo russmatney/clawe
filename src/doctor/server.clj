@@ -71,11 +71,11 @@
    api.wallpapers/*wallpapers-stream*
    garden/*garden-stream*
    garden/*journals-stream*
-   garden.watcher/*garden-watcher*
-   defthing.listeners/*garden->expo*]
+   garden.watcher/*garden-watcher*]
   :start
   (let [port (:server/port doctor.config/*config*)]
     (log/info "Starting *server* on port" port)
+    (defthing.listeners/start-garden->expo-listener)
     (let [server
           (undertow/run-undertow
             (fn [{:keys [uri] :as req}]
@@ -105,6 +105,7 @@
       ;; be sure to return the server as the system
       server))
   :stop
+  (defthing.listeners/stop-garden->expo-listener)
   (.stop *server*))
 
 
