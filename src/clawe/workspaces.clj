@@ -13,16 +13,14 @@
    ;; otherwise (all-workspaces) will be incomplete from consumers like doctor
    clawe.defs.workspaces
    [clawe.workspaces.create :as wsp.create]
+   [clawe.doctor :as clawe.doctor]
 
    [clojure.string :as string]
    [ralphie.zsh :as zsh]
    [ralphie.tmux :as r.tmux]
    [wing.core :as w]))
 
-(defn update-topbar []
-  (slurp "http://localhost:3334/topbar/update"))
-
-(def home-dir (zsh/expand "~"))
+(def home-dir #zsh/expand "~")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Workspace helpers
@@ -628,7 +626,7 @@
     (update-workspace-indexes)
 
     ;; update topbar
-    (update-topbar)
+    (clawe.doctor/update-topbar)
 
     ;; return the workspace
     wsp))

@@ -14,13 +14,11 @@
 
    [clawe.awesome :as c.awm] ;; DEPRECATED
    [clawe.defs.workspaces :as defs.workspaces]
+   [clawe.doctor :as clawe.doctor]
    [clawe.m-x :as c.m-x]
    [clawe.scratchpad :as scratchpad]
    [clawe.workspaces :as workspaces]
    [clawe.rules :as c.rules]))
-
-(defn update-topbar []
-  (slurp "http://localhost:3334/topbar/update"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; rofi, launchers, command selectors
@@ -252,7 +250,7 @@
       ;; not sure what we'd need to read
       ;; but could be a dynamic scratchpad config
       scratchpad/toggle-scratchpad)
-  (update-topbar))
+  (clawe.doctor/update-topbar))
 
 (comment
   (workspaces/merge-awm-tags defs.workspaces/dev-browser))
@@ -364,14 +362,14 @@
   [[:mod :shift] "Left"]
   (do
     (workspaces/drag-workspace "down")
-    (update-topbar))
+    (clawe.doctor/update-topbar))
   )
 
 (defkbd drag-workspace-next
   [[:mod :shift] "Right"]
   (do
     (workspaces/drag-workspace "up")
-    (update-topbar))
+    (clawe.doctor/update-topbar))
   )
 
 (defkbd correct-clients-and-workspaces
@@ -444,7 +442,7 @@
        :notify/body    (if (r.pulseaudio/input-muted?)
                          "Muted!" "Unmuted!")
        :notify/id      "mute-notif"})
-    (update-topbar)))
+    (clawe.doctor/update-topbar)))
 
 (defkbd toggle-output-mute
   [[] "XF86AudioMute"]
@@ -469,7 +467,7 @@
     (->
       ($ pactl set-sink-volume "@DEFAULT_SINK@" "+5%")
       check :out slurp)
-    (update-topbar)))
+    (clawe.doctor/update-topbar)))
 
 (defkbd volume-down
   [[] "XF86AudioLowerVolume"]
@@ -480,19 +478,19 @@
     (->
       ($ pactl set-sink-volume "@DEFAULT_SINK@" "-5%")
       check :out slurp)
-    (update-topbar)))
+    (clawe.doctor/update-topbar)))
 
 (defkbd spotify-volume-up
   [[:mod] "XF86AudioRaiseVolume"]
   (do
     (r.spotify/adjust-spotify-volume "up")
-    (update-topbar)))
+    (clawe.doctor/update-topbar)))
 
 (defkbd spotify-volume-down
   [[:mod] "XF86AudioLowerVolume"]
   (do
     (r.spotify/adjust-spotify-volume "down")
-    (update-topbar)))
+    (clawe.doctor/update-topbar)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Open Workspace
@@ -503,7 +501,7 @@
   (do
     (notify/notify "Opening Workspace!")
     (workspaces/open-workspace)
-    (update-topbar)))
+    (clawe.doctor/update-topbar)))
 
 
 (defkbd create-new-workspace
