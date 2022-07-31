@@ -1,1 +1,3 @@
-{:db-path "~/russmatney/dbs/newdb"}
+{:db-path #zsh/expand "~/russmatney/dbs/newdb"
+ ;; :db-path "dtlv://datalevin:datalevin@localhost:8898/newdb"
+ }
