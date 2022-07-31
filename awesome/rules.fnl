@@ -61,18 +61,6 @@
                        :height    800
                        :placement awful.placement.centered}}
 
-         {:rule_any {:class ["workrave" "Workrave"
-                             "Rest break" "Micro break"]
-                     :name ["workrave" "Workrave"
-                            "Rest break" "Micro break"]}
-          :properties {:floating true
-                       :ontop true
-                       :above true
-                       :sticky true
-                       :switch_to_tags true
-                       :tag "workrave"
-                       :new_tag "workrave"}}
-
          {:rule_any {:class ["clover/twitch-chat"
                              "tauri/twitch-chat"]
                      :name ["Chat Box Widget"
