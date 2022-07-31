@@ -4,8 +4,8 @@
    [defthing.defcom :refer [defcom] :as defcom]
    [ralphie.notify :as notify]
    [ralphie.config :as config]
-   [ralphie.util :as util]
-   [clojure.string :as string]))
+   [clojure.string :as string]
+   [util :as util]))
 
 (defn symlink
   [source target]

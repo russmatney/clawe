@@ -1,5 +1,6 @@
 (ns util
   (:require
+   [babashka.process :refer [$ check]]
    [clojure.java.io :as io]
    [clojure.string :as string]))
 
@@ -43,3 +44,10 @@
 (comment
   (zp 5 3) ;; => "005"
   )
+
+(defn get-cp
+  "Builds a classpath in a directory."
+  [dir]
+  (-> ^{:dir dir}
+      ($ clojure -Spath)
+      check :out slurp))

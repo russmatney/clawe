@@ -1,20 +1,21 @@
 (ns clawe.restart
   (:require
-   [babashka.process :as proc]
-   [defthing.defcom :as defcom :refer [defcom]]
-   [defthing.defkbd :refer [defkbd]]
-   [ralphie.notify :as notify]
+   [babashka.process :refer [$ check] :as proc]
 
-   [clawe.install :as c.install]
-   [clawe.rules :as c.rules]
-   [clawe.workspaces :as workspaces]
    [clawe.awesome.rules :as awm.rules]
    [clawe.awesome.bindings :as awm.bindings]
+   [clawe.doctor :as clawe.doctor]
+   [clawe.rules :as c.rules]
    [clawe.sxhkd.bindings :as sxhkd.bindings]
+   [clawe.workspaces :as workspaces]
+   [defthing.defcom :as defcom :refer [defcom]]
+   [defthing.defkbd :refer [defkbd]]
+   [ralphie.emacs :as emacs]
+   [ralphie.install :as r.install]
+   [ralphie.notify :as notify]
+   [ralphie.tmux :as tmux]
    [ralphie.zsh :as zsh]
-   [ralphie.tmux :as r.tmux]
-   [ralphie.emacs :as r.emacs]
-   [clawe.doctor :as clawe.doctor]))
+   [util :as util]))
 
 
 (defn log [msg]
@@ -24,6 +25,36 @@
       {:notify/id      :clawe.restart
        :notify/subject msg
        :notify/body    :clawe.restart})))
+
+(defn install-zsh-tab-completion []
+  (r.install/install-zsh-completion "clawe"))
+
+(defcom install-clawe-zsh-tab-completion
+  (install-zsh-tab-completion))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Build Clawe Uberjar
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn build-uberjar
+  "Rebuilds the clawe uberjar. Equivalent to:
+
+  bb -cp $(clojure -Spath) --uberjar clawe.jar -m clawe.core # rebuild clawe
+
+  on the command line."
+  []
+  (let [notif (fn [s] (notify/notify
+                        {:subject s :replaces-process "rebuilding-clawe-uberjar"}))
+        dir   #zsh/expand "~/russmatney/clawe"]
+    (notif "Clawe Uberjar: Rebuilding")
+    (let [cp (util/get-cp dir)]
+      (->
+        ^{:dir dir}
+        ($ bb -cp ~cp --uberjar clawe.jar -m clawe.core )
+        check)
+      (notif "Clawe Uberjar: Rebuild Complete"))))
+
+(defcom rebuild-clawe build-uberjar)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; check if unit tests are passing
@@ -65,7 +96,7 @@
         (log "Rebuilding uberjar...")
         ;; TODO could also skip if nothing has changed
         (try
-          (c.install/build-uberjar)
+          (build-uberjar)
           (catch Exception e
             (notify/notify "Exception while rebuilding uberjar")
             (println e))))
@@ -85,8 +116,7 @@ Rebuild requires the unit tests to pass, but if they fail, `reload` is called an
 The uberjar can be manually rebuilt on the command line with:
 
 bb -cp $(clojure -Spath) --uberjar clawe.jar -m clawe.core # rebuild clawe
-
-See `clawe.install/build-uberjar`.
+See `build-uberjar`.
 "
   (do
     (log "Restarting...")
@@ -147,12 +177,12 @@ See `clawe.install/build-uberjar`.
     ;; Reload completions/caches
     (when-not notify/is-mac?
       (log "reloading zsh tab completion")
-      (c.install/install-zsh-tab-completion))
+      (install-zsh-tab-completion))
 
     ;; Doom env refresh - probably a race-case here....
-    (r.tmux/fire {:tmux.fire/cmd     "doom env"
-                  :tmux.fire/session "dotfiles"})
-    (r.emacs/fire "(doom/reload-env)")
+    (tmux/fire {:tmux.fire/cmd     "doom env"
+                :tmux.fire/session "dotfiles"})
+    (emacs/fire "(doom/reload-env)")
 
     ;; Doctor - Wallpaper, etc
     (when-not notify/is-mac?

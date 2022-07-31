@@ -6,7 +6,6 @@
    clawe.defs.bindings
    clawe.defs.workspaces
    clawe.doctor
-   clawe.install
    clawe.toggle
    clawe.restart
    clawe.rules
@@ -15,8 +14,7 @@
    clawe.workspaces.create
    ralphie.core ;; so we include all ralphie commands
    [malli.transform :as mt]
-   [malli.core :as m]
-   ))
+   [malli.core :as m]))
 
 (def simple-schema
   [:map
