@@ -3,4 +3,7 @@
    [clawe.config :as clawe.config]))
 
 (defn update-topbar []
-  (slurp (clawe.config/doctor-topbar-url)))
+  (slurp (str (clawe.config/doctor-base-url) "/topbar/update")))
+
+(defn db-restart-conn []
+  (slurp (str (clawe.config/doctor-base-url) "/db/restart-conn")))

@@ -12,7 +12,6 @@
 
 (defsys *config* (->config))
 
-
-(defn doctor-topbar-url []
+(defn doctor-base-url []
   (sys/start! `*config*)
-  (str (:doctor-base-url *config*) "/topbar/update"))
+  (:doctor-base-url *config*))

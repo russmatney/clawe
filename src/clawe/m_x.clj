@@ -22,9 +22,7 @@
     ;; i.e. run detection for projects, maybe part of installation
     ;; could even re-run installation as the same entry for
     ;; detection, doctor reports, git-status
-    nil
-    )
-  )
+    nil))
 
 (comment
   (workspaces/current-workspace)

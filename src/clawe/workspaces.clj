@@ -49,6 +49,7 @@
         wsp))
     wsp))
 
+;; TODO use a malli schema
 (defn ->pseudo-workspace [wsp]
   (let [name (or (:awesome.tag/name wsp)
                  (:yabai.space/label wsp))
@@ -209,8 +210,7 @@
         (notify/notify "Installed workspace" (:path selected))))
 
     ;; restart doctor db connection after transacting
-    ;; TODO clean up this doctor api usage with a clawe.doctor client
-    (slurp "http://localhost:3334/db/restart-conn")))
+    (clawe.doctor/db-restart-conn)))
 
 (defcom install-workspaces do-install-workspaces)
 
