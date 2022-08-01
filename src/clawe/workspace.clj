@@ -2,10 +2,10 @@
   (:require
    [malli.core :as m]
    [malli.transform :as mt]
-   [ralphie.zsh :as zsh]
+
    [clawe.config :as clawe.config]
-   [systemic.core :as sys :refer [defsys]]
-   [ralphie.awesome :as awm]))
+   [clawe.wm :as wm]
+   [ralphie.zsh :as zsh]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; schema
@@ -39,73 +39,11 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; window manager protocol
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defprotocol ClaweWM
-  "A protocol for typical window management functions."
-  ;; TODO move 'current' to 'selected'
-  (current-workspaces
-    [this] [this opts] "Return the focused workspaces as a vector of maps.")
-  (active-workspaces [this] [this opts] "Return all workspaces as a vector of maps.")
-  (current-clients [this] [this opts] "Return all clients in the current active workspace.")
-  (all-clients [this] [this opts] "Returns all running clients."))
-
-
-(defrecord Yabai [] ClaweWM)
-
-
-(defn awesome-client->clawe-client [client]
-  (-> client
-      (assoc :client/window-name (:awesome.client/name client))
-      (assoc :client/app-name (:awesome.client/class client))
-      (assoc :client/focus (:awesome.client/focus client))))
-
-(defn tag->wsp [tag]
-  (-> tag
-      (assoc :workspace/index (:awesome.tag/index tag))
-      (assoc :workspace/title (:awesome.tag/name tag))) )
-
-(defrecord AwesomeWM []
-  ClaweWM
-  (current-workspaces [this] (current-workspaces this nil))
-  (current-workspaces [_this opts]
-    (->>
-      ;; TODO tags-only (no clients, maybe a bit faster?)
-      ;; TODO filter on current tags (even less to serialize)
-      (awm/fetch-tags (merge {:include-clients false :only-current true} opts))
-      (filter :awesome.tag/selected)
-      (map (fn [tag]
-             (cond-> tag
-               (and (:include-clients opts) (:awesome/clients tag))
-               (-> (assoc :workspace/clients
-                          (->> tag :awesome/clients
-                               (map awesome-client->clawe-client ))))
-
-               true tag->wsp)))))
-
-  (active-workspaces [this] (active-workspaces this nil))
-  (active-workspaces [_this opts]
-    (->>
-      (awm/fetch-tags opts)
-      (map tag->wsp))))
-
-;; TODO break into clawe/wm ns, put protocol in there
-(defsys *wm*
-  :start
-  (if (clawe.config/is-mac?) (Yabai.) (AwesomeWM.)))
-
-(comment
-  (sys/start! `*wm*)
-  (sys/restart! `*wm*)
-  (current-workspaces *wm*))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; workspace helpers
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def default-directory (zsh/expand "~"))
-(defn -ensure-directory
+(defn- ensure-directory
   "Makes sure the passed workspace has a `:workspace/directory` set.
 
   If missing, sets it to `default-directory`.
@@ -121,7 +59,7 @@
 
     :else wsp))
 
-(defn -merge-with-def
+(defn- merge-with-def
   "Merges the passed workspace with a workspace-def from resouces/clawe.edn.
 
   Matches using the `:workspace/title`."
@@ -149,20 +87,19 @@
   "
   ([] (current nil))
   ([opts]
-   (sys/start! `*wm*)
    (let [default-title "home"
          default-wsp   {:workspace/title     default-title
                         :workspace/directory default-directory}]
      ;; ask wm for current wsp(s)
-     (->> (current-workspaces *wm* opts)
+     (->> (wm/current-workspaces opts)
           ;; ensure title
           (map (fn [{:keys [workspace/title] :as wsp}]
                  (if-not title
                    (assoc wsp :workspace/title default-title)
                    wsp)))
           ;; merge config workspace def
-          (map -merge-with-def)
-          (map -ensure-directory)
+          (map merge-with-def)
+          (map ensure-directory)
           ;; sort
           (sort-by (comp #{default-directory} :workspace/directory))
           ;; take 1
@@ -183,7 +120,7 @@
   ([_opts]
    (->> (clawe.config/workspace-defs)
         (map (fn [[title def]] (assoc def :workspace/title title)))
-        (map -ensure-directory))))
+        (map ensure-directory))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; all active
@@ -198,7 +135,6 @@
   "
   ([] (all-active nil))
   ([opts]
-   (sys/start! `*wm*)
-   (->> (active-workspaces *wm* opts)
-        (map -merge-with-def)
-        (map -ensure-directory))))
+   (->> (wm/active-workspaces opts)
+        (map merge-with-def)
+        (map ensure-directory))))

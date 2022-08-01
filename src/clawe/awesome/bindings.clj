@@ -53,20 +53,6 @@
                         (string/join "\n"))]
     (str "(awful.keyboard.append_global_keybindings\n[\n" awful-keys "\n])")))
 
-(comment
-  (raw-append-global-keybindings))
-
-
-;; this does not work yet - awesome requires holding onto refs to the same `awful.key`
-;; to be able to remove things, so for now updating means rewriting the def and
-;; then restarting awesome :(
-;; probable next steps are moving to a non-awesomewm keybinding handler
-(defn update-awesome-bindings []
-  ;; TODO might need to remove newlines here or in awm-fnl (or just handle them)
-  ;; TODO also might need to ensure deps/requires for these
-  ;; (let [global (raw-append-global-keybindings)]
-  ;;   (awm/awm-fnl global))
-  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Write out code that awesome loads at startup/restart

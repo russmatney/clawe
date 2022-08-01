@@ -300,7 +300,6 @@
      wsp)))
 
 (comment
-
   (->
     (yabai/query-current-space)
     ->pseudo-workspace

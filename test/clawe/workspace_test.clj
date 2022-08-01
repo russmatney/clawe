@@ -2,25 +2,23 @@
   (:require
    [clojure.test :refer [deftest is testing]]
    [clawe.workspace :as workspace]
+   [clawe.wm :as wm]
+   [clawe.wm.protocol :as wm.protocol]
    [ralphie.zsh :as zsh]
    [malli.core :as m]
    [systemic.core :as sys]
    [clawe.config :as clawe.config]))
 
 (defrecord NoWorkspacesWM []
-  workspace/ClaweWM
-  (current-workspaces [_this] [])
-  (current-workspaces [_this _opts] []))
+  wm.protocol/ClaweWM
+  (-current-workspaces [_this _opts] []))
 
 (def test-wsp-title "my-wsp")
 (defrecord OneWorkspaceWM []
-  workspace/ClaweWM
-  (current-workspaces [_this] [{:workspace/title test-wsp-title}])
-  (current-workspaces [_this _opts] [{:workspace/title test-wsp-title}])
+  wm.protocol/ClaweWM
+  (-current-workspaces [_this _opts] [{:workspace/title test-wsp-title}])
+  (-active-workspaces [_this _opts] [{:workspace/title test-wsp-title}]))
 
-  (active-workspaces [_this] [{:workspace/title test-wsp-title}])
-  (active-workspaces [_this _opts] [{:workspace/title test-wsp-title}])
-  )
 
 (deftest current-workspace-test
   (testing "has a title"
@@ -34,14 +32,14 @@
   (testing "sets a fallback title and directory"
     (let [fallback {:workspace/title     "home"
                     :workspace/directory (zsh/expand "~")}]
-      (sys/with-system [workspace/*wm* (NoWorkspacesWM.)]
+      (sys/with-system [wm/*wm* (NoWorkspacesWM.)]
         (is (= fallback (workspace/current))))))
 
   (testing "mixes and expands data from config/workspace-def"
     (let [dir          "~/russmatney/blah"
           expected-dir (zsh/expand dir)]
       (sys/with-system
-        [workspace/*wm* (OneWorkspaceWM.)
+        [wm/*wm* (OneWorkspaceWM.)
          clawe.config/*config* {:workspace/defs
                                 {test-wsp-title {:workspace/directory "~/russmatney/blah"}}}]
         (is (= test-wsp-title
@@ -68,7 +66,7 @@
     (let [dir          "~/russmatney/blah"
           expected-dir (zsh/expand dir)]
       (sys/with-system
-        [workspace/*wm* (OneWorkspaceWM.)
+        [wm/*wm* (OneWorkspaceWM.)
          clawe.config/*config*
          {:workspace/defs
           {test-wsp-title {:workspace/directory "~/russmatney/blah"}}}]
