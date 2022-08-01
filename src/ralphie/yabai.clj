@@ -190,6 +190,8 @@
    [:yabai.window/has-border boolean?]
    [:yabai.window/can-resize boolean?]])
 
+;; TODO does this have a format-string/read-edn style?
+;; TODO refactor to use these malli schemas
 (defn query-windows []
   (try
     (->
