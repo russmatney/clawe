@@ -57,13 +57,13 @@
   [[:mod :shift] "s"]
   (do
     (r.screenshot/full-screen)
-    (slurp "http://localhost:3334/screenshots/update")))
+    (clawe.doctor/update-screenshots)))
 
 (defkbd screenshot-region
   [[:mod :shift] "a"]
   (do
     (r.screenshot/select-region)
-    (slurp "http://localhost:3334/screenshots/update")))
+    (clawe.doctor/update-screenshots)))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -406,15 +406,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; TODO support in sxhkd
-;; (defkbd spotify-pause
-;;   [[] "XF86AudioPause"]
-;;   (r.spotify/spotifycli "--playpause"))
-
-;; (defkbd spotify-play
-;;   [[] "XF86AudioPlay"]
-;;   (r.spotify/spotifycli "--playpause"))
-
-;; DEPRECATED support in sxhkd
 (defkbd spotify-pause
   [[] "XF86AudioPause"]
   (awm/awm-fnl
@@ -471,23 +462,23 @@
 (defkbd volume-up
   [[] "XF86AudioRaiseVolume"]
   (do
-    (notify/notify {:notify/id      "volume"
-                    :notify/subject "Raising volume"
-                    :notify/body    (r.pulseaudio/default-sink-volume-label)})
     (->
       ($ pactl set-sink-volume "@DEFAULT_SINK@" "+5%")
       check :out slurp)
+    (notify/notify {:notify/id      "volume"
+                    :notify/subject "Raising volume"
+                    :notify/body    (r.pulseaudio/default-sink-volume-label)})
     (clawe.doctor/update-topbar)))
 
 (defkbd volume-down
   [[] "XF86AudioLowerVolume"]
   (do
-    (notify/notify {:notify/id      "volume"
-                    :notify/subject "Lowering volume"
-                    :notify/body    (r.pulseaudio/default-sink-volume-label)})
     (->
       ($ pactl set-sink-volume "@DEFAULT_SINK@" "-5%")
       check :out slurp)
+    (notify/notify {:notify/id      "volume"
+                    :notify/subject "Lowering volume"
+                    :notify/body    (r.pulseaudio/default-sink-volume-label)})
     (clawe.doctor/update-topbar)))
 
 (defkbd spotify-volume-up

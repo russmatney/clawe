@@ -9,16 +9,6 @@
 ;; toggle scratchpad
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn focus-scratchpad
-  "Passes opts to focus-client ensuring that all other windows are buried/tiled,
-  the passed client is floated, put ontop, and centered."
-  [client]
-  (client/focus-client
-    {:bury-all? true
-     :float?    true
-     :center?   true}
-    client))
-
 (defn toggle-scratchpad
   "Expects the passed wsp to have :awesome/tag and :awesome/clients metadata.
 
@@ -63,12 +53,10 @@
         ;; "found selected tag&client for:" wsp-name
         (and tag? client (:awesome.tag/selected wsp))
         (if (or (:awesome.client/ontop client) (and centerwork? is-master?))
-          (do
-            ;; hide this tag
-            (awm/toggle-tag wsp-name)
+          ;; hide this tag
+          (awm/toggle-tag wsp-name)
+          ;; TODO restore last buried client
 
-            ;; TODO restore last buried client
-            )
           (client/focus-client
             {:bury-all? true
              :float?    true

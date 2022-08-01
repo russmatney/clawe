@@ -41,6 +41,8 @@
              body (conj body)
              replaces-process
              (conj "--replaces-process" replaces-process)))
+         ;; _
+         ;; (println exec-strs)
          _                (when print?
                             ;; TODO use dynamic global bool to print all notifs
                             (println subject (when body (str "\n" body))))

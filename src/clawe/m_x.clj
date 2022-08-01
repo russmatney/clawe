@@ -12,7 +12,8 @@
    [ralphie.awesome :as r.awm]
    [ralphie.systemd :as r.systemd]
 
-   [clawe.workspaces :as workspaces]))
+   [clawe.workspaces :as workspaces]
+   [clawe.config :as clawe.config]))
 
 (defn godot-repo-actions [wsp]
   (when-let [dir (:workspace/directory wsp)]
@@ -66,16 +67,6 @@
    (let [wsp (or wsp (workspaces/current-workspace))]
      (->>
        (concat
-         [
-          (when-not notify/is-mac?
-            ;; TODO refactor into a git-fetch helper
-            (when (and wsp (r.git/repo? (workspaces/workspace-repo wsp)))
-              {:rofi/label     (str "Fetch repo upstream: " (workspaces/workspace-repo wsp))
-               :rofi/on-select (fn [_]
-                                 (notify/notify "Fetching upstream for workspace")
-                                 ;; TODO support fetching via ssh-agent
-                                 (r.git/fetch (workspaces/workspace-repo wsp)))}))]
-
          ;; clone suggestions from open tabs and the clipboard
          (->>
            (r.git/rofi-clone-suggestions-fast)
@@ -97,12 +88,12 @@
                            :rofi/description (:workspace/display-name %))))
 
          ;; kill tmux/tags/clients
-         (when-not notify/is-mac? (kill-things wsp))
+         (when-not (clawe.config/is-mac?) (kill-things wsp)
 
-         ;; systemd stops/restart
-         (when-not notify/is-mac?
-           (r.systemd/rofi-service-opts #(str "Restart " %) :systemd/restart))
-         (when-not notify/is-mac?
+                   ;; systemd stops/restart
+                   (when-not (clawe.config/is-mac?)
+                     (r.systemd/rofi-service-opts #(str "Restart " %) :systemd/restart)))
+         (when-not (clawe.config/is-mac?)
            (r.systemd/rofi-service-opts #(str "Stop " %) :systemd/stop)))
        (remove nil?)))))
 
@@ -118,17 +109,6 @@
 
 (defcom m-x
   (let [wsp (workspaces/current-workspace)]
-
-    ;; Notify with git status
-    (when-not notify/is-mac?
-      (when (and wsp (r.git/repo? (workspaces/workspace-repo wsp)))
-        (notify/notify (str "Git Status: " (workspaces/workspace-repo wsp))
-                       (->>
-                         (r.git/status (workspaces/workspace-repo wsp))
-                         (filter second)
-                         (map first)
-                         seq))))
-
     (->> (m-x-commands {:wsp wsp})
          (r.rofi/rofi {:require-match? true
                        :msg            "Clawe commands"}))))

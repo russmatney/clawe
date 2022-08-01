@@ -9,6 +9,7 @@
    [ralphie.zsh :as r.zsh]
 
    [clawe.client :as client]
+   [clawe.config :as config]
    [clawe.workspaces :as workspaces]
    [clojure.string :as string]))
 
@@ -61,13 +62,13 @@
            (client->hide client))
          ;; TODO is-mac? should be in clawe.config/is-mac?
          ;; TODO move to client/workspace protocol or multi-method
-         notify/is-mac? (yabai/close-window client)
-         :else          (awm/close-client client))
+         (clawe.config/is-mac?) (yabai/close-window client)
+         :else                  (awm/close-client client))
 
        ;; client found in workspace, not focused
        (and client (not client-focused))
        (cond
-         notify/is-mac?
+         (clawe.config/is-mac?)
          (do
            (yabai/focus-window client)
            ;; TODO not for terminal/emacs?

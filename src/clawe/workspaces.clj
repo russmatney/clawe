@@ -13,6 +13,7 @@
    ;; otherwise (all-workspaces) will be incomplete from consumers like doctor
    clawe.defs.workspaces
    [clawe.client :as client]
+   [clawe.config :as clawe.config]
    [clawe.doctor :as clawe.doctor]
 
    [clojure.string :as string]
@@ -21,16 +22,6 @@
    [wing.core :as w]))
 
 (def home-dir (zsh/expand "~"))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Workspace helpers
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn workspace-name [wsp]
-  (:workspace/title wsp))
-
-(defn workspace-repo [wsp]
-  (:workspace/directory wsp))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Workspace hydration
@@ -43,7 +34,7 @@
   specify a repo with a .git directory via :workspace/directory."
   [wsp]
   (if (:git/check-status? wsp)
-    (let [dir (workspace-repo wsp)]
+    (let [dir (:workspace/directory wsp)]
       (if (r.git/repo? dir)
         (merge wsp (r.git/status dir))
         wsp))
@@ -91,7 +82,7 @@
               ;; depends on the :workspace/title matching the awm tag name
               ;; could also just be a unique id stored from open-workspace
               (merge (awm/tag-for-name
-                       (workspace-name wsp)
+                       (:workspace/title wsp)
                        awm-all-tags)
                      wsp)))
 
@@ -134,7 +125,7 @@
        (map (fn [wsp]
               ;; depends on the :workspace/title matching the space label name
               ;; could also just be a unique id stored from open-workspace
-              (merge (all-spaces-by-label (workspace-name wsp))
+              (merge (all-spaces-by-label (:workspace/title wsp))
                      wsp)))
 
        include-unmatched?
@@ -461,7 +452,7 @@
   ;; TODO could refactor to get one db wsp and then merge with wm/tmux
   (some->>
     (all-workspaces)
-    (filter (comp #{name} workspace-name))
+    (filter (comp #{name} :workspace/title))
     first))
 
 (comment
@@ -509,7 +500,7 @@
         (let [{:keys [new-index] :as wsp} (merge-awm-tags wsp)
               index                       (wsp-index wsp)]
           (when (not= new-index index)
-            (if notify/is-mac?
+            (if (clawe.config/is-mac?)
               (yabai/swap-spaces-by-index index new-index)
               (awm/swap-tags-by-index index new-index)))
           ;; could be optimized....
@@ -594,9 +585,9 @@
 (defn create-workspace
   "Creates a new tag and focuses it, and run the workspace's on-create hook."
   [wsp]
-  (let [name (workspace-name wsp)]
+  (let [name (:workspace/title wsp)]
 
-    (if notify/is-mac?
+    (if (clawe.config/is-mac?)
       ;; TODO handle this space/label already existing
       (yabai/create-and-label-space
         {:space-label       name
@@ -635,8 +626,8 @@
   [{:as   wsp
     :keys [git/dirty? git/needs-push? git/needs-pull?]}]
   (let [default-name "noname"
-        name         (or (workspace-name wsp) default-name)
-        repo         (workspace-repo wsp)]
+        name         (or (:workspace/title wsp) default-name)
+        repo         (:workspace/directory wsp)]
     (when (= name default-name)
       (println "wsp without name" wsp))
 

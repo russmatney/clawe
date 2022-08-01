@@ -20,25 +20,15 @@
     (string/includes? name "tauri/doctor-topbar")
     (string/includes? name "tauri/twitch-chat")))
 
-(defn mark-buried-clients []
-  (let [floating-clients
-        (awm/awm-fnl
-          {:quiet? true}
-          '(-> (awful.screen.focused)
-               (. :clients)
-               (lume.filter (fn [c] c.floating))
-               (lume.map (fn [c] {:window   c.window
-                                  :name     c.name
-                                  :class    c.class
-                                  :instance c.instance
-                                  :pid      c.pid
-                                  :role     c.role}))
-               view))]
-    ;; (->> floating-clients
-    ;;      (remove ignore-client?)
-    ;;      (map #(db.scratchpad/mark-buried (str (:window %)) %))
-    ;;      doall)
-    ))
+(defn bury-floating-clients
+  "Usually combined with other awm/fnl commands for performance"
+  []
+  ^{:quiet? false}
+  (awm/fnl
+    (each [c (awful.client.iterate (fn [c] (. c :ontop)))]
+          ;; TODO filter things to bury/not-bury?
+          (tset c :ontop false)
+          (tset c :floating false))))
 
 (defn focus-client
   "
@@ -63,8 +53,6 @@
        (notify/notify "Set Focused called with no client :window" {:client client
                                                                    :opts   opts})
        (do
-         (when bury-all? (mark-buried-clients))
-
          ^{:quiet? false}
          (awm/fnl
            (when ~bury-all?

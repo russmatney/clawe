@@ -4,10 +4,12 @@
 
    [clawe.awesome.rules :as awm.rules]
    [clawe.awesome.bindings :as awm.bindings]
+   [clawe.config :as clawe.config]
    [clawe.doctor :as clawe.doctor]
    [clawe.rules :as c.rules]
    [clawe.sxhkd.bindings :as sxhkd.bindings]
    [clawe.workspaces :as workspaces]
+
    [defthing.defcom :as defcom :refer [defcom]]
    [defthing.defkbd :refer [defkbd]]
    [ralphie.emacs :as emacs]
@@ -148,7 +150,7 @@ See `build-uberjar`.
     (log "reloading...")
 
     ;; Bindings
-    (when-not notify/is-mac?
+    (when-not (clawe.config/is-mac?)
       (log "rewriting awm bindings")
       (awm.bindings/write-awesome-bindings)
       (log "resetting sxhkd bindings")
@@ -156,10 +158,10 @@ See `build-uberjar`.
       (sxhkd.bindings/reset-bindings))
 
     ;; Rules
-    (when notify/is-mac?
+    (when (clawe.config/is-mac?)
       (workspaces/do-yabai-correct-workspaces))
 
-    (when-not notify/is-mac?
+    (when-not (clawe.config/is-mac?)
       (log "rewriting rules")
       (awm.rules/write-awesome-rules)
       (log "reapplying rules")
@@ -169,13 +171,13 @@ See `build-uberjar`.
 
 
     ;; Restart Notifications service
-    (when-not notify/is-mac?
+    (when-not (clawe.config/is-mac?)
       (log "reloading notifications")
       (-> (proc/$ systemctl --user start deadd-notification-center)
           (proc/check)))
 
     ;; Reload completions/caches
-    (when-not notify/is-mac?
+    (when-not (clawe.config/is-mac?)
       (log "reloading zsh tab completion")
       (install-zsh-tab-completion))
 
@@ -185,7 +187,7 @@ See `build-uberjar`.
     (emacs/fire "(doom/reload-env)")
 
     ;; Doctor - Wallpaper, etc
-    (when-not notify/is-mac?
+    (when-not (clawe.config/is-mac?)
       (log "Firing doctor reload")
       (clawe.doctor/reload))
 
