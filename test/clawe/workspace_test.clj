@@ -9,12 +9,14 @@
 
 (defrecord NoWorkspacesWM []
   workspace/ClaweWM
-  (current-workspaces [_this] []))
+  (current-workspaces [_this] [])
+  (current-workspaces [_this _opts] []))
 
 (def test-wsp-title "my-wsp")
 (defrecord OneWorkspaceWM []
   workspace/ClaweWM
-  (current-workspaces [_this] [{:workspace/title test-wsp-title}]))
+  (current-workspaces [_this] [{:workspace/title test-wsp-title}])
+  (current-workspaces [_this _opts] [{:workspace/title test-wsp-title}]))
 
 (deftest current-workspace-test
   (testing "has a title"

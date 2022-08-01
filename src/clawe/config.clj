@@ -11,13 +11,15 @@
 (defn ->config []
   (->
     (aero/read-config (io/resource "clawe.edn"))
-    (assoc :is-mac (calc-is-mac?)))
-  )
+    (assoc :is-mac (calc-is-mac?))))
 
 (comment
   (->config))
 
 (defsys *config* (->config))
+
+(defn reload-config []
+  (sys/restart! `*config*))
 
 (defn doctor-base-url []
   (sys/start! `*config*)

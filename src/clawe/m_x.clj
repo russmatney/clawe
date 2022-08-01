@@ -3,7 +3,6 @@
    [defthing.defkbd :as defkbd]
    [defthing.defcom :as defcom :refer [defcom]]
 
-   [ralphie.notify :as notify]
    [ralphie.rofi :as r.rofi]
    [ralphie.core :as r.core]
    [ralphie.git :as r.git]
@@ -13,24 +12,10 @@
    [ralphie.systemd :as r.systemd]
 
    [clawe.workspaces :as workspaces]
+   [clawe.workspace :as workspace]
    [clawe.config :as clawe.config]))
 
-(defn godot-repo-actions [wsp]
-  (when-let [dir (:workspace/directory wsp)]
-    ;; TODO search for godot project file
-    ;; could also be opt-in as a db field
-    ;; i.e. run detection for projects, maybe part of installation
-    ;; could even re-run installation as the same entry for
-    ;; detection, doctor reports, git-status
-    nil))
-
-(comment
-  (workspaces/current-workspace)
-
-  (r.awm/fetch-tags)
-  )
-
-(defn kill-things [wsp]
+(defn kill-things [_wsp]
   (concat
     (r.tmux/rofi-kill-opts)
     (r.awm/rofi-kill-opts)
@@ -42,29 +27,27 @@
   )
 
 
-(defn bb-tasks-for-wsp [wsp]
-  (when-let [dir (:workspace/directory wsp)]
-    (->> (r.bb/tasks dir)
-         (map (fn [{:bb.task/keys [cmd description] :as task}]
-                (assoc
-                  task
-                  :rofi/label (str "bb task: " cmd)
-                  :rofi/description description
-                  :rofi/on-select (fn [_]
-                                    (println "bb task on-select" task wsp)
-                                    (r.tmux/fire
-                                      {:tmux.fire/cmd       (str "bb " cmd)
-                                       :tmux.fire/session   (:workspace/title wsp)
-                                       :tmux.fire/directory dir}))))))))
-
-(comment
-  (->> (bb-tasks-for-wsp (workspaces/current-workspace))
-       (r.rofi/rofi "hi")))
+(defn bb-tasks-for-wsp
+  ([] (bb-tasks-for-wsp (workspace/current)))
+  ([wsp]
+   (when-let [dir (:workspace/directory wsp)]
+     (->> (r.bb/tasks dir)
+          (map (fn [{:bb.task/keys [cmd description] :as task}]
+                 (assoc
+                   task
+                   :rofi/label (str "bb task: " cmd)
+                   :rofi/description description
+                   :rofi/on-select (fn [_]
+                                     (println "bb task on-select" task wsp)
+                                     (r.tmux/fire
+                                       {:tmux.fire/cmd       (str "bb " cmd)
+                                        :tmux.fire/session   (:workspace/title wsp)
+                                        :tmux.fire/directory dir})))))))))
 
 (defn m-x-commands
   ([] (m-x-commands nil))
   ([{:keys [wsp]}]
-   (let [wsp (or wsp (workspaces/current-workspace))]
+   (let [wsp (or wsp (workspace/current))]
      (->>
        (concat
          ;; clone suggestions from open tabs and the clipboard
@@ -108,7 +91,7 @@
     ((fn [f] (f)))))
 
 (defcom m-x
-  (let [wsp (workspaces/current-workspace)]
+  (let [wsp (workspace/current)]
     (->> (m-x-commands {:wsp wsp})
          (r.rofi/rofi {:require-match? true
                        :msg            "Clawe commands"}))))

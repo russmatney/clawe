@@ -2,8 +2,7 @@
   (:require
    [clojure.set :as set]
    [ralphie.awesome :as awm]
-   [clawe.client :as client]
-   [clawe.workspaces :as workspaces]))
+   [clawe.client :as client]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; toggle scratchpad
@@ -126,9 +125,11 @@
   ([scratchpad-wsp]
    (toggle-scratchpad-2
      scratchpad-wsp
-     {:current-workspaces (workspaces/current-workspaces)
+     {
+      ;; TODO rewrite as current-clients (i.e. clients in the current workspaces)
+      ;; :current-workspaces (workspaces/current-workspaces)
       ;; TODO move to workspaces/all-clients ? something generic?
-      :all-clients        (awm/all-clients)}))
+      :all-clients (awm/all-clients)}))
 
   ([scratchpad-wsp {:keys [current-workspaces all-clients]}]
    (let [current-clients (->> current-workspaces
@@ -207,11 +208,5 @@
            [:no-op scratchpad-wsp]))))))
 
 (comment
-  (->>
-    (workspaces/all-workspaces)
-    (filter :awesome.tag/selected)
-    ;; (filter :workspace/scratchpad)
-    first)
-
   (toggle-scratchpad-2 nil)
   )

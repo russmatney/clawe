@@ -11,6 +11,7 @@
    [clawe.client :as client]
    [clawe.config :as config]
    [clawe.workspaces :as workspaces]
+   [clawe.workspace :as workspace]
    [clojure.string :as string]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -95,11 +96,6 @@
      ;; prevent noise in the logs
      nil)))
 
-(comment
-  (some->>
-    (workspaces/current-workspace)
-    workspaces/merge-awm-tags))
-
 (defn toggle-scratchpad-app
   "Provides some overwrites to the `toggle-client` impl
   that can create/ensure workspaces for the toggling clients,
@@ -176,24 +172,22 @@
    "emacs"
    (fn [_wsp] ;; does this passed 'fast-wsp' have enough already?
      ;; TODO support initial-file/dir, initial-command as input
-     (let [{:workspace/keys [title initial-file directory]
-            :git/keys       [repo]
-            :as             wsp} (workspaces/current-workspace)]
+     (let [{:workspace/keys [title initial-file directory] :as wsp}
+           (workspace/current)]
        (if-not wsp
          (r.emacs/open)
-         (let [initial-file (or initial-file repo directory)
+         (let [initial-file (or initial-file directory)
                opts         {:emacs.open/workspace title :emacs.open/file initial-file}]
            (r.emacs/open opts)))))
    "terminal"
    (fn [_wsp] ;; does this passed 'fast-wsp' have enough already?
      ;; TODO support directory, initial-command as input
      ;; TODO support tmux.fire as input
-     (let [{:workspace/keys [title directory]
-            :git/keys       [repo]
-            :as             wsp} (workspaces/current-workspace)]
+     (let [{:workspace/keys [title directory] :as wsp}
+           (workspace/current)]
        (if-not wsp
          (r.tmux/open-session)
-         (let [directory (or directory repo (r.zsh/expand "~"))
+         (let [directory (or directory (r.zsh/expand "~"))
                opts      {:tmux/session-name title :tmux/directory directory}]
            (r.tmux/open-session opts)))))})
 

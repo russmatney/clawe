@@ -1,1 +1,3 @@
-{:doctor-base-url "http://localhost:3334"}
+{:doctor-base-url "http://localhost:3334"
+ :workspace/defs
+ {"clawe" {:workspace/directory "~/russmatney/clawe"}}}
