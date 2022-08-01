@@ -1,6 +1,5 @@
 (ns clawe.toggle
   (:require
-   [defthing.defcom :as defcom :refer [defcom]]
    [defthing.defkbd :refer [defkbd]]
 
    [ralphie.awesome :as awm]
@@ -12,66 +11,8 @@
    [ralphie.zsh :as r.zsh]
 
    [clawe.client :as client]
-   [clawe.workspaces :as workspaces]))
-
-
-(defn is-journal? [_wsp c]
-  (or
-    (and
-      (-> c :awesome.client/class #{"Emacs"})
-      (-> c :awesome.client/name #{"journal"}))
-    (and
-      (-> c :yabai.window/app #{"Emacs"})
-      (-> c :yabai.window/title (#(re-seq #"^journal" %))))))
-
-(defn is-web? [_wsp c]
-  (or
-    (-> c :awesome.client/class #{"Firefox"})
-    (-> c :yabai.window/app #{"Safari"})))
-
-(defn is-dev-web? [_wsp c]
-  (-> c :yabai.window/app #{"Firefox Developer Edition"}))
-
-(defn is-aseprite? [_wsp c]
-  (-> c :yabai.window/app #{"Aseprite"}))
-
-(defn is-slack? [_wsp c]
-  (or
-    (-> c :awesome.client/class #{"Slack"})
-    (-> c :yabai.window/app #{"Slack"})))
-
-(defn is-messages? [_wsp c]
-  (-> c :yabai.window/app #{"Messages"}))
-
-(defn is-godot? [_wsp c]
-  (or
-    (-> c :awesome.client/class #{"Godot"})
-    (-> c :yabai.window/app #{"Godot"})))
-
-(defn is-spotify? [_wsp c]
-  (or
-    (-> c :awesome.client/class #{"Spotify"})
-    (-> c :yabai.window/app #{"Spotify"})))
-
-(defn is-terminal? [wsp w]
-  (let [title (:workspace/title wsp)]
-    (or
-      (and
-        (-> w :awesome.client/class #{"Alacritty"})
-        (-> w :awesome.client/name #{title}))
-      (-> w :yabai.window/app #{"Alacritty"}))))
-
-(defn is-emacs? [wsp w]
-  (let [title (:workspace/title wsp)]
-    (or
-      (and
-        (-> w :awesome.client/class #{"Emacs"})
-        (-> w :awesome.client/name #{title}))
-      (-> w :yabai.window/app #{"Emacs"}))))
-
-(comment
-  (re-seq #"^journal" "journal - (126 x 65)")
-  (re-seq #"^journal" "something else"))
+   [clawe.workspaces :as workspaces]
+   [clojure.string :as string]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; App toggling
@@ -176,6 +117,15 @@
      ;; focus last so osx doesn't move spaces on us
      (yabai/focus-window c))})
 
+
+(defn is-terminal? [wsp w]
+  (let [title (:workspace/title wsp)]
+    (or
+      (and
+        (-> w :awesome.client/class #{"Alacritty"})
+        (-> w :awesome.client/name #{title}))
+      (-> w :yabai.window/app #{"Alacritty"}))))
+
 (defkbd toggle-terminal
   [[:mod] "Return"]
   (toggle-client
@@ -195,6 +145,14 @@
                  opts      {:tmux/session-name title :tmux/directory directory}]
              (r.tmux/open-session opts)))))}))
 
+(defn is-emacs? [wsp w]
+  (let [title (:workspace/title wsp)]
+    (or
+      (and
+        (-> w :awesome.client/class #{"Emacs"})
+        (-> w :awesome.client/name #{title}))
+      (-> w :yabai.window/app #{"Emacs"}))))
+
 (defkbd toggle-emacs
   [[:mod :shift] "Return"]
   (toggle-client
@@ -213,70 +171,63 @@
                  opts         {:emacs.open/workspace title :emacs.open/file initial-file}]
              (r.emacs/open opts)))))}))
 
-(defcom toggle-journal-2
-  (toggle-client
-    (merge
-      (toggle-scratchpad-app {:space-label "journal" :is-client? is-journal?})
-      {:wsp->open-client
-       (fn [{:as _wsp}]
-         (let [opts { ;; TODO get from defworkspace journal
-                     :emacs.open/workspace "journal"
-                     :emacs.open/file      "/Users/russ/todo/journal.org"}]
-           (r.emacs/open opts)))})))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; toggle-app
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defcom toggle-web-2
-  (toggle-client
-    (merge
-      (toggle-scratchpad-app {:space-label "web" :is-client? is-web?})
-      {:wsp->open-client (fn [_wsp] (r.browser/open))})))
+(defn client-matches-window-title? [{:keys [window-title]} {:as wsp}
+                                    client]
+  ;; maybe a partial match is better?
+  ;; or accept/coerce regex from the command line?
+  ;; TODO move to proper :client/window-title
+  (string/includes?
+    (:yabai.window/title client (:awesome.client/name client))
 
-(defcom toggle-dev-web-2
-  (toggle-client
-    (merge
-      (toggle-scratchpad-app {:space-label "dev-web" :is-client? is-dev-web?})
-      {:wsp->open-client (fn [_wsp] (r.browser/open-dev))})))
+    ;; could skip for now, it's an edge case to have multiple emacs/alacritty
+    ;; open on the same space on osx
+    (if (#{"match-workspace"} window-title)
+      (:workspace/title wsp)
+      window-title)))
 
-(defcom toggle-aseprite-2
-  (toggle-client
-    (merge
-      (toggle-scratchpad-app {:space-label "aseprite" :is-client? is-aseprite?})
-      {:wsp->open-client
-       (fn [{:as wsp}]
-         (notify/notify "To do: open aseprite")
-         (println wsp))})))
+(defn client-matches-app-name? [{:keys [app-name]} _wsp client]
+  ;; TODO move to proper :client/app-name
+  (#{app-name} (:yabai.window/app client (:awesome.client/class client))))
 
-(defcom toggle-slack-2
-  (toggle-client
-    (merge
-      (toggle-scratchpad-app {:space-label "slack" :is-client? is-slack?})
-      {:wsp->open-client
-       (fn [{:as wsp}]
-         (notify/notify "To do: open slack")
-         (println wsp))})))
+(defn is-client?
+  [{:keys [window-title app-name] :as args} wsp client]
+  (cond
+    (and window-title app-name)
+    (and (client-matches-window-title? args wsp client)
+         (client-matches-app-name? args wsp client))
+    window-title (client-matches-window-title? args wsp client)
+    app-name     (client-matches-app-name? args wsp client)))
 
-(defcom toggle-spotify-2
-  (toggle-client
-    (merge
-      (toggle-scratchpad-app {:space-label "spotify" :is-client? is-spotify?})
-      {:wsp->open-client
-       (fn [{:as wsp}]
-         (notify/notify "To do: open spotify")
-         (println wsp))})))
+(def wsp-name->open-client
+  {"journal"
+   (fn [_wsp]
+     (let [opts {:emacs.open/workspace "journal"
+                 :emacs.open/file      "/Users/russ/todo/journal.org"}]
+       (r.emacs/open opts)))
+   "web"
+   (fn [_wsp] (r.browser/open))
+   "devweb"
+   (fn [_wsp] (r.browser/open-dev))})
 
-(defcom toggle-messages-2
+(defn toggle-app
+  {:org.babashka/cli
+   {:alias {:title :window-title
+            :app   :app-name
+            :wsp   :workspace-name}}}
+  [{:keys [workspace-name] :as args}]
   (toggle-client
     (merge
-      (toggle-scratchpad-app {:space-label "messages" :is-client? is-messages?})
-      {:wsp->open-client
-       (fn [{:as wsp}]
-         (notify/notify "To do: open messages")
-         (println wsp))})))
-
-(defcom toggle-godot-2
-  (toggle-client
-    (merge
-      (toggle-scratchpad-app {:space-label "godot" :is-client? is-godot?})
+      (toggle-scratchpad-app
+        {:space-label workspace-name
+         :is-client?  (partial is-client? args)})
       {:wsp->open-client
        (fn [{:as wsp}]
-         (notify/notify "To do: open godot")
-         (println wsp))})))
+         (if-let [open-client (wsp-name->open-client workspace-name)]
+           (open-client wsp)
+           (do
+             (notify/notify (str "To do: open " workspace-name))
+             (println wsp))))})))

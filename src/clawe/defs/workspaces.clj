@@ -7,7 +7,7 @@
    [ralphie.tmux :as tmux]
    [ralphie.zsh :as zsh]))
 
-(def home-dir #zsh/expand "~")
+(def home-dir (zsh/expand "~"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Misc workspace builder helpers

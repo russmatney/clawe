@@ -20,7 +20,7 @@
    [ralphie.tmux :as r.tmux]
    [wing.core :as w]))
 
-(def home-dir #zsh/expand "~")
+(def home-dir (zsh/expand "~"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Workspace helpers

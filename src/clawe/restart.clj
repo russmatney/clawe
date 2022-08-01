@@ -45,7 +45,7 @@
   []
   (let [notif (fn [s] (notify/notify
                         {:subject s :replaces-process "rebuilding-clawe-uberjar"}))
-        dir   #zsh/expand "~/russmatney/clawe"]
+        dir   (zsh/expand "~/russmatney/clawe")]
     (notif "Clawe Uberjar: Rebuilding")
     (let [cp (util/get-cp dir)]
       (->
