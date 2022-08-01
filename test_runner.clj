@@ -31,6 +31,7 @@
      ;; 'dates.tick-test
      'clawe.schema-test
      'clawe.scratchpad-test
+     'clawe.workspace-test
      ]
     (remove nil?)))
 

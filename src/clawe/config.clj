@@ -26,3 +26,10 @@
 (defn is-mac? []
   (sys/start! `*config*)
   (:is-mac *config*))
+
+(defn workspace-defs []
+  (sys/start! `*config*)
+  (:workspace/defs *config* {}))
+
+(defn workspace-def [workspace-title]
+  ((workspace-defs) workspace-title))
