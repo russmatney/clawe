@@ -46,12 +46,6 @@
     )
 
 
-
-  (->>
-    (workspaces/all-workspaces)
-    (filter :awesome.tag/name)
-    )
-
   (awm/fetch-tags)
 
 

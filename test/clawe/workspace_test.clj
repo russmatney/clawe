@@ -16,7 +16,11 @@
 (defrecord OneWorkspaceWM []
   workspace/ClaweWM
   (current-workspaces [_this] [{:workspace/title test-wsp-title}])
-  (current-workspaces [_this _opts] [{:workspace/title test-wsp-title}]))
+  (current-workspaces [_this _opts] [{:workspace/title test-wsp-title}])
+
+  (active-workspaces [_this] [{:workspace/title test-wsp-title}])
+  (active-workspaces [_this _opts] [{:workspace/title test-wsp-title}])
+  )
 
 (deftest current-workspace-test
   (testing "has a title"
@@ -44,3 +48,31 @@
                (-> (workspace/current) :workspace/title)))
         (is (= expected-dir
                (-> (workspace/current) :workspace/directory)))))))
+
+(deftest all-defs-test
+  (testing "re-uses the map key as the title."
+    (let [dir          "~/russmatney/blah"
+          expected-dir (zsh/expand dir)]
+      (sys/with-system
+        [clawe.config/*config*
+         {:workspace/defs
+          {test-wsp-title {:workspace/directory "~/russmatney/blah"}}}]
+        (is (= test-wsp-title
+               (-> (workspace/all-defs) first :workspace/title)))
+        (is (= expected-dir
+               (-> (workspace/all-defs) first :workspace/directory))))))
+  )
+
+(deftest all-active-test
+  (testing "merges config def data"
+    (let [dir          "~/russmatney/blah"
+          expected-dir (zsh/expand dir)]
+      (sys/with-system
+        [workspace/*wm* (OneWorkspaceWM.)
+         clawe.config/*config*
+         {:workspace/defs
+          {test-wsp-title {:workspace/directory "~/russmatney/blah"}}}]
+        (is (= test-wsp-title
+               (-> (workspace/all-active) first :workspace/title)))
+        (is (= expected-dir
+               (-> (workspace/all-active) first :workspace/directory)))))))

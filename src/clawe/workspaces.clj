@@ -6,11 +6,8 @@
    [ralphie.awesome :as awm]
    [ralphie.yabai :as yabai]
    [ralphie.rofi :as rofi]
-   [ralphie.git :as r.git]
    [ralphie.notify :as notify]
 
-   ;; be sure to require all workspaces here
-   ;; otherwise (all-workspaces) will be incomplete from consumers like doctor
    clawe.defs.workspaces
    [clawe.client :as client]
    [clawe.config :as clawe.config]
@@ -19,26 +16,14 @@
    [clojure.string :as string]
    [ralphie.zsh :as zsh]
    [ralphie.tmux :as r.tmux]
-   [wing.core :as w]))
+   [wing.core :as w]
+   [clawe.workspace :as workspace]))
 
 (def home-dir (zsh/expand "~"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Workspace hydration
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn apply-git-status
-  "Performs a git-status check and updates the passed workspace.
-
-  Workspaces need to opt-in via :git/check-status?, and should
-  specify a repo with a .git directory via :workspace/directory."
-  [wsp]
-  (if (:git/check-status? wsp)
-    (let [dir (:workspace/directory wsp)]
-      (if (r.git/repo? dir)
-        (merge wsp (r.git/status dir))
-        wsp))
-    wsp))
 
 ;; TODO use a malli schema
 (defn ->pseudo-workspace [wsp]
@@ -276,16 +261,6 @@
       db-only
       in-mem-only)))
 
-(comment
-  (->>
-    (db-with-merged-in-memory-workspaces)
-    count)
-
-  (->>
-    (db-with-merged-in-memory-workspaces)
-    (filter (comp (fnil #(string/includes? % "urbint") "") :workspace/directory))
-    count))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; tmux session merging
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -335,85 +310,24 @@
     (defworkspace/list-workspaces)
     (filter (comp #{"clawe"} :name))))
 
-(defn all-workspaces-fast
-  "Returns all defs.workspaces, without any awm data"
-  []
-  (->>
-    (defworkspace/list-workspaces)))
-
-(defn all-workspaces
-  "Returns all defs.workspaces, merged with awesome tags."
-  []
-  (->>
-    ;; TODO this should pull from defworkspace directly
-    (db-with-merged-in-memory-workspaces)
-    (merge-awm-tags {:include-unmatched? true})
-    (merge-yabai-spaces {:include-unmatched? true})
-    (merge-tmux-sessions)
-    ;; (map apply-git-status)
-    ))
-
-(comment
-  (set! *print-length* 10)
-  (->>
-    (all-workspaces)
-    count)
-  (->>
-    (db-with-merged-in-memory-workspaces)
-    (merge-awm-tags {:include-unmatched? true}))
-  (->>
-    (defworkspace/list-workspaces)
-    (merge-awm-tags {:include-unmatched? true})
-    merge-db-workspaces
-    count)
-  (->>
-    (defworkspace/list-workspaces)
-    (merge-awm-tags {:include-unmatched? true})
-    merge-db-workspaces
-    count))
-
-(defn- for-name
-  "Useful for misc debugging, but not optimized for much else."
-  [name]
-  ;; TODO could refactor to get one db wsp and then merge with wm/tmux
-  (some->>
-    (all-workspaces)
-    (filter (comp #{name} :workspace/title))
-    first))
-
-(comment
-  (for-name "ralphie")
-  (for-name "doctor-todo"))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn wsp-name [wsp]
-  (or
-    (-> wsp :awesome.tag/name)
-    (-> wsp :yabai.space/label)))
-
-(defn wsp-index [wsp]
-  (or
-    (-> wsp :awesome.tag/index)
-    (-> wsp :yabai.space/index)))
 
 (defn- workspaces-to-swap-indexes
   "Creates a sorted list of workspaces with an additional key: :new-index.
   This is in support of the `update-workspace-indexes` func below."
   []
-  (->> (all-workspaces)
-       (filter wsp-name)
+  (->> (workspace/all-active)
        (map (fn [spc]
               (assoc spc :sort-key (str (if (:workspace/scratchpad spc) "z" "a") "-"
-                                        (format "%03d" (or (wsp-index spc) 0))))))
+                                        (format "%03d" (or (:workspace/index spc) 0))))))
        ;; sort and map-indexed to set new_indexes
        (sort-by :sort-key)
        (map-indexed (fn [i wsp] (assoc wsp :new-index
                                        ;; lua indexes start at 1
                                        (+ i 1))))
-       (remove #(= (:new-index %) (wsp-index %)))))
+       (remove #(= (:new-index %) (:workspace/index %)))))
 
 (comment
   (workspaces-to-swap-indexes))
@@ -424,7 +338,7 @@
     (let [wsp (some-> wsps first)]
       (when wsp
         (let [{:keys [new-index] :as wsp} (merge-awm-tags wsp)
-              index                       (wsp-index wsp)]
+              index                       (:workspace/index wsp)]
           (when (not= new-index index)
             (if (clawe.config/is-mac?)
               (yabai/swap-spaces-by-index index new-index)
@@ -462,16 +376,16 @@
 
 (defn consolidate-workspaces []
   (->>
-    (all-workspaces)
+    (workspace/all-active)
     (remove :awesome.tag/empty)
-    (sort-by :awesome.tag/index)
+    (sort-by :workspace/index)
     (map-indexed
-      (fn [new-index {:keys [awesome.tag/name awesome.tag/index]}]
+      (fn [new-index {:keys [workspace/title workspace/index]}]
         (let [new-index (+ 1 new-index)] ;; b/c lua is 1-based
           (if (== index new-index)
             (prn "nothing to do")
             (do
-              (prn "swapping tags" {:name      name
+              (prn "swapping tags" {:title     title
                                     :idx       index
                                     :new-index new-index})
               (awm/swap-tags-by-index index new-index))))))))
@@ -492,14 +406,14 @@
   []
   (notify/notify {:subject "Cleaning up workspaces"})
   (->>
-    (all-workspaces)
+    (workspace/all-active)
     (filter :awesome.tag/empty)
     (map
       (fn [it]
-        (when-let [name (:awesome.tag/name it)]
+        (when-let [title (:workspace/title it)]
           (try
-            (awm/delete-tag! name)
-            (notify/notify "Deleted Tag" name)
+            (awm/delete-tag! title)
+            (notify/notify "Deleted Tag" title)
             (catch Exception e e
                    (notify/notify "Error deleting tag" e))))))
     doall))
@@ -511,24 +425,24 @@
 (defn create-workspace
   "Creates a new tag and focuses it, and run the workspace's on-create hook."
   [wsp]
-  (let [name (:workspace/title wsp)]
+  (let [title (:workspace/title wsp)]
 
     (if (clawe.config/is-mac?)
       ;; TODO handle this space/label already existing
       (yabai/create-and-label-space
-        {:space-label       name
+        {:space-label       title
          :focus             true
          :overwrite-labeled true})
 
       (do
         ;; create tag if none is found
-        (when (not (awm/tag-exists? name))
-          (awm/create-tag! name))
+        (when (not (awm/tag-exists? title))
+          (awm/create-tag! title))
         ;; focus the tag
-        (awm/focus-tag! name)))
+        (awm/focus-tag! title)))
 
     ;; notify
-    (notify/notify (str "Created new workspace: " name))
+    (notify/notify (str "Created new workspace: " title))
 
     ;; create first client if it's not already there
     ;; NOTE might want this to be opt-in/out
@@ -549,49 +463,17 @@
     wsp))
 
 (defn wsp->rofi-opts
-  [{:as   wsp
-    :keys [git/dirty? git/needs-push? git/needs-pull?]}]
-  (let [default-name "noname"
-        name         (or (:workspace/title wsp) default-name)
-        repo         (:workspace/directory wsp)]
-    (when (= name default-name)
-      (println "wsp without name" wsp))
-
-    {:rofi/label (or name default-name)
-     :rofi/description
-     (str (when repo repo " ")
-          (when dirty? "#dirty ")
-          (when needs-push? "#needs-push ")
-          (when needs-pull? "#needs-pull"))}))
+  [{:as wsp}]
+  (let [title (:workspace/title wsp)
+        dir   (:workspace/directory wsp)]
+    {:rofi/label       title
+     :rofi/description (when dir dir)}))
 
 (defn workspace-rofi-options []
-  (->> (all-workspaces) (map #(merge % (wsp->rofi-opts %)))))
+  (->> (workspace/all-defs) (map #(merge % (wsp->rofi-opts %)))))
 
 (defn open-workspace-rofi-options []
   (->>
     (workspace-rofi-options)
     (map #(assoc % :rofi/on-select (fn [wsp]
                                      (create-workspace wsp))))))
-
-(defn select-workspace
-  "Opens a list of workspaces in rofi.
-  Returns the selected workspace."
-  []
-  (rofi/rofi
-    {:msg "New Workspace Name?"}
-    (workspace-rofi-options)))
-
-(comment
-  (select-workspace)
-  (workspace-rofi-options))
-
-(defn open-workspace
-  "Creates a workspace matching the passed name, or prompts for
-  a selection via rofi."
-  ([] (open-workspace nil))
-  ([name]
-   ;; select and create
-   (if name
-     (some-> name defworkspace/get-db-workspace create-workspace)
-     ;; no name passed, get from rofi
-     (some-> (select-workspace) create-workspace))))

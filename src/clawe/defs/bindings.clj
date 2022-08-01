@@ -494,23 +494,6 @@
     (clawe.doctor/update-topbar)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Open Workspace
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defkbd open-workspace
-  [[:mod] "o"]
-  (do
-    (notify/notify "Opening Workspace!")
-    (workspaces/open-workspace)
-    (clawe.doctor/update-topbar)))
-
-
-(defkbd create-new-workspace
-  [[:mod :shift] "o"]
-  ;; TODO add support for creating a new one
-  (notify/notify "Creating new Workspace!"))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Client bindings
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

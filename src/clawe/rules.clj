@@ -1,33 +1,12 @@
 (ns clawe.rules
   (:require
-   [clojure.edn :as edn]
-   [clojure.walk :as w]
    [clojure.string :as string]
 
    [clawe.workspaces :as workspaces]
-   [defthing.defcom :refer [defcom]]
+   [clawe.workspace :as workspace]
    [ralphie.notify :as notify]
    [ralphie.awesome :as awm]
    [clawe.doctor :as clawe.doctor]))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Apply rules
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn apply-rules
-  "Runs a :rules/apply hook for all defined clawe/defworkspaces."
-  ;; TODO could add other sources to this - defkbd, defcom, all defthings?
-  []
-  (let [rule-fns
-        (->>
-          (workspaces/all-workspaces)
-          (keep :rules/apply))]
-    (notify/notify (str "Applying " (count rule-fns) " Clawe rule(s)"))
-    (->> rule-fns
-         (map (fn [f] (f)))
-         doall)))
-
-(defcom clawe-apply-rules apply-rules)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Correct clients
@@ -49,7 +28,8 @@
   "
   []
   (let [workspaces        (->>
-                            (workspaces/all-workspaces-fast)
+                            ;; defs b/c we want to create missing wsps if there are any
+                            (workspace/all-defs)
                             (filter :rules/is-my-client?))
         clients           (awm/all-clients)
         _                 (def --w workspaces)
@@ -143,18 +123,3 @@
     (workspaces/consolidate-workspaces)
     (workspaces/update-workspace-indexes)
     (clawe.doctor/update-topbar)))
-
-(comment
-  (->>
-    (workspaces/all-workspaces)
-    ;; (keep :rules/apply)
-    (take 5)
-    (map (fn [w]
-           (println w)
-           w
-           ))
-    doall)
-
-  (->> [6 5 4 3]
-       (group-by odd?))
-  )

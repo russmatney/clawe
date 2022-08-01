@@ -4,7 +4,7 @@
    [manifold.stream :as s]
    [malli.transform :as mt]
    [malli.core :as m]
-   [clawe.workspaces :as clawe.workspaces]
+   [clawe.workspace :as workspace]
    [util :as util]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -13,9 +13,7 @@
 
 (defn active-workspaces []
   (->>
-    (clawe.workspaces/all-workspaces)
-    (filter :awesome.tag/name) ;; TODO um, this might not mean this wsp is active
-    (map clawe.workspaces/apply-git-status)
+    (clawe.workspace/all-active)
     (map util/drop-complex-types)))
 
 (comment
@@ -67,8 +65,7 @@
 
 (comment
   (def -w
-    (->> (clawe.workspaces/all-workspaces)
-         (filter :awesome.tag/name)
+    (->> (workspace/all-active)
          first
          ))
 

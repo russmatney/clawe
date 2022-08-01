@@ -187,27 +187,7 @@
    (signals.init_focus_signals config)
    (titlebars.init_request_titlebars config)
 
-   ;; (client.connect_signal
-   ;;  "property::name"
-   ;;  (fn [c]
-   ;;    (pp {:signal "property::name" :c (to-client-data c)})
-   ;;    (clawe.cmd-args "apply-rules-to-client" (to-client-data c))))
-   ;; (client.connect_signal
-   ;;  "manage"
-   ;;  (fn [c]
-   ;;    (pp {:signal "manage" :c (to-client-data c)})
-   ;;    (clawe.cmd-args "apply-rules-to-client" (to-client-data c))))
-   ;; (client.connect_signal
-   ;;  "request::urgent"
-   ;;  (fn [c]
-   ;;    (pp {:signal "request::urgent"})
-   ;;    (clawe.cmd-args "apply-rules-to-client" (to-client-data c))))
-   ;; (client.connect_signal "focus" (fn [_] (update-topbar)))
-   ;; (tag.connect_signal "property::screen" (fn [_] (update-topbar)))
-   ;; (tag.connect_signal "tagged" (fn [_] (update-topbar)))
-   ;; (tag.connect_signal "untagged" (fn [_] (update-topbar)))
-   ;; (tag.connect_signal "property::urgent" (fn [_] (update-topbar)))
-
+   ;; rules
    (print "init_rules")
    (rules.init_rules config)
 
@@ -223,7 +203,6 @@
    ;; reapply rules after restoring state of clients/tags
    (print "reapplying rules")
    (_G.reapply_rules)
-   (clawe.cmd "clawe-apply-rules")
    (reload-doctor)
 
    (print "restarting topbar")

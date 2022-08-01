@@ -165,7 +165,6 @@ See `build-uberjar`.
       (log "rewriting rules")
       (awm.rules/write-awesome-rules)
       (log "reapplying rules")
-      (c.rules/apply-rules)
       (c.rules/correct-clients-and-workspaces)
       (log "finished rules"))
 
