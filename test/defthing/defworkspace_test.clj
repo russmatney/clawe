@@ -12,7 +12,7 @@
   :once
   (fn [f]
     (sys/with-system
-      [defthing.config/*config* {:db-path "~/russmatney/dbs/testdb"}]
+      [defthing.config/*config* {:db-path "dbs/testdb"}]
       (f))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
