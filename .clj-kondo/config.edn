@@ -19,6 +19,7 @@
            ;; defthing.defcom/defcom             clojure.core/def
            defthing.defworkspace/defworkspace clojure.core/def
            defthing.defapp/defapp             clojure.core/def
+           defthing.defclient/defclient       clojure.core/def
            defthing.defkbd/defkbd             clojure.core/def
 
            defthing.core-test/deftestworkspace clojure.core/def

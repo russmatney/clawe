@@ -1,10 +1,9 @@
-(ns clawe.defs.apps
+(ns clawe.defs.clients
   (:require
-   [defthing.defapp :refer [defapp]]))
+   [defthing.defclient :refer [defclient]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Apps
+;; Clients
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; NOTE this is not used, just an idea for now
-(defapp spotify-app)
+(defclient spotify)
