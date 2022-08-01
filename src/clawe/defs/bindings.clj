@@ -2,7 +2,7 @@
   (:require
    [babashka.process :as process :refer [$ check]]
    [clojure.string :as string]
-   [defthing.defcom :as defcom :refer [defcom]]
+   [defthing.defcom :as defcom]
    [defthing.defkbd :refer [defkbd]]
 
    [ralphie.notify :as notify]
@@ -17,6 +17,7 @@
    [clawe.doctor :as clawe.doctor]
    [clawe.m-x :as c.m-x]
    [clawe.scratchpad :as scratchpad]
+   [clawe.toggle :as toggle]
    [clawe.workspaces :as workspaces]
    [clawe.rules :as c.rules]))
 
@@ -306,6 +307,15 @@
   [[:mod] "y"]
   (fn [_ _] (toggle-workspace defs.workspaces/doctor-todo)))
 
+
+(defkbd toggle-terminal
+  [[:mod] "Return"]
+  (toggle/toggle-app {:client-name "terminal" :app-name "Alacritty"}))
+
+
+(defkbd toggle-emacs
+  [[:mod :shift] "Return"]
+  (toggle/toggle-app {:client-name "emacs" :app-name "Emacs"}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; cycle tags and clients
