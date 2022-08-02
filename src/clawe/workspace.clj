@@ -6,7 +6,7 @@
    [clawe.config :as clawe.config]
    [clawe.wm :as wm]
    [ralphie.zsh :as zsh]
-   [ralphie.tmux :as tmux]))
+   [clawe.client :as client]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; schema
@@ -19,7 +19,9 @@
    [:workspace/index int?]
    [:workspace/initial-file {:optional true} string?]
    ;; extra app names used to match on clients when applying clawe.rules
-   [:workspace/app-names {:optional true} [:vector string?]]])
+   [:workspace/app-names {:optional true} [:vector string?]]
+   [:workspace/clients {:optional true} [:vector client/schema]]])
+
 
 (comment
   (m/decode
@@ -142,21 +144,3 @@
    (->> (wm/active-workspaces opts)
         (map merge-with-def)
         (map ensure-directory))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; tmux session merging
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn merge-tmux-sessions
-  "assumes the workspace title and tmux session are the same"
-  ([wsps] (merge-tmux-sessions {} wsps))
-  ([_opts wsps]
-   (when-let [sessions-by-name (try (tmux/list-sessions)
-                                    (catch Exception _e
-                                      (println "Tmux probably not running!")
-                                      nil))]
-     (->> wsps
-          (map (fn [{:workspace/keys [title] :as wsp}]
-                 (if-let [sesh (sessions-by-name title)]
-                   (assoc wsp :tmux/session sesh)
-                   wsp)))))))

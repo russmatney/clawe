@@ -507,63 +507,15 @@ dy will become its new position. "
                          :focus       true})
   (->>
     (spaces-by-idx)
-    (sort-by first)
-    )
-  )
+    (sort-by first)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; clean and destroy
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
-(def app-desc->space-label
-  {{:yabai.window/app "Spotify"}                 "spotify"
-   {:yabai.window/app "Slack"}                   "slack"
-   {:yabai.window/app "Safari"}                  "web"
-   {:yabai.window/app   "Emacs"
-    :yabai.window/title #(re-seq #"journal" %)}  "journal"
-   {:yabai.window/app   "Emacs"
-    :yabai.window/title #(re-seq #"dotfiles" %)} "dotfiles"
-   {:yabai.window/app   "Emacs"
-    :yabai.window/title #(re-seq #"clawe" %)}    "clawe"})
-
-(defn set-space-labels []
-  (doall
-    (->> app-desc->space-label
-         (map (fn [[desc label]]
-                (find-and-label-space desc label))))))
-
-(defcom yabai-set-space-labels
-  (set-space-labels))
-
-(comment
-  (set-space-labels)
-  (->>
-    (spaces-by-idx)
-    (vals)
-    (map :yabai.space/label))
-
-  (->>
-    app-desc->space-label
-    (map (fn [[desc]]
-           desc)))
-
-  (->>
-    app-desc->space-label
-    (map first)
-    (map spaces-for-app-desc))
-
-  (find-and-label-space "Spotify" "spotify")
-  (find-and-label-space "Slack" "slack")
-  (find-and-label-space "Safari" "web")
-  (find-and-label-space "Emacs" "clawe")
-  )
-
-
 (defn destroy-space [{:keys             [space-label]
                       :yabai.space/keys [label index]
                       :as               input}]
-  (println "destory space" input)
   (let [label (or label space-label index)]
     (when label
       (notify/notify "Destroying space" label)
@@ -576,7 +528,7 @@ dy will become its new position. "
 (defcom destroy-current-space
   (destroy-space (query-current-space)))
 
-(defcom destroy-selected-space
+(defcom select-and-destroy-space
   (let [selected (rofi/rofi (->> (query-spaces)
                                  (map (fn [spc]
                                         (assoc spc :rofi/label (or (:yabai.space/label spc)
@@ -586,8 +538,7 @@ dy will become its new position. "
 
 (comment
   (destroy-space {:space-label "2"})
-  (spaces-by-idx)
-  )
+  (spaces-by-idx))
 
 (defn destroy-unlabelled-empty-spaces []
   (doall
@@ -599,22 +550,7 @@ dy will become its new position. "
 (comment
   (->> (query-spaces)
        (remove (comp not empty? :yabai.space/label))
-       (remove (comp seq :yabai.space/windows))
-       )
-  )
-
-(defcom yabai-clean-up-spaces
-  ;; TODO the scratchpads need to be more resilient
-  ;; the behavior here is poor
-  ;; (some of) the labelled spaces still get deleted
-  ;; maybe a race-case?
-  ;; maybe deleting one space breaks everything b/c
-  ;; things shift around
-  ;; might need to impl better clean-up 'swapping' like in awesome
-  (do
-    (set-space-labels)
-    (destroy-unlabelled-empty-spaces))
-  )
+       (remove (comp seq :yabai.space/windows))))
 
 (defn label-space-with-user-input []
   (let [new-label     (get-input)
@@ -624,24 +560,3 @@ dy will become its new position. "
 
 (defcom set-new-label-for-space
   (label-space-with-user-input))
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; sandbox
-
-(comment
-  (spaces-by-idx)
-
-  (->>
-    (windows-for-app-desc "Emacs")
-    first
-    space-for-window)
-
-  (let [spcs-by-idx (spaces-by-idx)]
-    (->
-      (windows-for-app-desc "Safari")
-      first
-      :yabai.window/space
-      spcs-by-idx))
-  )

@@ -63,6 +63,11 @@
   (-swap-workspaces-by-index [_this a b]
     (yabai/swap-spaces-by-index a b))
 
+  (-delete-workspace [_this workspace]
+    (yabai/destroy-space {:space-label (:workspace/title workspace)}))
+
+  ;; clients
+
   (-all-clients [_this _opts]
     (->>
       (yabai/query-windows)

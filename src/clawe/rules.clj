@@ -1,12 +1,17 @@
 (ns clawe.rules
+  "Rules are all about getting workspaces and clients in order."
   (:require
    [clojure.string :as string]
 
-   [clawe.workspaces :as workspaces]
-   [clawe.workspace :as workspace]
-   [ralphie.notify :as notify]
    [ralphie.awesome :as awm]
-   [clawe.doctor :as clawe.doctor]))
+   [ralphie.notify :as notify]
+   [ralphie.zsh :as zsh]
+
+   [clawe.doctor :as clawe.doctor]
+   [clawe.workspace :as workspace]
+   [clawe.wm :as wm]))
+
+(def home-dir (zsh/expand "~"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Correct clients
@@ -20,6 +25,85 @@
                            :notify/id      "correcting-with-rules"}
                     body
                     (assoc :notify/body body)))))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; reset workspace indexes
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn- wsp-sort-key [wsp]
+  (str (if (#{home-dir} (:workspace/directory wsp)) "z" "a") "-"
+       (format "%03d" (or (:workspace/index wsp) 0))))
+
+(defn- workspaces-to-swap-indexes
+  "Creates a sorted list of workspaces with an additional key: :new-index.
+  This is in support of the `reset-workspace-indexes` func below."
+  []
+  (->> (workspace/all-active)
+       (map (fn [wsp] (assoc wsp :sort-key (wsp-sort-key wsp))))
+       ;; sort and map-indexed to set new_indexes
+       (sort-by :sort-key)
+       (map-indexed (fn [i wsp]
+                      ;; lua indexes start at 1, and osx's first wsp as 1...
+                      ;; this is probably right for most wm indexes (to match the keyboard)
+                      (assoc wsp :new-index (+ i 1))))
+       (remove #(= (:new-index %) (:workspace/index %)))))
+
+(defn reset-workspace-indexes
+  []
+  (loop [wsps (workspaces-to-swap-indexes)]
+    (let [wsp (some-> wsps first)]
+      (when wsp
+        (let [{:keys [new-index]} wsp
+              index               (-> wsp :workspace/title
+                                      wm/fetch-workspace :workspace/index)]
+          (when (not= new-index index)
+            (wm/swap-workspaces-by-index index new-index))
+          ;; could be optimized....
+          (recur (workspaces-to-swap-indexes)))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; consolidate workspaces
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn consolidate-workspaces []
+  (->>
+    (workspace/all-active {:include-clients true})
+    (remove (comp seq :workspace/clients))
+    (sort-by :workspace/index)
+    (map-indexed
+      (fn [new-index {:keys [workspace/title workspace/index]}]
+        (let [new-index (+ 1 new-index)] ;; b/c lua is 1-based
+          (if (== index new-index)
+            (prn "nothing to do")
+            (do
+              (prn "swapping tags" {:title     title
+                                    :idx       index
+                                    :new-index new-index})
+              (wm/swap-workspaces-by-index index new-index))))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; clean up workspaces
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn clean-workspaces
+  "Closes workspaces with 0 clients."
+  []
+  (notify/notify {:subject "Cleaning up workspaces"})
+  (->>
+    (workspace/all-active)
+    (filter (comp seq :workspace/clients))
+    (map
+      (fn [it]
+        (when-let [title (:workspace/title it)]
+          (try
+            (wm/delete-workspace it)
+            (notify/notify "Deleted Workspace" title)
+            (catch Exception e e
+                   (notify/notify "Error deleting tag" e))))))
+    doall))
+
+
 
 (defn correct-clients-and-workspaces
   "Runs over all open clients, rearranging according to workspace rules.
@@ -116,10 +200,4 @@
                       (awm/move-client-to-tag (:awesome.client/window %)
                                               (:workspace/title w)))
                    cs))))
-      doall)
-
-    (log "Cleaning, consolidating, and updating indexes")
-    (workspaces/clean-workspaces)
-    (workspaces/consolidate-workspaces)
-    (workspaces/update-workspace-indexes)
-    (clawe.doctor/update-topbar)))
+      doall)))

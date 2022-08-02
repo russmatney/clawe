@@ -60,6 +60,12 @@
   (-swap-workspaces-by-index [_this a b]
     (awm/swap-tags-by-index a b))
 
+  (-drag-workspace [_this dir]
+    (awm/drag-workspace dir))
+
+  (-delete-workspace [_this workspace]
+    (awm/delete-tag! (:workspace/title workspace)))
+
   ;; clients
 
   (-close-client [_this _opts c]

@@ -2,14 +2,6 @@
   (:require
    [babashka.process :refer [$ check] :as proc]
 
-   [clawe.awesome.rules :as awm.rules]
-   [clawe.awesome.bindings :as awm.bindings]
-   [clawe.config :as clawe.config]
-   [clawe.doctor :as clawe.doctor]
-   [clawe.rules :as c.rules]
-   [clawe.sxhkd.bindings :as sxhkd.bindings]
-   [clawe.workspaces :as workspaces]
-
    [defthing.defcom :as defcom :refer [defcom]]
    [defthing.defkbd :refer [defkbd]]
    [ralphie.emacs :as emacs]
@@ -17,7 +9,14 @@
    [ralphie.notify :as notify]
    [ralphie.tmux :as tmux]
    [ralphie.zsh :as zsh]
-   [util :as util]))
+   [util :as util]
+
+   [clawe.awesome.rules :as awm.rules]
+   [clawe.awesome.bindings :as awm.bindings]
+   [clawe.config :as clawe.config]
+   [clawe.doctor :as clawe.doctor]
+   [clawe.rules :as rules]
+   [clawe.sxhkd.bindings :as sxhkd.bindings]))
 
 
 (defn log [msg]
@@ -158,15 +157,17 @@ See `build-uberjar`.
       (sxhkd.bindings/reset-bindings))
 
     ;; Rules
-    (when (clawe.config/is-mac?)
-      (workspaces/do-yabai-correct-workspaces))
-
     (when-not (clawe.config/is-mac?)
       (log "rewriting rules")
       (awm.rules/write-awesome-rules)
       (log "reapplying rules")
-      (c.rules/correct-clients-and-workspaces)
+      (rules/correct-clients-and-workspaces)
       (log "finished rules"))
+
+    (log "Cleaning, consolidating, and updating indexes")
+    (rules/clean-workspaces)
+    (rules/consolidate-workspaces)
+    (rules/reset-workspace-indexes)
 
 
     ;; Restart Notifications service
@@ -190,6 +191,7 @@ See `build-uberjar`.
       (log "Firing doctor reload")
       (clawe.doctor/reload))
 
+    (clawe.doctor/update-topbar)
     (log "Reload complete")))
 
 (comment

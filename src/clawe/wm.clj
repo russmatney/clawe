@@ -65,6 +65,16 @@
   (sys/start! `*wm*)
   (wm.protocol/-swap-workspaces-by-index *wm* index-a index-b))
 
+(defn drag-workspace
+  [dir]
+  (sys/start! `*wm*)
+  (wm.protocol/-drag-workspace *wm* dir))
+
+(defn delete-workspace
+  [workspace]
+  (sys/start! `*wm*)
+  (wm.protocol/-delete-workspace *wm* workspace))
+
 ;; clients
 
 (defn all-clients

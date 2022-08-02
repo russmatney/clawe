@@ -14,6 +14,8 @@
   (-focus-workspace [this opts workspace] "Should create the workspace if missing.")
   (-fetch-workspace [this opts workspace-title])
   (-swap-workspaces-by-index [this index-a index-b])
+  (-drag-workspace [this dir])
+  (-delete-workspace [this workspace])
 
   (-all-clients [this opts] "Returns all running clients.")
   (-focus-client [this opts client])

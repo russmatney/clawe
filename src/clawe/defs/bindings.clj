@@ -15,7 +15,7 @@
    [clawe.doctor :as clawe.doctor]
    [clawe.m-x :as c.m-x]
    [clawe.toggle :as toggle]
-   [clawe.workspaces :as workspaces]
+   [clawe.wm :as wm]
    [clawe.rules :as c.rules]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -353,16 +353,14 @@
 (defkbd drag-workspace-prev
   [[:mod :shift] "Left"]
   (do
-    (workspaces/drag-workspace "down")
-    (clawe.doctor/update-topbar))
-  )
+    (wm/drag-workspace :dir/down)
+    (clawe.doctor/update-topbar)))
 
 (defkbd drag-workspace-next
   [[:mod :shift] "Right"]
   (do
-    (workspaces/drag-workspace "up")
-    (clawe.doctor/update-topbar))
-  )
+    (wm/drag-workspace :dir/up)
+    (clawe.doctor/update-topbar)))
 
 (defkbd correct-clients-and-workspaces
   [[:mod] "d"]
