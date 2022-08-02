@@ -130,7 +130,6 @@
                  workspace/color
                  workspace/title-hiccup
                  awesome.tag/index
-                 workspace/scratchpad
                  awesome.tag/clients]} wsp]
      [:div
       {:class ["m-1"
@@ -146,9 +145,6 @@
        (str "(" index ") " (hooks.workspaces/workspace-name wsp))]
 
       [:div
-       (when scratchpad
-         (str "#scratchpad"))
-
        (when repo
          (str "#repo"))]
 

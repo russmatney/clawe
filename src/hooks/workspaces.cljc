@@ -1,9 +1,7 @@
 (ns hooks.workspaces
   (:require
    [plasma.core :refer [defhandler defstream]]
-   #?@(:clj [[clawe.workspaces :as clawe.workspaces]
-             [clawe.scratchpad :as scratchpad]
-             [defthing.db :as db]
+   #?@(:clj [[defthing.db :as db]
              [defthing.defworkspace :as defworkspace]
              [api.workspaces]]
        :cljs [[wing.core :as w]

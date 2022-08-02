@@ -137,6 +137,9 @@
     window-title (client-matches-window-title? args wsp client)
     app-name     (client-matches-app-name? args wsp client)))
 
+;; TODO move into :exec data in something like config/client-defs
+;; should be able to configure emacs, tmux, misc fully-qualified func calls
+;; via bb-cli
 (def name->open-client
   {"journal"
    (fn [_wsp]

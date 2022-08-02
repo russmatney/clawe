@@ -12,11 +12,8 @@
    [ralphie.spotify :as r.spotify]
    [ralphie.pulseaudio :as r.pulseaudio]
 
-   [clawe.client :as client]
-   [clawe.defs.workspaces :as defs.workspaces]
    [clawe.doctor :as clawe.doctor]
    [clawe.m-x :as c.m-x]
-   [clawe.scratchpad :as scratchpad]
    [clawe.toggle :as toggle]
    [clawe.workspaces :as workspaces]
    [clawe.rules :as c.rules]))
@@ -244,74 +241,59 @@
 ;; Workspace toggling
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn toggle-workspace [workspace]
-  (-> workspace
-      workspaces/merge-awm-tags
-      ;; TODO consider merging db workspaces here
-      ;; not sure what we'd need to read
-      ;; but could be a dynamic scratchpad config
-      scratchpad/toggle-scratchpad)
-  (clawe.doctor/update-topbar))
-
-(comment
-  (workspaces/merge-awm-tags defs.workspaces/dev-browser))
-
 ;; these should come for free, with :binding/scratchpad options
 (defkbd toggle-workspace-journal
   [[:mod] "u"]
-  (toggle-workspace defs.workspaces/journal))
+  (toggle/toggle-app {:window-title    "journal"
+                      :workspace-title "journal"
+                      :app-name        "Emacs"}))
 
 (defkbd toggle-workspace-web
   [[:mod] "t"]
-  (toggle-workspace defs.workspaces/web)
-  ;; (toggle-workspace defs.workspaces/dev-browser)
-  )
+  (toggle/toggle-app {:app-name        "firefox"
+                      :workspace-title "web"}))
 
 (defkbd toggle-workspace-chrome-browser
   [[:mod] "b"]
-  (toggle-workspace defs.workspaces/dev-browser))
+  (toggle/toggle-app {:app-name        "firefoxdeveloperedition"
+                      :workspace-title "dev-browser"}))
 
 (defkbd toggle-workspace-slack
   [[:mod] "a"]
-  (toggle-workspace defs.workspaces/slack))
+  (toggle/toggle-app {:app-name        "Slack"
+                      :workspace-title "slack"}))
 
 (defkbd toggle-workspace-discord
   [[:mod :shift] "d"]
-  (toggle-workspace defs.workspaces/discord))
+  (toggle/toggle-app {:app-name        "discord"
+                      :workspace-title "discord"}))
 
 (defkbd toggle-workspace-spotify
   [[:mod] "s"]
-  (toggle-workspace defs.workspaces/spotify))
-
-;; (defkbd toggle-workspace-godot
-;;   [[:mod] "g"]
-;;   (toggle-workspace defs.workspaces/godot))
+  (toggle/toggle-app {:app-name        "Spotify"
+                      :workspace-title "spotify"}))
 
 (defkbd toggle-workspace-zoom
   [[:mod] "z"]
-  (toggle-workspace defs.workspaces/zoom))
+  ;; TODO toggle-app should support extra app-names
+  ;; TODO this could pull/merge in workspace-defs
+  ;; TODO could merge in client-defs for alt app-names and app-startup commands
+  (toggle/toggle-app {:app-name        "Zoom"
+                      :workspace-title "zoom"}))
 
 (defkbd toggle-workspace-one-password
   [[:mod] "."]
-  (fn [_ _] (toggle-workspace defs.workspaces/one-password)))
-
-;; (defkbd toggle-workspace-pixels
-;;   [[:mod :shift] "p"]
-;;   (fn [_ _] (toggle-workspace defs.workspaces/pixels)))
-
-(defkbd toggle-workspace-doctor-popup
-  [[:mod :shift] "p"]
-  (fn [_ _] (toggle-workspace defs.workspaces/doctor-popup)))
+  (toggle/toggle-app {:app-name        "1Password"
+                      :workspace-title "onepass"}))
 
 (defkbd toggle-workspace-doctor-todo
   [[:mod] "y"]
-  (fn [_ _] (toggle-workspace defs.workspaces/doctor-todo)))
-
+  (toggle/toggle-app {:app-name        "tauri/doctor-todo"
+                      :workspace-title "doctor"}))
 
 (defkbd toggle-terminal
   [[:mod] "Return"]
   (toggle/toggle-app {:client-name "terminal" :app-name "Alacritty"}))
-
 
 (defkbd toggle-emacs
   [[:mod :shift] "Return"]

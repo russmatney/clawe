@@ -11,8 +11,6 @@
 ;; Slack, Spotify, Web, other app-workspaces
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defworkspace messages
-  {:workspace/scratchpad true})
 
 (defworkspace spotify
   {:workspace/app-names ["Spotify" "Pavucontrol" "pavucontrol"]}
@@ -24,16 +22,6 @@
    (fn [c]
      (let [matches
            #{"spotify" "Spotify"}
-           {:awesome.client/keys [name class]} c]
-       (or (matches name) (matches class))))})
-
-(defworkspace audacity
-  {:workspace/app-names []}
-  {:workspace/scratchpad       true
-   :workspace/scratchpad-class "audacity"
-   :rules/is-my-client?
-   (fn [c]
-     (let [matches                             #{"audacity"}
            {:awesome.client/keys [name class]} c]
        (or (matches name) (matches class))))})
 
@@ -91,14 +79,6 @@
    (fn [c]
      (-> c :awesome.client/class #{"obs"}))})
 
-(defworkspace pixels
-  {:workspace/directory          "Dropbox/pixels"
-   :workspace/initial-file       "readme.org"
-   :workspace/scratchpad-classes #{"Aseprite"}
-   :workspace/exec               "/usr/bin/gtk-launch aseprite"})
-
-(defworkspace steam)
-
 (defworkspace zoom
   {:workspace/app-names ["zoom" "Zoom" "Zoom Meeting" "Slack call"]}
   {:rules/is-my-client?
@@ -139,12 +119,6 @@
        (or (matches name) (matches class))))}
   (fn [x] {:scratchpad/is-my-client? (:rules/is-my-client? x)}))
 
-(defworkspace garden
-  {:workspace/directory "Dropbox/todo/garden"})
-
-(defworkspace ink
-  {:workspace/directory "Dropbox/todo/ink"})
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Doctor apps
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -163,33 +137,5 @@
            {:awesome.client/keys [name class]} c]
        (or (matches name) (matches class))))})
 
-(defworkspace doctor-popup
-  {:workspace/directory       "russmatney/clawe"
-   :workspace/exec            {:tmux.fire/cmd        (str "bb --config " home-dir "/russmatney/clawe/bb.edn popup")
-                               :tmux.fire/session    "doctor-popup"
-                               :tmux.fire/interrupt? true}
-   :workspace/initial-file    "bb.edn"
-   :workspace/scratchpad      true
-   :workspace/scratchpad-name "tauri/doctor-popup"
-   :rules/is-my-client?
-   (fn [c]
-     (let [matches                             #{"tauri/doctor-popup"}
-           {:awesome.client/keys [name class]} c]
-       (or (matches name) (matches class))))})
-
 (comment
-  (tmux/fire (:workspace/exec doctor-popup)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Emacs repos
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defworkspace emacs
-  {:workspace/directory    ".doom.d"
-   :workspace/initial-file "init.el"
-   :git/check-status?      true})
-
-(defworkspace doom-emacs
-  {:workspace/color        "#aaee88"
-   :workspace/directory    ".emacs.d"
-   :workspace/initial-file "docs/index.org"})
+  (tmux/fire (:workspace/exec doctor-todo)))
