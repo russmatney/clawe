@@ -6,7 +6,7 @@
    [clawe.wm.protocol :as wm.protocol]
    [clawe.yabai :as clawe.yabai])
   (:import
-   [clawe.awesome AwesomeWM]
+   [clawe.awesome Awesome]
    [clawe.yabai Yabai]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -15,7 +15,7 @@
 
 (defsys *wm*
   :start
-  (if (clawe.config/is-mac?) (Yabai.) (AwesomeWM.)))
+  (if (clawe.config/is-mac?) (Yabai.) (Awesome.)))
 
 (defn reload-wm []
   (sys/restart! `*wm*))

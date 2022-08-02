@@ -141,6 +141,7 @@
 
     ;; could skip for now, it's an edge case to have multiple emacs/alacritty
     ;; open on the same space on osx
+    ;; TODO this is ugly, use a flag
     (if (#{"match-workspace"} window-title)
       (:workspace/title wsp)
       window-title)))
