@@ -13,7 +13,13 @@
 (defn tag->wsp [tag]
   (-> tag
       (assoc :workspace/index (:awesome.tag/index tag))
-      (assoc :workspace/title (:awesome.tag/name tag))) )
+      (assoc :workspace/title (:awesome.tag/name tag))
+
+      ;; NOTE the `tag` may not include clients
+      (assoc :workspace/clients
+             (->> tag :awesome.tag/clients
+                  (map awesome-client->clawe-client)))
+      (dissoc :awesome.tag/clients)))
 
 (defrecord Awesome []
   ClaweWM
@@ -24,17 +30,7 @@
       ;; TODO filter on current tags (less to serialize)
       (awm/fetch-tags (merge {:include-clients false :only-current true} opts))
       (filter :awesome.tag/selected)
-      (map (fn [tag]
-             (cond-> tag
-               (and (or (:include-clients opts)
-                        (seq (:prefetched-clients opts)))
-                    (seq (:awesome.tag/clients tag)))
-               (-> (assoc :workspace/clients
-                          (->> tag :awesome.tag/clients
-                               (map awesome-client->clawe-client)))
-                   (dissoc :awesome.tag/clients))
-
-               true tag->wsp)))))
+      (map tag->wsp)))
 
   (-active-workspaces [_this opts]
     (->>

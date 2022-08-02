@@ -141,70 +141,66 @@
 
 (defn workspace-cell
   [{:as   topbar-state
-    :keys [hovered-workspace _on-hover-workspace _on-unhover-workspace]}
+    :keys [hovered-workspace on-hover-workspace on-unhover-workspace]}
    {:as               wsp
-    :workspace/keys   [scratchpad]
-    :awesome.tag/keys [index clients selected urgent]}]
-  (let [hovering?     (= hovered-workspace wsp)
-        editing-name? (uix/state false)
-        temp-name     (uix/state (hooks.workspaces/workspace-name wsp))]
+    :workspace/keys   [directory index clients]
+    :awesome.tag/keys [selected urgent]}
+   {:keys [is-last]}]
+
+  (let [is-home-directory? (#{"/home/russ"} directory)
+        hovering?          (= hovered-workspace wsp)
+        show-name          (or hovering? (not is-home-directory?) urgent selected (#{0} (count clients)))
+        show-number        is-last]
     [:div
-     {:class (conj cell-classes (cond selected "bg-opacity-60" :else "bg-opacity-10"))
-      ;; :on-mouse-enter #(on-hover-workspace wsp)
-      ;; :on-mouse-leave #(on-unhover-workspace wsp)
-      }
-     (let [show-name (or hovering? (not scratchpad) urgent selected (#{0} (count clients)))]
-       [:div {:class ["flex" "flex-row" "items-center" "justify-center"]}
-        ;; name/number
-        [:div {:class [(when show-name "px-2")
-                       (when-not show-name "w-0")
-                       "transition-all"
-                       (cond urgent   "text-city-red-400"
-                             selected "text-city-orange-400"
-                             :else    "text-yo-blue-300")]}
-         [:div {:class ["font-nes" "text-lg"]}
-          ;; number/index
-          (let [show (and show-name (or hovering? (#{0} (count clients))))]
-            [:span {:class [(when show "pr-2")]}
-             (when show
-               (str "(" index ")"))])
-          ;; name/title
-          (when (and show-name (not @editing-name?))
-            [:span
-             {:on-click (fn [_e]
-                          (reset! editing-name? true))}
-             (hooks.workspaces/workspace-name wsp)])
-          (when @editing-name?
-            [:div
-             [:input {:type      :text
-                      :value     @temp-name
-                      :on-blur   (fn [_e]
-                                   (when-let [n @temp-name]
-                                     (update-display-name wsp n))
-                                   (reset! editing-name? false))
-                      :on-change (fn [e] (reset! temp-name
-                                                 (-> e (.-target) (.-value))))}]])]]
+     {:class          (conj cell-classes (cond selected "bg-opacity-60" :else "bg-opacity-10"))
+      :on-mouse-enter #(on-hover-workspace wsp)
+      :on-mouse-leave #(on-unhover-workspace wsp)}
+     [:div {:class ["flex" "flex-row" "items-center" "justify-center"]}
+      [client-icon-list (assoc topbar-state :workspace wsp) clients]
 
-        ;; clients
-        [client-icon-list (assoc topbar-state :workspace wsp) clients]
+      ;; number
+      [:div {:class [(if (or show-name show-number) "pl-2" "w-0")
+                     "transition-all"
+                     (cond urgent   "text-city-red-400"
+                           selected "text-city-orange-400"
+                           :else    "text-yo-blue-300")]}
+       [:div {:class ["font-nes" "text-lg"]}
+        ;; number/index
+        (let [show (or show-name show-number hovering? (zero? (count clients)))]
+          [:span {:class [(when show-name "pr-2")]}
+           (when show
+             (str "[" index "]"))])]]
 
-        ;; actions
-        [:div
-         {:class ["flex" "flex-wrap" "flex-row" "text-yo-blue-300"]}
-         (for [[i ax] (map-indexed vector (->actions {:hovering? hovering?} wsp))]
-           ^{:key i}
-           [:div {:class    ["cursor-pointer" "hover:text-yo-blue-300"]
-                  :on-click (:action/on-click ax)}
-            (if (seq (:action/icon ax))
-              [bar-icon (:action/icon ax)]
-              (:action/label ax))])]])]))
+      ;; name
+      [:div {:class [(when show-name "pr-2")
+                     (when-not show-name "w-0")
+                     "transition-all"
+                     (cond urgent   "text-city-red-400"
+                           selected "text-city-orange-400"
+                           :else    "text-yo-blue-300")]}
+       [:div {:class ["font-nes" "text-lg"]}
+        ;; name/title
+        (when show-name
+          [:span
+           (:workspace/title wsp)])]]
+
+      ;; actions
+      [:div
+       {:class ["flex" "flex-wrap" "flex-row" "text-yo-blue-300"]}
+       (for [[i ax] (map-indexed vector (->actions {:hovering? hovering?} wsp))]
+         ^{:key i}
+         [:div {:class    ["cursor-pointer" "hover:text-yo-blue-300"]
+                :on-click (:action/on-click ax)}
+          (if (seq (:action/icon ax))
+            [bar-icon (:action/icon ax)]
+            (:action/label ax))])]]]))
 
 (defn workspace-list [topbar-state wspcs]
   [:div
    {:class ["flex" "flex-row" "justify-center"]}
    (for [[i it] (->> wspcs (map-indexed vector))]
      ^{:key i}
-     [workspace-cell topbar-state it])])
+     [workspace-cell topbar-state it {:is-last (= i (- (count wspcs) 1))}])])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Clock/host/metadata
@@ -331,7 +327,7 @@
 (defn widget [_opts]
   (let [metadata                                      (hooks.topbar/use-topbar-metadata)
         {:keys [topbar/background-mode] :as metadata} @metadata
-        {:keys [workspaces active-clients]}           (hooks.workspaces/use-workspaces)
+        {:keys [active-workspaces active-clients]}    (hooks.workspaces/use-workspaces)
         topbar-state                                  (use-topbar-state)
         {:keys [tauri? open?] :as popup}              (tauri/use-popup)]
     [:div
@@ -341,10 +337,8 @@
      [:div
       {:class ["flex" "flex-row" "justify-between" "pr-3"]}
 
-      ;; repo workspaces
-      [workspace-list topbar-state (->> workspaces (remove :workspace/scratchpad))]
-      ;; scratchpads
-      [workspace-list topbar-state (->> workspaces (filter :workspace/scratchpad))]
+      ;; workspaces
+      [workspace-list topbar-state active-workspaces]
       ;; active-clients
       (when (seq active-clients) [clients-cell topbar-state active-clients])
 

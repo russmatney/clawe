@@ -92,7 +92,7 @@
   ([wsp]
    (let [wsp          (or wsp {})
          wsp-name
-         (or (some wsp [:emacs.open/workspace :emacs/workspace-name
+         (or (some wsp [:emacs.open/workspace
                         :workspace/title :org/name :clawe.defs/name])
              "ralphie-fallback")
          initial-file (some wsp [:emacs.open/file :emacs/open-file :workspace/initial-file])
@@ -125,13 +125,6 @@
 (comment
   (open {:emacs.open/workspace "clawe"
          :emacs.open/file      (zsh/expand "~/russmatney/clawe/readme.org")}))
-
-(defcom open-emacs
-  "Opens emacs in the current workspace"
-  (fn [_cmd & [n & _]]
-    (if n
-      (open {:emacs/workspace-name n})
-      (open))))
 
 (defn open-in-emacs
   "Opens a file in the last-focused existing emacs client.

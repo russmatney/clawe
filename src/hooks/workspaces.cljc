@@ -1,26 +1,16 @@
 (ns hooks.workspaces
   (:require
    [plasma.core :refer [defhandler defstream]]
-   #?@(:clj [[defthing.db :as db]
-             [defthing.defworkspace :as defworkspace]
+   #?@(:clj [[defthing.defworkspace :as defworkspace]
              [api.workspaces]]
        :cljs [[wing.core :as w]
               [plasma.uix :refer [with-rpc with-stream]]])))
-
-(defn workspace-name [wsp]
-  ((some-fn :workspace/display-name :workspace/title :name) wsp))
-
-#?(:clj
-   (comment
-     (->>
-       (api.workspaces/active-workspaces)
-       (map workspace-name))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Workspaces
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defhandler get-workspaces [] (api.workspaces/active-workspaces))
+(defhandler get-active-workspaces [] (api.workspaces/active-workspaces))
 (defstream workspaces-stream [] api.workspaces/*workspaces-stream*)
 
 (defn skip-bar-app? [client]
@@ -31,23 +21,23 @@
 #?(:cljs
    (defn use-workspaces []
      (let [workspaces  (plasma.uix/state [])
-           handle-resp (fn [new-wsps]
+           handle-resp (fn [active-wsps]
                          (swap! workspaces
                                 (fn [_wsps]
-                                  (->> new-wsps
+                                  (->> active-wsps
                                        (w/distinct-by :workspace/title)
-                                       (sort-by :awesome.tag/index)))))]
+                                       (sort-by :workspace/index)))))]
 
-       (with-rpc [] (get-workspaces) handle-resp)
+       (with-rpc [] (get-active-workspaces) handle-resp)
        (with-stream [] (workspaces-stream) handle-resp)
 
-       {:workspaces        @workspaces
-        :active-clients    (->> @workspaces
-                                (filter :awesome.tag/selected)
-                                (mapcat :awesome.tag/clients)
-                                (remove skip-bar-app?)
-                                (w/distinct-by :awesome.client/window))
-        :active-workspaces (->> @workspaces (filter :awesome.tag/selected))})))
+       {:active-clients      (->> @workspaces
+                                  (filter :awesome.tag/selected)
+                                  (mapcat :awesome.tag/clients)
+                                  (remove skip-bar-app?)
+                                  (w/distinct-by :awesome.client/window))
+        :active-workspaces   @workspaces
+        :selected-workspaces (->> @workspaces (filter :awesome.tag/selected))})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Workspace commands
@@ -56,31 +46,3 @@
 (defhandler update-workspace [item]
   (defworkspace/sync-workspaces-to-db item))
 
-#?(:clj
-   (comment
-     (def --w (->> (api.workspaces/active-workspaces)
-                   (filter (comp #{"clawe"} :workspace/title))
-                   first))
-     (defworkspace/get-db-workspace --w)
-     (update-workspace (-> --w
-                           (assoc :workspace/directory "/home/russ/russmatney/doctor")
-                           ))
-
-     (def --p )
-     (->> (api.workspaces/active-workspaces))
-
-     (update-workspace (-> --w
-                           (assoc :workspace/display-name "ClAwE")
-                           ))
-
-     (db/query
-       '[:find (pull ?e [*])
-         :in $ ?workspace-title
-         :where
-         [?e :workspace/title ?workspace-title]]
-       "clawe")
-
-     (db/query
-       '[:find (pull ?e [*])
-         :where
-         [?e :workspace/title ?workspace-title]])))

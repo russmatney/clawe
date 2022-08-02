@@ -83,7 +83,7 @@
           {:class ["text-left"]}
           [:div
            {:class ["flex flex-row justify-between items-center"]}
-           [:span.text-xl.font-nes (hooks.workspaces/workspace-name wsp)]
+           [:span.text-xl.font-nes (:workspace/title wsp)]
 
            [:span.ml-auto
             (str
@@ -142,7 +142,7 @@
                ]}
       [:div
        (when color {:style {:color color}})
-       (str "(" index ") " (hooks.workspaces/workspace-name wsp))]
+       (str "(" index ") " (:workspace/title wsp))]
 
       [:div
        (when repo
@@ -164,21 +164,21 @@
         [:div (dir (or repo directory))])])))
 
 (defn page [_opts]
-  (let [{:keys [workspaces active-workspaces]} (hooks.workspaces/use-workspaces)]
+  (let [{:keys [selected-workspaces active-workspaces]} (hooks.workspaces/use-workspaces)]
     [:div
      {:class ["p-4"]}
      [:h1
       {:class ["font-nes" "text-2xl" "text-white" "pb-2"]}
-      (str "Workspaces (" (count workspaces) ")")]
+      (str "Workspaces (" (count active-workspaces) ")")]
 
      [:div
       {:class ["flex" "flex-row" "pt-4"]}
       [:div
        {:class ["flex" "flex-0" "flex-col" "flex-wrap" "justify-between"]}
-       (for [[i it] (->> workspaces (map-indexed vector))]
+       (for [[i it] (->> active-workspaces (map-indexed vector))]
          ^{:key i}
          [workspace-comp nil it])]
 
       [:div
        {:class ["flex" "flex-1"]}
-       [active-workspace active-workspaces]]]]))
+       [active-workspace selected-workspaces]]]]))

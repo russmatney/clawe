@@ -9,8 +9,8 @@
    [clawe.client :as client]
    [clawe.workspace :as workspace]
    [clojure.string :as string]
-   [clawe.wm :as wm]))
-
+   [clawe.wm :as wm]
+   [clawe.doctor :as clawe.doctor]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; App toggling
@@ -64,6 +64,7 @@
 
            :else
            (wsp->open-client current-wsp))))
+     (clawe.doctor/update-topbar)
      ;; prevent noise in the logs
      nil)))
 
