@@ -23,6 +23,9 @@
 
 (defrecord Awesome []
   ClaweWM
+
+  ;; workspaces
+
   (-current-workspaces [_this opts]
     (->>
       ;; TODO re-use pre-fetched clients if passed?
@@ -45,6 +48,19 @@
                             workspace (:workspace/title workspace))]
       (awm/ensure-tag workspace-title)
       (awm/focus-tag! workspace-title)))
+
+  (-fetch-workspace [_this _opts workspace-title]
+    (->>
+      ;; TODO optimize (only fetch one)
+      (awm/fetch-tags)
+      (filter (comp #{workspace-title} :awesome.tag/name))
+      first
+      tag->wsp))
+
+  (-swap-workspaces-by-index [_this a b]
+    (awm/swap-tags-by-index a b))
+
+  ;; clients
 
   (-close-client [_this _opts c]
     (awm/close-client c))

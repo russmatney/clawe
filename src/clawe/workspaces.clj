@@ -15,74 +15,10 @@
 
    [clojure.string :as string]
    [ralphie.zsh :as zsh]
-   [ralphie.tmux :as r.tmux]
-   [wing.core :as w]
-   [clawe.workspace :as workspace]))
+   [clawe.workspace :as workspace]
+   [clawe.wm :as wm]))
 
 (def home-dir (zsh/expand "~"))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Workspace hydration
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; TODO use a malli schema
-(defn ->pseudo-workspace [wsp]
-  (let [name (or (:awesome.tag/name wsp)
-                 (:yabai.space/label wsp))
-
-        index (or (:awesome.tag/index wsp)
-                  (:yabai.space/index wsp))
-
-        n (if-not (empty? name)
-            name (str "fallback-name-" index))]
-    (-> wsp
-        (assoc :name n)
-        ((fn [w] (merge w (defworkspace/workspace-defaults w)))))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; merge-awm-tags
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn merge-awm-tags
-  "Fetches all awm tags and merges those with matching
-  `tag-name == :workspace/title` into the passed workspaces.
-
-  Fetching awm tags one at a time can be a bit slow,
-  so we just get them all up-front.
-
-  If :include-unmatched? is truthy, tags without matching workspaces
-  will have basic workspaces created and included.
-  Note that this only applies if a list of wsps is passed.
-  "
-  ([wsps]
-   (merge-awm-tags {} wsps))
-  ([{:keys [include-unmatched?]} wsps]
-   (let [awm-all-tags       (awm/fetch-tags)
-         is-map?            (map? wsps)
-         include-unmatched? (if is-map? false include-unmatched?)
-         wsps               (if is-map? [wsps] wsps)]
-     (cond->> wsps
-       true
-       (map (fn [wsp]
-              ;; depends on the :workspace/title matching the awm tag name
-              ;; could also just be a unique id stored from open-workspace
-              (merge (awm/tag-for-name
-                       (:workspace/title wsp)
-                       awm-all-tags)
-                     wsp)))
-
-       include-unmatched?
-       ((fn [wsps]
-          (let [matched-tag-names (->> wsps (map :awesome.tag/name) (into #{}))
-                unmatched-tags    (->> awm-all-tags
-                                       (remove (comp matched-tag-names :awesome.tag/name)))
-                pseudo-wsps       (->> unmatched-tags
-                                       (map ->pseudo-workspace))]
-            (concat wsps pseudo-wsps))))
-
-       ;; unwrap if only one was passed
-       is-map?
-       first))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Interactive workspace creation
@@ -144,41 +80,36 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn- wsp-sort-key [wsp]
+  (str (if (#{home-dir} (:workspace/directory wsp)) "z" "a") "-"
+       (format "%03d" (or (:workspace/index wsp) 0))))
+
 (defn- workspaces-to-swap-indexes
   "Creates a sorted list of workspaces with an additional key: :new-index.
   This is in support of the `update-workspace-indexes` func below."
   []
   (->> (workspace/all-active)
-       (map (fn [spc]
-              (assoc spc :sort-key (str (if (:workspace/scratchpad spc) "z" "a") "-"
-                                        (format "%03d" (or (:workspace/index spc) 0))))))
+       (map (fn [wsp] (assoc wsp :sort-key (wsp-sort-key wsp))))
        ;; sort and map-indexed to set new_indexes
        (sort-by :sort-key)
-       (map-indexed (fn [i wsp] (assoc wsp :new-index
-                                       ;; lua indexes start at 1
-                                       (+ i 1))))
+       (map-indexed (fn [i wsp]
+                      ;; lua indexes start at 1, and osx's first wsp as 1...
+                      ;; this is probably right for most wm indexes (to match the keyboard)
+                      (assoc wsp :new-index (+ i 1))))
        (remove #(= (:new-index %) (:workspace/index %)))))
-
-(comment
-  (workspaces-to-swap-indexes))
 
 (defn update-workspace-indexes
   []
   (loop [wsps (workspaces-to-swap-indexes)]
     (let [wsp (some-> wsps first)]
       (when wsp
-        (let [{:keys [new-index] :as wsp} (merge-awm-tags wsp)
-              index                       (:workspace/index wsp)]
+        (let [{:keys [new-index]} wsp
+              index               (-> wsp :workspace/title
+                                      wm/fetch-workspace :workspace/index)]
           (when (not= new-index index)
-            (if (clawe.config/is-mac?)
-              (yabai/swap-spaces-by-index index new-index)
-              (awm/swap-tags-by-index index new-index)))
+            (wm/swap-workspaces-by-index index new-index))
           ;; could be optimized....
           (recur (workspaces-to-swap-indexes)))))))
-
-(comment
-  (update-workspace-indexes)
-  (workspaces-to-swap-indexes))
 
 (defn do-yabai-correct-workspaces []
   ;; some what duplicated in clawe.restart...

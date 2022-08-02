@@ -52,6 +52,17 @@
                                    :overwrite-unlabeled true})
       (yabai/focus-space {:space-label workspace-title})))
 
+  (-fetch-workspace [_this _opts workspace-title]
+    (->>
+      ;; TODO optimize
+      (yabai/query-spaces)
+      (filter (comp #{workspace-title} :yabai.space/label))
+      first
+      space->clawe-workspace))
+
+  (-swap-workspaces-by-index [_this a b]
+    (yabai/swap-spaces-by-index a b))
+
   (-all-clients [_this _opts]
     (->>
       (yabai/query-windows)

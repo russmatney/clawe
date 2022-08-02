@@ -28,6 +28,8 @@
 ;; public api
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; workspaces
+
 (defn current-workspaces
   ([] (current-workspaces nil))
   ([opts]
@@ -51,6 +53,19 @@
   ([opts workspace]
    (sys/start! `*wm*)
    (wm.protocol/-focus-workspace *wm* opts workspace)))
+
+(defn fetch-workspace
+  ([workspace-title] (fetch-workspace nil workspace-title))
+  ([opts workspace-title]
+   (sys/start! `*wm*)
+   (wm.protocol/-fetch-workspace *wm* opts workspace-title)))
+
+(defn swap-workspaces-by-index
+  [index-a index-b]
+  (sys/start! `*wm*)
+  (wm.protocol/-swap-workspaces-by-index *wm* index-a index-b))
+
+;; clients
 
 (defn all-clients
   ([] (all-clients nil))

@@ -12,7 +12,9 @@
   (-active-workspaces [this opts] "Return all workspaces as a vector of maps.")
   (-ensure-workspace [this opts workspace-title])
   (-focus-workspace [this opts workspace] "Should create the workspace if missing.")
-  (-current-clients [this opts] "Return all clients in the current active workspace.")
+  (-fetch-workspace [this opts workspace-title])
+  (-swap-workspaces-by-index [this index-a index-b])
+
   (-all-clients [this opts] "Returns all running clients.")
   (-focus-client [this opts client])
   (-close-client [this opts client])
