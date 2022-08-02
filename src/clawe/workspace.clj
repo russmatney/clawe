@@ -3,10 +3,10 @@
    [malli.core :as m]
    [malli.transform :as mt]
 
-   [clawe.config :as clawe.config]
-   [clawe.wm :as wm]
    [ralphie.zsh :as zsh]
-   [clawe.client :as client]))
+   [clawe.wm :as wm]
+   [clawe.client :as client]
+   [clawe.config :as clawe.config]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; schema

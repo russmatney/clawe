@@ -2,7 +2,6 @@
   (:require
    [criterium.core :as crit]
 
-   [clawe.workspaces :as workspaces]
    [defthing.defworkspace :as defworkspace]
 
    ))

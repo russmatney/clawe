@@ -11,7 +11,6 @@
    clawe.restart
    clawe.rules
    clawe.m-x
-   clawe.workspaces
    ralphie.core ;; so we include all ralphie commands
    ))
 

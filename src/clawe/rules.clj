@@ -9,9 +9,8 @@
 
    [clawe.doctor :as clawe.doctor]
    [clawe.workspace :as workspace]
-   [clawe.wm :as wm]))
-
-(def home-dir (zsh/expand "~"))
+   [clawe.wm :as wm]
+   [clawe.config :as clawe.config]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Correct clients
@@ -32,7 +31,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn- wsp-sort-key [wsp]
-  (str (if (#{home-dir} (:workspace/directory wsp)) "z" "a") "-"
+  (str (if (#{(clawe.config/home-dir)} (:workspace/directory wsp)) "z" "a") "-"
        (format "%03d" (or (:workspace/index wsp) 0))))
 
 (defn- workspaces-to-swap-indexes

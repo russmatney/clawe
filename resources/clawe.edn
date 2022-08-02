@@ -1,3 +1,1 @@
-{:doctor-base-url "http://localhost:3334"
- :workspace/defs
- {"clawe" {:workspace/directory "~/russmatney/clawe"}}}
+{:doctor-base-url "http://localhost:3334", :workspace/defs {"clawe" {:workspace/directory "~/russmatney/clawe"}, "journal" {:workspace/misc "some-data", :workspace/some "other-data"}, "beatemup-three" {:workspace/directory "/Users/russ/russmatney/beatemup-three"}, "dice-nine" {:workspace/directory "~/russmatney/dice-nine"}, "dotfiles" {:workspace/directory "~/russmatney/dotfiles"}}, :repo-roots ["~/russmatney/*" "~/teknql/*"]}

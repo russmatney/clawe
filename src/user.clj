@@ -5,7 +5,6 @@
    [ralphie.awesome :as awm]
    [ralphie.notify :as notify]
    [wing.repl :as repl]
-   [clawe.workspaces :as workspaces]
    [ralphie.zsh :as zsh]))
 
 (comment

@@ -6,13 +6,17 @@
   (str (clawe.config/doctor-base-url) "/topbar/update"))
 
 (defn update-topbar []
-  (slurp (update-topbar-url)))
+  (when-not (clawe.config/is-mac?)
+    (slurp (update-topbar-url))))
 
 (defn db-restart-conn []
-  (slurp (str (clawe.config/doctor-base-url) "/db/restart-conn")))
+  (when-not (clawe.config/is-mac?)
+    (slurp (str (clawe.config/doctor-base-url) "/db/restart-conn"))))
 
 (defn reload []
-  (slurp (str (clawe.config/doctor-base-url) "/reload")))
+  (when-not (clawe.config/is-mac?)
+    (slurp (str (clawe.config/doctor-base-url) "/reload"))))
 
 (defn update-screenshots []
-  (slurp (str (clawe.config/doctor-base-url) "/screenshots/update")))
+  (when-not (clawe.config/is-mac?)
+    (slurp (str (clawe.config/doctor-base-url) "/screenshots/update"))))

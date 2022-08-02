@@ -38,10 +38,10 @@
   (testing "mixes and expands data from config/workspace-def"
     (let [dir          "~/russmatney/blah"
           expected-dir (zsh/expand dir)]
-      (sys/with-system
-        [wm/*wm* (OneWorkspaceWM.)
-         clawe.config/*config* {:workspace/defs
-                                {test-wsp-title {:workspace/directory "~/russmatney/blah"}}}]
+      (sys/with-system [wm/*wm* (OneWorkspaceWM.)]
+        (reset! clawe.config/*config*
+                {:workspace/defs
+                 {test-wsp-title {:workspace/directory "~/russmatney/blah"}}})
         (is (= test-wsp-title
                (-> (workspace/current) :workspace/title)))
         (is (= expected-dir
@@ -51,24 +51,24 @@
   (testing "re-uses the map key as the title."
     (let [dir          "~/russmatney/blah"
           expected-dir (zsh/expand dir)]
-      (sys/with-system
-        [clawe.config/*config*
-         {:workspace/defs
-          {test-wsp-title {:workspace/directory "~/russmatney/blah"}}}]
-        (is (= test-wsp-title
-               (-> (workspace/all-defs) first :workspace/title)))
-        (is (= expected-dir
-               (-> (workspace/all-defs) first :workspace/directory)))))))
+      (reset! clawe.config/*config*
+              {:workspace/defs
+               {test-wsp-title {:workspace/directory "~/russmatney/blah"}}})
+      (is (= test-wsp-title
+             (-> (workspace/all-defs) first :workspace/title)))
+      (is (= expected-dir
+             (-> (workspace/all-defs) first :workspace/directory))))))
 
 (deftest all-active-test
   (testing "merges config def data"
     (let [dir          "~/russmatney/blah"
           expected-dir (zsh/expand dir)]
       (sys/with-system
-        [wm/*wm* (OneWorkspaceWM.)
-         clawe.config/*config*
-         {:workspace/defs
-          {test-wsp-title {:workspace/directory "~/russmatney/blah"}}}]
+        [wm/*wm* (OneWorkspaceWM.)]
+        (reset!
+          clawe.config/*config*
+          {:workspace/defs
+           {test-wsp-title {:workspace/directory "~/russmatney/blah"}}})
         (is (= test-wsp-title
                (-> (workspace/all-active) first :workspace/title)))
         (is (= expected-dir
