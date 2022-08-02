@@ -138,9 +138,7 @@
 
 (comment
   (swap-spaces-by-index 4 1)
-
-  (spaces-by-idx)
-  )
+  (spaces-by-idx))
 
 (defn query-current-space []
   (try

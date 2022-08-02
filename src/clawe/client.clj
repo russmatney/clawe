@@ -7,7 +7,8 @@
    [ralphie.awesome :as awm]
    [ralphie.notify :as notify]
    [ralphie.tmux :as tmux]
-   [ralphie.zsh :as zsh]))
+   [ralphie.zsh :as zsh]
+   [clawe.wm :as wm]))
 
 
 (defn ignore-client?
@@ -133,3 +134,11 @@
   (create-client
     {:workspace/initial-file (zsh/expand "~/russmatney/ralphie/readme.org")
      :workspace/title        "my-wsp"}))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; all-clients
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn all-clients []
+  ;; merge with clawe/config?
+  (wm/all-clients))

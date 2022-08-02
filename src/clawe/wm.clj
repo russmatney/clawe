@@ -34,9 +34,14 @@
    (sys/start! `*wm*)
    (wm.protocol/-current-workspaces *wm* opts)))
 
-
 (defn active-workspaces
   ([] (active-workspaces nil))
   ([opts]
    (sys/start! `*wm*)
    (wm.protocol/-active-workspaces *wm* opts)))
+
+(defn all-clients
+  ([] (all-clients nil))
+  ([opts]
+   (sys/start! `*wm*)
+   (wm.protocol/-all-clients *wm* opts)))

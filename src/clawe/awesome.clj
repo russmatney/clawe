@@ -6,9 +6,9 @@
 
 (defn awesome-client->clawe-client [client]
   (-> client
-      (assoc :client/window-name (:awesome.client/name client))
+      (assoc :client/window-title (:awesome.client/name client))
       (assoc :client/app-name (:awesome.client/class client))
-      (assoc :client/focus (:awesome.client/focus client))))
+      (assoc :client/focused (:awesome.client/focused client))))
 
 (defn tag->wsp [tag]
   (-> tag
@@ -20,7 +20,7 @@
   (-current-workspaces [_this opts]
     (->>
       ;; TODO tags-only (no clients, maybe a bit faster?)
-      ;; TODO filter on current tags (even less to serialize)
+      ;; TODO filter on current tags (less to serialize)
       (awm/fetch-tags (merge {:include-clients false :only-current true} opts))
       (filter :awesome.tag/selected)
       (map (fn [tag]

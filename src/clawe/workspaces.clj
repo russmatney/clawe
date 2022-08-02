@@ -85,53 +85,6 @@
        first))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; merge-yabai-spaces
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn merge-yabai-spaces
-  ([wsps] (merge-yabai-spaces {} wsps))
-  ([{:keys [include-unmatched? prefetched-spaces prefetched-windows]} wsps]
-   (let [all-spaces               (or prefetched-spaces (yabai/query-spaces))
-         all-spaces-by-label      (->> all-spaces
-                                       (w/index-by :yabai.space/label))
-         all-windows-by-space-idx (->> (or prefetched-windows (yabai/query-windows))
-                                       (w/group-by :yabai.window/space))
-         is-map?                  (map? wsps)
-         include-unmatched?       (if is-map? false include-unmatched?)
-         wsps                     (if is-map? [wsps] wsps)]
-     (cond->> wsps
-       true
-       (map (fn [wsp]
-              ;; depends on the :workspace/title matching the space label name
-              ;; could also just be a unique id stored from open-workspace
-              (merge (all-spaces-by-label (:workspace/title wsp))
-                     wsp)))
-
-       include-unmatched?
-       ((fn [wsps]
-          (let [matched-names  (->> wsps (map :yabai.space/label) (into #{}))
-                unmatched-tags (->> all-spaces (remove (comp matched-names :yabai.space/label)))
-                pseudo-wsps    (->> unmatched-tags (map ->pseudo-workspace))]
-            (concat wsps pseudo-wsps))))
-
-       true ;; could make yabai windows optional
-       (map (fn [wsp]
-              (let [windows (->> wsp :yabai.space/index all-windows-by-space-idx)]
-                (assoc wsp :yabai/windows windows))))
-
-       ;; unwrap if only one was passed
-       is-map?
-       first))))
-
-(comment
-  (->>
-    (defworkspace/list-workspaces)
-    (merge-yabai-spaces {:include-unmatched? true})
-    (filter :yabai.space/label))
-
-  (merge-yabai-spaces []))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Interactive workspace creation
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -186,36 +139,6 @@
 
 (comment
   (do-install-workspaces))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Workspaces fetchers
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn current-workspace-fast
-  "Does not mix the current workspace with the db overwritable keys."
-  ([] (current-workspace-fast))
-  ;; TODO support awm
-  ([{:keys [prefetched-windows]}]
-   (let [yb-spc     (yabai/query-current-space)
-         pseudo-wsp (->pseudo-workspace yb-spc)
-         wsp        (if-let [wsp (defworkspace/get-workspace pseudo-wsp)]
-                      wsp pseudo-wsp)
-         ;; optional? part of yabai request?
-         wsp        (merge-yabai-spaces
-                      {:prefetched-spaces  (list yb-spc)
-                       :prefetched-windows prefetched-windows}
-                      wsp)]
-     wsp)))
-
-(comment
-  (->
-    (yabai/query-current-space)
-    ->pseudo-workspace
-    ;; :name
-    defworkspace/get-workspace)
-  (->>
-    (defworkspace/list-workspaces)
-    (filter (comp #{"clawe"} :name))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;

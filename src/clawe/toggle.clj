@@ -10,7 +10,6 @@
 
    [clawe.client :as client]
    [clawe.config :as config]
-   [clawe.workspaces :as workspaces]
    [clawe.workspace :as workspace]
    [clojure.string :as string]))
 
@@ -36,13 +35,9 @@
     {:keys [wsp->client wsp->open-client
             clients->client client->hide client->show
             ->ensure-workspace]}]
-   (let [yb-windows     (yabai/query-windows)
-         current-wsp    (workspaces/current-workspace-fast
-                          {:prefetched-windows yb-windows})
-         client         (wsp->client current-wsp)
-         client-focused (or
-                          (:yabai.window/has-focus client)
-                          (:awesome.client/focused client))]
+   (let [clients     (client/all-clients)
+         current-wsp (workspace/current {:prefetched-clients clients})
+         client      (wsp->client current-wsp)]
      (cond
        ;; no tag, maybe create one? maybe prompt for a name?
        (not current-wsp)
@@ -52,7 +47,7 @@
          (wsp->open-client nil))
 
        ;; client is focused, let's close/hide/send-it-away
-       (and client client-focused)
+       (and client (:client/focused client))
        (cond
          client->hide
          (do
@@ -67,7 +62,7 @@
          :else                  (awm/close-client client))
 
        ;; client found in workspace, not focused
-       (and client (not client-focused))
+       (and client (not (:client/focused client)))
        (cond
          (clawe.config/is-mac?)
          (do
@@ -86,7 +81,7 @@
        ;; we have a current workspace, but no client in it
        ;; (not client)
        :else
-       (let [client (when clients->client (clients->client yb-windows))]
+       (let [client (when clients->client (clients->client clients))]
          (cond
            (and client client->show)
            (client->show client current-wsp)
@@ -103,8 +98,8 @@
   "
   [{:keys [space-label is-client?]}]
   {:wsp->client
-   (fn [{:awesome.tag/keys [clients] :yabai/keys [windows] :as wsp}]
-     (some->> (concat clients windows) (filter #(is-client? wsp %)) first))
+   (fn [{:workspace/keys [clients] :as wsp}]
+     (some->> clients (filter #(is-client? wsp %)) first))
 
    :->ensure-workspace
    (fn [] (yabai/create-and-label-space
@@ -132,13 +127,17 @@
 ;; toggle-app
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn client-matches-window-title? [{:keys [window-title]} {:as wsp}
-                                    client]
+(defn client-matches-window-title?
+  "Returns true if the args' window-title matches the client window-title.
+
+  If the args' window-title is 'match-workspace', we compare the
+  client/window-title to the workspace/title.
+  "
+  [{:keys [window-title]} {:as wsp} client]
   ;; maybe a partial match is better?
   ;; or accept/coerce regex from the command line?
-  ;; TODO pull from proper :client/window-title
   (string/includes?
-    (:yabai.window/title client (:awesome.client/name client))
+    (:client/window-title client)
 
     ;; could skip for now, it's an edge case to have multiple emacs/alacritty
     ;; open on the same space on osx
@@ -147,8 +146,7 @@
       window-title)))
 
 (defn client-matches-app-name? [{:keys [app-name]} _wsp client]
-  ;; TODO pull from proper :client/app-name
-  (#{app-name} (:yabai.window/app client (:awesome.client/class client))))
+  (#{app-name} (:client/app-name client)))
 
 (defn is-client?
   [{:keys [window-title app-name] :as args} wsp client]
