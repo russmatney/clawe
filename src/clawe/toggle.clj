@@ -144,7 +144,7 @@
   {"journal"
    (fn [_wsp]
      (let [opts {:emacs.open/workspace "journal"
-                 :emacs.open/file      "/Users/russ/todo/journal.org"}]
+                 :emacs.open/file      "~/todo/journal.org"}]
        (r.emacs/open opts)))
    "web"
    (fn [_wsp] (r.browser/open))
