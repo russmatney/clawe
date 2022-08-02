@@ -58,8 +58,7 @@
         (is (= test-wsp-title
                (-> (workspace/all-defs) first :workspace/title)))
         (is (= expected-dir
-               (-> (workspace/all-defs) first :workspace/directory))))))
-  )
+               (-> (workspace/all-defs) first :workspace/directory)))))))
 
 (deftest all-active-test
   (testing "merges config def data"

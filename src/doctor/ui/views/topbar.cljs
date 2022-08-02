@@ -61,14 +61,7 @@
         ;;   {:action/icon {:icon    mdi/github-face
         ;;                  :color   "text-city-yellow-500"
         ;;                  :tooltip "Last Fetch over 3 hours ago"}})
-        (when (and selected hovering?)
-          {:action/label    "hide"
-           :action/on-click #(hooks.workspaces/hide-workspace wsp)
-           :action/icon     {:icon fa/eye-slash}})
-        (when (and (not selected) hovering?)
-          {:action/label    "show"
-           :action/on-click #(hooks.workspaces/show-workspace wsp)
-           :action/icon     {:icon fa/eye}})]
+        ]
        (remove nil?)))))
 
 

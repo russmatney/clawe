@@ -84,12 +84,6 @@
        is-map?
        first))))
 
-(comment
-  (->>
-    (defworkspace/list-workspaces)
-    (merge-awm-tags {:include-unmatched? true})
-    (filter :awesome.tag/name)))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; merge-yabai-spaces
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -192,92 +186,6 @@
 
 (comment
   (do-install-workspaces))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn merge-db-workspaces
-  ([wsps]
-   (merge-db-workspaces {} wsps))
-  ([_opts wsps]
-   (let [is-map?          (map? wsps)
-         wsps             (if is-map? [wsps] wsps)
-         db-wsps-by-title (->> (defworkspace/latest-db-workspaces)
-                               (map (fn [w]
-                                      [(:workspace/title w) w]))
-                               (into {}))]
-     (cond->> wsps
-       true (map (fn [wsp]
-                   (if-let [db-wsp (db-wsps-by-title (:workspace/title wsp))]
-                     ;; TODO who should overwrite?
-                     (merge db-wsp wsp)
-                     wsp)))
-
-       is-map?
-       first))))
-
-(comment
-  (def --w
-    (->>
-      (defworkspace/list-workspaces)
-      (filter (comp #{"clawe"} :name))
-      first))
-  (select-keys --w #{:workspace/title})
-
-  (merge-db-workspaces --w))
-
-(comment
-  ({:a "a" :b "b"} {:b "b" :c "c"}))
-
-;; TODO move to defworkspace, add tests
-(defn db-with-merged-in-memory-workspaces
-  "Supports cases where in-memory feats (like functions on wsps) are required.
-
-  In-memory workspaces should always have a basic version in the db.
-  If not, call `sync-workspaces-to-db` with no args."
-  []
-  (let [db-workspaces   (defworkspace/latest-db-workspaces)
-        ->title         (fn [wsp] (:workspace/title wsp))
-        by-title        (fn [wsps] (->> wsps
-                                        (map (fn [wsp] [(->title wsp) wsp]))
-                                        (into {})))
-        in-mem-wspcs    (defworkspace/list-workspaces)
-        in-mem-by-title (by-title in-mem-wspcs)
-        db-by-title     (by-title db-workspaces)
-
-        db-only (->> db-workspaces
-                     (remove (comp in-mem-by-title ->title)))
-
-        in-mem-only (->> in-mem-wspcs
-                         (remove (comp db-by-title ->title)))
-
-        merged (->> db-workspaces
-                    (filter (comp in-mem-by-title ->title))
-                    (map (fn [db-wsp]
-                           (let [in-mem-wsp (in-mem-by-title (->title db-wsp))]
-                             (merge db-wsp in-mem-wsp)))))]
-    (concat
-      merged
-      db-only
-      in-mem-only)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; tmux session merging
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn merge-tmux-sessions
-  "assumes the workspace title and tmux session are the same"
-  ([wsps] (merge-tmux-sessions {} wsps))
-  ([_opts wsps]
-   (when-let [sessions-by-name (try (r.tmux/list-sessions)
-                                    (catch Exception _e
-                                      (println "Tmux probably not running!")
-                                      nil))]
-     (->> wsps
-          (map (fn [{:workspace/keys [title] :as wsp}]
-                 (if-let [sesh (sessions-by-name title)]
-                   (assoc wsp :tmux/session sesh)
-                   wsp)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Workspaces fetchers

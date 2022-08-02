@@ -55,25 +55,6 @@
 ;; Workspace commands
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defhandler hide-workspace [item]
-  (->
-    ;; TODO support non scratchpad workspaces - could be a quick awm-fnl show-only
-    item
-    ;; :name
-    ;; clawe.workspaces/for-name
-    clawe.workspaces/merge-awm-tags
-    scratchpad/toggle-scratchpad)
-  (api.workspaces/update-workspaces))
-
-(defhandler show-workspace [item]
-  (->
-    item
-    ;; :name
-    ;; clawe.workspaces/for-name
-    clawe.workspaces/merge-awm-tags
-    scratchpad/toggle-scratchpad)
-  (api.workspaces/update-workspaces))
-
 (defhandler update-workspace [item]
   (defworkspace/sync-workspaces-to-db item))
 
