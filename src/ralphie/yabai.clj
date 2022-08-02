@@ -460,18 +460,27 @@ dy will become its new position. "
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; focus space
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn focus-space
+  "Focus the space with the passed label."
+  [{:keys [space-label]}]
+  (->
+    ^{:out :string}
+    (process/$ yabai -m space --focus ~space-label)
+    process/check
+    :out))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; create space
 
-(defn create-and-label-space
+(defn ensure-labeled-space
   "If a space with the passed label does not exist,
-  (and overwrite-unlabeled is truty) an unlabeled one is
+  (and overwrite-unlabeled is truthy) an unlabeled one is
   selected and labeled. If there are no unlabeled, a new one is created.
-  If :focus is true, the new space will be focused.
   "
-  [{:keys [space-label
-           focus
-           overwrite-unlabeled
-           ]}]
+  [{:keys [space-label overwrite-unlabeled]}]
   (let [spcs    (spaces-by-label)
         ;; naive, just checks if a space already has this label
         ;; could one day determine if an existing space should be labeled
@@ -491,18 +500,11 @@ dy will become its new position. "
                              (sort-by :yabai.space/index)
                              reverse
                              first))]
-          (label-space space-label space))))
-
-    (when focus
-      (->
-        ^{:out :string}
-        (process/$ yabai -m space --focus ~space-label)
-        process/check
-        :out))))
+          (label-space space-label space))))))
 
 (comment
-  (create-and-label-space {:space-label "new-space"
-                           :focus       true})
+  (ensure-labeled-space {:space-label "new-space"
+                         :focus       true})
   (->>
     (spaces-by-idx)
     (sort-by first)

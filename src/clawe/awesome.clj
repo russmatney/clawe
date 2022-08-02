@@ -26,7 +26,9 @@
       (filter :awesome.tag/selected)
       (map (fn [tag]
              (cond-> tag
-               (and (:include-clients opts) (seq (:awesome.tag/clients tag)))
+               (and (or (:include-clients opts)
+                        (seq (:prefetched-clients opts)))
+                    (seq (:awesome.tag/clients tag)))
                (-> (assoc :workspace/clients
                           (->> tag :awesome.tag/clients
                                (map awesome-client->clawe-client)))
@@ -39,9 +41,36 @@
       (awm/fetch-tags opts)
       (map tag->wsp)))
 
+  (-ensure-workspace [_this _opts workspace-title]
+    (awm/ensure-tag workspace-title))
+
+  (-focus-workspace [_this _opts workspace]
+    (let [workspace-title (if (string? workspace)
+                            workspace (:workspace/title workspace))]
+      (awm/ensure-tag workspace-title)
+      (awm/focus-tag! workspace-title)))
+
+  (-close-client [_this _opts c]
+    (awm/close-client c))
+
   (-all-clients [_this _opts]
     (->> (awm/all-clients)
-         (map awesome-client->clawe-client))))
+         (map awesome-client->clawe-client)))
+
+  (-focus-client [_this opts client]
+    (awm/focus-client
+      {:center?   (:float-and-center opts)
+       :float?    (:float-and-center opts)
+       :bury-all? false}
+      ;; TODO consider :client/window-id client attr
+      (:awesome.client/window client)))
+
+  (-move-client-to-workspace [this opts c wsp]
+    (let [workspace-title (if (string? wsp) wsp (:workspace/title wsp))]
+      (when (:ensure-workspace opts)
+        (clawe.wm.protocol/-ensure-workspace this nil workspace-title))
+      ;; TODO consider :client/window-id client attr
+      (awm/move-client-to-tag (:awesome.client/window c) workspace-title))))
 
 (comment
   (clawe.wm.protocol/-current-workspaces

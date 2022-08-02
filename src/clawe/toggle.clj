@@ -1,17 +1,16 @@
 (ns clawe.toggle
   (:require
-   [ralphie.awesome :as awm]
    [ralphie.browser :as r.browser]
    [ralphie.emacs :as r.emacs]
    [ralphie.notify :as notify]
    [ralphie.tmux :as r.tmux]
-   [ralphie.yabai :as yabai]
    [ralphie.zsh :as r.zsh]
 
    [clawe.client :as client]
-   [clawe.config :as config]
    [clawe.workspace :as workspace]
-   [clojure.string :as string]))
+   [clojure.string :as string]
+   [clawe.wm :as wm]))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; App toggling
@@ -31,57 +30,34 @@
   `clawe - (159 x 49)` <-- osx emacs adding dimensions?
   "
   ([desc] (toggle-client nil desc))
-  ([{:keys [should-float-and-center]}
+  ([{:keys [should-float-and-center workspace-title]}
     {:keys [wsp->client wsp->open-client
-            clients->client client->hide client->show
-            ->ensure-workspace]}]
+            all-clients->client client->hide client->show]}]
    (let [clients     (client/all-clients)
          current-wsp (workspace/current {:prefetched-clients clients})
          client      (wsp->client current-wsp)]
      (cond
-       ;; no tag, maybe create one? maybe prompt for a name?
+       ;; no tag, let's create one
        (not current-wsp)
        (do
-         (awm/create-tag! "temp-tag")
-         (awm/focus-tag! "temp-tag")
+         (wm/focus-workspace (or ;; NOTE this is the intended workspace title
+                               workspace-title "home"))
          (wsp->open-client nil))
 
        ;; client is focused, let's close/hide/send-it-away
        (and client (:client/focused client))
        (cond
-         client->hide
-         (do
-           (when ->ensure-workspace
-             ;; support creating the target workspace first
-             ;; (shouldn't this just be part of client->hide ?)
-             (->ensure-workspace))
-           (client->hide client))
-         ;; TODO is-mac? should be in clawe.config/is-mac?
-         ;; TODO move to client/workspace protocol or multi-method
-         (clawe.config/is-mac?) (yabai/close-window client)
-         :else                  (awm/close-client client))
+         client->hide (client->hide client)
+         :else        (wm/close-client client))
 
        ;; client found in workspace, not focused
        (and client (not (:client/focused client)))
-       (cond
-         (clawe.config/is-mac?)
-         (do
-           (yabai/focus-window client)
-           ;; TODO not for terminal/emacs?
-           ;; float and center opt-out option
-           (when should-float-and-center
-             (yabai/float-and-center-window client)))
-
-         :else
-         (client/focus-client
-           {:center?   should-float-and-center
-            :float?    should-float-and-center
-            :bury-all? false} client))
+       (wm/focus-client {:float-and-center should-float-and-center} client)
 
        ;; we have a current workspace, but no client in it
        ;; (not client)
        :else
-       (let [client (when clients->client (clients->client clients))]
+       (let [client (when all-clients->client (all-clients->client clients))]
          (cond
            (and client client->show)
            (client->show client current-wsp)
@@ -96,32 +72,25 @@
   that can create/ensure workspaces for the toggling clients,
   so there's a place to send them.
   "
-  [{:keys [space-label is-client?]}]
+  [{:keys [workspace-title is-client?]}]
   {:wsp->client
    (fn [{:workspace/keys [clients] :as wsp}]
      (some->> clients (filter #(is-client? wsp %)) first))
 
-   :->ensure-workspace
-   (fn [] (yabai/create-and-label-space
-            {:space-label       space-label
-             :overwrite-labeled true}))
-
-   :clients->client
+   :all-clients->client
    (fn [clients] (some->> clients (filter #(is-client? nil %)) first))
 
    :client->hide
    (fn [c]
-     ;; TODO what to do when we're already on this space-label?
+     ;; TODO what to do when we're already on this workspace ?
      ;; TODO toy with switching to an osx-hide instead, might create less space-noise,
      ;; and maybe be preferrable... not sure how the interactions with cmd-tab will be
-     (yabai/move-window-to-space c space-label))
+     (wm/move-client-to-workspace {:ensure-workspace true} c workspace-title))
 
    :client->show
    (fn [c wsp]
-     (yabai/float-and-center-window c)
-     (yabai/move-window-to-space c (or (:yabai.space/index wsp) (:workspace/title wsp)))
-     ;; focus last so osx doesn't move spaces on us
-     (yabai/focus-window c))})
+     (wm/move-client-to-workspace c wsp)
+     (wm/focus-client {:float-and-center true} c))})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; toggle-app
@@ -150,6 +119,16 @@
   (#{app-name} (:client/app-name client)))
 
 (defn is-client?
+  "Returns true if the passed `client` matches the passed `window-title` and/or `app-name`.
+
+  Supports a few use-cases, including:
+  - Singleton clients that can match on one app-name
+    - e.g. Spotify, Discord, Firefox
+  - Per-workspace emacs/terminal clients
+    - e.g. app-name matches Emacs, window-title matches the workspace-title
+      (this terminal or emacs client belongs to this workspace)
+  - Scratchpads that require an app-name AND window-title match
+    - e.g. a 'journal' titled emacs scratchpad"
   [{:keys [window-title app-name] :as args} wsp client]
   (cond
     (and window-title app-name)
@@ -194,21 +173,21 @@
   {:org.babashka/cli
    {:alias {:title  :window-title
             :app    :app-name
-            :wsp    :workspace-name
+            :wsp    :workspace-title
             :client :client-name ;; tryna get emacs/term to work with wsp-name
             }}}
-  [{:keys [workspace-name client-name] :as args}]
-  (let [wsp->open-client (name->open-client (or workspace-name client-name))]
+  [{:keys [workspace-title client-name] :as args}]
+  (let [wsp->open-client (name->open-client (or workspace-title client-name))]
     (toggle-client
       {;; emacs and terminal toggle opt-out of float-and-center
        :should-float-and-center
        (not (#{"emacs" "terminal"} client-name))}
       (merge
-        (if workspace-name
+        (if workspace-title
           (toggle-scratchpad-app
-            {:space-label workspace-name
-             :is-client?  (partial is-client? args)})
-          ;; rn if we don't have a workspace-name, we only want
+            {:workspace-title workspace-title
+             :is-client?      (partial is-client? args)})
+          ;; rn if we don't have a workspace-title, we only want
           ;; this piece of toggle-scratchpad-app
           ;; TODO clean this up!
           {:wsp->client
@@ -218,6 +197,6 @@
         {:wsp->open-client
          (or wsp->open-client
              (fn [{:as wsp}]
-               (notify/notify (str "To do: open " (or workspace-name
+               (notify/notify (str "To do: open " (or workspace-title
                                                       client-name)))
                (println wsp)))}))))

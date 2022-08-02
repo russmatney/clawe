@@ -56,7 +56,7 @@
           (awm/toggle-tag wsp-name)
           ;; TODO restore last buried client
 
-          (client/focus-client
+          (awm/focus-client
             {:bury-all? true
              :float?    true
              :center?   false}
@@ -67,7 +67,7 @@
         (do
           (awm/toggle-tag wsp-name)
 
-          (client/focus-client
+          (awm/focus-client
             {:bury-all? true
              :float?    true
              :center?   false}

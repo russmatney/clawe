@@ -258,16 +258,15 @@
   (let [title (:workspace/title wsp)]
 
     (if (clawe.config/is-mac?)
-      ;; TODO handle this space/label already existing
-      (yabai/create-and-label-space
-        {:space-label       title
-         :focus             true
-         :overwrite-labeled true})
+      (do
+        (yabai/ensure-labeled-space
+          {:space-label       title
+           :overwrite-labeled true})
+        (yabai/focus-space {:space-label title}))
 
       (do
         ;; create tag if none is found
-        (when (not (awm/tag-exists? title))
-          (awm/create-tag! title))
+        (awm/ensure-tag title)
         ;; focus the tag
         (awm/focus-tag! title)))
 

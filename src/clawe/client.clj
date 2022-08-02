@@ -4,89 +4,10 @@
    [clojure.string :as string]
 
    [ralphie.emacs :as emacs]
-   [ralphie.awesome :as awm]
    [ralphie.notify :as notify]
    [ralphie.tmux :as tmux]
    [ralphie.zsh :as zsh]
    [clawe.wm :as wm]))
-
-
-(defn ignore-client?
-  "These clients should not be buried or restored...
-  (or interacted with at all, really, but that's going
-  to take some work...)"
-  [{:keys [name]}]
-  (or
-    (string/includes? name "meet.google.com")
-    (string/includes? name "tauri/doctor-topbar")
-    (string/includes? name "tauri/twitch-chat")))
-
-(defn bury-floating-clients
-  "Usually combined with other awm/fnl commands for performance"
-  []
-  ^{:quiet? false}
-  (awm/fnl
-    (each [c (awful.client.iterate (fn [c] (. c :ontop)))]
-          ;; TODO filter things to bury/not-bury?
-          (tset c :ontop false)
-          (tset c :floating false))))
-
-(defn focus-client
-  "
-  Focuses the passed client.
-  Expects client as a map with `:window` or `:client/window`.
-
-  Options:
-  - :bury-all? - default: true.
-    Sets all other clients ontop and floating to false
-  - :float? - default: true.
-    Set this client ontop and floating to true
-  - :center? - default: true.
-    Centers this client with awful
-  "
-  ([client] (focus-client nil client))
-  ([opts client]
-   (let [window    ((some-fn :window :client/window :awesome.client/window) client)
-         bury-all? (:bury-all? opts true)
-         float?    (:float? opts true)
-         center?   (:center? opts true)]
-     (if-not window
-       (notify/notify "Set Focused called with no client :window" {:client client
-                                                                   :opts   opts})
-       (do
-         ^{:quiet? false}
-         (awm/fnl
-           (when ~bury-all?
-             (each [c (awful.client.iterate (fn [c] (. c :ontop)))]
-                   ;; TODO filter things to bury/not-bury?
-                   (tset c :ontop false)
-                   (tset c :floating false)))
-
-           (each [c (awful.client.iterate (fn [c] (= (. c :window) ~window)))]
-
-                 (when ~float?
-                   (tset c :ontop true)
-                   (tset c :floating true))
-
-                 (when ~center?
-                   (awful.placement.centered c))
-
-                 ;; TODO set minimum height/width?
-                 (tset _G.client :focus c))))))))
-
-(comment
-  (def c
-    (->>
-      (awm/fetch-tags)
-      (filter (comp #{"clawe"} :awesome.tag/name))
-      first
-      :awesome.tag/clients
-      first
-      ))
-
-  (focus-client {:center? false} c)
-
-  )
 
 
 (defn create-client

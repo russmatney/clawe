@@ -610,7 +610,9 @@ util = require 'util';
 (defn create-tag! [tag-name]
   (fnl (awful.tag.add ~tag-name {:layout awful.layout.suit.tile})))
 
-(defn ensure-tag [tag-name]
+(defn ensure-tag
+  "Creates a tag with the passed name if it does not exist."
+  [tag-name]
   (fnl
     (if (awful.tag.find_by_name (awful.screen.focused) ~tag-name)
       nil
@@ -681,6 +683,67 @@ util = require 'util';
       (lume.each (. s :clients)
                  (fn [c]
                    (tset c :floating false))))))
+
+(defn bury-floating-clients
+  "Usually combined with other awm/fnl commands for performance"
+  []
+  ^{:quiet? false}
+  (fnl
+    (each [c (awful.client.iterate (fn [c] (. c :ontop)))]
+          ;; TODO filter things to bury/not-bury?
+          (tset c :ontop false)
+          (tset c :floating false))))
+
+(defn focus-client
+  "
+  Focuses the client with the passed window-id.
+
+  Options:
+  - :bury-all? - default: true.
+    Sets all other clients ontop and floating to false
+  - :float? - default: true.
+    Set this client ontop and floating to true
+  - :center? - default: true.
+    Centers this client with awful
+  "
+  ([window-id] (focus-client nil window-id))
+  ([opts window-id]
+   (let [bury-all? (:bury-all? opts true)
+         float?    (:float? opts true)
+         center?   (:center? opts true)]
+     (when window-id
+       ^{:quiet? false}
+       (fnl
+         (when ~bury-all?
+           (each [c (awful.client.iterate (fn [c] (. c :ontop)))]
+                 ;; TODO filter things to bury/not-bury?
+                 (tset c :ontop false)
+                 (tset c :floating false)))
+
+         (each [c (awful.client.iterate (fn [c] (= (. c :window) ~window-id)))]
+
+               (when ~float?
+                 (tset c :ontop true)
+                 (tset c :floating true))
+
+               (when ~center?
+                 (awful.placement.centered c))
+
+               ;; TODO set minimum height/width?
+               ;; default dimensions?
+               (tset _G.client :focus c)))))))
+
+(comment
+  (def c
+    (->>
+      (fetch-tags)
+      (filter (comp #{"clawe"} :awesome.tag/name))
+      first
+      :awesome.tag/clients
+      first
+      ))
+
+  (focus-client {:center? false} (:awesome.client/window c)))
 
 (defcom bury-all-clients-cmd bury-all-clients)
 

@@ -40,10 +40,36 @@
       (yabai/query-spaces)
       (map space->clawe-workspace)))
 
+  (-ensure-workspace [_this _opts workspace-title]
+    (yabai/ensure-labeled-space
+      {:space-label         workspace-title
+       :overwrite-unlabeled true}))
+
+  (-focus-workspace [_this _opts workspace]
+    (let [workspace-title (if (string? workspace)
+                            workspace (:workspace/title workspace))]
+      (yabai/ensure-labeled-space {:space-label         workspace-title
+                                   :overwrite-unlabeled true})
+      (yabai/focus-space {:space-label workspace-title})))
+
   (-all-clients [_this _opts]
     (->>
       (yabai/query-windows)
-      (map window->clawe-client))))
+      (map window->clawe-client)))
+
+  (-focus-client [_this opts c]
+    (when (:float-and-center opts) (yabai/float-and-center-window c))
+    (yabai/focus-window c))
+
+  (-close-client [_this _opts c]
+    (yabai/close-window c))
+
+  (-move-client-to-workspace [this opts c wsp]
+    (let [workspace-title (if (string? wsp) wsp (:workspace/title wsp))
+          workspace-index (when (map? wsp) (:workspace/index wsp))]
+      (when (:ensure-workspace opts)
+        (clawe.wm.protocol/-ensure-workspace this nil workspace-title))
+      (yabai/move-window-to-space c (or workspace-index workspace-title)))))
 
 (comment
   (clawe.wm.protocol/-current-workspaces
