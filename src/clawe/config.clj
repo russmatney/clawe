@@ -2,36 +2,74 @@
   (:require
    [aero.core :as aero]
    [clojure.java.io :as io]
-   [systemic.core :as sys :refer [defsys]]
    [ralphie.zsh :as zsh]))
 
 (defn calc-is-mac? []
   (boolean (#{"darwin21"} (zsh/expand "$OSTYPE"))))
 
+(def res (io/resource "clawe.edn"))
+
 (defn ->config []
   (->
-    (aero/read-config (io/resource "clawe.edn"))
-    (assoc :is-mac (calc-is-mac?))))
+    (aero/read-config res)
+    (assoc :is-mac (calc-is-mac?))
+    (assoc :home-dir (zsh/expand "~"))))
 
 (comment
   (->config))
 
-(defsys *config* (->config))
+(defonce ^:dynamic *config* (atom (->config)))
 
 (defn reload-config []
-  (sys/restart! `*config*))
+  (reset! *config* (->config)))
+
+(comment
+  (reload-config))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; write config to file
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(def do-not-write-keys #{:is-mac :home-dir})
+
+(defn write-config
+  "Writes the current config to `resources/clawe.edn`"
+  [updated-config]
+  (let [updated-config  (merge @*config* updated-config)
+        writable-config (apply dissoc updated-config do-not-write-keys)]
+    (spit res writable-config)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; public
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn home-dir []
+  (:home-dir @*config*))
 
 (defn doctor-base-url []
-  (sys/start! `*config*)
-  (:doctor-base-url *config*))
+  (:doctor-base-url @*config*))
 
 (defn is-mac? []
-  (sys/start! `*config*)
-  (:is-mac *config*))
+  (:is-mac @*config*))
+
+(defn repo-roots []
+  (:repo-roots @*config* []))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; workspace-defs
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn workspace-defs []
-  (sys/start! `*config*)
-  (:workspace/defs *config* {}))
+  (:workspace/defs @*config* {}))
 
 (defn workspace-def [workspace-title]
   ((workspace-defs) workspace-title))
+
+(defn update-workspace-def [workspace-title def]
+  (-> @*config*
+      (update-in [:workspace/defs workspace-title] merge def)
+      write-config)
+  (reload-config))
+
+(comment
+  (update-workspace-def "journal" {:workspace/some "other-data"}))

@@ -11,8 +11,8 @@
    [ralphie.awesome :as r.awm]
    [ralphie.systemd :as r.systemd]
 
-   [clawe.workspaces :as workspaces]
    [clawe.workspace :as workspace]
+   [clawe.workspace.open :as workspace.open]
    [clawe.config :as clawe.config]))
 
 (defn kill-things [_wsp]
@@ -51,6 +51,7 @@
      (->>
        (concat
          ;; clone suggestions from open tabs and the clipboard
+         ;; TODO include open-wsp on these
          (->>
            (r.git/rofi-clone-suggestions-fast)
            (map (fn [x] (assoc x :rofi/label (str "Clone: " (:rofi/label x))))))
@@ -58,17 +59,14 @@
          ;; run bb tasks for the current workspace
          (bb-tasks-for-wsp wsp)
 
+         ;; open a known workspace
+         (workspace.open/open-workspace-rofi-options)
+
          ;; all bindings
          (->> (defkbd/list-bindings) (map defkbd/->rofi))
 
          ;; all defcoms
          (->> (defcom/list-commands) (map r.core/defcom->rofi))
-
-         ;; open a known workspace
-         ;; TODO improve display, handling if wsp already open
-         (->> (workspaces/open-workspace-rofi-options)
-              (map #(assoc % :rofi/label (str "Open wsp: " (:rofi/label %))
-                           :rofi/description (:workspace/display-name %))))
 
          ;; kill tmux/tags/clients
          (when-not (clawe.config/is-mac?) (kill-things wsp)
@@ -90,18 +88,12 @@
     :rofi/on-select
     ((fn [f] (f)))))
 
-(defcom m-x
-  (let [wsp (workspace/current)]
-    (->> (m-x-commands {:wsp wsp})
-         (r.rofi/rofi {:require-match? true
-                       :msg            "Clawe commands"}))))
+(defn do-m-x
+  ([] (do-m-x nil))
+  ([_]
+   (let [wsp (workspace/current)]
+     (->> (m-x-commands {:wsp wsp})
+          (r.rofi/rofi {:require-match? true
+                        :msg            "Clawe commands"})))))
 
-(comment
-  ;; (defcom/exec m-x)
-
-  (->> (defcom/list-commands)
-       (map r.core/defcom->rofi)
-       (r.rofi/rofi {:require-match? true :msg "Clawe commands"})
-       )
-
-  )
+(defcom m-x (do-m-x))
