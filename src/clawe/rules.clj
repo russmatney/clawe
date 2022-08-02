@@ -49,37 +49,42 @@
        (remove #(= (:new-index %) (:workspace/index %)))))
 
 (defn reset-workspace-indexes
-  []
-  (loop [wsps (workspaces-to-swap-indexes)]
-    (let [wsp (some-> wsps first)]
-      (when wsp
-        (let [{:keys [new-index]} wsp
-              index               (-> wsp :workspace/title
-                                      wm/fetch-workspace :workspace/index)]
-          (when (not= new-index index)
-            (wm/swap-workspaces-by-index index new-index))
-          ;; could be optimized....
-          (recur (workspaces-to-swap-indexes)))))))
+  ([] (reset-workspace-indexes nil))
+  ([_]
+   (notify/notify {:subject "Resetting workspace indexes"})
+   (loop [wsps (workspaces-to-swap-indexes)]
+     (let [wsp (some-> wsps first)]
+       (when wsp
+         (let [{:keys [new-index]} wsp
+               index               (-> wsp :workspace/title
+                                       wm/fetch-workspace :workspace/index)]
+           (when (not= new-index index)
+             (wm/swap-workspaces-by-index index new-index))
+           ;; could be optimized....
+           (recur (workspaces-to-swap-indexes))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; consolidate workspaces
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn consolidate-workspaces []
-  (->>
-    (workspace/all-active {:include-clients true})
-    (remove (comp seq :workspace/clients))
-    (sort-by :workspace/index)
-    (map-indexed
-      (fn [new-index {:keys [workspace/title workspace/index]}]
-        (let [new-index (+ 1 new-index)] ;; b/c lua is 1-based
-          (if (== index new-index)
-            (prn "nothing to do")
-            (do
-              (prn "swapping tags" {:title     title
-                                    :idx       index
-                                    :new-index new-index})
-              (wm/swap-workspaces-by-index index new-index))))))))
+(defn consolidate-workspaces
+  ([] (consolidate-workspaces nil))
+  ([_]
+   (notify/notify {:subject "Consolidating not-empty workspaces"})
+   (->>
+     (workspace/all-active {:include-clients true})
+     (remove (comp seq :workspace/clients))
+     (sort-by :workspace/index)
+     (map-indexed
+       (fn [new-index {:keys [workspace/title workspace/index]}]
+         (let [new-index (+ 1 new-index)] ;; b/c lua is 1-based
+           (if (= index new-index)
+             (prn "nothing to do")
+             (do
+               (prn "swapping tags" {:title     title
+                                     :idx       index
+                                     :new-index new-index})
+               (wm/swap-workspaces-by-index index new-index)))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; clean up workspaces
@@ -87,21 +92,28 @@
 
 (defn clean-workspaces
   "Closes workspaces with 0 clients."
-  []
-  (notify/notify {:subject "Cleaning up workspaces"})
-  (->>
-    (workspace/all-active)
-    (filter (comp seq :workspace/clients))
-    (map
-      (fn [it]
-        (when-let [title (:workspace/title it)]
-          (try
-            (wm/delete-workspace it)
-            (notify/notify "Deleted Workspace" title)
-            (catch Exception e e
-                   (notify/notify "Error deleting tag" e))))))
-    doall))
+  ([] (clean-workspaces nil))
+  ([_]
+   (notify/notify {:subject "Removing empty workspaces"})
+   (->>
+     (workspace/all-active {:include-clients true})
+     (remove (comp seq :workspace/clients))
+     (map
+       (fn [it]
+         (when-let [title (:workspace/title it)]
+           (try
+             (wm/delete-workspace it)
+             (notify/notify "Deleted Workspace" title)
+             (catch Exception e e
+                    (notify/notify "Error deleting tag" e))))))
+     doall)))
 
+(defn clean-up-workspaces
+  ([] (clean-up-workspaces nil))
+  ([_]
+   (clean-workspaces) ;; remove empty wsps
+   (consolidate-workspaces) ;; move preferred indexes down
+   (reset-workspace-indexes))) ;; re-sort indexes (repo wsps move down)
 
 
 (defn correct-clients-and-workspaces

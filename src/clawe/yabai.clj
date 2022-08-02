@@ -35,10 +35,17 @@
           (assoc :workspace/clients (clients-for-space spc clients))
           vector)))
 
-  (-active-workspaces [_this _opts]
-    (->>
-      (yabai/query-spaces)
-      (map space->clawe-workspace)))
+  (-active-workspaces [this opts]
+    (let
+        [clients (when (or (:include-clients opts)
+                           (:prefetched-clients opts))
+                   (or (:prefetched-clients opts)
+                       (clawe.wm.protocol/-all-clients this nil)))]
+      (->>
+        (yabai/query-spaces)
+        (map space->clawe-workspace)
+        (map (fn [wsp]
+               (assoc wsp :workspace/clients (clients-for-space wsp clients)))))))
 
   (-ensure-workspace [_this _opts workspace-title]
     (yabai/ensure-labeled-space

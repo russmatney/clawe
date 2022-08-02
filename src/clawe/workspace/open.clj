@@ -7,8 +7,7 @@
    [clawe.doctor :as clawe.doctor]
    [ralphie.zsh :as zsh]
    [ralphie.rofi :as rofi]
-   [clawe.workspace :as workspace]
-   [clawe.rules :as rules]))
+   [clawe.workspace :as workspace]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Workspace opening/creation/installation
@@ -36,14 +35,15 @@
         (notify/notify "Missing repo-name or user-name for repo-path" dir)
         nil))))
 
-(defn open-workspace
+(defn open-new-workspace
   "Creates a new tag and focuses it, and run the workspace's on-create hook."
   [wsp]
   ;; creates (ensures) workspace before focusing
   (wm/focus-workspace wsp)
   ;; TODO find or create client, and dedupe against toggle-app
-  (rules/reset-workspace-indexes)
-  (clawe.doctor/update-topbar)
+  ;; this is close, but the focus ends up wrong after the new wsp gets moved
+  #_(rules/reset-workspace-indexes)
+  (clawe.doctor/update-topbar) ;; no-op on mac for now
   wsp)
 
 (defn create-workspace-def [repo-wsp]
@@ -57,7 +57,7 @@
 
 (defn open-new-repo-wsp [local-repo]
   (-> local-repo create-workspace-def)
-  (-> local-repo open-workspace))
+  (-> local-repo open-new-workspace))
 
 (defn dir->rofi-open-workspace-opts [dir]
   (-> dir
@@ -75,14 +75,11 @@
       (filter #(string/starts-with? % h))
       (map #(string/replace % h "")))))
 
-(defn select-local-git-user []
-  (rofi/rofi {:msg "Select git user"} (local-git-users)))
-
 (defn open-workspace-for-some-git-user
   "Prompts for selecting a local git user, then a repo to open."
   []
   (some->>
-    (select-local-git-user)
+    (rofi/rofi {:msg "Select git user"} (local-git-users))
     ((fn [git-user] (zsh/expand-many (str "~/" git-user "/*"))))
     (map dir->rofi-open-workspace-opts)
     (rofi/rofi {:msg "Open workspace for which repo?"})))
@@ -96,9 +93,6 @@
                    (->> wsp-defs (map :workspace/directory)
                         (filter #{dir-path}) first))))))
 
-(comment
-  (config-repo-roots))
-
 (defn wsp->rofi-opts
   [{:as wsp}]
   (let [title (:workspace/title wsp)
@@ -111,18 +105,11 @@
        ;; TODO if already open?
        (map #(merge % (wsp->rofi-opts %)))))
 
-(comment
-  (local-git-users)
-
-  (clawe.config/reload-config)
-  (config-repo-roots))
-
-
 (defn open-workspace-rofi-options []
   (concat
     (->>
       (workspace-rofi-options)
-      (map #(assoc % :rofi/on-select open-workspace)))
+      (map #(assoc % :rofi/on-select open-new-workspace)))
     [{:rofi/label     "Open workspace for some repo"
       :rofi/on-select (fn [_] (open-workspace-for-some-git-user))}]
     (->>
@@ -130,7 +117,11 @@
       (map dir->rofi-open-workspace-opts)
       (map #(assoc % :rofi/on-select open-new-repo-wsp)))))
 
+
+(defn rofi-open-workspace
+  ([] (rofi-open-workspace nil))
+  ([_]
+   (rofi/rofi "Open workspace" (open-workspace-rofi-options))))
+
 (comment
-  (rofi/rofi
-    "hi"
-    (open-workspace-rofi-options)))
+  (rofi-open-workspace))
