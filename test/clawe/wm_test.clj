@@ -32,15 +32,28 @@
 (deftest current-workspaces-schema-test
   (is (valid [:sequential workspace/schema] (wm/current-workspaces))))
 
+(deftest current-workspaces-with-clients-schema-test
+  (is (valid [:sequential workspace/schema]
+             (wm/current-workspaces {:include-clients true}))))
+
 (deftest current-workspace-schema-test
   (is (valid workspace/schema (wm/current-workspace))))
 
 (deftest active-workspaces-schema-test
   (is (valid [:sequential workspace/schema] (wm/active-workspaces))))
 
+(deftest active-workspaces-with-clients-schema-test
+  (is (valid [:sequential workspace/schema]
+             (wm/active-workspaces {:include-clients true}))))
+
 (deftest fetch-workspace-schema-test
   (is (valid workspace/schema
              (-> (wm/current-workspace) :workspace/title wm/fetch-workspace))))
+
+(deftest fetch-workspace-with-clients-schema-test
+  (is (valid workspace/schema
+             (->> (wm/current-workspace) :workspace/title
+                  (wm/fetch-workspace {:include-clients true})))))
 
 (deftest active-clients-schema-test
   (is (valid [:sequential client/schema] (wm/active-clients))))
@@ -99,6 +112,8 @@
         og-focus (wm/current-workspace)]
     ;; focus new wsp
     (wm/focus-workspace to-focus)
+
+    ;; TODO write a better wrapper for these dupe-y wait/assertions
     (wait-until
       "Confirming workspace switch finished"
       1000
