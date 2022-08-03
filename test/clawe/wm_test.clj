@@ -58,7 +58,6 @@
           (is (= wsp1-index (:workspace/index reupdated-wsp1)))
           (is (= wsp2-index (:workspace/index reupdated-wsp2))))))))
 
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; current-workspace
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -74,7 +73,6 @@
                                        :workspace/index 1}])
   (-active-workspaces [_this _opts] [{:workspace/title test-wsp-title
                                       :workspace/index 1}]))
-
 
 (deftest current-workspace-test
   (testing "has a title"
@@ -120,7 +118,25 @@
           clawe.config/*config*
           {:workspace/defs
            {test-wsp-title {:workspace/directory "~/russmatney/blah"}}})
-        (is (= test-wsp-title
-               (-> (workspace/all-active) first :workspace/title)))
-        (is (= expected-dir
-               (-> (workspace/all-active) first :workspace/directory)))))))
+        (let [wsps (wm/active-workspaces)]
+          (is (valid [:sequential workspace/schema] wsps))
+          (is (= test-wsp-title
+                 (-> wsps first :workspace/title)))
+          (is (= expected-dir
+                 (-> wsps first :workspace/directory))))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; workspace-defs
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(deftest workspace-defs-test
+  (testing "re-uses the map key as the title."
+    (let [dir          "~/russmatney/blah"
+          expected-dir (zsh/expand dir)]
+      (reset! clawe.config/*config*
+              {:workspace/defs
+               {test-wsp-title {:workspace/directory "~/russmatney/blah"}}})
+      (is (= test-wsp-title
+             (-> (wm/workspace-defs) first :workspace/title)))
+      (is (= expected-dir
+             (-> (wm/workspace-defs) first :workspace/directory))))))

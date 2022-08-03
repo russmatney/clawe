@@ -77,6 +77,7 @@
    (sys/start! `*wm*)
    (->>
      (wm.protocol/-current-workspaces *wm* opts)
+     ;; TODO apply malli transform here instead of in the protocols?
      (map merge-with-def)
      (map ensure-directory))))
 
@@ -91,7 +92,7 @@
   ([opts]
    (sys/start! `*wm*)
    (->> (wm.protocol/-active-workspaces *wm* opts)
-        ;; TODO apply malli transform?
+        ;; TODO apply malli transform here instead of in the protocols?
         (map merge-with-def)
         (map ensure-directory))))
 
