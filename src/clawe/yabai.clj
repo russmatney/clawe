@@ -30,7 +30,7 @@
     (let [clients (when (or (:include-clients opts)
                             (:prefetched-clients opts))
                     (or (:prefetched-clients opts)
-                        (clawe.wm.protocol/-all-clients this nil)))
+                        (clawe.wm.protocol/-active-clients this nil)))
           spc     (yabai/query-current-space)]
       (-> spc space->clawe-workspace
           (assoc :workspace/clients (clients-for-space spc clients))
@@ -41,7 +41,7 @@
         [clients (when (or (:include-clients opts)
                            (:prefetched-clients opts))
                    (or (:prefetched-clients opts)
-                       (clawe.wm.protocol/-all-clients this nil)))]
+                       (clawe.wm.protocol/-active-clients this nil)))]
       (->>
         (yabai/query-spaces)
         (map space->clawe-workspace)
@@ -76,7 +76,7 @@
 
   ;; clients
 
-  (-all-clients [_this _opts]
+  (-active-clients [_this _opts]
     (->>
       (yabai/query-windows)
       (map window->clawe-client)))

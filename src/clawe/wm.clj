@@ -109,11 +109,11 @@
 ;; client fetching
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn all-clients
-  ([] (all-clients nil))
+(defn active-clients
+  ([] (active-clients nil))
   ([opts]
    (sys/start! `*wm*)
-   (wm.protocol/-all-clients *wm* opts)))
+   (wm.protocol/-active-clients *wm* opts)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; interactions

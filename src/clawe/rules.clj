@@ -5,10 +5,7 @@
 
    [ralphie.awesome :as awm]
    [ralphie.notify :as notify]
-   [ralphie.zsh :as zsh]
 
-   [clawe.doctor :as clawe.doctor]
-   [clawe.workspace :as workspace]
    [clawe.wm :as wm]
    [clawe.config :as clawe.config]))
 
@@ -126,7 +123,7 @@
                             ;; defs b/c we want to create missing wsps if there are any
                             (wm/workspace-defs)
                             (filter :rules/is-my-client?))
-        clients           (awm/all-clients)
+        clients           (wm/active-clients)
         _                 (def --w workspaces)
         _                 (def --c clients)
         wsp-by-client     (->>

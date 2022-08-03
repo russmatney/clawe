@@ -1,15 +1,15 @@
 (ns clawe.toggle
   (:require
+   [clojure.string :as string]
+
    [ralphie.browser :as r.browser]
    [ralphie.emacs :as r.emacs]
    [ralphie.notify :as notify]
    [ralphie.tmux :as r.tmux]
    [ralphie.zsh :as r.zsh]
 
-   [clawe.client :as client]
-   [clojure.string :as string]
-   [clawe.wm :as wm]
-   [clawe.doctor :as clawe.doctor]))
+   [clawe.doctor :as clawe.doctor]
+   [clawe.wm :as wm]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; App toggling
@@ -32,7 +32,7 @@
   ([{:keys [should-float-and-center workspace-title]}
     {:keys [wsp->client wsp->open-client
             all-clients->client client->hide client->show]}]
-   (let [clients     (client/all-clients)
+   (let [clients     (wm/active-clients)
          current-wsp (wm/current-workspace {:prefetched-clients clients})
          client      (wsp->client current-wsp)]
      (cond

@@ -7,28 +7,28 @@
    [clawe.workspace :as workspace]
    [ralphie.zsh :as zsh]
    [systemic.core :as sys]
-   [clawe.config :as clawe.config]))
+   [clawe.config :as clawe.config]
+   [clawe.client :as client]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; malli validation
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (deftest current-workspaces-schema-test
-  (testing "conforms to malli schemas"
-    (is (valid [:sequential workspace/schema] (wm/current-workspaces)))))
+  (is (valid [:sequential workspace/schema] (wm/current-workspaces))))
 
 (deftest current-workspace-schema-test
-  (testing "conforms to malli schemas"
-    (is (valid workspace/schema (wm/current-workspace)))))
+  (is (valid workspace/schema (wm/current-workspace))))
 
 (deftest active-workspaces-schema-test
-  (testing "conforms to malli schemas"
-    (is (valid [:sequential workspace/schema] (wm/active-workspaces)))))
+  (is (valid [:sequential workspace/schema] (wm/active-workspaces))))
 
 (deftest fetch-workspace-schema-test
-  (testing "conforms to malli schemas"
-    (is (valid workspace/schema
-               (-> (wm/current-workspace) :workspace/title wm/fetch-workspace)))))
+  (is (valid workspace/schema
+             (-> (wm/current-workspace) :workspace/title wm/fetch-workspace))))
+
+(deftest active-clients-schema-test
+  (is (valid [:sequential client/schema] (wm/active-clients))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; behavior, integration tests

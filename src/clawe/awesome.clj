@@ -71,7 +71,7 @@
   (-close-client [_this _opts c]
     (awm/close-client c))
 
-  (-all-clients [_this _opts]
+  (-active-clients [_this _opts]
     (->> (awm/all-clients)
          (map awesome-client->clawe-client)))
 

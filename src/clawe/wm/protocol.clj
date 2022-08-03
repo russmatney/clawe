@@ -17,7 +17,7 @@
   (-drag-workspace [this dir])
   (-delete-workspace [this workspace])
 
-  (-all-clients [this opts] "Returns all running clients.")
+  (-active-clients [this opts] "Returns all running clients.")
   (-focus-client [this opts client])
   (-close-client [this opts client])
   (-move-client-to-workspace [this opts client workspace]))

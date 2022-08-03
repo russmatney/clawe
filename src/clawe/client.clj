@@ -6,8 +6,7 @@
    [ralphie.emacs :as emacs]
    [ralphie.notify :as notify]
    [ralphie.tmux :as tmux]
-   [ralphie.zsh :as zsh]
-   [clawe.wm :as wm]))
+   [ralphie.zsh :as zsh]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; schema
@@ -15,9 +14,9 @@
 
 (def schema
   [:map
-   [:client/app-name string?]
-   [:client/window-title string?]
-   [:client/focused boolean?]])
+   [:client/app-name :string]
+   [:client/window-title :string]
+   [:client/focused [:maybe :boolean]]])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; create client
@@ -68,11 +67,3 @@
   (create-client
     {:workspace/initial-file (zsh/expand "~/russmatney/ralphie/readme.org")
      :workspace/title        "my-wsp"}))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; all-clients
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn all-clients []
-  ;; TODO merge with clawe/config providing alt app names, start-up descs
-  (wm/all-clients))
