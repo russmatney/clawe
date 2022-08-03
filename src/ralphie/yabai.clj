@@ -136,9 +136,22 @@
       process/check
       :out)))
 
+(defn drag-workspace [dir]
+  (let [dir (case dir :dir/up "next" :dir/down "prev")]
+    (->
+      ^{:out :string}
+      (process/$ yabai -m space --move ~dir)
+      process/check
+      :out)))
+
 (comment
+  (drag-workspace :dir/up)
   (swap-spaces-by-index 4 1)
-  (spaces-by-idx))
+  (->>
+    (spaces-by-idx)
+    (map (fn [[idx wsp]]
+           [idx (-> wsp :yabai.space/label )]))
+    (sort-by first)))
 
 (defn query-current-space []
   (try
@@ -402,20 +415,26 @@
     seq))
 
 (defn move-window-to-space
-  "If the window is already in the space, it's float will be toggled
+  "If the window is already in the space, its float will be toggled
   and the window will be centered.
   "
   [window space-label-or-idx]
+  ;; TODO could probably be more performant than this
   (if (is-in-space-for-label? window space-label-or-idx)
     (do
       (notify/notify "i'm in my space, cozy as can be")
       (toggle-floating window)
       (center-window window))
-    (->
-      ^{:out :string}
-      (process/$ yabai -m window ~(:yabai.window/id window) --space ~space-label-or-idx || yabai -m space --focus recent)
-      process/check
-      :out)))
+    (if (and (:yabai.window/id window)
+             space-label-or-idx)
+      (->
+        ^{:out :string}
+        (process/$ yabai -m window ~(:yabai.window/id window) --space ~space-label-or-idx || yabai -m space --focus recent)
+        process/check
+        :out)
+      (throw (Exception. (str "Missing required move-window-to-space data"
+                              window
+                              space-label-or-idx))))))
 
 (comment
 
@@ -465,12 +484,24 @@ dy will become its new position. "
 
 (defn focus-space
   "Focus the space with the passed label."
-  [{:keys [space-label]}]
-  (->
-    ^{:out :string}
-    (process/$ yabai -m space --focus ~space-label)
-    process/check
-    :out))
+  [wsp-or-label]
+  (let [label (:workspace/title wsp-or-label wsp-or-label)]
+    (if (or (not label) (empty? label))
+      (throw (Exception. (str "Could not find label with passed wsp-or-label" wsp-or-label)))
+      (try
+        (->
+          ^{:out :string}
+          (process/$ yabai -m space --focus ~label)
+          process/check
+          :out)
+        (catch Exception e
+          (if (re-seq #"already focused" (str e))
+            (println "Ignoring space already focused err")
+            (throw e)))))))
+
+(comment
+  (focus-space "clawe")
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; create space

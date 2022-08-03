@@ -108,7 +108,12 @@
        ensure-directory))))
 
 (comment
+  clawe.config/*config*
+  (clawe.config/reload-config)
+  (current-workspace)
   (fetch-workspace "madeup")
+  (fetch-workspace {:include-clients true}
+                   {:workspace/title "slack"})
   (wm.protocol/-fetch-workspace *wm* nil "invented"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -185,6 +190,7 @@
   (sys/start! `*wm*)
   (wm.protocol/-swap-workspaces-by-index *wm* index-a index-b))
 
+;; TODO consider impling a fallback if this isn't impled
 (defn drag-workspace
   [dir]
   (sys/start! `*wm*)

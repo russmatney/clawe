@@ -1,7 +1,7 @@
 (ns clawe.wm-test
   (:require
-   [clojure.test :refer [deftest is testing] :as t]
-   test-util ;; requiring to support 'valid as assert-expr
+   [clojure.test :refer [deftest is testing use-fixtures] :as t]
+   [test-util :refer [wait-until]]
    [clawe.wm :as wm]
    [clawe.wm.protocol :as wm.protocol]
    [clawe.workspace :as workspace]
@@ -9,6 +9,21 @@
    [systemic.core :as sys]
    [clawe.config :as clawe.config]
    [clawe.client :as client]))
+
+(use-fixtures :each
+  (fn [run-test]
+    (let [og-wsp (wm/current-workspace)]
+      (run-test)
+
+      ;; reload the config in-case any tests messed with it
+      (clawe.config/reload-config)
+
+      (wm/focus-workspace og-wsp)
+      (wait-until
+        "Confirming we reverted to the og workspace"
+        1000
+        (let [new-curr (wm/current-workspace)]
+          (= (:workspace/title og-wsp) (:workspace/title new-curr)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; malli validation
@@ -40,9 +55,10 @@
 ;; behavior, integration tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; NOTE these may be impacted by background wm processes, may need delays/sleeps
-;; for now most things are synchronous and fast
+;; see `test-util/wait-until`
 ;; NOTE these tests should restore the original state when run
 ;; (i.e. don't focus some random wsp and leave us there)
+;; see `use-fixtures`
 
 ;; workspace crud
 
@@ -53,6 +69,11 @@
         "workspace does not exist before creating")
 
     (wm/create-workspace new-workspace-title)
+    (wait-until
+      "New workspace being created"
+      1000
+      (#{new-workspace-title} (-> (wm/fetch-workspace new-workspace-title) :workspace/title)))
+
     (is (valid workspace/schema (wm/fetch-workspace new-workspace-title)))
     (is (#{new-workspace-title} (-> (wm/fetch-workspace new-workspace-title) :workspace/title))
         "new wsp has matching title")
@@ -60,6 +81,11 @@
         "wsp count has incremented")
 
     (wm/delete-workspace (wm/fetch-workspace new-workspace-title))
+    (wait-until
+      "New workspace being deleted"
+      1000
+      (nil? (wm/fetch-workspace new-workspace-title)))
+
     (is (nil? (wm/fetch-workspace new-workspace-title))
         "workspace does not exist after deleting")
     (is (= initial-wsp-count (count (wm/active-workspaces)))
@@ -73,13 +99,27 @@
         og-focus (wm/current-workspace)]
     ;; focus new wsp
     (wm/focus-workspace to-focus)
+    (wait-until
+      "Confirming workspace switch finished"
+      1000
+      (let [new-curr (wm/current-workspace)]
+        ;; only testing the title here, client attrs (like :client/focus) can change
+        (= (:workspace/title to-focus) (:workspace/title new-curr))))
+
+    ;; great, now assert on it
     (let [new-curr (wm/current-workspace)]
-      ;; only testing the title here, client attrs (like :client/focus) can change
       (is (= (:workspace/title to-focus) (:workspace/title new-curr))
           "Focused workspace should match new-current workspace"))
 
     ;; revert to original
     (wm/focus-workspace og-focus)
+    (wait-until
+      "Confirming workspace switch finished"
+      1000
+      (let [new-new-curr (wm/current-workspace)]
+        (= (:workspace/title og-focus) (:workspace/title new-new-curr))))
+
+    ;; just to be sure
     (let [new-new-curr (wm/current-workspace)]
       (is (= (:workspace/title og-focus) (:workspace/title new-new-curr))
           "Focused workspace should match original workspace"))))
@@ -139,56 +179,125 @@
 
 (deftest drag-workspace-test
   (let [wsps (->> (wm/active-workspaces) (sort-by :workspace/index) (into []))]
+    (println (map :workspace/index wsps))
     (is (> (count wsps) 2) "Not enough workspaces to run test.")
     (let [curr-wsp (wm/current-workspace)
           sec-wsp  (second wsps)]
       (wm/focus-workspace sec-wsp)
+      (wait-until
+        "Waiting for selected workspace to be focused"
+        1000
+        (= (:workspace/title (wm/current-workspace))
+           (:workspace/title sec-wsp)))
       (let [curr-wsp (wm/current-workspace)]
         (is (= (:workspace/title curr-wsp) (:workspace/title sec-wsp)))
 
         (wm/drag-workspace :dir/up)
+        (wait-until
+          "Waiting for drag to finish"
+          1000
+          (= (inc (:workspace/index curr-wsp))
+             (:workspace/index (wm/current-workspace))))
+
         (is (= (inc (:workspace/index curr-wsp))
                (:workspace/index (wm/current-workspace)))
             "Dragging up should increase the index")
         ;; could assert on the swapped-with wsp here
 
         (wm/drag-workspace :dir/down)
+        (wait-until
+          "Waiting for drag to finish"
+          1000
+          (= (:workspace/index curr-wsp)
+             (:workspace/index (wm/current-workspace))))
         (is (= (:workspace/index curr-wsp)
                (:workspace/index (wm/current-workspace)))
             "Dragging up then down should return to the same index")
 
         (wm/drag-workspace :dir/down)
+        (wait-until
+          "Waiting for drag to finish"
+          1000
+          (= (dec (:workspace/index curr-wsp))
+             (:workspace/index (wm/current-workspace))))
         (is (= (dec (:workspace/index curr-wsp))
                (:workspace/index (wm/current-workspace)))
             "Dragging down should decrease the index")
 
         (wm/drag-workspace :dir/up)
+        (wait-until
+          "Waiting for drag to finish"
+          1000
+          (= (:workspace/index curr-wsp)
+             (:workspace/index (wm/current-workspace))))
         (is (= (:workspace/index curr-wsp)
                (:workspace/index (wm/current-workspace)))
-            "Dragging down then up should return to the same index"))
-
-      ;; restore focus to the current wsp
-      (wm/focus-workspace curr-wsp))))
+            "Dragging down then up should return to the same index")))))
 
 
 (deftest move-client-to-workspace-test
-  (let [[og-wsp target-wsp & _rest] (->> (wm/active-workspaces) (filter (comp seq :workspaces/clients)) (take 2))
-        client                      (->> og-wsp :workspaces/clients first)]
+  (let [[og-wsp target-wsp & _rest] (->> (wm/active-workspaces
+                                           {:include-clients true})
+                                         (filter (comp seq :workspace/clients))
+                                         (take 2))
+        client                      (-> og-wsp :workspace/clients first)]
+    (is target-wsp)
+    (is client)
     (wm/move-client-to-workspace client target-wsp)
+    (wait-until
+      "Client has been moved to targetworkspace"
+      5000
+      (let [moved-client (wm/fetch-client client)
+            fetched-wsp  (wm/fetch-workspace
+                           {:include-clients true}
+                           target-wsp)]
+        (some->> fetched-wsp
+                 :workspace/clients
+                 (filter (comp #{(:client/window-title moved-client)}
+                               :client/window-title))
+                 (filter (comp #{(:client/app-name moved-client)}
+                               :client/app-name))
+                 first)))
     (let [moved-client (wm/fetch-client client)
-          fetched-wsp  (wm/fetch-workspace target-wsp)]
-      (is (contains?
-            (->> fetched-wsp :workspace/clients)
-            moved-client)
+          fetched-wsp  (wm/fetch-workspace
+                         {:include-clients true}
+                         target-wsp)]
+      (is (some->> fetched-wsp
+                   :workspace/clients
+                   (filter (comp #{(:client/window-title moved-client)}
+                                 :client/window-title))
+                   (filter (comp #{(:client/app-name moved-client)}
+                                 :client/app-name))
+                   first)
           "target workspace now contains the client"))
 
     ;; move it back
     (wm/move-client-to-workspace client og-wsp)
+    (wait-until
+      "Client has been returned"
+      1000
+      (let [moved-client (wm/fetch-client client)
+            fetched-wsp  (wm/fetch-workspace
+                           {:include-clients true}
+                           og-wsp)]
+
+        ;; TODO add a same-client? fn to the protocol
+        (some->> fetched-wsp :workspace/clients
+                 (filter (comp #{(:client/window-title moved-client)}
+                               :client/window-title))
+                 (filter (comp #{(:client/app-name moved-client)}
+                               :client/app-name))
+                 first)))
     (let [moved-client (wm/fetch-client client)
-          fetched-wsp  (wm/fetch-workspace target-wsp)]
-      (is (contains?
-            (->> fetched-wsp :workspace/clients)
-            moved-client)
+          fetched-wsp  (wm/fetch-workspace
+                         {:include-clients true}
+                         og-wsp)]
+      (is (some->> fetched-wsp :workspace/clients
+                   (filter (comp #{(:client/window-title moved-client)}
+                                 :client/window-title))
+                   (filter (comp #{(:client/app-name moved-client)}
+                                 :client/app-name))
+                   first)
           "Client was returned to the current workspace"))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -273,3 +382,36 @@
              (-> (wm/workspace-defs) first :workspace/title)))
       (is (= expected-dir
              (-> (wm/workspace-defs) first :workspace/directory))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; fetch-workspace
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(deftest fetch-workspace-test
+  (testing "active-workspaces list matches fetch-workspace output"
+    (let [wsps (wm/active-workspaces)]
+      (doall
+        (for [wsp wsps]
+          (do
+            (testing "fetch with whole wsp"
+              (let [fetched (wm/fetch-workspace wsp)]
+                (is (= fetched wsp))))
+            (testing "fetch with workspace title"
+              (let [fetched (wm/fetch-workspace (:workspace/title wsp))]
+                (is (= fetched wsp)))))))))
+
+  (testing "similar match, :include-clients"
+    (let [wsps (wm/active-workspaces {:include-clients true})]
+      (doall
+        (for [wsp wsps]
+          (do
+            (testing "fetch with whole wsp"
+              (let [fetched (wm/fetch-workspace
+                              {:include-clients true}
+                              wsp)]
+                (is (= fetched wsp))))
+            (testing "fetch with workspace title"
+              (let [fetched (wm/fetch-workspace
+                              {:include-clients true}
+                              (:workspace/title wsp))]
+                (is (= fetched  wsp))))))))))

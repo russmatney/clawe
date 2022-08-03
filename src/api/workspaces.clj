@@ -5,7 +5,7 @@
    [malli.transform :as mt]
    [malli.core :as m]
    [clawe.wm :as wm]
-   [test-util :as util]))
+   [util :as util]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Active workspaces

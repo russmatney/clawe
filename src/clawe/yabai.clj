@@ -22,7 +22,8 @@
        (map (fn [window-id]
               (->> clients
                    (filter (comp #{window-id} :yabai.window/id))
-                   first)))))
+                   first)))
+       (remove nil?)))
 
 (defrecord Yabai []
   ClaweWM
@@ -33,7 +34,7 @@
                         (clawe.wm.protocol/-active-clients this nil)))
           spc     (yabai/query-current-space)]
       (-> spc space->clawe-workspace
-          (assoc :workspace/clients (clients-for-space spc clients))
+          (assoc :workspace/clients (or (clients-for-space spc clients) []))
           vector)))
 
   (-active-workspaces [this opts]
@@ -46,30 +47,44 @@
         (yabai/query-spaces)
         (map space->clawe-workspace)
         (map (fn [wsp]
-               (assoc wsp :workspace/clients (clients-for-space wsp clients)))))))
+               (assoc wsp :workspace/clients
+                      (or (clients-for-space wsp clients) [])))))))
 
   (-create-workspace [_this _opts workspace-title]
     (yabai/ensure-labeled-space
       {:space-label         workspace-title
        :overwrite-unlabeled true}))
 
-  (-focus-workspace [_this _opts workspace]
-    (let [workspace-title (if (string? workspace)
-                            workspace (:workspace/title workspace))]
+  (-focus-workspace [_this _opts wsp-or-label]
+    (let [workspace-title (if (string? wsp-or-label)
+                            wsp-or-label (:workspace/title wsp-or-label))]
       (yabai/ensure-labeled-space {:space-label         workspace-title
                                    :overwrite-unlabeled true})
-      (yabai/focus-space {:space-label workspace-title})))
+      (yabai/focus-space wsp-or-label)))
 
-  (-fetch-workspace [_this _opts workspace-title]
-    (->>
-      ;; TODO optimize
-      (yabai/query-spaces)
-      (filter (comp #{workspace-title} :yabai.space/label))
-      first
-      space->clawe-workspace))
+  (-fetch-workspace [this opts workspace-title]
+    (let
+        [clients (when (or (:include-clients opts)
+                           (:prefetched-clients opts))
+                   (or (:prefetched-clients opts)
+                       (clawe.wm.protocol/-active-clients this nil)))
+         wsp
+         (some->>
+           ;; TODO optimize
+           (yabai/query-spaces)
+           (filter (comp #{workspace-title} :yabai.space/label))
+           (map space->clawe-workspace)
+           first
+           space->clawe-workspace)]
+      (when wsp
+        (-> wsp
+            (assoc :workspace/clients (or (clients-for-space wsp clients) []))))))
 
   (-swap-workspaces-by-index [_this a b]
     (yabai/swap-spaces-by-index a b))
+
+  (-drag-workspace [_this dir]
+    (yabai/drag-workspace dir))
 
   (-delete-workspace [_this workspace]
     (yabai/destroy-space {:space-label (:workspace/title workspace)}))
@@ -92,9 +107,14 @@
     (let [workspace-title (if (string? wsp) wsp (:workspace/title wsp))
           workspace-index (when (map? wsp) (:workspace/index wsp))]
       (when (:ensure-workspace opts)
+        ;; TODO do we need to wait-for this to exist?
         (clawe.wm.protocol/-create-workspace this nil workspace-title))
       (yabai/move-window-to-space c (or workspace-index workspace-title)))))
 
 (comment
+  (clawe.wm.protocol/-current-workspaces (Yabai.) nil)
+  (clawe.wm.protocol/-fetch-workspace
+    (Yabai.) nil "doesntexist")
+
   (clawe.wm.protocol/-current-workspaces
     (Yabai.) {:include-clients true}))
