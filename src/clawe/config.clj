@@ -1,5 +1,6 @@
 (ns clawe.config
   (:require
+   [clojure.pprint :as pprint]
    [aero.core :as aero]
    [clojure.java.io :as io]
    [ralphie.zsh :as zsh]))
@@ -37,7 +38,10 @@
   [updated-config]
   (let [updated-config  (merge @*config* updated-config)
         writable-config (apply dissoc updated-config do-not-write-keys)]
-    (spit res writable-config)))
+    (pprint/pprint writable-config (io/writer res))))
+
+(comment
+  (write-config nil))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; public

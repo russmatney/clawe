@@ -1,1 +1,7 @@
-{:doctor-base-url "http://localhost:3334", :workspace/defs {"clawe" #:workspace{:directory "~/russmatney/clawe"}, "journal" #:workspace{:misc "some-data", :some "other-data"}, "beatemup-three" #:workspace{:directory "/Users/russ/russmatney/beatemup-three"}, "advent-of-code" #:workspace{:directory "~/russmatney/advent-of-code"}}, :repo-roots ["~/russmatney/*" "~/teknql/*"]}
+{:doctor-base-url "http://localhost:3334",
+ :workspace/defs
+ {"clawe"          #:workspace{:directory "~/russmatney/clawe"},
+  "journal"        #:workspace{:directory "~/todo"},
+  "beatemup-three" #:workspace{:directory "~/russmatney/beatemup-three"},
+  "advent-of-code" #:workspace{:directory "~/russmatney/advent-of-code"}},
+ :repo-roots      ["~/russmatney/*" "~/teknql/*"]}
