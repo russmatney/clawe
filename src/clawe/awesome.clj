@@ -50,7 +50,7 @@
       (awm/focus-tag! workspace-title)))
 
   (-fetch-workspace [_this _opts workspace-title]
-    (->>
+    (some->>
       ;; TODO optimize (only fetch one)
       (awm/fetch-tags)
       (filter (comp #{workspace-title} :awesome.tag/name))
@@ -91,6 +91,9 @@
       (awm/move-client-to-tag (:awesome.client/window c) workspace-title))))
 
 (comment
+  (clawe.wm.protocol/-fetch-workspace
+    (Awesome.) nil "dontexist")
+
   (clawe.wm.protocol/-current-workspaces
     (Awesome.) {:include-clients true})
   )

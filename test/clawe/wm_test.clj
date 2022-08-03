@@ -33,8 +33,29 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; behavior, integration tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; NOTE these may be impacted by background wm processes, may need delays/sleeps
+;; for now most things are synchronous and fast
 
-;; NOTE these could be impacted by background wm processes, may need delays/sleeps
+;; workspace crud
+
+(deftest create-and-delete-workspace-test
+  (let [initial-wsp-count   (count (wm/active-workspaces))
+        new-workspace-title (str "test-wsp-" (random-uuid))]
+    (is (nil? (wm/fetch-workspace new-workspace-title))
+        "workspace does not exist before creating")
+    (wm/ensure-workspace new-workspace-title)
+    (is (valid workspace/schema (wm/fetch-workspace new-workspace-title)))
+    (is (#{new-workspace-title} (-> (wm/fetch-workspace new-workspace-title) :workspace/title))
+        "new wsp has matching title")
+    (is (= (inc initial-wsp-count) (count (wm/active-workspaces)))
+        "wsp count has incremented")
+    (wm/delete-workspace (wm/fetch-workspace new-workspace-title))
+    (is (nil? (wm/fetch-workspace new-workspace-title))
+        "workspace does not exist after deleting")
+    (is (= initial-wsp-count (count (wm/active-workspaces)))
+        "wsp count is back")))
+
+;; rearranging
 
 (deftest swap-workspaces-by-index-test
   (testing "swap two workspaces, assert on the new indexes"

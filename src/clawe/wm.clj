@@ -100,10 +100,14 @@
   ([workspace-title] (fetch-workspace nil workspace-title))
   ([opts workspace-title]
    (sys/start! `*wm*)
-   (->
+   (some->
      (wm.protocol/-fetch-workspace *wm* opts workspace-title)
      merge-with-def
      ensure-directory)))
+
+(comment
+  (fetch-workspace "madeup")
+  (wm.protocol/-fetch-workspace *wm* nil "invented"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; client fetching
