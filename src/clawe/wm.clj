@@ -97,13 +97,15 @@
         (map ensure-directory))))
 
 (defn fetch-workspace
-  ([workspace-title] (fetch-workspace nil workspace-title))
-  ([opts workspace-title]
+  ([workspace-or-title] (fetch-workspace nil workspace-or-title))
+  ([opts workspace-or-title]
    (sys/start! `*wm*)
-   (some->
-     (wm.protocol/-fetch-workspace *wm* opts workspace-title)
-     merge-with-def
-     ensure-directory)))
+   (let [title (if (string? workspace-or-title)
+                 workspace-or-title (:workspace/title workspace-or-title))]
+     (some->
+       (wm.protocol/-fetch-workspace *wm* opts title)
+       merge-with-def
+       ensure-directory))))
 
 (comment
   (fetch-workspace "madeup")
@@ -121,11 +123,18 @@
    (wm.protocol/-active-clients *wm* opts)))
 
 (defn focused-client []
-  ;; TODO refactor into the protocol and more direct queries/less serialization
-  ;; (for performance gains)
+  ;; TODO refactor into the protocol (perf)
   (some->>
     (active-clients)
     (filter :client/focused)
+    first))
+
+(defn fetch-client [client]
+  ;; TODO refactor into protocol (perf)
+  (some->>
+    (active-clients)
+    (filter (comp #{(:client/app-name client)} :client/app-name))
+    (filter (comp #{(:client/window-title client)} :client/window-title))
     first))
 
 (comment

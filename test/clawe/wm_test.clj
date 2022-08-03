@@ -30,6 +30,9 @@
 (deftest active-clients-schema-test
   (is (valid [:sequential client/schema] (wm/active-clients))))
 
+(deftest fetch-client-schema-test
+  (is (valid client/schema (-> (wm/active-clients) first wm/fetch-client))))
+
 (deftest focused-client-schema-test
   (is (valid client/schema (wm/focused-client))))
 
@@ -166,6 +169,27 @@
 
       ;; restore focus to the current wsp
       (wm/focus-workspace curr-wsp))))
+
+
+(deftest move-client-to-workspace-test
+  (let [[og-wsp target-wsp & _rest] (->> (wm/active-workspaces) (filter (comp seq :workspaces/clients)) (take 2))
+        client                      (->> og-wsp :workspaces/clients first)]
+    (wm/move-client-to-workspace client target-wsp)
+    (let [moved-client (wm/fetch-client client)
+          fetched-wsp  (wm/fetch-workspace target-wsp)]
+      (is (contains?
+            (->> fetched-wsp :workspace/clients)
+            moved-client)
+          "target workspace now contains the client"))
+
+    ;; move it back
+    (wm/move-client-to-workspace client og-wsp)
+    (let [moved-client (wm/fetch-client client)
+          fetched-wsp  (wm/fetch-workspace target-wsp)]
+      (is (contains?
+            (->> fetched-wsp :workspace/clients)
+            moved-client)
+          "Client was returned to the current workspace"))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; current-workspace
