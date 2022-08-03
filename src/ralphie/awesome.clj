@@ -523,6 +523,7 @@ util = require 'util';
   []
   (->>
     (fnl
+      (local focused-window (if client.focus client.focus.window nil))
       (-> (client.get)
           (lume.map (fn [c]
                       {:name      (. c :name)
@@ -534,7 +535,8 @@ util = require 'util';
                        :pid       c.pid
                        :role      c.role
                        :tags      (lume.map (c:tags) (fn [t] {:name (. t :name)}))
-                       :first_tag c.first_tag.name}))
+                       :first_tag c.first_tag.name
+                       :focused   (= focused-window c.window)}))
           view))
     (map ->namespaced-client)))
 
@@ -656,8 +658,8 @@ util = require 'util';
 
 (defn drag-workspace [up-or-down]
   (let [increment (case up-or-down
-                    :drag/up   1
-                    :drag/down -1)]
+                    :dir/up   1
+                    :dir/down -1)]
     (fnl
       (let [screen        (awful.screen.focused)
             tags          screen.tags

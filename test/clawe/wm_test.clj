@@ -30,11 +30,16 @@
 (deftest active-clients-schema-test
   (is (valid [:sequential client/schema] (wm/active-clients))))
 
+(deftest focused-client-schema-test
+  (is (valid client/schema (wm/focused-client))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; behavior, integration tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; NOTE these may be impacted by background wm processes, may need delays/sleeps
 ;; for now most things are synchronous and fast
+;; NOTE these tests should restore the original state when run
+;; (i.e. don't focus some random wsp and leave us there)
 
 ;; workspace crud
 
@@ -43,17 +48,67 @@
         new-workspace-title (str "test-wsp-" (random-uuid))]
     (is (nil? (wm/fetch-workspace new-workspace-title))
         "workspace does not exist before creating")
-    (wm/ensure-workspace new-workspace-title)
+
+    (wm/create-workspace new-workspace-title)
     (is (valid workspace/schema (wm/fetch-workspace new-workspace-title)))
     (is (#{new-workspace-title} (-> (wm/fetch-workspace new-workspace-title) :workspace/title))
         "new wsp has matching title")
     (is (= (inc initial-wsp-count) (count (wm/active-workspaces)))
         "wsp count has incremented")
+
     (wm/delete-workspace (wm/fetch-workspace new-workspace-title))
     (is (nil? (wm/fetch-workspace new-workspace-title))
         "workspace does not exist after deleting")
     (is (= initial-wsp-count (count (wm/active-workspaces)))
         "wsp count is back")))
+
+;; focus
+
+(deftest focus-workspace-test
+  (let [wsps     (wm/active-workspaces)
+        to-focus (rand-nth wsps)
+        og-focus (wm/current-workspace)]
+    ;; focus new wsp
+    (wm/focus-workspace to-focus)
+    (let [new-curr (wm/current-workspace)]
+      ;; only testing the title here, client attrs (like :client/focus) can change
+      (is (= (:workspace/title to-focus) (:workspace/title new-curr))
+          "Focused workspace should match new-current workspace"))
+
+    ;; revert to original
+    (wm/focus-workspace og-focus)
+    (let [new-new-curr (wm/current-workspace)]
+      (is (= (:workspace/title og-focus) (:workspace/title new-new-curr))
+          "Focused workspace should match original workspace"))))
+
+(deftest focus-client-test
+  (let [wsp      (wm/current-workspace)
+        clients  (wm/active-clients)
+        og-focus (wm/focused-client)
+        to-focus (rand-nth clients)]
+    (is (valid client/schema og-focus))
+    (is (:client/focused og-focus))
+    (wm/focus-client to-focus)
+    (let [focused-client (wm/focused-client)]
+      (is (valid client/schema focused-client))
+      (is (:client/focused focused-client))
+      (is (= (:client/app-name focused-client)
+             (:client/app-name to-focus)))
+      (is (= (:client/window-title focused-client)
+             (:client/window-title to-focus))))
+
+    (wm/focus-client og-focus)
+    (let [focused-client (wm/focused-client)]
+      (is (valid client/schema focused-client))
+      (is (:client/focused focused-client))
+      (is (= (:client/app-name focused-client)
+             (:client/app-name og-focus)))
+      (is (= (:client/window-title focused-client)
+             (:client/window-title og-focus))))
+
+    ;; osx moves to a different space when focusing other clients
+    ;; so this gets us back
+    (wm/focus-workspace wsp)))
 
 ;; rearranging
 
@@ -78,6 +133,39 @@
               reupdated-wsp2 (wm/fetch-workspace (:workspace/title wsp2))]
           (is (= wsp1-index (:workspace/index reupdated-wsp1)))
           (is (= wsp2-index (:workspace/index reupdated-wsp2))))))))
+
+(deftest drag-workspace-test
+  (let [wsps (->> (wm/active-workspaces) (sort-by :workspace/index) (into []))]
+    (is (> (count wsps) 2) "Not enough workspaces to run test.")
+    (let [curr-wsp (wm/current-workspace)
+          sec-wsp  (second wsps)]
+      (wm/focus-workspace sec-wsp)
+      (let [curr-wsp (wm/current-workspace)]
+        (is (= (:workspace/title curr-wsp) (:workspace/title sec-wsp)))
+
+        (wm/drag-workspace :dir/up)
+        (is (= (inc (:workspace/index curr-wsp))
+               (:workspace/index (wm/current-workspace)))
+            "Dragging up should increase the index")
+        ;; could assert on the swapped-with wsp here
+
+        (wm/drag-workspace :dir/down)
+        (is (= (:workspace/index curr-wsp)
+               (:workspace/index (wm/current-workspace)))
+            "Dragging up then down should return to the same index")
+
+        (wm/drag-workspace :dir/down)
+        (is (= (dec (:workspace/index curr-wsp))
+               (:workspace/index (wm/current-workspace)))
+            "Dragging down should decrease the index")
+
+        (wm/drag-workspace :dir/up)
+        (is (= (:workspace/index curr-wsp)
+               (:workspace/index (wm/current-workspace)))
+            "Dragging down then up should return to the same index"))
+
+      ;; restore focus to the current wsp
+      (wm/focus-workspace curr-wsp))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; current-workspace
@@ -129,7 +217,7 @@
 ;; active-workspaces
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(deftest all-active-test
+(deftest active-workspaces-test
   (testing "merges config def data"
     (let [dir          "~/russmatney/blah"
           expected-dir (zsh/expand dir)]

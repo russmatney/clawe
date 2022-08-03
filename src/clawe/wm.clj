@@ -113,11 +113,24 @@
 ;; client fetching
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; we could be locally caching calls like these, if we're willing to cache burst
 (defn active-clients
   ([] (active-clients nil))
   ([opts]
    (sys/start! `*wm*)
    (wm.protocol/-active-clients *wm* opts)))
+
+(defn focused-client []
+  ;; TODO refactor into the protocol and more direct queries/less serialization
+  ;; (for performance gains)
+  (some->>
+    (active-clients)
+    (filter :client/focused)
+    first))
+
+(comment
+  (focused-client)
+  (active-clients))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; interactions
@@ -125,13 +138,11 @@
 
 ;; crud
 
-(defn ensure-workspace
-  ([wsp-title] (ensure-workspace nil wsp-title))
+(defn create-workspace
+  ([wsp-title] (create-workspace nil wsp-title))
   ([opts wsp-title]
    (sys/start! `*wm*)
-   (wm.protocol/-ensure-workspace *wm* opts wsp-title)))
-(def create-workspace ensure-workspace)
-(comment create-workspace)
+   (wm.protocol/-create-workspace *wm* opts wsp-title)))
 
 (defn delete-workspace
   [workspace]
@@ -169,6 +180,10 @@
   [dir]
   (sys/start! `*wm*)
   (wm.protocol/-drag-workspace *wm* dir))
+
+(comment
+  (drag-workspace :dir/up)
+  (drag-workspace :dir/down))
 
 (defn move-client-to-workspace
   ([c wsp] (move-client-to-workspace nil c wsp))

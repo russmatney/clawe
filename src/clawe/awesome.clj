@@ -40,7 +40,7 @@
       (awm/fetch-tags opts)
       (map tag->wsp)))
 
-  (-ensure-workspace [_this _opts workspace-title]
+  (-create-workspace [_this _opts workspace-title]
     (awm/ensure-tag workspace-title))
 
   (-focus-workspace [_this _opts workspace]
@@ -86,7 +86,7 @@
   (-move-client-to-workspace [this opts c wsp]
     (let [workspace-title (if (string? wsp) wsp (:workspace/title wsp))]
       (when (:ensure-workspace opts)
-        (clawe.wm.protocol/-ensure-workspace this nil workspace-title))
+        (clawe.wm.protocol/-create-workspace this nil workspace-title))
       ;; TODO consider :client/window-id client attr
       (awm/move-client-to-tag (:awesome.client/window c) workspace-title))))
 
@@ -96,4 +96,7 @@
 
   (clawe.wm.protocol/-current-workspaces
     (Awesome.) {:include-clients true})
+
+  (clawe.wm.protocol/-fetch-workspace
+    (Awesome.) nil "dontexist")
   )

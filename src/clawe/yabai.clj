@@ -48,7 +48,7 @@
         (map (fn [wsp]
                (assoc wsp :workspace/clients (clients-for-space wsp clients)))))))
 
-  (-ensure-workspace [_this _opts workspace-title]
+  (-create-workspace [_this _opts workspace-title]
     (yabai/ensure-labeled-space
       {:space-label         workspace-title
        :overwrite-unlabeled true}))
@@ -92,7 +92,7 @@
     (let [workspace-title (if (string? wsp) wsp (:workspace/title wsp))
           workspace-index (when (map? wsp) (:workspace/index wsp))]
       (when (:ensure-workspace opts)
-        (clawe.wm.protocol/-ensure-workspace this nil workspace-title))
+        (clawe.wm.protocol/-create-workspace this nil workspace-title))
       (yabai/move-window-to-space c (or workspace-index workspace-title)))))
 
 (comment
