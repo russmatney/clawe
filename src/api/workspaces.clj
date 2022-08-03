@@ -4,8 +4,8 @@
    [manifold.stream :as s]
    [malli.transform :as mt]
    [malli.core :as m]
-   [clawe.workspace :as workspace]
-   [util :as util]))
+   [clawe.wm :as wm]
+   [test-util :as util]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Active workspaces
@@ -13,7 +13,7 @@
 
 (defn active-workspaces []
   (->>
-    (clawe.workspace/all-active)
+    (wm/active-workspaces)
     (map util/drop-complex-types)))
 
 (comment
@@ -35,7 +35,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def fe-workspace
-  "A watered-down workspace, without functions and lists"
+  "A watered-down wm, without functions and lists"
   [:map
    ;; [:rules/is-my-client? fn?]
    ;; [:awesome/rules ]
@@ -65,7 +65,7 @@
 
 (comment
   (def -w
-    (->> (workspace/all-active)
+    (->> (wm/active-workspaces)
          first
          ))
 

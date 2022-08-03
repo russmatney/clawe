@@ -1,9 +1,13 @@
 {:config-paths ["babashka/fs"]
  :linters
  {:unresolved-symbol
-  {:exclude [(clojure.core.match/match) (wing.test/assert-match) match?
+  {:exclude [(clojure.core.match/match)
+             (wing.test/assert-match)
+             match?
              (ralphie.awesome/fnl)
-             (defthing.defcom/defcom)]}
+             (defthing.defcom/defcom)
+             valid ;; supported by test-util as a clojure.test assert-expr
+             ]}
   :clawe/missing  {:level :warning}
   :defcom/missing {:level :warning}
 

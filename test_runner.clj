@@ -30,7 +30,6 @@
      ;; 'components.timeline-test
      ;; 'dates.tick-test
      'clawe.schema-test
-     'clawe.workspace-test
      ]
     (remove nil?)))
 

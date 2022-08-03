@@ -1,7 +1,7 @@
 (ns clawe.awesome.rules
   "Manages the awesomeWM rules."
   (:require
-   [clawe.workspace :as workspace]
+   [clawe.wm :as wm]
    [clojure.string :as string]
    [clojure.walk :as walk]
    [ralphie.zsh :as zsh]))
@@ -40,7 +40,7 @@
 
   The awesome config then reads this file into its rules."
   []
-  (let [wsp-rules (->> (workspace/all-defs)
+  (let [wsp-rules (->> (wm/workspace-defs)
                        (map workspace->awm-rules)
                        (walk/postwalk (fn [x]
                                         (if (seq? x)

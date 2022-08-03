@@ -38,7 +38,7 @@
   "Creates a sorted list of workspaces with an additional key: :new-index.
   This is in support of the `reset-workspace-indexes` func below."
   []
-  (->> (workspace/all-active)
+  (->> (wm/active-workspaces)
        (map (fn [wsp] (assoc wsp :sort-key (wsp-sort-key wsp))))
        ;; sort and map-indexed to set new_indexes
        (sort-by :sort-key)
@@ -72,7 +72,7 @@
   ([_]
    (notify/notify {:subject "Consolidating not-empty workspaces"})
    (->>
-     (workspace/all-active {:include-clients true})
+     (wm/active-workspaces {:include-clients true})
      (remove (comp seq :workspace/clients))
      (sort-by :workspace/index)
      (map-indexed
@@ -96,7 +96,7 @@
   ([_]
    (notify/notify {:subject "Removing empty workspaces"})
    (->>
-     (workspace/all-active {:include-clients true})
+     (wm/active-workspaces {:include-clients true})
      (remove (comp seq :workspace/clients))
      (map
        (fn [it]
@@ -124,7 +124,7 @@
   []
   (let [workspaces        (->>
                             ;; defs b/c we want to create missing wsps if there are any
-                            (workspace/all-defs)
+                            (wm/workspace-defs)
                             (filter :rules/is-my-client?))
         clients           (awm/all-clients)
         _                 (def --w workspaces)

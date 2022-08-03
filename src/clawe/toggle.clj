@@ -7,7 +7,6 @@
    [ralphie.zsh :as r.zsh]
 
    [clawe.client :as client]
-   [clawe.workspace :as workspace]
    [clojure.string :as string]
    [clawe.wm :as wm]
    [clawe.doctor :as clawe.doctor]))
@@ -34,7 +33,7 @@
     {:keys [wsp->client wsp->open-client
             all-clients->client client->hide client->show]}]
    (let [clients     (client/all-clients)
-         current-wsp (workspace/current {:prefetched-clients clients})
+         current-wsp (wm/current-workspace {:prefetched-clients clients})
          client      (wsp->client current-wsp)]
      (cond
        ;; no tag, let's create one
@@ -155,7 +154,7 @@
    (fn [_wsp] ;; does this passed 'fast-wsp' have enough already?
      ;; TODO support initial-file/dir, initial-command as input
      (let [{:workspace/keys [title initial-file directory] :as wsp}
-           (workspace/current)]
+           (wm/current-workspace)]
        (if-not wsp
          (r.emacs/open)
          (let [initial-file (or initial-file directory)
@@ -166,7 +165,7 @@
      ;; TODO support directory, initial-command as input
      ;; TODO support tmux.fire as input
      (let [{:workspace/keys [title directory] :as wsp}
-           (workspace/current)]
+           (wm/current-workspace)]
        (if-not wsp
          (r.tmux/open-session)
          (let [directory (or directory (r.zsh/expand "~"))

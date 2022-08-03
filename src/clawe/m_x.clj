@@ -10,8 +10,6 @@
    [ralphie.tmux :as r.tmux]
    [ralphie.awesome :as r.awm]
    [ralphie.systemd :as r.systemd]
-
-   [clawe.workspace :as workspace]
    [clawe.workspace.open :as workspace.open]
    [clawe.config :as clawe.config]))
 
@@ -28,7 +26,7 @@
 
 
 (defn bb-tasks-for-wsp
-  ([] (bb-tasks-for-wsp (workspace/current)))
+  ([] (bb-tasks-for-wsp (wm/current-workspace)))
   ([wsp]
    (when-let [dir (:workspace/directory wsp)]
      (->> (r.bb/tasks dir)
@@ -47,7 +45,7 @@
 (defn m-x-commands
   ([] (m-x-commands nil))
   ([{:keys [wsp]}]
-   (let [wsp (or wsp (workspace/current))]
+   (let [wsp (or wsp (wm/current-workspace))]
      (->>
        (concat
          ;; clone suggestions from open tabs and the clipboard
@@ -91,7 +89,7 @@
 (defn do-m-x
   ([] (do-m-x nil))
   ([_]
-   (let [wsp (workspace/current)]
+   (let [wsp (wm/current-workspace)]
      (->> (m-x-commands {:wsp wsp})
           (r.rofi/rofi {:require-match? true
                         :msg            "Clawe commands"})))))

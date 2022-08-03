@@ -1,13 +1,13 @@
 (ns clawe.workspace.open
   (:require
-   [clawe.wm :as wm]
-   [ralphie.notify :as notify]
    [clojure.string :as string]
-   [clawe.config :as clawe.config]
-   [clawe.doctor :as clawe.doctor]
+   [ralphie.notify :as notify]
    [ralphie.zsh :as zsh]
    [ralphie.rofi :as rofi]
-   [clawe.workspace :as workspace]))
+
+   [clawe.config :as clawe.config]
+   [clawe.doctor :as clawe.doctor]
+   [clawe.wm :as wm]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Workspace opening/creation/installation
@@ -85,7 +85,7 @@
     (rofi/rofi {:msg "Open workspace for which repo?"})))
 
 (defn config-repo-roots []
-  (let [wsp-defs (workspace/all-defs)]
+  (let [wsp-defs (wm/workspace-defs)]
     (->> (clawe.config/repo-roots)
          (mapcat zsh/expand-many)
          ;; remove existing :workspace/directory
@@ -101,7 +101,7 @@
      :rofi/description (when dir dir)}))
 
 (defn workspace-rofi-options []
-  (->> (workspace/all-defs)
+  (->> (wm/workspace-defs)
        ;; TODO if already open?
        (map #(merge % (wsp->rofi-opts %)))))
 

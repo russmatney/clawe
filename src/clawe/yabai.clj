@@ -3,6 +3,7 @@
    [clawe.wm.protocol :refer [ClaweWM]]
    [ralphie.yabai :as yabai]))
 
+;; TODO refactor in malli transforms?
 (defn window->clawe-client
   [{:yabai.window/keys [has-focus app title] :as window}]
   (-> window
