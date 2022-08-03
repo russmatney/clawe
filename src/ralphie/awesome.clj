@@ -105,16 +105,19 @@ util = require 'util';
                   (string/replace trimmed #"^boolean " "")
 
                   (re-seq #"^double" trimmed)
-                  (string/replace trimmed #"^double " ""))]
-    (try
-      ;; convert to clojure data structure
-      ;; (edn/read-string to-load)
-      (load-string to-load)
-      (catch Exception _e
-        (println "Exception while parsing output:" trimmed to-load)
-        ;; (println "e" e)
-        to-load))
-    ))
+                  (string/replace trimmed #"^double " "")
+
+                  (= "nil" trimmed)
+                  nil)]
+    (when to-load
+      (try
+        ;; convert to clojure data structure
+        ;; (edn/read-string to-load)
+        (load-string to-load)
+        (catch Exception _e
+          (println "Exception while parsing output:" trimmed to-load)
+          ;; (println "e" e)
+          to-load)))))
 
 (defn awm-cli
   "Expects `lua-str`, a literal string of lua.
@@ -714,7 +717,6 @@ util = require 'util';
          float?    (:float? opts true)
          center?   (:center? opts true)]
      (when window-id
-       ^{:quiet? false}
        (fnl
          (when ~bury-all?
            (each [c (awful.client.iterate (fn [c] (. c :ontop)))]

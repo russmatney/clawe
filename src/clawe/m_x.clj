@@ -10,6 +10,7 @@
    [ralphie.tmux :as r.tmux]
    [ralphie.awesome :as r.awm]
    [ralphie.systemd :as r.systemd]
+   [clawe.wm :as wm]
    [clawe.workspace.open :as workspace.open]
    [clawe.config :as clawe.config]))
 

@@ -11,7 +11,6 @@
    [ralphie.zsh :as zsh]
    [util :as util]
 
-
    clawe.defs.bindings
 
    [clawe.awesome.rules :as awm.rules]
@@ -20,7 +19,6 @@
    [clawe.doctor :as clawe.doctor]
    [clawe.rules :as rules]
    [clawe.sxhkd.bindings :as sxhkd.bindings]))
-
 
 (defn log [msg]
   (let [msg (str "[CLAWE] " msg)]

@@ -7,7 +7,8 @@
    [ralphie.notify :as notify]
 
    [clawe.wm :as wm]
-   [clawe.config :as clawe.config]))
+   [clawe.config :as clawe.config]
+   [clawe.doctor :as clawe.doctor]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Correct clients
@@ -91,14 +92,18 @@
   "Closes workspaces with 0 clients."
   ([] (clean-workspaces nil))
   ([_]
-   (notify/notify {:subject "Removing empty workspaces"})
+   (notify/notify {:subject "Removing empty or title-less workspaces"})
    (->>
      (wm/active-workspaces {:include-clients true})
-     (remove (comp seq :workspace/clients))
+     (filter (fn [wsp]
+               (or
+                 (-> wsp :workspace/title nil?)
+                 (-> wsp :workspace/clients seq empty?))))
      (map
        (fn [it]
          (when-let [title (:workspace/title it)]
            (try
+             (println "Deleting workspace" it)
              (wm/delete-workspace it)
              (notify/notify "Deleted Workspace" title)
              (catch Exception e e
@@ -110,7 +115,8 @@
   ([_]
    (clean-workspaces) ;; remove empty wsps
    (consolidate-workspaces) ;; move preferred indexes down
-   (reset-workspace-indexes))) ;; re-sort indexes (repo wsps move down)
+   (reset-workspace-indexes)
+   (clawe.doctor/update-topbar))) ;; re-sort indexes (repo wsps move down)
 
 
 (defn correct-clients-and-workspaces

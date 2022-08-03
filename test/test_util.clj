@@ -26,11 +26,11 @@
   ([name fn] (wait-until* name default-wait-death fn))
   ([name wait-death fn]
    (let [die (+ (now) wait-death)]
-     (println "waiting for:" name)
      (loop []
        (if-let [result (fn)]
          result
          (do
+           (println "waiting for [" name "] to complete")
            (Thread/sleep default-wait-delay-ms)
            (if (> (now) die)
              (throw (Exception. (str "timed out waiting for: " name)))

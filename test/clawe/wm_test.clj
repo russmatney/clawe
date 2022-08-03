@@ -13,6 +13,9 @@
 (use-fixtures :each
   (fn [run-test]
     (let [og-wsp (wm/current-workspace)]
+
+      ;; TODO disable clawe.doctor before running
+
       (run-test)
 
       ;; reload the config in-case any tests messed with it
@@ -194,10 +197,8 @@
 
 (deftest drag-workspace-test
   (let [wsps (->> (wm/active-workspaces) (sort-by :workspace/index) (into []))]
-    (println (map :workspace/index wsps))
     (is (> (count wsps) 2) "Not enough workspaces to run test.")
-    (let [curr-wsp (wm/current-workspace)
-          sec-wsp  (second wsps)]
+    (let [sec-wsp (second wsps)]
       (wm/focus-workspace sec-wsp)
       (wait-until
         "Waiting for selected workspace to be focused"
@@ -404,7 +405,8 @@
 
 (deftest fetch-workspace-test
   (testing "active-workspaces list matches fetch-workspace output"
-    (let [wsps (wm/active-workspaces)]
+    (let [wsps (->> (wm/active-workspaces) (take 3))]
+      (is (count wsps))
       (doall
         (for [wsp wsps]
           (do
@@ -416,7 +418,8 @@
                 (is (= fetched wsp)))))))))
 
   (testing "similar match, :include-clients"
-    (let [wsps (wm/active-workspaces {:include-clients true})]
+    (let [wsps (->> (wm/active-workspaces {:include-clients true})
+                    (take 3))]
       (doall
         (for [wsp wsps]
           (do

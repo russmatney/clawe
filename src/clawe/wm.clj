@@ -114,6 +114,9 @@
   (fetch-workspace "madeup")
   (fetch-workspace {:include-clients true}
                    {:workspace/title "slack"})
+  (->>
+    (active-workspaces)
+    (remove :workspace/title))
   (wm.protocol/-fetch-workspace *wm* nil "invented"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -162,6 +165,13 @@
   [workspace]
   (sys/start! `*wm*)
   (wm.protocol/-delete-workspace *wm* workspace))
+
+(comment
+  (->>
+    (active-workspaces)
+    (remove :workspace/title)
+    #_(map delete-workspace)
+    ))
 
 (defn close-client
   ([client] (close-client nil client))
