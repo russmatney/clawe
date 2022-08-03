@@ -2,10 +2,10 @@
   (:require
    [ralphie.notify :refer [notify]]
    [babashka.process :as process :refer [$ check]]
-   [defthing.defcom :refer [defcom] :as defcom]
    [clojure.string :as string]
    [babashka.fs :as fs]
-   [ralphie.zsh :as zsh]))
+   [ralphie.zsh :as zsh]
+   [ralphie.notify :as notify]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; emacs server/client fns
@@ -86,41 +86,48 @@
   "Opens a new emacs client in the passed workspace.
 
   Uses the passed workspace data to direct emacs to the relevant initial file
-  and named emacs workspace.
-  "
+  and named emacs workspace."
+  {:org.babashka/cli
+   {:alias {:wsp  :workspace/title
+            :file :emacs.open/file}}}
   ([] (open nil))
   ([wsp]
-   (let [wsp          (or wsp {})
-         wsp-name
-         (or (some wsp [:emacs.open/workspace
-                        :workspace/title :org/name :clawe.defs/name])
-             "ralphie-fallback")
-         initial-file (some wsp [:emacs.open/file :emacs/open-file :workspace/initial-file])
-         initial-file (determine-initial-file initial-file)
-         elisp-hook   (:emacs.open/elisp-hook wsp)
-         eval-str     (str
-                        "(progn "
-                        ;; TODO refactor russ/open-workspace to support initial-file
-                        ;; so that we don't open the readme when the workspace is already open
-                        (when wsp-name
-                          (str " (russ/open-workspace \"" wsp-name "\") "))
-                        (when initial-file
-                          (str " (find-file \"" initial-file "\") " " "))
-                        (when elisp-hook elisp-hook)
-                        " )")]
+   (try
+     (let [wsp          (or wsp {})
+           wsp-name
+           (or (some wsp [:emacs.open/workspace
+                          :workspace/title :org/name :clawe.defs/name])
+               "ralphie-fallback")
+           initial-file (some wsp [:emacs.open/file :emacs/open-file :workspace/initial-file])
+           initial-file (determine-initial-file initial-file)
+           elisp-hook   (:emacs.open/elisp-hook wsp)
+           eval-str     (str
+                          "(progn "
+                          ;; TODO refactor russ/open-workspace to support initial-file
+                          ;; so that we don't open the readme when the workspace is already open
+                          (when wsp-name
+                            (str " (russ/open-workspace \"" wsp-name "\") "))
+                          (when initial-file
+                            (str " (find-file \"" initial-file "\") " " "))
+                          (when elisp-hook elisp-hook)
+                          " )")]
 
-     (when-not (emacs-server-running?)
-       (notify {:notify/subject          "Initializing Emacs Server, initializing."
-                :notify/replaces-process "init-emacs-server"})
-       (initialize-emacs-server)
-       (notify {:notify/subject          "Started Emacs Server"
-                :notify/replaces-process "init-emacs-server"}))
+       (when-not (emacs-server-running?)
+         (notify {:notify/subject          "Initializing Emacs Server, initializing."
+                  :notify/replaces-process "init-emacs-server"})
+         (initialize-emacs-server)
+         (notify {:notify/subject          "Started Emacs Server"
+                  :notify/replaces-process "init-emacs-server"}))
 
-     (-> ($ emacsclient --no-wait --create-frame
-            -F ~(str "((name . \"" wsp-name "\"))")
-            --display=:0
-            --eval ~eval-str)
-         check))))
+       (-> ($ emacsclient --no-wait --create-frame
+              -F ~(str "((name . \"" wsp-name "\"))")
+              --display=:0
+              --eval ~eval-str)
+           check))
+     ;; TODO proper clawe error log
+     (catch Exception e
+       (notify/notify "emacs/open error" (str e))
+       (println e)))))
 
 (comment
   (open {:emacs.open/workspace "clawe"
