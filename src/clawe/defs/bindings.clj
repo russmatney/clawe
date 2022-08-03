@@ -16,7 +16,8 @@
    [clawe.m-x :as c.m-x]
    [clawe.toggle :as toggle]
    [clawe.wm :as wm]
-   [clawe.rules :as c.rules]))
+   [clawe.rules :as c.rules]
+   [clawe.sxhkd.bindings :refer [sxhkd-exec]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; rofi, launchers, command selectors
@@ -244,9 +245,7 @@
 ;; these should come for free, with :binding/scratchpad options
 (defkbd toggle-workspace-journal
   [[:mod] "u"]
-  (toggle/toggle-app {:window-title    "journal"
-                      :workspace-title "journal"
-                      :app-name        "Emacs"}))
+  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle-app --wsp journal --window journal --app Emacs"))
 
 (defkbd toggle-workspace-web
   [[:mod] "t"]
@@ -293,11 +292,12 @@
 
 (defkbd toggle-terminal
   [[:mod] "Return"]
-  (toggle/toggle-app {:client-name "terminal" :app-name "Alacritty"}))
+  ;; TODO similarly support in-lining yabai bindings
+  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle-app --client terminal --app Alacritty"))
 
 (defkbd toggle-emacs
   [[:mod :shift] "Return"]
-  (toggle/toggle-app {:client-name "emacs" :app-name "Emacs"}))
+  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle-app --client emacs --app Emacs"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; cycle tags and clients

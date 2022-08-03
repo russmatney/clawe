@@ -2,7 +2,8 @@
   (:require
    [clojure.string :as string]
    [defthing.defcom :refer [defcom] :as defcom]
-   [defthing.core :as defthing]))
+   [defthing.core :as defthing]
+   [clojure.edn :as edn]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Getters
@@ -49,6 +50,9 @@
   "
   [{:binding/keys [command-name]}]
   (str "clawe " command-name))
+
+(defn binding-bb-cli-command
+  [{:binding/keys [command-name]}])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Rofi
@@ -135,11 +139,17 @@
                               #{'awm/awm-fnl})
                   (some-> xorfs last second))
 
+        ;; TODO some better way to attach this form without evaluating it?
+        ;; (other than str and edn/read-string?)
+        body-str (some-> xorfs last str)
+
         binding (apply defthing/defthing :clawe/binding n
                        (cond-> {:binding/key          key-def
                                 :binding/command-name full-name}
 
-                         raw-fnl (assoc :binding/raw-fnl raw-fnl))
+                         raw-fnl  (assoc :binding/raw-fnl raw-fnl)
+                         body-str (assoc :binding/body-str body-str))
+
                        rst)]
     `(do
        ;; register a defcom with the full binding name
@@ -153,13 +163,14 @@
 (comment
   (defkbd say-bye
     [[:mod :ctrl :shift] "h"]
-    (println "Bye!!"))
+    (println "Do i run at eval time?"))
+
+  (edn/read-string (-> say-bye :binding/body-str))
 
   (->>
     (list-bindings)
     (filter (fn [com] (-> com :name (#(string/includes? % "say-bye")))))
-    first
-    )
+    first)
 
   (->>
     (defthing.defcom/list-commands)

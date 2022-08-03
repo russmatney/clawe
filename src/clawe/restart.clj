@@ -11,6 +11,9 @@
    [ralphie.zsh :as zsh]
    [util :as util]
 
+
+   clawe.defs.bindings
+
    [clawe.awesome.rules :as awm.rules]
    [clawe.awesome.bindings :as awm.bindings]
    [clawe.config :as clawe.config]
@@ -143,56 +146,59 @@ See `build-uberjar`.
 ;; Reload
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defcom reload
+(defn do-reload
   "Write all dependent configs and restart whatever daemons."
-  (do
-    (log "reloading...")
+  ([] (do-reload nil))
+  ([_]
+   (log "reloading...")
 
-    ;; Bindings
-    (when-not (clawe.config/is-mac?)
-      (log "rewriting awm bindings")
-      (awm.bindings/write-awesome-bindings)
-      (log "resetting sxhkd bindings")
-      ;; NOTE this ensures the sxhkd tmux session as well, which is required for keybindings to work!
-      (sxhkd.bindings/reset-bindings))
+   ;; Bindings
+   (when-not (clawe.config/is-mac?)
+     (log "rewriting awm bindings")
+     (awm.bindings/write-awesome-bindings)
+     (log "resetting sxhkd bindings")
+     ;; NOTE this ensures the sxhkd tmux session as well, which is required for keybindings to work!
+     (sxhkd.bindings/reset-bindings))
 
-    ;; Rules
-    (when-not (clawe.config/is-mac?)
-      (log "rewriting rules")
-      (awm.rules/write-awesome-rules)
-      (log "reapplying rules")
-      (rules/correct-clients-and-workspaces)
-      (log "finished rules"))
+   ;; Rules
+   (when-not (clawe.config/is-mac?)
+     (log "rewriting rules")
+     (awm.rules/write-awesome-rules)
+     (log "reapplying rules")
+     (rules/correct-clients-and-workspaces)
+     (log "finished rules"))
 
-    (log "Cleaning, consolidating, and updating indexes")
-    (rules/clean-workspaces)
-    (rules/consolidate-workspaces)
-    (rules/reset-workspace-indexes)
+   (log "Cleaning, consolidating, and updating indexes")
+   (rules/clean-workspaces)
+   (rules/consolidate-workspaces)
+   (rules/reset-workspace-indexes)
 
 
-    ;; Restart Notifications service
-    (when-not (clawe.config/is-mac?)
-      (log "reloading notifications")
-      (-> (proc/$ systemctl --user start deadd-notification-center)
-          (proc/check)))
+   ;; Restart Notifications service
+   (when-not (clawe.config/is-mac?)
+     (log "reloading notifications")
+     (-> (proc/$ systemctl --user start deadd-notification-center)
+         (proc/check)))
 
-    ;; Reload completions/caches
-    (when-not (clawe.config/is-mac?)
-      (log "reloading zsh tab completion")
-      (install-zsh-tab-completion))
+   ;; Reload completions/caches
+   (when-not (clawe.config/is-mac?)
+     (log "reloading zsh tab completion")
+     (install-zsh-tab-completion))
 
-    ;; Doom env refresh - probably a race-case here....
-    (tmux/fire {:tmux.fire/cmd     "doom env"
-                :tmux.fire/session "dotfiles"})
-    (emacs/fire "(doom/reload-env)")
+   ;; Doom env refresh - probably a race-case here....
+   (tmux/fire {:tmux.fire/cmd     "doom env"
+               :tmux.fire/session "dotfiles"})
+   (emacs/fire "(doom/reload-env)")
 
-    ;; Doctor - Wallpaper, etc
-    (when-not (clawe.config/is-mac?)
-      (log "Firing doctor reload")
-      (clawe.doctor/reload))
+   ;; Doctor - Wallpaper, etc
+   (when-not (clawe.config/is-mac?)
+     (log "Firing doctor reload")
+     (clawe.doctor/reload))
 
-    (clawe.doctor/update-topbar)
-    (log "Reload complete")))
+   (clawe.doctor/update-topbar)
+   (log "Reload complete")))
+
+(defcom reload (do-reload))
 
 (comment
   (defcom/exec reload))
