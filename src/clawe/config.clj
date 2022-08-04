@@ -87,6 +87,9 @@
        (map (fn [[key def]]
               (assoc def :client/key key)))))
 
+(defn client-def [client-key]
+  ((:client/defs @*config* {}) client-key))
+
 (defn update-client-def [client-key def]
   (-> @*config*
       (update-in [:client/defs client-key] merge def)

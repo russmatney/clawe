@@ -39,6 +39,11 @@
    :client/app-name     "Emacs"
    :client/focused      nil})
 
+(def journal-client-focused
+  {:client/window-title "journal"
+   :client/app-name     "Emacs"
+   :client/focused      true})
+
 (def myrepo-emacs-client
   {:client/window-title "myrepo"
    :client/app-name     "Emacs"
@@ -61,6 +66,10 @@
    :jcli
    {:prefix   :jc :schema client/schema
     :spec-gen journal-client}
+
+   :jcli-focused
+   {:prefix   :jc-focused :schema client/schema
+    :spec-gen journal-client-focused}
 
    :myrepo-cli
    {:prefix   :mrc
@@ -87,6 +96,12 @@
     :schema   workspace/schema
     :spec-gen (assoc journal-workspace :workspace/clients [journal-client])}
 
+   :jwsp+cli-focused
+   {:prefix   :jw-jc-focused
+    :schema   workspace/schema
+    :spec-gen (assoc journal-workspace :workspace/clients
+                     [journal-client-focused])}
+
    :myrepo-wsp
    {:prefix   :mrw
     :schema   workspace/schema
@@ -100,7 +115,13 @@
    :myrepo-wsp+jcli
    {:prefix   :mrw-jc
     :schema   workspace/schema
-    :spec-gen (assoc myrepo-workspace :workspace/clients [journal-client])}})
+    :spec-gen (assoc myrepo-workspace :workspace/clients [journal-client])}
+
+   :myrepo-wsp+jcli-focused
+   {:prefix   :mrw-jc-focused
+    :schema   workspace/schema
+    :spec-gen (assoc myrepo-workspace :workspace/clients
+                     [journal-client-focused])}})
 
 (comment
   (gen-data schema
@@ -145,34 +166,62 @@
     (sys/with-system
       [wm/*wm* (TestWM. [])]
       (set-defs {"journal" journal-def})
-      (is (not (toggle/find-client journal-def)))))
+      (is (not (toggle/find-client journal-def)))
+
+      (is (= [:create-client journal-def]
+             (toggle/determine-toggle-action "journal")))))
 
   (testing "journal-wsp without journal client, not found"
     (sys/with-system
       [wm/*wm* (TestWM. (gen-workspaces [:jwsp]))]
       (set-defs {"journal" journal-def})
-      (is (not (toggle/find-client journal-def)))))
+      (is (not (toggle/find-client journal-def)))
+
+      (is (= [:create-client journal-def]
+             (toggle/determine-toggle-action "journal")))))
 
   (testing "myrepo with myrepo emacs client, not found"
     (sys/with-system
       [wm/*wm* (TestWM. (gen-workspaces [:myrepo-wsp+cli]))]
       (set-defs {"journal" journal-def})
-      (is (not (toggle/find-client journal-def)))))
+      (is (not (toggle/find-client journal-def)))
 
-  (testing "journal-wsp current and with journal client, found"
+      (is (= [:create-client journal-def]
+             (toggle/determine-toggle-action "journal")))))
+
+  (testing "journal-wsp current and unfocused journal client, found"
     (sys/with-system
       [wm/*wm* (TestWM. (gen-workspaces [:jwsp+cli]))]
       (set-defs {"journal" journal-def})
 
       ;; find-client
-      (is (toggle/find-client journal-def))
-      (is (= (toggle/find-client journal-def)
-             (merge journal-client journal-def)))
+      (let [client (toggle/find-client journal-def)]
+        (is client)
+        (is (= client (merge journal-client journal-def)))
 
-      ;; in-current-workspace?
-      (is (= (toggle/client-in-current-workspace?
-               (toggle/find-client journal-def))
-             (merge journal-client journal-def))) ))
+        ;; in-current-workspace?
+        (is (= (toggle/client-in-current-workspace? client)
+               (merge journal-client journal-def)))
+
+        (is (= [:focus-client client]
+               (toggle/determine-toggle-action "journal"))))))
+
+  (testing "journal-wsp current and focused journal client, found"
+    (sys/with-system
+      [wm/*wm* (TestWM. (gen-workspaces [:jwsp+cli-focused]))]
+      (set-defs {"journal" journal-def})
+
+      ;; find-client
+      (let [client (toggle/find-client journal-def)]
+        (is client)
+        (is (= client (merge journal-client-focused journal-def)))
+
+        ;; in-current-workspace?
+        (is (= (toggle/client-in-current-workspace? client)
+               (merge journal-client-focused journal-def)))
+
+        (is (= [:hide-client client]
+               (toggle/determine-toggle-action "journal"))))))
 
   (testing "journal-wsp with jclient is current, repo-wsp with emacs client, found in current"
     (sys/with-system
@@ -180,16 +229,35 @@
       (set-defs {"journal" journal-def})
 
       ;; find-client
-      (is (toggle/find-client journal-def))
-      (is (= (toggle/find-client journal-def)
-             (merge journal-client journal-def)))
+      (let [client (toggle/find-client journal-def)]
+        (is client)
+        (is (= client (merge journal-client journal-def)))
 
-      ;; in-current-workspace?
-      (is (toggle/client-in-current-workspace?
-            (toggle/find-client journal-def)))
-      (is (= (toggle/client-in-current-workspace?
-               (toggle/find-client journal-def))
-             (merge journal-client journal-def)))))
+        ;; in-current-workspace?
+        (is (toggle/client-in-current-workspace? client))
+        (is (= (toggle/client-in-current-workspace? client)
+               (merge journal-client journal-def)))
+
+        (is (= [:focus-client client]
+               (toggle/determine-toggle-action "journal"))))))
+
+  (testing "journal-wsp with focused jclient, repo-wsp with emacs client, found in current"
+    (sys/with-system
+      [wm/*wm* (TestWM. (gen-workspaces [:jwsp+cli-focused :myrepo-wsp+cli]))]
+      (set-defs {"journal" journal-def})
+
+      ;; find-client
+      (let [client (toggle/find-client journal-def)]
+        (is client)
+        (is (= client (merge journal-client-focused journal-def)))
+
+        ;; in-current-workspace?
+        (is (toggle/client-in-current-workspace? client))
+        (is (= (toggle/client-in-current-workspace? client)
+               (merge journal-client-focused journal-def)))
+
+        (is (= [:hide-client client]
+               (toggle/determine-toggle-action "journal"))))))
 
   (testing "journal-wsp with jclient, but repo-wsp is current, found, not in current"
     (sys/with-system
@@ -197,30 +265,51 @@
       (set-defs {"journal" journal-def})
 
       ;; find-client
-      (is (toggle/find-client journal-def))
-      (is (= (toggle/find-client journal-def)
-             (merge journal-client journal-def)))
+      (let [client (toggle/find-client journal-def)]
+        (is client)
+        (is (= client (merge journal-client journal-def)))
 
-      ;; in-current-workspace?
-      (is (not (toggle/client-in-current-workspace?
-                 (toggle/find-client journal-def))))))
+        ;; in-current-workspace?
+        (is (not (toggle/client-in-current-workspace? client)))
 
-  (testing "empty journal-wsp, myrepo-wsp is current with journal-client, found in current"
+        (is (= [:show-client client]
+               (toggle/determine-toggle-action "journal"))))))
+
+  (testing "empty journal-wsp, myrepo-wsp is current with unfocused journal-client, found in current"
     (sys/with-system
       [wm/*wm* (TestWM. (gen-workspaces [:myrepo-wsp+jcli :jwsp]))]
       (set-defs {"journal" journal-def})
 
       ;; find-client
-      (is (toggle/find-client journal-def))
-      (is (= (toggle/find-client journal-def)
-             (merge journal-client journal-def)))
+      (let [client (toggle/find-client journal-def)]
+        (is client)
+        (is (= client (merge journal-client journal-def)))
 
-      ;; in-current-workspace?
-      (is (toggle/client-in-current-workspace?
-            (toggle/find-client journal-def)))
-      (is (= (toggle/client-in-current-workspace?
-               (toggle/find-client journal-def))
-             (merge journal-client journal-def)))))
+        ;; in-current-workspace?
+        (is (toggle/client-in-current-workspace? client))
+        (is (= (toggle/client-in-current-workspace? client)
+               (merge journal-client journal-def)))
+
+        (is (= [:focus-client client]
+               (toggle/determine-toggle-action "journal"))))))
+
+  (testing "empty journal-wsp, myrepo-wsp is current with focused journal-client, found in current"
+    (sys/with-system
+      [wm/*wm* (TestWM. (gen-workspaces [:myrepo-wsp+jcli-focused :jwsp]))]
+      (set-defs {"journal" journal-def})
+
+      ;; find-client
+      (let [client (toggle/find-client journal-def)]
+        (is client)
+        (is (= client (merge journal-client-focused journal-def)))
+
+        ;; in-current-workspace?
+        (is (toggle/client-in-current-workspace? client))
+        (is (= (toggle/client-in-current-workspace? client)
+               (merge journal-client-focused journal-def)))
+
+        (is (= [:hide-client client]
+               (toggle/determine-toggle-action "journal"))))))
 
   (testing "empty journal-wsp is current, myrepo-wsp with journal-client, found, not in current"
     (sys/with-system
@@ -228,10 +317,12 @@
       (set-defs {"journal" journal-def})
 
       ;; find-client
-      (is (toggle/find-client journal-def))
-      (is (= (toggle/find-client journal-def)
-             (merge journal-client journal-def)))
+      (let [client (toggle/find-client journal-def)]
+        (is client)
+        (is (= client (merge journal-client journal-def)))
 
-      ;; in-current-workspace?
-      (is (not (toggle/client-in-current-workspace?
-                 (toggle/find-client journal-def)))))))
+        ;; in-current-workspace?
+        (is (not (toggle/client-in-current-workspace? client)))
+
+        (is (= [:show-client client]
+               (toggle/determine-toggle-action "journal")))))))

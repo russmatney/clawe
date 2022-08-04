@@ -11,8 +11,8 @@
    [clawe.doctor :as clawe.doctor]
    [clawe.wm :as wm]
    [clawe.client :as client]
-   [clawe.workspace :as workspace]))
-
+   [clawe.workspace :as workspace]
+   [clawe.config :as clawe.config]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; find-client
@@ -41,7 +41,6 @@
    (when-not (find-client opts client-def)
      (println "todo: create client" client-def))))
 
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; in current workspace?
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -50,10 +49,33 @@
   ([client] (client-in-current-workspace? nil client))
   ([opts client]
    (when client
-     (let [current (:current-workspace opts (wm/current-workspace
-                                              ;; pass :prefetched-clients through
-                                              (assoc opts :include-clients true)))]
-       (workspace/find-matching-client current client)))))
+     (let [wsps (:current-workspaces opts (wm/current-workspaces
+                                            ;; pass :prefetched-clients through
+                                            (assoc opts :include-clients true)))]
+       (some->> wsps
+                (map (fn [wsp] (workspace/find-matching-client wsp client)))
+                first)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; toggle client def
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn determine-toggle-action [client-key]
+  ;; TODO prefetch and pass opts into funcs
+  (let [def (clawe.config/client-def client-key)]
+    (if-not def
+      (println "WARN: [toggle] no def found for client-key" client-key)
+
+      (let [client (find-client def)]
+        (cond
+          (not client) [:create-client def]
+
+          (client-in-current-workspace? client)
+          (if (:client/focused client)
+            [:hide-client client]
+            [:focus-client client])
+
+          :else [:show-client client])))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; App toggling
