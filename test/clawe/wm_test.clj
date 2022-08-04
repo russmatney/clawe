@@ -144,7 +144,7 @@
       (is (valid client/schema focused-client))
       (is (:client/focused focused-client))
       (is (client/match? focused-client og-focus)))
-    ;; NOTE we're relying somewhat on the test fixture to restore the og workspace
+    ;; NOTE we're relying on the test fixture to restore the og workspace
     ))
 
 ;; rearranging
@@ -357,6 +357,8 @@
 
 (defrecord OneClientWM []
   wm.protocol/ClaweWM
+  (-current-workspaces [_this _opts] [{:workspace/clients [test-client]}])
+  (-active-workspaces [_this _opts] [{:workspace/clients [test-client]}])
   (-active-clients [_this _opts] [test-client]))
 
 (deftest client-def-merging-test
@@ -394,13 +396,23 @@
                                   :client/window-title (str test-client-title "-soft-match")
                                   :match/soft-title    true}}})
 
-        (let [clients (wm/active-clients)]
-          (is (valid [:sequential client/schema] clients))
-          (is (= (str test-client-title "-soft-match")
-                 (-> clients first :client/window-title)))
-          (is (= soft-match-key (-> clients first :client/key)))
-          (is (= "vague" (-> clients first :misc/data))))))))
+        (let [clients (wm/active-clients)
+              client  (first clients)
+              assert-on
+              (fn [c]
+                (is (valid client/schema c))
+                (is (= (str test-client-title "-soft-match") (-> c :client/window-title)))
+                (is (= soft-match-key (-> c :client/key)))
+                (is (= "vague" (-> c :misc/data))))]
 
+          (testing "wm/active-clients"
+            (assert-on client))
+          (testing "wm/fetch-client"
+            (assert-on (wm/fetch-client client)))
+          (testing "wm/current-workspaces"
+            (assert-on (->> (wm/current-workspace) :workspace/clients first)))
+          (testing "wm/active-workspaces"
+            (assert-on (->> (wm/active-workspaces) first :workspace/clients first))))))))
 
 (deftest fetch-client-test
   (testing "active-clients and fetch-clients match"

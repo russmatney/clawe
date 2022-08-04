@@ -76,6 +76,9 @@
         (first matches))
       (merge client (some->> matches first)))))
 
+(defn- merge-client-defs [wsp]
+  (update wsp :workspace/clients #(->> % (map merge-with-client-def))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; workspace fetching
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -97,9 +100,10 @@
    (sys/start! `*wm*)
    (->>
      (wm.protocol/-current-workspaces *wm* opts)
-     ;; TODO apply malli transform here instead of in the protocols?
+     ;; TODO apply malli transform here instead of in the protocols
      (map merge-with-workspace-def)
-     (map ensure-directory))))
+     (map ensure-directory)
+     (map merge-client-defs))))
 
 (defn current-workspace
   ([] (current-workspace nil))
@@ -114,7 +118,8 @@
    (->> (wm.protocol/-active-workspaces *wm* opts)
         ;; TODO apply malli transform here instead of in the protocols?
         (map merge-with-workspace-def)
-        (map ensure-directory))))
+        (map ensure-directory)
+        (map merge-client-defs))))
 
 (defn fetch-workspace
   ([workspace-or-title] (fetch-workspace nil workspace-or-title))
@@ -125,7 +130,8 @@
      (some->
        (wm.protocol/-fetch-workspace *wm* opts title)
        merge-with-workspace-def
-       ensure-directory))))
+       ensure-directory
+       merge-client-defs))))
 
 (comment
   clawe.config/*config*
