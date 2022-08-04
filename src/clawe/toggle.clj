@@ -61,10 +61,11 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn determine-toggle-action [client-key]
+  (println "deter w/ client-key" client-key)
   ;; TODO prefetch and pass opts into funcs
   (let [def (clawe.config/client-def client-key)]
     (if-not def
-      (println "WARN: [toggle] no def found for client-key" client-key)
+      [:no-def client-key]
 
       (let [client (find-client def)]
         (cond
@@ -76,6 +77,29 @@
             [:focus-client client])
 
           :else [:show-client client])))))
+
+(defn toggle
+  {:org.babashka/cli
+   {:alias {:key :client/key}}}
+  [args]
+  (let [[action val] (determine-toggle-action (:client/key args))]
+    (case action
+      :no-def (println "WARN: [toggle] no def found for client-key" args)
+
+      ;; emacs/tmux/generic opts/description
+      :create-client (println "open" val)
+
+      :hide-client
+      ;; move to an ensured workspace? close? minimize? hide?
+      (println "hide" val)
+
+      :focus-client
+      ;; bury all? float and center?
+      (println "focus" val)
+
+      :show-client
+      ;; bury all? float and center?
+      (println "show" val))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; App toggling
