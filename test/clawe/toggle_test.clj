@@ -8,17 +8,16 @@
    [clawe.toggle :as toggle]
    [systemic.core :as sys]
    [clawe.config :as clawe.config]
-   [wing.core :as w]
    [clawe.workspace :as workspace]))
 
 
 (defrecord TestWM [workspaces]
   wm.protocol/ClaweWM
-  (-current-workspaces [_this _opts] workspaces)
+  (-current-workspaces [_this _opts]
+    ;; the first workspace is the 'current' one
+    (->> workspaces (take 1)))
   (-active-workspaces [_this _opts] workspaces)
   (-active-clients [_this _opts]
-    (println "active-clients called")
-    (println workspaces)
     (->> workspaces (mapcat :workspace/clients))))
 
 (defn set-defs [defs]
@@ -54,13 +53,12 @@
    :workspace/directory "~/myrepo"})
 
 (def schema
-  {
-   ;; clients
+  {;; clients
    :client
    {:prefix   :client :schema client/schema
     :spec-gen {:client/focused nil}}
 
-   :j-cli
+   :jcli
    {:prefix   :jc :schema client/schema
     :spec-gen journal-client}
 
@@ -79,12 +77,12 @@
    {:prefix :wsp-cs
     :schema workspace/schema}
 
-   :j-wsp
+   :jwsp
    {:prefix   :jw
     :schema   workspace/schema
     :spec-gen (assoc journal-workspace :workspace/clients [])}
 
-   :j-wsp+j-cli
+   :jwsp+cli
    {:prefix   :jw-jc
     :schema   workspace/schema
     :spec-gen (assoc journal-workspace :workspace/clients [journal-client])}
@@ -94,10 +92,15 @@
     :schema   workspace/schema
     :spec-gen (assoc myrepo-workspace :workspace/clients [])}
 
-   :myrepo-wsp+myrepo-cli
+   :myrepo-wsp+cli
    {:prefix   :mrw-mrc
     :schema   workspace/schema
-    :spec-gen (assoc myrepo-workspace :workspace/clients [myrepo-workspace])}})
+    :spec-gen (assoc myrepo-workspace :workspace/clients [myrepo-emacs-client])}
+
+   :myrepo-wsp+jcli
+   {:prefix   :mrw-jc
+    :schema   workspace/schema
+    :spec-gen (assoc myrepo-workspace :workspace/clients [journal-client])}})
 
 (comment
   (gen-data schema
@@ -105,6 +108,27 @@
              :journal-workspace [[1]]
              ;; :workspace-with-clients [[1]]
              :workspace         [[1]]}))
+
+(defn gen-workspaces
+  "Takes a list of keys from `schema`, returns a single generated map for
+  each. Maintains order.
+
+  Used along with `TestWM` - the first workspace is used as the 'current' one."
+  [schema-keys]
+  ;; NOTE should only be passed workspace keys
+  (let [generated
+        (->> schema-keys
+             (map (fn [k] [k [[1]]]))
+             (into {})
+             (gen-data schema))]
+    (->> schema-keys
+         (mapcat (fn [k] (vals (k generated)))))))
+
+(comment
+  (gen-workspaces [:jwsp :myrepo-wsp])
+  (gen-workspaces [:myrepo-wsp :jwsp])
+  (gen-workspaces [:jwsp+cli])
+  (gen-workspaces [:jwsp+cli :myrepo-wsp]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; journal toggle
@@ -116,41 +140,98 @@
    ;; adding key just to ease testing, should maybe remove...
    :client/key          "journal"})
 
-(def client-defs
-  {"journal" journal-def})
-
-(deftest journal-client-exists-test
-  (testing "no clients, not found"
+(deftest journal-find-client-test
+  (testing "no clients or workspaces, not found"
     (sys/with-system
       [wm/*wm* (TestWM. [])]
       (set-defs {"journal" journal-def})
-      (is (not (toggle/client-exists? journal-def)))))
+      (is (not (toggle/find-client journal-def)))))
 
   (testing "journal-wsp without journal client, not found"
-    (let [{:keys [j-wsp]}
-          (gen-data schema {:j-wsp [[1]]})]
-      (sys/with-system
-        [wm/*wm* (TestWM. (vals j-wsp))]
-        (set-defs {"journal" journal-def})
-        (is (not (toggle/client-exists? journal-def))))))
+    (sys/with-system
+      [wm/*wm* (TestWM. (gen-workspaces [:jwsp]))]
+      (set-defs {"journal" journal-def})
+      (is (not (toggle/find-client journal-def)))))
 
-  (testing "journal-wsp with journal client, found"
-    (let [{:keys [j-wsp+j-cli]}
-          (gen-data schema {:j-wsp+j-cli [[1]]})]
-      (sys/with-system
-        [wm/*wm* (TestWM. (vals j-wsp+j-cli))]
-        (set-defs {"journal" journal-def})
-        (is (toggle/client-exists? journal-def))
-        (is (= (toggle/client-exists? journal-def)
-               (merge journal-client journal-def))))))
+  (testing "myrepo with myrepo emacs client, not found"
+    (sys/with-system
+      [wm/*wm* (TestWM. (gen-workspaces [:myrepo-wsp+cli]))]
+      (set-defs {"journal" journal-def})
+      (is (not (toggle/find-client journal-def)))))
 
-  (testing "journal-wsp and repo-wsp, correct client found"
-    (let [{:keys [j-wsp+j-cli myrepo-wsp+myrepo-cli]}
-          (gen-data schema {:j-wsp+j-cli           [[1]]
-                            :myrepo-wsp+myrepo-cli [[1]]})]
-      (sys/with-system
-        [wm/*wm* (TestWM. (mapcat vals [j-wsp+j-cli myrepo-wsp+myrepo-cli]))]
-        (set-defs {"journal" journal-def})
-        (is (toggle/client-exists? journal-def))
-        (is (= (toggle/client-exists? journal-def)
-               (merge journal-client journal-def)))))))
+  (testing "journal-wsp current and with journal client, found"
+    (sys/with-system
+      [wm/*wm* (TestWM. (gen-workspaces [:jwsp+cli]))]
+      (set-defs {"journal" journal-def})
+
+      ;; find-client
+      (is (toggle/find-client journal-def))
+      (is (= (toggle/find-client journal-def)
+             (merge journal-client journal-def)))
+
+      ;; in-current-workspace?
+      (is (= (toggle/client-in-current-workspace?
+               (toggle/find-client journal-def))
+             (merge journal-client journal-def))) ))
+
+  (testing "journal-wsp with jclient is current, repo-wsp with emacs client, found in current"
+    (sys/with-system
+      [wm/*wm* (TestWM. (gen-workspaces [:jwsp+cli :myrepo-wsp+cli]))]
+      (set-defs {"journal" journal-def})
+
+      ;; find-client
+      (is (toggle/find-client journal-def))
+      (is (= (toggle/find-client journal-def)
+             (merge journal-client journal-def)))
+
+      ;; in-current-workspace?
+      (is (toggle/client-in-current-workspace?
+            (toggle/find-client journal-def)))
+      (is (= (toggle/client-in-current-workspace?
+               (toggle/find-client journal-def))
+             (merge journal-client journal-def)))))
+
+  (testing "journal-wsp with jclient, but repo-wsp is current, found, not in current"
+    (sys/with-system
+      [wm/*wm* (TestWM. (gen-workspaces [:myrepo-wsp+cli :jwsp+cli]))]
+      (set-defs {"journal" journal-def})
+
+      ;; find-client
+      (is (toggle/find-client journal-def))
+      (is (= (toggle/find-client journal-def)
+             (merge journal-client journal-def)))
+
+      ;; in-current-workspace?
+      (is (not (toggle/client-in-current-workspace?
+                 (toggle/find-client journal-def))))))
+
+  (testing "empty journal-wsp, myrepo-wsp is current with journal-client, found in current"
+    (sys/with-system
+      [wm/*wm* (TestWM. (gen-workspaces [:myrepo-wsp+jcli :jwsp]))]
+      (set-defs {"journal" journal-def})
+
+      ;; find-client
+      (is (toggle/find-client journal-def))
+      (is (= (toggle/find-client journal-def)
+             (merge journal-client journal-def)))
+
+      ;; in-current-workspace?
+      (is (toggle/client-in-current-workspace?
+            (toggle/find-client journal-def)))
+      (is (= (toggle/client-in-current-workspace?
+               (toggle/find-client journal-def))
+             (merge journal-client journal-def)))))
+
+  (testing "empty journal-wsp is current, myrepo-wsp with journal-client, found, not in current"
+    (sys/with-system
+      [wm/*wm* (TestWM. (gen-workspaces [:jwsp :myrepo-wsp+jcli]))]
+      (set-defs {"journal" journal-def})
+
+      ;; find-client
+      (is (toggle/find-client journal-def))
+      (is (= (toggle/find-client journal-def)
+             (merge journal-client journal-def)))
+
+      ;; in-current-workspace?
+      (is (not (toggle/client-in-current-workspace?
+                 (toggle/find-client journal-def)))))))

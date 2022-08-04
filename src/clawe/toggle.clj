@@ -10,20 +10,25 @@
 
    [clawe.doctor :as clawe.doctor]
    [clawe.wm :as wm]
-   [clawe.client :as client]))
+   [clawe.client :as client]
+   [clawe.workspace :as workspace]))
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; find-client
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn client-exists?
-  "Returns true if the passed client-def matches any of the existing clients.
+;; TODO this might be the same as wm/fetch-client... presuming that is written
+;; to support passed :clients or :prefetched-clients
+(defn find-client
+  "Returns a client matching the passed `client-def`.
 
   Matches via `client/match?`, passing the def twice to use any `:match/` opts.
 
-  Supports prefetched `:clients` to avoid the `wm/` call.
-  "
-  ([client-def] (client-exists? nil client-def))
+  Supports prefetched `:prefetched-clients` to avoid the `wm/` call."
+  ([client-def] (find-client nil client-def))
   ([opts client-def]
-   (let [all-clients (:clients opts (wm/active-clients))]
+   (let [all-clients (:prefetched-clients opts (wm/active-clients opts))]
      (some->> all-clients
               (filter
                 ;; pass def as opts
@@ -33,12 +38,22 @@
 (defn ensure-client
   ([client-def] (ensure-client nil client-def))
   ([opts client-def]
-   (when-not (client-exists? opts client-def)
+   (when-not (find-client opts client-def)
      (println "todo: create client" client-def))))
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; in current workspace?
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
+(defn client-in-current-workspace?
+  ([client] (client-in-current-workspace? nil client))
+  ([opts client]
+   (when client
+     (let [current (:current-workspace opts (wm/current-workspace
+                                              ;; pass :prefetched-clients through
+                                              (assoc opts :include-clients true)))]
+       (workspace/find-matching-client current client)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; App toggling
