@@ -15,6 +15,7 @@
    [:workspace/index int?]
    [:workspace/initial-file {:optional true} string?]
    ;; extra app names used to match on clients when applying clawe.rules
+   ;; TODO not workspace app-names, probably more like workspace/client-keys
    [:workspace/app-names {:optional true} [:sequential string?]]
    [:workspace/clients {:optional true} [:sequential client/schema]]])
 

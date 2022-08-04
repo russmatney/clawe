@@ -5,7 +5,11 @@
    [reifyhealth.specmonstah.core :as sm]
    [malli.generator :as mg]
    [malli.util :as mu]
-   [loom.io :as lio]))
+   [loom.io :as lio]
+   [test-util :refer [gen-data]]))
+
+;; NOTE this is a test-only namespace for working with specmonstah-malli
+;; could delete at some point
 
 (def scratchpad-schema
   [:map
@@ -64,7 +68,7 @@
 (comment
   (mg/generate client-schema))
 
-(def specmonstah-schema
+(def schema
   {;; TODO this one (with relations to clients) is actually a 'scratchpad'
    :clawe/workspace
    {:prefix      :workspace
@@ -86,20 +90,6 @@
    {:prefix :client-no-workspace
     :schema client-schema}})
 
-(defn gen-data
-  "Expects a specmonstah `query`"
-  [query]
-  (let [ent-db    (sm-malli/ent-db-spec-gen {:schema specmonstah-schema} query)
-        by-type   (-> ent-db sm/ents-by-type)
-        with-data (-> ent-db (sm/attr-map :spec-gen))]
-    (->> by-type
-         (map (fn [[type ents]]
-                [type (->> ents
-                           (map (fn [ent-name]
-                                  [ent-name (get with-data ent-name)]))
-                           (into {}))]))
-         (into {}))))
-
 (deftest gen-data-test
   (testing "workspace and client count test"
     (let [tests [{:wsp-count          7 :client-count          5
@@ -113,8 +103,8 @@
                       expected-wsp-count
                       expected-client-count]} tests]
           (let [{:keys [:clawe/workspace :clawe/client]}
-                (gen-data {:clawe/workspace [[wsp-count]]
-                           :clawe/client    [[client-count]]})]
+                (gen-data schema {:clawe/workspace [[wsp-count]]
+                                  :clawe/client    [[client-count]]})]
             (is (= (count workspace) expected-wsp-count))
 
             ;; clients are created for each workspace
@@ -122,43 +112,43 @@
 
   (testing "workspaces imply client creation"
     (let [{:keys [:clawe/workspace :clawe/client]}
-          (gen-data {:clawe/workspace [[1]]})]
+          (gen-data schema {:clawe/workspace [[1]]})]
       (is (= (count workspace) 1))
       (is (= (count client) 1))))
 
   (testing "workspaces can omit clients"
     (let [{:keys [:clawe/workspace :clawe/client]}
-          (gen-data {:clawe/workspace [[1 {:refs {:scratchpad/client-names ::sm/omit}}]]})]
+          (gen-data schema {:clawe/workspace [[1 {:refs {:scratchpad/client-names ::sm/omit}}]]})]
       (is (= (count workspace) 1))
       (is (= client nil))))
 
   (testing "workspace-no-client"
     (let [{:keys [:clawe/workspace-no-client :clawe/client]}
-          (gen-data {:clawe/workspace-no-client [[1]]})]
+          (gen-data schema {:clawe/workspace-no-client [[1]]})]
       (is (= (count workspace-no-client) 1))
       (is (= client nil))))
 
   (testing "clients imply workspace creation"
     (let [{:keys [:clawe/workspace :clawe/client]}
-          (gen-data {:clawe/client [[1]]})]
+          (gen-data schema {:clawe/client [[1]]})]
       (is (= (count client) 1))
       (is (= (count workspace) 1))))
 
   (testing "clients can omit workspaces"
     (let [{:keys [:clawe/workspace :clawe/client]}
-          (gen-data {:clawe/client [[1 {:refs {:awesome.client/tag-names ::sm/omit}}]]})]
+          (gen-data schema {:clawe/client [[1 {:refs {:awesome.client/tag-names ::sm/omit}}]]})]
       (is (= (count client) 1))
       (is (= workspace nil))))
 
   (testing "client-no-workspace"
     (let [{:keys [:clawe/workspace :clawe/client-no-workspace]}
-          (gen-data {:clawe/client-no-workspace [[1]]})]
+          (gen-data schema {:clawe/client-no-workspace [[1]]})]
       (is (= workspace nil))
       (is (= (count client-no-workspace) 1)))))
 
 (comment
   (-> (sm-malli/ent-db-spec-gen
-        {:schema specmonstah-schema}
+        {:schema schema}
         {:clawe/workspace [[1]
                            [1 {:refs {:scratchpad/client-names ::sm/omit}}]]
          :clawe/client    [[1]]})
@@ -166,19 +156,19 @@
 
   (lio/view
     (:data (sm/add-ents
-             {:schema specmonstah-schema}
+             {:schema schema}
              {:clawe/workspace [[2]]
               :clawe/client    [[1]]})))
 
   (lio/view
     (:data (sm/add-ents
-             {:schema specmonstah-schema}
+             {:schema schema}
              {:clawe/workspace [[6]]
               :clawe/client    [[5]]})))
 
   (lio/view
     (:data (sm/add-ents
-             {:schema specmonstah-schema}
+             {:schema schema}
              {:clawe/workspace [[1]
                                 [2 {:refs {:scratchpad/client-names ::sm/omit}}]]
               :clawe/client    [[1]]}))))
