@@ -18,13 +18,25 @@
    [:workspace/app-names {:optional true} [:sequential string?]]
    [:workspace/clients {:optional true} [:sequential client/schema]]])
 
+(defn strip [w]
+  (m/decode schema w (mt/strip-extra-keys-transformer)) )
 
 (comment
+  (strip
+    {:workspace/title     "journal"
+     :workspace/directory "~/todo"
+     :workspace/app-names "hi"
+     :workspace/clients   [{:client/window-title "blah"
+                            :some/other          "data"}]
+     :gibber              :jabber})
+
   (m/decode
     schema
     {:workspace/title     "journal"
      :workspace/directory "~/todo"
      :workspace/app-names "hi"
+     :workspace/clients   [{:client/window-title "blah"
+                            :some/other          "data"}]
      :gibber              :jabber}
     (mt/strip-extra-keys-transformer))
 

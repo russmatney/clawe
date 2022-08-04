@@ -6,7 +6,8 @@
    [clawe.awesome :as clawe.awesome]
    [clawe.config :as clawe.config]
    [clawe.wm.protocol :as wm.protocol]
-   [clawe.yabai :as clawe.yabai])
+   [clawe.yabai :as clawe.yabai]
+   [clawe.client :as client])
   (:import
    [clawe.awesome Awesome]
    [clawe.yabai Yabai]))
@@ -141,8 +142,7 @@
   ;; TODO refactor into protocol (perf)
   (some->>
     (active-clients)
-    (filter (comp #{(:client/app-name client)} :client/app-name))
-    (filter (comp #{(:client/window-title client)} :client/window-title))
+    (filter (partial client/match? client))
     first))
 
 (comment
