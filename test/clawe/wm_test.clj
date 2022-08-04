@@ -23,10 +23,8 @@
 
       (wm/focus-workspace og-wsp)
       (wait-until
-        "Confirming we reverted to the og workspace"
-        1000
-        (let [new-curr (wm/current-workspace)]
-          (= (:workspace/title og-wsp) (:workspace/title new-curr)))))))
+        "Confirming we reverted to the og workspace" 1000
+        (workspace/match? (wm/current-workspace) og-wsp)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; malli validation
@@ -86,8 +84,7 @@
 
     (wm/create-workspace new-workspace-title)
     (wait-until
-      "New workspace being created"
-      1000
+      "New workspace being created" 1000
       (#{new-workspace-title} (-> (wm/fetch-workspace new-workspace-title) :workspace/title)))
 
     (is (valid workspace/schema (wm/fetch-workspace new-workspace-title)))
@@ -98,8 +95,7 @@
 
     (wm/delete-workspace (wm/fetch-workspace new-workspace-title))
     (wait-until
-      "New workspace being deleted"
-      1000
+      "New workspace being deleted" 1000
       (nil? (wm/fetch-workspace new-workspace-title)))
 
     (is (nil? (wm/fetch-workspace new-workspace-title))
@@ -118,33 +114,21 @@
 
     ;; TODO write a better wrapper for these dupe-y wait/assertions
     (wait-until
-      "Confirming workspace switch finished"
-      1000
-      (let [new-curr (wm/current-workspace)]
-        ;; only testing the title here, client attrs (like :client/focus) can change
-        (= (:workspace/title to-focus) (:workspace/title new-curr))))
-
-    ;; great, now assert on it
-    (let [new-curr (wm/current-workspace)]
-      (is (= (:workspace/title to-focus) (:workspace/title new-curr))
-          "Focused workspace should match new-current workspace"))
+      "Confirming workspace switch finished" 1000
+      (workspace/match? (wm/current-workspace) to-focus))
+    (is (workspace/match? (wm/current-workspace) to-focus)
+        "Focused workspace should match new-current workspace")
 
     ;; revert to original
     (wm/focus-workspace og-focus)
     (wait-until
-      "Confirming workspace switch finished"
-      1000
-      (let [new-new-curr (wm/current-workspace)]
-        (= (:workspace/title og-focus) (:workspace/title new-new-curr))))
-
-    ;; just to be sure
-    (let [new-new-curr (wm/current-workspace)]
-      (is (= (:workspace/title og-focus) (:workspace/title new-new-curr))
-          "Focused workspace should match original workspace"))))
+      "Confirming workspace switch finished" 1000
+      (workspace/match? (wm/current-workspace) og-focus))
+    (is (workspace/match? (wm/current-workspace) og-focus)
+        "Focused workspace should match original workspace")))
 
 (deftest focus-client-test
-  (let [wsp      (wm/current-workspace)
-        clients  (wm/active-clients)
+  (let [clients  (wm/active-clients)
         og-focus (wm/focused-client)
         to-focus (rand-nth clients)]
     (is (valid client/schema og-focus))
@@ -153,23 +137,15 @@
     (let [focused-client (wm/focused-client)]
       (is (valid client/schema focused-client))
       (is (:client/focused focused-client))
-      (is (= (:client/app-name focused-client)
-             (:client/app-name to-focus)))
-      (is (= (:client/window-title focused-client)
-             (:client/window-title to-focus))))
+      (is (client/match? focused-client to-focus)))
 
     (wm/focus-client og-focus)
     (let [focused-client (wm/focused-client)]
       (is (valid client/schema focused-client))
       (is (:client/focused focused-client))
-      (is (= (:client/app-name focused-client)
-             (:client/app-name og-focus)))
-      (is (= (:client/window-title focused-client)
-             (:client/window-title og-focus))))
-
-    ;; osx moves to a different space when focusing other clients
-    ;; so this gets us back
-    (wm/focus-workspace wsp)))
+      (is (client/match? focused-client og-focus)))
+    ;; NOTE we're relying somewhat on the test fixture to restore the og workspace
+    ))
 
 ;; rearranging
 
@@ -201,17 +177,14 @@
     (let [sec-wsp (second wsps)]
       (wm/focus-workspace sec-wsp)
       (wait-until
-        "Waiting for selected workspace to be focused"
-        1000
-        (= (:workspace/title (wm/current-workspace))
-           (:workspace/title sec-wsp)))
+        "Waiting for selected workspace to be focused" 1000
+        (workspace/match? (wm/current-workspace) sec-wsp))
       (let [curr-wsp (wm/current-workspace)]
-        (is (= (:workspace/title curr-wsp) (:workspace/title sec-wsp)))
+        (is (workspace/match? curr-wsp sec-wsp))
 
         (wm/drag-workspace :dir/up)
         (wait-until
-          "Waiting for drag to finish"
-          1000
+          "Waiting for drag to finish" 1000
           (= (inc (:workspace/index curr-wsp))
              (:workspace/index (wm/current-workspace))))
 
@@ -222,18 +195,15 @@
 
         (wm/drag-workspace :dir/down)
         (wait-until
-          "Waiting for drag to finish"
-          1000
-          (= (:workspace/index curr-wsp)
-             (:workspace/index (wm/current-workspace))))
+          "Waiting for drag to finish" 1000
+          (workspace/match? curr-wsp (wm/current-workspace)))
         (is (= (:workspace/index curr-wsp)
                (:workspace/index (wm/current-workspace)))
             "Dragging up then down should return to the same index")
 
         (wm/drag-workspace :dir/down)
         (wait-until
-          "Waiting for drag to finish"
-          1000
+          "Waiting for drag to finish" 1000
           (= (dec (:workspace/index curr-wsp))
              (:workspace/index (wm/current-workspace))))
         (is (= (dec (:workspace/index curr-wsp))
@@ -242,79 +212,44 @@
 
         (wm/drag-workspace :dir/up)
         (wait-until
-          "Waiting for drag to finish"
-          1000
-          (= (:workspace/index curr-wsp)
-             (:workspace/index (wm/current-workspace))))
+          "Waiting for drag to finish" 1000
+          (workspace/match? curr-wsp (wm/current-workspace)))
         (is (= (:workspace/index curr-wsp)
                (:workspace/index (wm/current-workspace)))
             "Dragging down then up should return to the same index")))))
 
 
 (deftest move-client-to-workspace-test
-  (let [[og-wsp target-wsp & _rest] (->> (wm/active-workspaces
-                                           {:include-clients true})
-                                         (filter (comp seq :workspace/clients))
-                                         (take 2))
-        client                      (-> og-wsp :workspace/clients first)]
+  (let [[og-wsp target-wsp] (->> (wm/active-workspaces
+                                   {:include-clients true})
+                                 (filter (comp seq :workspace/clients))
+                                 (take 2))
+        client              (-> og-wsp :workspace/clients first)]
     (is target-wsp)
     (is client)
+
     (wm/move-client-to-workspace client target-wsp)
     (wait-until
-      "Client has been moved to targetworkspace"
-      5000
-      (let [moved-client (wm/fetch-client client)
-            fetched-wsp  (wm/fetch-workspace
-                           {:include-clients true}
-                           target-wsp)]
-        (some->> fetched-wsp
-                 :workspace/clients
-                 (filter (comp #{(:client/window-title moved-client)}
-                               :client/window-title))
-                 (filter (comp #{(:client/app-name moved-client)}
-                               :client/app-name))
-                 first)))
-    (let [moved-client (wm/fetch-client client)
-          fetched-wsp  (wm/fetch-workspace
-                         {:include-clients true}
-                         target-wsp)]
-      (is (some->> fetched-wsp
-                   :workspace/clients
-                   (filter (comp #{(:client/window-title moved-client)}
-                                 :client/window-title))
-                   (filter (comp #{(:client/app-name moved-client)}
-                                 :client/app-name))
-                   first)
-          "target workspace now contains the client"))
+      "Client has been moved to target workspace" 1000
+      (workspace/find-matching-client
+        (wm/fetch-workspace {:include-clients true} target-wsp)
+        (wm/fetch-client client)))
+    (is (workspace/find-matching-client
+          (wm/fetch-workspace {:include-clients true} target-wsp)
+          (wm/fetch-client client))
+        "target workspace should now contain the client")
 
     ;; move it back
     (wm/move-client-to-workspace client og-wsp)
     (wait-until
-      "Client has been returned"
-      1000
-      (let [moved-client (wm/fetch-client client)
-            fetched-wsp  (wm/fetch-workspace
-                           {:include-clients true}
-                           og-wsp)]
-
-        ;; TODO add a same-client? fn to the protocol
-        (some->> fetched-wsp :workspace/clients
-                 (filter (comp #{(:client/window-title moved-client)}
-                               :client/window-title))
-                 (filter (comp #{(:client/app-name moved-client)}
-                               :client/app-name))
-                 first)))
-    (let [moved-client (wm/fetch-client client)
-          fetched-wsp  (wm/fetch-workspace
-                         {:include-clients true}
-                         og-wsp)]
-      (is (some->> fetched-wsp :workspace/clients
-                   (filter (comp #{(:client/window-title moved-client)}
-                                 :client/window-title))
-                   (filter (comp #{(:client/app-name moved-client)}
-                                 :client/app-name))
-                   first)
-          "Client was returned to the current workspace"))))
+      "Client has been returned" 1000
+      (workspace/find-matching-client
+        (wm/fetch-workspace {:include-clients true} og-wsp)
+        (wm/fetch-client client)))
+    (is (workspace/find-matching-client
+          (wm/fetch-workspace {:include-clients true} og-wsp)
+          (wm/fetch-client client))
+        "Client was returned to the current workspace")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; current-workspace
@@ -341,14 +276,9 @@
   (testing "validates against `workspace/schema`"
     (is (valid workspace/schema (wm/current-workspace))))
 
-  (testing "returns nil" ;; formerly, sets a fallback title and directory
+  (testing "returns nil"
     (sys/with-system [wm/*wm* (NoWorkspacesWM.)]
-      (is (nil? (wm/current-workspace))))
-    #_(let [fallback {:workspace/title     "home"
-                      :workspace/directory (zsh/expand "~")}]
-        (sys/with-system [wm/*wm* (NoWorkspacesWM.)]
-          (is (valid workspace/schema (wm/current-workspace)))
-          (is (= fallback (wm/current-workspace))))))
+      (is (nil? (wm/current-workspace)))))
 
   (testing "mixes and expands data from config/workspace-def"
     (let [dir          "~/russmatney/blah"
@@ -363,7 +293,7 @@
           (is (= expected-dir (curr :workspace/directory))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; active-workspaces
+;; active-workspaces, fetch-workspace
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (deftest active-workspaces-test
@@ -382,26 +312,6 @@
                  (-> wsps first :workspace/title)))
           (is (= expected-dir
                  (-> wsps first :workspace/directory))))))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; workspace-defs
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(deftest workspace-defs-test
-  (testing "re-uses the map key as the title."
-    (let [dir          "~/russmatney/blah"
-          expected-dir (zsh/expand dir)]
-      (reset! clawe.config/*config*
-              {:workspace/defs
-               {test-wsp-title {:workspace/directory "~/russmatney/blah"}}})
-      (is (= test-wsp-title
-             (-> (wm/workspace-defs) first :workspace/title)))
-      (is (= expected-dir
-             (-> (wm/workspace-defs) first :workspace/directory))))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; fetch-workspace
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (deftest fetch-workspace-test
   (testing "active-workspaces list matches fetch-workspace output"
@@ -433,3 +343,95 @@
                               {:include-clients true}
                               (:workspace/title wsp))]
                 (is (= fetched  wsp))))))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; active-clients, fetch-client, current-client
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(def test-client-title "my-client")
+(def test-app-name "some-app")
+
+(def test-client {:client/window-title test-client-title
+                  :client/app-name     test-app-name
+                  :client/focused      nil})
+
+(defrecord OneClientWM []
+  wm.protocol/ClaweWM
+  (-active-clients [_this _opts] [test-client]))
+
+(deftest client-def-merging-test
+  (testing "merges config def data"
+    (let [test-client-key "my-client-key"]
+      (sys/with-system
+        [wm/*wm* (OneClientWM.)]
+        (reset!
+          clawe.config/*config*
+          ;; matching on test-app-name
+          {:client/defs {test-client-key {:client/app-names [test-app-name]}}})
+
+        (let [clients (wm/active-clients)]
+          (is (valid [:sequential client/schema] clients))
+          (is (= test-client-title (-> clients first :client/window-title)))
+          ;; make sure the config vals got merged in
+          (is (= test-client-key (-> clients first :client/key)))
+          (is (= [test-app-name] (-> clients first :client/app-names))))))))
+
+(deftest client-def-merging-with-match-opts-test
+  (testing "respects client-def :match/ options"
+    (let [hard-match-key "hard-match-key"
+          soft-match-key "soft-match-key"]
+      (sys/with-system
+        [wm/*wm* (OneClientWM.)]
+        (reset! clawe.config/*config*
+                {:client/defs
+                 ;; hard-match doesn't match any clients
+                 {hard-match-key {:misc/data           "specific"
+                                  :client/app-names    [test-app-name]
+                                  :client/window-title (str test-client-title "-hard-match")}
+                  ;; soft-match matches our client b/c of :match/soft-title
+                  soft-match-key {:misc/data           "vague"
+                                  :client/app-names    [test-app-name]
+                                  :client/window-title (str test-client-title "-soft-match")
+                                  :match/soft-title    true}}})
+
+        (let [clients (wm/active-clients)]
+          (is (valid [:sequential client/schema] clients))
+          (is (= (str test-client-title "-soft-match")
+                 (-> clients first :client/window-title)))
+          (is (= soft-match-key (-> clients first :client/key)))
+          (is (= "vague" (-> clients first :misc/data))))))))
+
+
+(deftest fetch-client-test
+  (testing "active-clients and fetch-clients match"
+    (let [clients (wm/active-clients)]
+      (doall
+        (for [c clients]
+          (let [fetched (wm/fetch-client c)]
+            (is (= fetched c))))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; workspace-defs, client-defs
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(deftest workspace-defs-test
+  (testing "re-uses the map key as the title."
+    (let [dir          "~/russmatney/blah"
+          expected-dir (zsh/expand dir)]
+      (reset! clawe.config/*config*
+              {:workspace/defs
+               {test-wsp-title {:workspace/directory "~/russmatney/blah"}}})
+      (is (= test-wsp-title
+             (-> (wm/workspace-defs) first :workspace/title)))
+      (is (= expected-dir
+             (-> (wm/workspace-defs) first :workspace/directory))))))
+
+(deftest client-defs-test
+  (testing "uses the key as the client/key"
+    (let [key     "journal"
+          j-title "journal-title"]
+      (reset! clawe.config/*config*
+              {:client/defs
+               {key {:client/window-title j-title}}})
+      (is (= key (-> (wm/client-defs) first :client/key)))
+      (is (= j-title (-> (wm/client-defs) first :client/window-title))))))

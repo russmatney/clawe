@@ -50,12 +50,31 @@
 
     :else wsp))
 
-(defn- merge-with-def
+(defn- merge-with-workspace-def
   "Merges the passed workspace with a workspace-def from resouces/clawe.edn.
 
   Matches using the `:workspace/title`."
   [{:keys [workspace/title] :as wsp}]
   (merge wsp (clawe.config/workspace-def title)))
+
+(defn- merge-with-client-def
+  "Attempts to merge the passed client with a matching client-def from resouces/clawe.edn.
+
+  Matches using `client/match?`."
+  [client]
+  (let [defs (clawe.config/client-defs)
+        matches
+        (->> defs (filter
+                    (fn [def]
+                      ;; does this imply that clients should carry :match opts?
+                      (client/match?
+                        def ;; client-def can supply :match options
+                        client def))))]
+    (if (> (count matches) 1)
+      (do
+        (println "WARN: multiple matching defs found for client" (client/strip client) matches)
+        (first matches))
+      (merge client (some->> matches first)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; workspace fetching
@@ -79,7 +98,7 @@
    (->>
      (wm.protocol/-current-workspaces *wm* opts)
      ;; TODO apply malli transform here instead of in the protocols?
-     (map merge-with-def)
+     (map merge-with-workspace-def)
      (map ensure-directory))))
 
 (defn current-workspace
@@ -94,7 +113,7 @@
    (sys/start! `*wm*)
    (->> (wm.protocol/-active-workspaces *wm* opts)
         ;; TODO apply malli transform here instead of in the protocols?
-        (map merge-with-def)
+        (map merge-with-workspace-def)
         (map ensure-directory))))
 
 (defn fetch-workspace
@@ -105,7 +124,7 @@
                  workspace-or-title (:workspace/title workspace-or-title))]
      (some->
        (wm.protocol/-fetch-workspace *wm* opts title)
-       merge-with-def
+       merge-with-workspace-def
        ensure-directory))))
 
 (comment
@@ -124,12 +143,21 @@
 ;; client fetching
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn client-defs
+  "Returns client-defs, as defined in `resources/clawe.edn`.
+  Supports opening new clients, finding matching clients, and toggling clients into view."
+  ([] (client-defs nil))
+  ([_opts]
+   (clawe.config/client-defs)))
+
 ;; we could be locally caching calls like these, if we're willing to cache burst
 (defn active-clients
   ([] (active-clients nil))
   ([opts]
    (sys/start! `*wm*)
-   (wm.protocol/-active-clients *wm* opts)))
+   (->>
+     (wm.protocol/-active-clients *wm* opts)
+     (map merge-with-client-def))))
 
 (defn focused-client []
   ;; TODO refactor into the protocol (perf)

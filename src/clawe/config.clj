@@ -77,3 +77,21 @@
 
 (comment
   (update-workspace-def "journal" {:workspace/some "other-data"}))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; client-defs
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn client-defs []
+  (->> (:client/defs @*config* {})
+       (map (fn [[key def]]
+              (assoc def :client/key key)))))
+
+(defn update-client-def [client-key def]
+  (-> @*config*
+      (update-in [:client/defs client-key] merge def)
+      write-config)
+  (reload-config))
+
+(comment
+  (update-client-def "journal" {:client/some "other-data"}))

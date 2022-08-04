@@ -23,17 +23,18 @@
 
    ;; unique for a clawe.edn config: supports spawn-client, find-client, apply rules workflows
    [:client/key {:optional true} :string]
-   [:client/app-names [:sequential :string]]])
+   [:client/app-names {:optional true} [:sequential :string]]])
 
 (defn strip [c]
   (m/decode schema c (mt/strip-extra-keys-transformer)) )
 
 (comment
-  (m/decode
+  (m/validate
     schema
     {:client/window-title "hi"
-     :gibber              :jabber}
-    (mt/strip-extra-keys-transformer))
+     :client/app-name     "blah"
+     :client/focused      nil
+     :gibber              :jabber})
 
   (strip
     {:client/window-title "hi"
@@ -51,7 +52,16 @@
 (defn match?
   "Returns true if the clients are a match.
 
-  Uses `:client/app-name`, `:client/app-names`, `:client/window-title`"
+  Uses `:client/app-name`, `:client/app-names`, `:client/window-title`
+
+  Supports `:match/skip-title` and `:match/soft-title`
+
+  `:match/*` opts can be attached to clients (in fact, they are attached
+  by `wm/merge-with-client-defs`), but they are only read from `opts`.
+  This avoids order-matters trouble with this function. Instead, supply
+  the client with the desired match opts as the first arg to the 3-arity
+  version of this function.
+  "
   ([a b] (match? nil a b))
   ([opts a b]
    (let [a-app-names (->app-names a)
@@ -62,7 +72,7 @@
      (and
        (and (seq a-app-names)
             (seq b-app-names)
-            (set/intersection a-app-names b-app-names))
+            (seq (set/intersection a-app-names b-app-names)))
 
        (or
          (:match/skip-title opts)

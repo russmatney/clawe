@@ -48,3 +48,24 @@
      :workspace/app-names ["hi"]
      :gibber              :jabber}))
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; match
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn match?
+  "Returns true if the passed workspaces have the same title and index."
+  [a b]
+  (and
+    (= (:workspace/title a) (:workspace/title b))
+    (= (:workspace/index a) (:workspace/index b))))
+
+(defn find-matching-client
+  "Expects the passed workspace to have :workspace/clients included"
+  [wsp client]
+  (let [matches (->> wsp :workspace/clients (filter (partial client/match? client)))]
+    (if (> (count matches) 1)
+      (do
+        (println "WARN: multiple matching clients found in workspace" (strip wsp) (strip client))
+        (first matches))
+      (some->> matches first))))
