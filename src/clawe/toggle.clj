@@ -9,7 +9,36 @@
    [ralphie.zsh :as r.zsh]
 
    [clawe.doctor :as clawe.doctor]
-   [clawe.wm :as wm]))
+   [clawe.wm :as wm]
+   [clawe.client :as client]))
+
+
+
+(defn client-exists?
+  "Returns true if the passed client-def matches any of the existing clients.
+
+  Matches via `client/match?`, passing the def twice to use any `:match/` opts.
+
+  Supports prefetched `:clients` to avoid the `wm/` call.
+  "
+  ([client-def] (client-exists? nil client-def))
+  ([opts client-def]
+   (let [all-clients (:clients opts (wm/active-clients))]
+     (some->> all-clients
+              (filter
+                ;; pass def as opts
+                (partial client/match? client-def client-def))
+              first))))
+
+(defn ensure-client
+  ([client-def] (ensure-client nil client-def))
+  ([opts client-def]
+   (when-not (client-exists? opts client-def)
+     (println "todo: create client" client-def))))
+
+
+
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; App toggling
@@ -140,7 +169,7 @@
 ;; TODO move into :exec data in something like config/client-defs
 ;; should be able to configure emacs, tmux, misc fully-qualified func calls
 ;; via bb-cli
-(def name->open-client
+(def client-config-id->open-client
   {"journal"
    (fn [_wsp]
      (let [opts {:emacs.open/workspace "journal"
@@ -174,23 +203,31 @@
 
 (defn toggle-app
   {:org.babashka/cli
-   {:alias {:title  :window-title
-            :app    :app-name
-            :wsp    :workspace-title
-            :client :client-name ;; tryna get emacs/term to work with wsp-name
-            }}}
-  [{:keys [workspace-title client-name] :as args}]
-  (let [wsp->open-client (name->open-client (or workspace-title client-name))]
+   {:coerce {:use-current :boolean}
+    :alias  {:wsp          :workspace/title ;; support :current or "current" for wsp here
+             :window-title :client/window-title
+             :client-id    :client/config-id
+             :app          :client/app-name}}}
+  [{:keys [workspace/title client/config-id] :as args}]
+  (println "toggle-app args" args)
+  (let [
+        ;; TODO pull from client-config
+        use-current-wsp? (#{"current" :current} title)
+        wsp->open-client
+        ;; TODO pull from client-config
+        (client-config-id->open-client config-id)]
     (toggle-client
       {;; emacs and terminal toggle opt-out of float-and-center
        :should-float-and-center
-       (not (#{"emacs" "terminal"} client-name))}
+       false
+       ;; TODO pull from client-config
+       }
       (merge
-        (if workspace-title
+        (if title
           (toggle-scratchpad-app
-            {:workspace-title workspace-title
+            {:workspace-title title
              :is-client?      (partial is-client? args)})
-          ;; rn if we don't have a workspace-title, we only want
+          ;; rn if we don't have a workspace/title, we only want
           ;; this piece of toggle-scratchpad-app
           ;; TODO clean this up!
           {:wsp->client
@@ -200,6 +237,5 @@
         {:wsp->open-client
          (or wsp->open-client
              (fn [{:as wsp}]
-               (notify/notify (str "To do: open " (or workspace-title
-                                                      client-name)))
+               (notify/notify (str "To do: open " config-id))
                (println wsp)))}))))
