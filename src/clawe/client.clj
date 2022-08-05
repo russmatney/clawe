@@ -15,6 +15,7 @@
 ;; schema
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; TODO enforce schema against clawe.edn via clj-kondo
 (def schema
   [:map
    [:client/app-name :string]
@@ -28,8 +29,9 @@
    ;; string used to assign a workspace title when :hide/scratchpadding a client
    [:client/workspace-title {:optional true} :string]
 
+   ;; if true, the title won't be used when matching this client against others
+   [:match/skip-title {:optional true} :boolean]
    ;; if true, this client will be more forgiving when matching against others
-   ;; TODO enforce schema against clawe.edn via clj-kondo
    [:match/soft-title {:optional true} :boolean]])
 
 (defn strip [c]

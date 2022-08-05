@@ -8,21 +8,35 @@
  :client/defs
  {"journal"  {:client/window-title "journal"
               :client/app-names    ["Emacs"]
-              :match/soft-title    true}
+              :match/soft-title    true
+              :client/open         {:open/cmd             ralphie.emacs/open
+                                    :emacs.open/workspace "journal"
+                                    :emacs.open/file      "~/todo/journal.org"}}
   "web"      {:client/app-names       ["Safari"]
               :client/workspace-title "web"
-              :match/skip-title       true}
+              :match/skip-title       true
+              :client/open            ralphie.browser/open}
   "devweb"   {:client/app-names       ["Firefox Developer Edition"]
               :client/workspace-title "devweb"
-              :match/skip-title       true}
+              :match/skip-title       true
+              :client/open            ralphie.browser/open-dev}
   "spotify"  {:client/app-names       ["Spotify"]
               :client/workspace-title "spotify"
-              :match/skip-title       true}
+              :match/skip-title       true
+              ;; TODO impl
+              :client/open            ralphie.spotify/open}
   "slack"    {:client/app-names       ["Slack"]
               :client/workspace-title "slack"
-              :match/skip-title       true}
+              :match/skip-title       true
+              ;; TODO impl
+              }
   "aseprite" {:client/app-names ["Aseprite"]}
   "messages" {:client/app-names ["Messages"]}
   "godot"    {:client/app-names ["Godot"]}
-  "emacs"    {:client/app-names ["Emacs"]}
-  "terminal" {:client/app-names ["Alacritty"]}}}
+  "emacs"    {:client/app-names ["Emacs"]
+              :client/open      {:open/cmd             ralphie.emacs/open
+                                 :emacs.open/workspace "emacs"}}
+  "terminal" {:client/app-names ["Alacritty"]
+              :client/open
+              {:open/cmd          ralphie.tmux/open-session
+               :tmux/session-name "terminal"}}}}
