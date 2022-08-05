@@ -169,10 +169,13 @@ Depends on `brotab`."
 (defn open-dev
   "Opens a dev browser"
   []
-  (when notify/is-mac?
+  (if notify/is-mac?
     (->
       ^{:out :string}
       (p/$ open -na "/Applications/Firefox Developer Edition.app")
+      p/check :out)
+    (->
+      (p/$ "/usr/bin/gtk-launch" "firefox-developer-edition.desktop")
       p/check :out)))
 
 (comment
