@@ -4,4 +4,21 @@
   "journal"        #:workspace{:directory "~/todo"},
   "beatemup-three" #:workspace{:directory "~/russmatney/beatemup-three"},
   "advent-of-code" #:workspace{:directory "~/russmatney/advent-of-code"}},
- :repo-roots      ["~/russmatney/*" "~/teknql/*"]}
+ :repo-roots      ["~/russmatney/*" "~/teknql/*"]
+ :client/defs
+ {"journal"  {:client/window-title "journal"
+              :client/app-names    ["Emacs"]
+              :match/soft-title    true}
+  "web"      {:client/app-names       ["Safari"]
+              :client/workspace-title "web"}
+  "devweb"   {:client/app-names       ["Firefox Developer Edition"]
+              :client/workspace-title "devweb"}
+  "spotify"  {:client/app-names       ["Spotify"]
+              :client/workspace-title "spotify"}
+  "slack"    {:client/app-names       ["Slack"]
+              :client/workspace-title "slack"}
+  "aseprite" {:client/app-names ["Aseprite"]}
+  "messages" {:client/app-names ["Messages"]}
+  "godot"    {:client/app-names ["Godot"]}
+  "emacs"    {:client/app-names ["Emacs"]}
+  "terminal" {:client/app-names ["Alacritty"]}}}

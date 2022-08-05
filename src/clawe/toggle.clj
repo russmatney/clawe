@@ -56,6 +56,20 @@
                 (map (fn [wsp] (workspace/find-matching-client wsp client)))
                 first)))))
 
+(comment
+  (clawe.config/reload-config)
+  (def clawe-emacs-client
+    (->
+      (clawe.config/client-def "journal")
+      find-client))
+
+  (client/match?
+    (clawe.config/client-def "journal")
+    (clawe.config/client-def "journal")
+    clawe-emacs-client)
+
+  )
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; toggle client def
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -78,28 +92,66 @@
 
           :else [:show-client client])))))
 
+;; TODO rofi for choosing one of these events with any client in the config
+
 (defn toggle
   {:org.babashka/cli
-   {:alias {:key :client/key}}}
+   {:alias {:key :client/key
+            ;; TODO might include an override for :hide/type, :open/* options
+            }}}
   [args]
-  (let [[action val] (determine-toggle-action (:client/key args))]
+  (notify/notify "[toggle]" (:client/key args "No --key"))
+  (let [[action
+         ;; TODO better var name than val
+         ;; client-or-def ?
+         ;; this is why reframe did maps for everything
+         ;; gotta do keys when it's ambigous
+         val] (determine-toggle-action (:client/key args))]
     (case action
-      :no-def (println "WARN: [toggle] no def found for client-key" args)
+      :no-def
+      (do
+        (println "WARN: [toggle] no def found for client-key" args)
+        (notify/notify "[no def]" (:client/key args "No --key")))
 
       ;; emacs/tmux/generic opts/description
-      :create-client (println "open" val)
+      :create-client
+      (do
+        (println "open" val)
+        (notify/notify "[:create-client]" (:client/key args "No --key")))
 
       :hide-client
-      ;; move to an ensured workspace? close? minimize? hide?
-      (println "hide" val)
+      (do
+        ;; move to an ensured workspace? close? minimize? hide?
+        (println "hide" val)
+        (notify/notify "[:hide-client]")
+        (wm/hide-client val))
 
       :focus-client
-      ;; bury all? float and center?
-      (println "focus" val)
+      (do
+        (println "focus" val)
+        (notify/notify "[:focus-client]")
+        ;; this is sometimes 'send-focus' other times 'jumbotron'
+        (wm/focus-client {:float-and-center
+                          ;; won't apply to emacs/term... fine for now
+                          true} val))
 
       :show-client
-      ;; bury all? float and center?
-      (println "show" val))))
+      (do
+        (println "show" val)
+        (notify/notify "[:show-client]")
+        ;; TODO consider 'wm/show-client' or :show/ opts
+        ;; or a more :hyde/jekyll or toggle->focus function
+        (wm/move-client-to-workspace
+          ;; TODO how to cache this extra lookup... for free?
+          ;; wm could hold a cache? or just support a 'current'
+          ;; opt for this function - the wm might have a shortcut
+          ;; .... or just call it in a let and pass it all the way through
+          val (wm/current-workspace))
+        (wm/focus-client {:float-and-center
+                          ;; won't apply to emacs/term... fine for now
+                          true} val) )
+
+      (println "No matching action for:" action))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; App toggling

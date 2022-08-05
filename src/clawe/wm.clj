@@ -227,6 +227,28 @@
    (sys/start! `*wm*)
    (wm.protocol/-focus-client *wm* opts client)))
 
+;; maybe something more like toggle->away - something more specific to the toggle UX
+(defn hide-client
+  ([client] (hide-client nil client))
+  ([opts client]
+   (sys/start! `*wm*)
+   ;; TODO document :hide/ types for clients
+   (case (:hide/type client :hide/scratchpad)
+     :hide/scratchpad
+     (wm.protocol/-move-client-to-workspace
+       *wm* {:ensure-workspace true} client
+       (:client/workspace-title client (:client/window-title client)))
+
+     :hide/os-hide
+     (println "to impl!")
+     ;; (wm.protocol/-hide-client *wm* opts client)
+
+     :hide/close
+     (wm.protocol/-close-client *wm* opts client)
+
+     ;; default to os level close.... pr
+     (println "WARN: unsupported :hide/type" opts))))
+
 ;; rearranging
 
 (defn swap-workspaces-by-index

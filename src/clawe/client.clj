@@ -23,7 +23,14 @@
 
    ;; unique for a clawe.edn config: supports spawn-client, find-client, apply rules workflows
    [:client/key {:optional true} :string]
-   [:client/app-names {:optional true} [:sequential :string]]])
+   [:client/app-names {:optional true} [:sequential :string]]
+
+   ;; string used to assign a workspace title when :hide/scratchpadding a client
+   [:client/window-title {:optional true} :string]
+
+   ;; if true, this client will be more forgiving when matching against others
+   ;; TODO enforce schema against clawe.edn via clj-kondo
+   [:match/soft-title {:optional true} :boolean]])
 
 (defn strip [c]
   (m/decode schema c (mt/strip-extra-keys-transformer)) )
@@ -76,14 +83,17 @@
 
        (or
          (:match/skip-title opts)
-         (not a-window-title)
-         (not b-window-title)
+         ;; (not a-window-title)
+         ;; (not b-window-title)
          (and a-window-title
               b-window-title
               (if (:match/soft-title opts)
-                (or
-                  (string/includes? a-window-title b-window-title)
-                  (string/includes? b-window-title a-window-title))
+                (when (or
+                        (string/includes? a-window-title b-window-title)
+                        (string/includes? b-window-title a-window-title))
+                  (println "soft-title match" a-window-title b-window-title)
+                  true)
+
                 (= a-window-title b-window-title))))
 
        ;; TODO `:client/key` comparison
