@@ -150,9 +150,7 @@
 (comment
   (clawe.config/reload-config)
   (correct-clients-and-workspaces)
-  (correct-clients-and-workspaces
-    {:dry-run true})
-  )
+  (correct-clients-and-workspaces {:dry-run true}))
 
 (defn clean-up-workspaces
   ([] (clean-up-workspaces nil))

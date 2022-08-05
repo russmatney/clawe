@@ -240,7 +240,7 @@
    (case (:hide/type client :hide/scratchpad)
      :hide/scratchpad
      (wm.protocol/-move-client-to-workspace
-       *wm* {:ensure-workspace true} client
+       *wm* nil client
        (client->workspace-title client))
 
      :hide/os-hide

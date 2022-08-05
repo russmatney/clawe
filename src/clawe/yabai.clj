@@ -103,12 +103,11 @@
   (-close-client [_this _opts c]
     (yabai/close-window c))
 
-  (-move-client-to-workspace [this opts c wsp]
+  (-move-client-to-workspace [this _opts c wsp]
     (let [workspace-title (if (string? wsp) wsp (:workspace/title wsp))
           workspace-index (when (map? wsp) (:workspace/index wsp))]
-      (when (:ensure-workspace opts)
-        ;; TODO do we need to wait-for this to exist?
-        (clawe.wm.protocol/-create-workspace this nil workspace-title))
+      ;; ensure this workspace exists
+      (clawe.wm.protocol/-create-workspace this nil workspace-title)
       (yabai/move-window-to-space c (or workspace-index workspace-title)))))
 
 (comment

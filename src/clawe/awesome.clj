@@ -94,10 +94,10 @@
       ;; TODO consider :client/window-id client attr
       (:awesome.client/window client)))
 
-  (-move-client-to-workspace [this opts c wsp]
+  (-move-client-to-workspace [this _opts c wsp]
     (let [workspace-title (if (string? wsp) wsp (:workspace/title wsp))]
-      (when (:ensure-workspace opts)
-        (clawe.wm.protocol/-create-workspace this nil workspace-title))
+      ;; ensure this workspace exists
+      (clawe.wm.protocol/-create-workspace this nil workspace-title)
       ;; TODO consider :client/window-id client attr
       (awm/move-client-to-tag (:awesome.client/window c) workspace-title))))
 
