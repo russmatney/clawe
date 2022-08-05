@@ -40,17 +40,21 @@
 
 ;; This is hard-coded to the awesome keybinding writer! be careful!
 (def awm-fnl awm.fnl/awm-fnl) ;; awmfnlawmfnlawmfnl
+(def awm-cli awm.fnl/awm-cli) ;; awmfnlawmfnlawmfnl
+(def awm-lua awm.fnl/awm-lua) ;; awmfnlawmfnlawmfnl
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; malli schema
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; TODO rework these with malli
+(def tag-schema
+  [:map])
 
+(def screen-schema
+  [:map
+   [:awesome/screen [:map]]
+   [:awesome.screen [:sequential tag-schema]]])
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; AwesomeWM data fetchers
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (declare ->namespaced-tag)
 
