@@ -26,14 +26,14 @@
    [:client/app-names {:optional true} [:sequential :string]]
 
    ;; string used to assign a workspace title when :hide/scratchpadding a client
-   [:client/window-title {:optional true} :string]
+   [:client/workspace-title {:optional true} :string]
 
    ;; if true, this client will be more forgiving when matching against others
    ;; TODO enforce schema against clawe.edn via clj-kondo
    [:match/soft-title {:optional true} :boolean]])
 
 (defn strip [c]
-  (m/decode schema c (mt/strip-extra-keys-transformer)) )
+  (m/decode schema c (mt/strip-extra-keys-transformer)))
 
 (comment
   (m/validate
@@ -41,6 +41,10 @@
     {:client/window-title "hi"
      :client/app-name     "blah"
      :client/focused      nil
+     :gibber              :jabber})
+  (strip
+    {
+     :client/window-title "hi"
      :gibber              :jabber})
 
   (strip

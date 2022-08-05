@@ -60,8 +60,14 @@
   (clawe.config/reload-config)
   (def clawe-emacs-client
     (->
-      (clawe.config/client-def "journal")
+      (clawe.config/client-def "web")
       find-client))
+
+  (->>
+    (wm/active-clients)
+    (map client/strip)
+    )
+
 
   (client/match?
     (clawe.config/client-def "journal")
@@ -107,6 +113,7 @@
          ;; this is why reframe did maps for everything
          ;; gotta do keys when it's ambigous
          val] (determine-toggle-action (:client/key args))]
+    (println "action:" action)
     (case action
       :no-def
       (do
@@ -116,19 +123,19 @@
       ;; emacs/tmux/generic opts/description
       :create-client
       (do
-        (println "open" val)
+        (println "open" (client/strip val))
         (notify/notify "[:create-client]" (:client/key args "No --key")))
 
       :hide-client
       (do
         ;; move to an ensured workspace? close? minimize? hide?
-        (println "hide" val)
+        (println "hide" (client/strip val))
         (notify/notify "[:hide-client]")
         (wm/hide-client val))
 
       :focus-client
       (do
-        (println "focus" val)
+        (println "focus" (client/strip val))
         (notify/notify "[:focus-client]")
         ;; this is sometimes 'send-focus' other times 'jumbotron'
         (wm/focus-client {:float-and-center
@@ -137,7 +144,7 @@
 
       :show-client
       (do
-        (println "show" val)
+        (println "show" (client/strip val))
         (notify/notify "[:show-client]")
         ;; TODO consider 'wm/show-client' or :show/ opts
         ;; or a more :hyde/jekyll or toggle->focus function

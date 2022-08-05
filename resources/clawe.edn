@@ -10,13 +10,17 @@
               :client/app-names    ["Emacs"]
               :match/soft-title    true}
   "web"      {:client/app-names       ["Safari"]
-              :client/workspace-title "web"}
+              :client/workspace-title "web"
+              :match/skip-title       true}
   "devweb"   {:client/app-names       ["Firefox Developer Edition"]
-              :client/workspace-title "devweb"}
+              :client/workspace-title "devweb"
+              :match/skip-title       true}
   "spotify"  {:client/app-names       ["Spotify"]
-              :client/workspace-title "spotify"}
+              :client/workspace-title "spotify"
+              :match/skip-title       true}
   "slack"    {:client/app-names       ["Slack"]
-              :client/workspace-title "slack"}
+              :client/workspace-title "slack"
+              :match/skip-title       true}
   "aseprite" {:client/app-names ["Aseprite"]}
   "messages" {:client/app-names ["Messages"]}
   "godot"    {:client/app-names ["Godot"]}
