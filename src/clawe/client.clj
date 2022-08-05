@@ -60,6 +60,7 @@
 (defn ->app-names [{:client/keys [app-name app-names]}]
   (->> (concat [app-name] app-names)
        (remove nil?)
+       (map string/lower-case) ;; simpler comparisons, ignore case
        (into #{})))
 
 (defn match?
