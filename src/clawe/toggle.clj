@@ -1,13 +1,6 @@
 (ns clawe.toggle
   (:require
-   [clojure.string :as string]
-
-   [ralphie.browser :as r.browser]
-   [ralphie.emacs :as r.emacs]
    [ralphie.notify :as notify]
-   [ralphie.tmux :as r.tmux]
-   [ralphie.zsh :as r.zsh]
-
    [clawe.doctor :as clawe.doctor]
    [clawe.wm :as wm]
    [clawe.client :as client]
@@ -25,7 +18,17 @@
   (let [def (if (string? def) (clawe.config/client-def def) def)]
     (when-let [open-opts (-> def :client/open)]
       (cond
-        (symbol? open-opts) ((resolve open-opts))
+        (symbol? open-opts)
+        (let [n (namespace open-opts)]
+          (if-let [f (if n
+                       (do
+                         (require (symbol n))
+                         (ns-resolve (symbol n) open-opts))
+                       (resolve open-opts))]
+            (f)
+            (do
+              (println "Could not resolve :client/open" open-opts)
+              (notify/notify "Could not resolve :client/open"))))
         (map? open-opts)
         (if-let [cmd (-> open-opts :open/cmd)]
           ((resolve cmd) open-opts)
@@ -57,12 +60,6 @@
                 (partial client/match? client-def client-def))
               first))))
 
-(defn ensure-client
-  ([client-def] (ensure-client nil client-def))
-  ([opts client-def]
-   (when-not (find-client opts client-def)
-     (println "todo: create client" client-def))))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; in current workspace?
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -87,19 +84,9 @@
         :open/cmd
         ((fn [f] ((resolve f) def)))))
 
-
   (->>
     (wm/active-clients)
-    (map client/strip)
-    )
-
-
-  (client/match?
-    (clawe.config/client-def "journal")
-    (clawe.config/client-def "journal")
-    clawe-emacs-client)
-
-  )
+    (map client/strip)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; toggle client def
@@ -188,34 +175,5 @@
       (println "No matching action for:" action))
     (clawe.doctor/update-topbar)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; create/exec/open
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;; TODO move into :exec data in something like config/client-defs
-;; should be able to configure emacs, tmux, misc fully-qualified func calls
-;; via bb-cli
-(def client-config-id->open-client
-  {"emacs"
-   (fn [_wsp] ;; does this passed 'fast-wsp' have enough already?
-     ;; TODO support initial-file/dir, initial-command as input
-     (let [{:workspace/keys [title initial-file directory] :as wsp}
-           (wm/current-workspace)]
-       (if-not wsp
-         (r.emacs/open)
-         (let [initial-file (or initial-file directory)
-               opts         {:emacs.open/workspace title :emacs.open/file initial-file}]
-           (r.emacs/open opts)))))
-   "terminal"
-   (fn [_wsp] ;; does this passed 'fast-wsp' have enough already?
-     ;; TODO support directory, initial-command as input
-     ;; TODO support tmux.fire as input
-     (let [{:workspace/keys [title directory] :as wsp}
-           (wm/current-workspace)]
-       (if-not wsp
-         (r.tmux/open-session)
-         (let [directory (or directory (r.zsh/expand "~"))
-               opts      {:tmux/session-name title :tmux/directory directory}]
-           (r.tmux/open-session opts)))))})
-
+(comment
+  (toggle {:client/key "journal"}))
