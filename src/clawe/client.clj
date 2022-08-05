@@ -1,12 +1,6 @@
 (ns clawe.client
   (:require
-   [babashka.process :as process]
    [clojure.string :as string]
-
-   [ralphie.emacs :as emacs]
-   [ralphie.notify :as notify]
-   [ralphie.tmux :as tmux]
-   [ralphie.zsh :as zsh]
    [clojure.set :as set]
    [malli.transform :as mt]
    [malli.core :as m]))
@@ -15,20 +9,20 @@
 ;; schema
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def client-open-schema
+(def client-create-schema
   [:or
    :symbol
-   [:map [:open/cmd :symbol
+   [:map [:create/cmd :symbol
           ]]])
 
 (comment
   (m/validate
-    client-open-schema
-    ralphie.emacs/open)
+    client-create-schema
+    println)
 
   (m/validate
-    client-open-schema
-    {:open/cmd ralphie.emacs/open}))
+    client-create-schema
+    {:create/cmd println}))
 
 ;; TODO enforce schema against clawe.edn via clj-kondo
 (def schema
@@ -44,7 +38,7 @@
    ;; string used to assign a workspace title when :hide/scratchpadding a client
    [:client/workspace-title {:optional true} :string]
 
-   [:client/open {:optional true} client-open-schema]
+   [:client/create {:optional true} client-create-schema]
 
    ;; if true, the title won't be used when matching this client against others
    [:match/skip-title {:optional true} :boolean]
@@ -56,7 +50,10 @@
    [:match/use-workspace-title {:optional true} :boolean]
 
    ;; determines the hide behavior when toggling
-   [:hide/type {:optional true} :keyword]])
+   [:hide/type {:optional true} :keyword]
+
+   ;; whether to float-and-center when focusing. defaults to true!
+   [:focus/float-and-center {:optional true :default true} :boolean]])
 
 (defn strip [c]
   (m/decode schema c (mt/strip-extra-keys-transformer)))
@@ -140,55 +137,5 @@
                      (= (:current-workspace-title opts)
                         a-window-title)))))
 
-       ;; TODO `:client/key` comparison
+       ;; TODO `:client/key` comparison might be cheap/easy
        ))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; create client
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn create-client
-  "Creates clients for a given workspace
-
-  TODO refactor to remove or otherwise use a :create.client/exec api
-  "
-  [{:workspace/keys [exec directory initial-file readme] :as wsp}]
-  (let [first-client (cond
-                       exec         :create/exec
-                       readme       :create/emacs
-                       initial-file :create/emacs
-                       :else        (do
-                                      (notify/notify
-                                        "Could not determine first client for wsp" wsp)
-                                      :create/none))]
-
-    (case first-client
-      :create/emacs
-      (emacs/open {:emacs.open/workspace (:workspace/title wsp)
-                   :emacs.open/file
-                   (let [f (or initial-file readme)]
-                     (if (string/starts-with? f "/") f
-                         (str directory "/" f)))})
-      :create/exec
-      (cond
-        (and (map? exec) (:tmux.fire/cmd exec))
-        (tmux/fire exec)
-
-        (string? exec) (-> exec
-                           (string/split #" ")
-                           process/process
-                           process/check)
-
-        :else
-        (notify/notify "Unhandled workspace/exec:" exec))
-
-      :create/none
-      ;; NOTE maybe detect a readme in directories as well
-      ;; (notify/notify "New workspace has no default client."
-      ;;                "Try setting :initial-file or :exec")
-      )))
-
-(comment
-  (create-client
-    {:workspace/initial-file (zsh/expand "~/russmatney/ralphie/readme.org")
-     :workspace/title        "my-wsp"}))

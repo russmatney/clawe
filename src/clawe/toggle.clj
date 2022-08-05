@@ -1,72 +1,20 @@
 (ns clawe.toggle
   (:require
-   [babashka.process :as process]
-   [clojure.string :as string]
-
    [ralphie.notify :as notify]
    [clawe.config :as clawe.config]
    [clawe.client :as client]
+   [clawe.client.create :as client.create]
    [clawe.doctor :as clawe.doctor]
    [clawe.wm :as wm]
    [clawe.workspace :as workspace]))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; open client
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn exec [{:keys [exec/cmd]}]
-  (-> cmd
-      (string/split #" ")
-      process/process
-      process/check))
-
-(comment
-  (exec {:exec/cmd "echo hi"}))
-
-(defn- auto-resolve [f]
-  (if-let [n (namespace f)]
-    (do
-      (require (symbol n))
-      (ns-resolve (symbol n) f))
-    (resolve f)))
-
-;; TODO probably move to its own namespace... and consider 'create`
-(defn open-client [def]
-  ;; how to integrate a quick --key cli into this?
-  ;; support as a key? feels like a workaround, ought to read bb-cli
-  #_{:org.babashka/cli {:alias {:key :client/key}}}
-  (let [def (if (string? def) (clawe.config/client-def def) def)]
-    (when-let [open-opts (-> def :client/open)]
-      (cond
-        (symbol? open-opts)
-        (if-let [f (auto-resolve open-opts)]
-          (f)
-          (do
-            (println "Could not resolve :client/open" open-opts)
-            (notify/notify "Could not resolve :client/open")))
-        (map? open-opts)
-        (if-let [cmd (-> open-opts :open/cmd)]
-          (let [open-opts (->> open-opts
-                               (map (fn [[k v]]
-                                      [k (cond (#{:open/use-workspace-title} v)
-                                               (:workspace/title (wm/current-workspace))
-
-                                                :else v)]))
-                               (into {}))]
-            ((auto-resolve cmd) open-opts))
-          (notify/notify ":client/open map form requires :open/cmd"))))))
-
-(comment
-  (->
-    (clawe.config/client-def "journal")
-    open-client))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; find-client
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; TODO this might be the same as wm/fetch-client... presuming that is written
-;; to support passed :clients or :prefetched-clients
+;; TODO this might be the same as wm/fetch-client... perhaps that should be written
+;; to support passed :prefetched-clients
 (defn find-client
   "Returns a client matching the passed `client-def`.
 
@@ -79,8 +27,8 @@
          current (:current-workspace opts (wm/current-workspace))]
      (some->> all-clients
               (filter
-                ;; pass def as opts
                 (partial client/match?
+                         ;; pass def as opts
                          (assoc client-def :current-workspace-title (:workspace/title current))
                          client-def))
               first
@@ -94,8 +42,7 @@
   (->
     (clawe.config/client-def "terminal")
     find-client
-    client/strip)
-  )
+    client/strip))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; in current workspace?
@@ -117,8 +64,8 @@
 
   (let [def (clawe.config/client-def "journal")]
     (-> def
-        :client/open
-        :open/cmd
+        :client/create
+        :create/cmd
         ((fn [f] ((resolve f) def)))))
 
   (->>
@@ -126,11 +73,10 @@
     (map client/strip)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; toggle client def
+;; determine toggle action
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn determine-toggle-action [client-key]
-  (println "deter w/ client-key" client-key)
   ;; TODO prefetch and pass opts into funcs
   (let [def (clawe.config/client-def client-key)]
     (if-not def
@@ -138,7 +84,7 @@
 
       (let [client (find-client def)]
         (cond
-          (not client) [:open-client def]
+          (not client) [:create-client def]
 
           (client-in-current-workspace? client)
           (if (:client/focused client)
@@ -147,55 +93,44 @@
 
           :else [:show-client client])))))
 
-;; TODO rofi for choosing one of these events with any client in the config
+;; TODO rofi for choosing+executing one of these events with any client in the config
 
-(defn toggle
-  {:org.babashka/cli
-   {:alias {:key :client/key
-            ;; TODO might include an override for :hide/type, :open/* options
-            }}}
-  [args]
-  (notify/notify "[toggle]" (:client/key args "No --key"))
-  (let [[action
-         ;; TODO better var name than val
-         ;; client-or-def ?
-         ;; this is why reframe did maps for everything
-         ;; gotta do keys when it's ambigous
-         val] (determine-toggle-action (:client/key args))]
-    (println "action:" action)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; execute-toggle-action
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn execute-toggle-action [tog-action args]
+  (let [[action client-or-def] tog-action]
     (case action
       :no-def
       (do
         (println "WARN: [toggle] no def found for :client/key in" args)
         (notify/notify "[no def]" (:client/key args "No --key")))
 
-      ;; emacs/tmux/generic opts/description
-      ;; open better than create? some other naming? compare to show?
-      :open-client
+      :create-client
       (do
-        (println "open" (client/strip val))
-        (notify/notify "[:open-client]" (:client/key args "No --key"))
-        (open-client val))
+        (println "create" (client/strip client-or-def))
+        (notify/notify "[:create-client]" (:client/key args "No --key"))
+        (client.create/create-client client-or-def))
 
       :hide-client
       (do
         ;; move to an ensured workspace? close? minimize? hide?
-        (println "hide" (client/strip val))
+        (println "hide" (client/strip client-or-def))
         (notify/notify "[:hide-client]")
-        (wm/hide-client val))
+        (wm/hide-client client-or-def))
 
       :focus-client
       (do
-        (println "focus" (client/strip val))
+        (println "focus" (client/strip client-or-def))
         (notify/notify "[:focus-client]")
         ;; this is sometimes 'send-focus' other times 'jumbotron'
-        (wm/focus-client {:float-and-center
-                          ;; won't apply to emacs/term... fine for now
-                          true} val))
+        (wm/focus-client {:float-and-center (:focus/float-and-center client-or-def true)}
+                         client-or-def))
 
-      :show-client
+      :show-client ;; i.e. move-to-current-wsp + focus
       (do
-        (println "show" (client/strip val))
+        (println "show" (client/strip client-or-def))
         (notify/notify "[:show-client]")
         ;; TODO consider 'wm/show-client' or :show/ opts
         ;; or a more :hyde/jekyll or toggle->focus function
@@ -204,13 +139,28 @@
           ;; wm could hold a cache? or just support a 'current'
           ;; opt for this function - the wm might have a shortcut
           ;; .... or just call it in a let and pass it all the way through
-          val (wm/current-workspace))
-        (wm/focus-client {:float-and-center
-                          ;; won't apply to emacs/term... fine for now
-                          true} val) )
+          client-or-def (wm/current-workspace))
+        (wm/focus-client {:float-and-center (:focus/float-and-center client-or-def true)}
+                         client-or-def))
 
-      (println "No matching action for:" action))
-    (clawe.doctor/update-topbar)))
+      (println "No matching action for:" action))))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; toggle
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn toggle
+  {:org.babashka/cli
+   ;; could support overrides for :hide/*, :create/*, :focus/* options
+   {:alias {:key :client/key}}}
+  [args]
+  (notify/notify "[toggle]" (:client/key args "No --key"))
+  (-> args
+      :client/key
+      determine-toggle-action
+      (execute-toggle-action args))
+  (clawe.doctor/update-topbar))
 
 (comment
   (toggle {:client/key "journal"}))
