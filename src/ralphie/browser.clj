@@ -148,7 +148,7 @@ Depends on `brotab`."
            p/check :out)
          (->
            ^{:out :string}
-           (p/$ open -na "/Applications/Safari.app")
+           (p/$ open -a "/Applications/Safari.app")
            p/check :out))
 
        (->
