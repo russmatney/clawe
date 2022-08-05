@@ -49,11 +49,19 @@
    (let [wsp (or wsp (wm/current-workspace))]
      (->>
        (concat
-         ;; clone suggestions from open tabs and the clipboard
          ;; TODO include open-wsp on these
          (->>
            (r.git/rofi-clone-suggestions-fast)
-           (map (fn [x] (assoc x :rofi/label (str "Clone: " (:rofi/label x))))))
+           (map (fn [x]
+                  (-> x
+                      (assoc :rofi/label (str "Clone: " (:rofi/label x)))
+                      (update :rofi/on-select
+                              (fn [f]
+                                ;; return a function wrapping the existing on-select
+                                (fn [arg]
+                                  (when-let [repo-id (:repo-id x)]
+                                    (workspace.open/create-workspace-def-from-path repo-id))
+                                  (f arg))))))))
 
          ;; run bb tasks for the current workspace
          (bb-tasks-for-wsp wsp)
@@ -68,11 +76,12 @@
          (->> (defcom/list-commands) (map r.core/defcom->rofi))
 
          ;; kill tmux/tags/clients
-         (when-not (clawe.config/is-mac?) (kill-things wsp)
+         (when-not (clawe.config/is-mac?)
+           (kill-things wsp))
 
-                   ;; systemd stops/restart
-                   (when-not (clawe.config/is-mac?)
-                     (r.systemd/rofi-service-opts #(str "Restart " %) :systemd/restart)))
+         ;; systemd stops/restart
+         (when-not (clawe.config/is-mac?)
+           (r.systemd/rofi-service-opts #(str "Restart " %) :systemd/restart))
          (when-not (clawe.config/is-mac?)
            (r.systemd/rofi-service-opts #(str "Stop " %) :systemd/stop)))
        (remove nil?)))))

@@ -55,6 +55,12 @@
                 #(string/replace % (clawe.config/home-dir) "~"))
         (select-keys [:workspace/directory]))))
 
+(defn create-workspace-def-from-path
+  "Converts the passed dir-path or repo-id into a repo-workspace,
+  then merges it into the `resource/clawe.edn`."
+  [repo-id]
+  (-> repo-id dir->repo-workspace create-workspace-def))
+
 (defn open-new-repo-wsp [local-repo]
   (-> local-repo create-workspace-def)
   (-> local-repo open-new-workspace))
