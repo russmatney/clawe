@@ -131,7 +131,7 @@
     (case action
       :no-def
       (do
-        (println "WARN: [toggle] no def found for client-key" args)
+        (println "WARN: [toggle] no def found for :client/key in" args)
         (notify/notify "[no def]" (:client/key args "No --key")))
 
       ;; emacs/tmux/generic opts/description

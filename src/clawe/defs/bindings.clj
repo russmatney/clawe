@@ -30,16 +30,11 @@
 
 (defkbd clawe-rofi-awm
   [[:mod] "x"]
-  {:binding/awm true}
-  ;; {:binding/awm true}
-  (defcom/exec c.m-x/m-x))
+  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.m-x/do-m-x"))
 
 (defkbd rofi-launcher
   [[:mod] "space"]
-  (->
-    ^{:out :string}
-    ($ rofi -show combi -combi-modi "window,drun")
-    check :out))
+  (sxhkd-exec "rofi -show combi -combi-modi 'window,drun'"))
 
 (defkbd kill-client
   [[:mod] "q"]
@@ -81,8 +76,7 @@
     (filter (fn [com] (-> com :name (#(string/includes? % "uuid-on")))))
     ;; first
     ;; defthing.defcom/exec
-    )
-  )
+    ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Titlebars
@@ -221,14 +215,8 @@
 ;; Notifications
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn reload-notification-css []
-  (process/$
-    notify-send.py a --hint boolean:deadd-notification-center:true
-    string:type:reloadStyle))
-
 (defkbd toggle-notifications-center
   [[:mod :alt] "n"]
-  ;; (reload-notification-css)
   (let [deadd-pid (->
                     ^{:out :string}
                     (process/$ pidof deadd-notification-center)
@@ -242,62 +230,50 @@
 ;; Workspace toggling
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; these should come for free, with :binding/scratchpad options
-(defkbd toggle-workspace-journal
-  [[:mod] "u"]
-  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle-app --wsp journal --window journal --app Emacs"))
-
-(defkbd toggle-workspace-web
-  [[:mod] "t"]
-  (toggle/toggle-app {:app-name        "firefox"
-                      :workspace-title "web"}))
-
-(defkbd toggle-workspace-chrome-browser
-  [[:mod] "b"]
-  (toggle/toggle-app {:app-name        "firefoxdeveloperedition"
-                      :workspace-title "dev-browser"}))
-
-(defkbd toggle-workspace-slack
-  [[:mod] "a"]
-  (toggle/toggle-app {:app-name        "Slack"
-                      :workspace-title "slack"}))
-
-(defkbd toggle-workspace-discord
-  [[:mod :shift] "d"]
-  (toggle/toggle-app {:app-name        "discord"
-                      :workspace-title "discord"}))
-
-(defkbd toggle-workspace-spotify
-  [[:mod] "s"]
-  (toggle/toggle-app {:app-name        "Spotify"
-                      :workspace-title "spotify"}))
-
-(defkbd toggle-workspace-zoom
-  [[:mod] "z"]
-  ;; TODO toggle-app should support extra app-names
-  ;; TODO this could pull/merge in workspace-defs
-  ;; TODO could merge in client-defs for alt app-names and app-startup commands
-  (toggle/toggle-app {:app-name        "Zoom"
-                      :workspace-title "zoom"}))
-
-(defkbd toggle-workspace-one-password
-  [[:mod] "."]
-  (toggle/toggle-app {:app-name        "1Password"
-                      :workspace-title "onepass"}))
-
-(defkbd toggle-workspace-doctor-todo
-  [[:mod] "y"]
-  (toggle/toggle-app {:app-name        "tauri/doctor-todo"
-                      :workspace-title "doctor"}))
-
+;; TODO perhaps read the keys from clawe.edn as well, :toggle/kbd ?
 (defkbd toggle-terminal
   [[:mod] "Return"]
-  ;; TODO similarly support in-lining yabai bindings
-  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle-app --client terminal --app Alacritty"))
+  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key terminal"))
 
 (defkbd toggle-emacs
   [[:mod :shift] "Return"]
-  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle-app --client emacs --app Emacs"))
+  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key emacs"))
+
+(defkbd toggle-workspace-journal
+  [[:mod] "u"]
+  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key journal"))
+
+(defkbd toggle-workspace-web
+  [[:mod] "t"]
+  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key web"))
+
+(defkbd toggle-workspace-chrome-browser
+  [[:mod] "b"]
+  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key devweb"))
+
+(defkbd toggle-workspace-slack
+  [[:mod] "a"]
+  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key slack"))
+
+(defkbd toggle-workspace-discord
+  [[:mod :shift] "d"]
+  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key discord"))
+
+(defkbd toggle-workspace-spotify
+  [[:mod] "s"]
+  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key spotify"))
+
+(defkbd toggle-workspace-zoom
+  [[:mod] "z"]
+  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key zoom"))
+
+(defkbd toggle-workspace-one-password
+  [[:mod] "."]
+  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key onepass"))
+
+(defkbd toggle-workspace-doctor-todo
+  [[:mod] "y"]
+  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key doctor"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; cycle tags and clients

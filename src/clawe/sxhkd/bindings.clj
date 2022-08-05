@@ -100,6 +100,7 @@
   (let [config (raw-sxhkdrc)]
     (spit (zsh/expand "~/.config/sxhkd/sxhkdrc") config)
     (log "SXHKD bindings rewritten.")
+    ;; TODO watcher (in doctor?) that just does this?
     (-> (proc/$ systemctl --user restart sxhkd)
         (proc/check))
     (ensure-sxhkd-tmux-session)
