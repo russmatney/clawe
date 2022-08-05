@@ -12,6 +12,7 @@
 (def client-create-schema
   [:or
    :symbol
+   :string
    [:map [:create/cmd :symbol
           ]]])
 

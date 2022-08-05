@@ -17,7 +17,7 @@
   {:client/app-names       ["Slack"],
    :client/workspace-title "slack",
    :match/skip-title       true,
-   :client/create          {:create/cmd clawe.toggle/exec, :exec/cmd "slack"}},
+   :client/create          "slack"}
   "terminal"
   {:client/app-names          ["Alacritty"],
    :client/create
@@ -52,7 +52,7 @@
   {:client/app-names       ["spotify" "pavucontrol"],
    :client/workspace-title "spotify",
    :match/skip-title       true,
-   :client/create          {:create/cmd clawe.toggle/exec, :exec/cmd "spotify"}},
+   :client/create          "spotify"}
   "emacs"
   {:client/app-names          ["Emacs"],
    :client/create
@@ -66,7 +66,7 @@
   {:client/app-names       ["Discord"],
    :client/workspace-title "discord",
    :match/skip-title       true,
-   :client/create          {:create/cmd clawe.toggle/exec, :exec/cmd "discord"}},
+   :client/create          "discord"}
   "messages" {:client/app-names ["Messages"]},
   "topbar"
   {:client/workspace-title "journal" ,
@@ -83,8 +83,7 @@
   "onepass"
   {:client/app-names       ["1password"],
    :client/create
-   {:create/cmd clawe.toggle/exec,
-    :exec/cmd   "/usr/bin/gtk-launch 1password.desktop"},
+   "/usr/bin/gtk-launch 1password.desktop",
    :match/skip-title       true,
    :client/workspace-title "onepass"},
   "godot"    {:client/app-names ["godot"]}}}
