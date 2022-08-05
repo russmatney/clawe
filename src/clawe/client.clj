@@ -32,7 +32,14 @@
    ;; if true, the title won't be used when matching this client against others
    [:match/skip-title {:optional true} :boolean]
    ;; if true, this client will be more forgiving when matching against others
-   [:match/soft-title {:optional true} :boolean]])
+   [:match/soft-title {:optional true} :boolean]
+
+   ;; if true, client/match will use the current workspace title for the client window title comparison
+   ;; this supports toggling an app that belongs to the workspace (terminal, emacs)
+   [:match/use-workspace-title {:optional true} :boolean]
+
+   ;; determines the hide behavior when toggling
+   [:hide/type {:optional true} :keyword]])
 
 (defn strip [c]
   (m/decode schema c (mt/strip-extra-keys-transformer)))
@@ -44,14 +51,11 @@
      :client/app-name     "blah"
      :client/focused      nil
      :gibber              :jabber})
-  (strip
-    {
-     :client/window-title "hi"
-     :gibber              :jabber})
 
   (strip
     {:client/window-title "hi"
-     :gibber              :jabber}))
+     :gibber              :jabber
+     :hide/type           :hyde/close}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; match
@@ -60,7 +64,7 @@
 (defn ->app-names [{:client/keys [app-name app-names]}]
   (->> (concat [app-name] app-names)
        (remove nil?)
-       (map string/lower-case) ;; simpler comparisons, ignore case
+       (map string/lower-case)
        (into #{})))
 
 (defn match?
@@ -76,6 +80,7 @@
   the client with the desired match opts as the first arg to the 3-arity
   version of this function.
   "
+  ;; TODO support :match/use-workspace-title and :current-workspace-title as a passed opt
   ([a b] (match? nil a b))
   ([opts a b]
    (let [a-app-names (->app-names a)
@@ -89,19 +94,34 @@
             (seq (set/intersection a-app-names b-app-names)))
 
        (or
+         ;; skip title check completely
          (:match/skip-title opts)
-         ;; (not a-window-title)
-         ;; (not b-window-title)
+
          (and a-window-title
               b-window-title
-              (if (:match/soft-title opts)
+              (cond
+
+                ;; support optional soft title match
+                (:match/soft-title opts)
                 (when (or
                         (string/includes? a-window-title b-window-title)
                         (string/includes? b-window-title a-window-title))
-                  (println "soft-title match" a-window-title b-window-title)
+                  (println "successful soft-title match" a-window-title b-window-title)
                   true)
 
-                (= a-window-title b-window-title))))
+                :else
+                ;; fallback to a direct comparison
+                (= a-window-title b-window-title)))
+
+         ;; support matching against the current workspace title, if provided
+         (and (:current-workspace-title opts)
+              (or
+                (and (:match/use-workspace-title a)
+                     (= (:current-workspace-title opts)
+                        b-window-title))
+                (and (:match/use-workspace-title b)
+                     (= (:current-workspace-title opts)
+                        a-window-title)))))
 
        ;; TODO `:client/key` comparison
        ))))

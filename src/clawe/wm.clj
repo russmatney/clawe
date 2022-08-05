@@ -61,6 +61,7 @@
   "Attempts to merge the passed client with a matching client-def from resouces/clawe.edn.
 
   Matches using `client/match?`."
+  ;; TODO should we supply a workspace-title here for use-workspace-title matches/merges?
   [client]
   (let [defs (clawe.config/client-defs)
         matches

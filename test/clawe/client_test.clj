@@ -1,8 +1,7 @@
 (ns clawe.client-test
   (:require
    [clojure.test :refer [deftest is testing]]
-   [clawe.client :as client]
-   [clawe.wm :as wm]))
+   [clawe.client :as client]))
 
 (deftest match-test
   (testing "basic match"
@@ -29,7 +28,18 @@
           b {:client/window-title "i'm dynamic!" :client/app-name "Woo!"
              :client/app-names    ["Slack"]}]
       (is (not (client/match? a b)))
-      (is (client/match? {:match/skip-title true} a b)))))
+      (is (client/match? {:match/skip-title true} a b))))
+
+  (testing "case insensitive app-name matching"
+    (let [a {:client/app-name "FiReFox"}
+          b {:client/app-name "fIrEfOx"}]
+      (is (client/match? {:match/skip-title true} a b))))
+
+  (testing ":match/use-workspace-title support"
+    (let [wsp-emacs      {:client/app-name "emacs" :client/window-title "clawe"}
+          emacs-selector {:client/app-name "emacs" :match/use-workspace-title true}]
+      (is (client/match? {:current-workspace-title "clawe"} emacs-selector wsp-emacs))
+      (is (not (client/match? {:current-workspace-title "journal"} emacs-selector wsp-emacs))))))
 
 (deftest matching-client-defs-test
   (testing "no matching app-names, should not match"
@@ -37,8 +47,12 @@
                {:client/window-title "my-client" :client/app-name "some-app"}
                {:client/app-names ["my" "app" "names"] :client/key "my-client-key"}))))
 
-  (testing "matching app-names, should match"
+  (testing "matching app-names, skip-title, should match"
+    (is (not (client/match?
+               {:client/window-title "my-client" :client/app-name "some-app"}
+               {:client/app-names ["some-app" "app" "names"] :client/key "my-client-key"})))
     (is (client/match?
+          {:match/skip-title true}
           {:client/window-title "my-client" :client/app-name "some-app"}
           {:client/app-names ["some-app" "app" "names"] :client/key "my-client-key"})))
 

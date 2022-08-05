@@ -18,6 +18,7 @@
       (ns-resolve (symbol n) f))
     (resolve f)))
 
+;; TODO probably move to its own namespace... and consider 'create`
 (defn open-client [def]
   ;; how to integrate a quick --key cli into this?
   ;; support as a key? feels like a workaround, ought to read bb-cli
@@ -33,7 +34,14 @@
             (notify/notify "Could not resolve :client/open")))
         (map? open-opts)
         (if-let [cmd (-> open-opts :open/cmd)]
-          ((auto-resolve cmd) open-opts)
+          (let [open-opts (->> open-opts
+                               (map (fn [[k v]]
+                                      [k (cond (#{:open/use-workspace-title} v)
+                                               (:workspace/title (wm/current-workspace))
+
+                                                :else v)]))
+                               (into {}))]
+            ((auto-resolve cmd) open-opts))
           (notify/notify ":client/open map form requires :open/cmd"))))))
 
 (comment
@@ -55,12 +63,27 @@
   Supports prefetched `:prefetched-clients` to avoid the `wm/` call."
   ([client-def] (find-client nil client-def))
   ([opts client-def]
-   (let [all-clients (:prefetched-clients opts (wm/active-clients opts))]
+   (let [all-clients (:prefetched-clients opts (wm/active-clients opts))
+         current (:current-workspace opts (wm/current-workspace))]
      (some->> all-clients
               (filter
                 ;; pass def as opts
-                (partial client/match? client-def client-def))
-              first))))
+                (partial client/match?
+                         (assoc client-def :current-workspace-title (:workspace/title current))
+                         client-def))
+              first
+              ;; merge the client-def here, to include match details
+              ;; for use-workspace-title client matches
+              ;; (could update wm/merge-client-defs to handle a context-workspace instead)
+              (merge client-def)))))
+
+(comment
+  (clawe.config/reload-config)
+  (->
+    (clawe.config/client-def "terminal")
+    find-client
+    client/strip)
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; in current workspace?
