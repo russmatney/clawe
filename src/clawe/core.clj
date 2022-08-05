@@ -1,7 +1,6 @@
 (ns clawe.core
   (:require
-   [defthing.defcom :as defcom :refer [defcom]]
-   [ralphie.awesome :as awm]
+   [defthing.defcom :as defcom]
    clawe.awesome.rules
    clawe.client
    clawe.defs.bindings
@@ -12,19 +11,6 @@
    clawe.m-x
    ralphie.core ;; so we include all ralphie commands
    ))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; awm-cli wrapper
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; TODO move to ralphie.awesome or pure clojure-awesome library/adapter
-(defcom awm-cli
-  (fn [_config & arguments]
-    (let [res (awm/awm-cli (-> arguments first first))]
-      (println res))))
-
-(defcom awm-collect-garbage
-  (awm/awm-cli "handle_garbage();"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; main

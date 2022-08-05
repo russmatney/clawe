@@ -15,12 +15,27 @@
 ;; schema
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(def client-open-schema
+  [:or
+   :symbol
+   [:map [:open/cmd :symbol
+          ]]])
+
+(comment
+  (m/validate
+    client-open-schema
+    ralphie.emacs/open)
+
+  (m/validate
+    client-open-schema
+    {:open/cmd ralphie.emacs/open}))
+
 ;; TODO enforce schema against clawe.edn via clj-kondo
 (def schema
   [:map
-   [:client/app-name :string]
-   [:client/window-title :string]
-   [:client/focused [:maybe :boolean]]
+   [:client/app-name {:optional true} :string]
+   [:client/window-title {:optional true} :string]
+   [:client/focused {:optional true} [:maybe :boolean]]
 
    ;; unique for a clawe.edn config: supports spawn-client, find-client, apply rules workflows
    [:client/key {:optional true} :string]
@@ -29,9 +44,7 @@
    ;; string used to assign a workspace title when :hide/scratchpadding a client
    [:client/workspace-title {:optional true} :string]
 
-   [:client/open {:optional true} [:alt
-                                   :symbol
-                                   [:map [:open/cmd :symbol]]]]
+   [:client/open {:optional true} client-open-schema]
 
    ;; if true, the title won't be used when matching this client against others
    [:match/skip-title {:optional true} :boolean]

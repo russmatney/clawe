@@ -21,8 +21,7 @@
     [(when-not is-mac? 'ralphie.awesome-test)
      'defthing.core-test
      'defthing.defcom-test
-     'defthing.db-test
-     'defthing.defworkspace-test
+     ;; 'defthing.db-test
      ;; 'ralphie.git-test
      ;; 'ralphie.tmux-test
      ;; 'ralphie.emacs-test
@@ -30,6 +29,9 @@
      ;; 'components.timeline-test
      ;; 'dates.tick-test
      'clawe.schema-test
+     'clawe.config-test
+     'clawe.client-test
+     'clawe.toggle-test
      ]
     (remove nil?)))
 

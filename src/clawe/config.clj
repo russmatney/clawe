@@ -66,6 +66,12 @@
 (defn workspace-defs []
   (:workspace/defs @*config* {}))
 
+(defn workspace-defs-with-titles []
+  (->> (:workspace/defs @*config* {})
+       (map (fn [[k def]]
+              [k (assoc def :workspace/title k)]))
+       (into {})))
+
 (defn workspace-def [workspace-title]
   ((workspace-defs) workspace-title))
 

@@ -12,7 +12,7 @@
   [:map
    [:workspace/title string?]
    [:workspace/directory string?]
-   [:workspace/index int?]
+   [:workspace/index {:optional true} int?]
    [:workspace/initial-file {:optional true} string?]
    ;; extra app names used to match on clients when applying clawe.rules
    ;; TODO not workspace app-names, probably more like workspace/client-keys
