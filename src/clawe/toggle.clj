@@ -11,6 +11,13 @@
 ;; open client
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn- auto-resolve [f]
+  (if-let [n (namespace f)]
+    (do
+      (require (symbol n))
+      (ns-resolve (symbol n) f))
+    (resolve f)))
+
 (defn open-client [def]
   ;; how to integrate a quick --key cli into this?
   ;; support as a key? feels like a workaround, ought to read bb-cli
@@ -19,19 +26,14 @@
     (when-let [open-opts (-> def :client/open)]
       (cond
         (symbol? open-opts)
-        (let [n (namespace open-opts)]
-          (if-let [f (if n
-                       (do
-                         (require (symbol n))
-                         (ns-resolve (symbol n) open-opts))
-                       (resolve open-opts))]
-            (f)
-            (do
-              (println "Could not resolve :client/open" open-opts)
-              (notify/notify "Could not resolve :client/open"))))
+        (if-let [f (auto-resolve open-opts)]
+          (f)
+          (do
+            (println "Could not resolve :client/open" open-opts)
+            (notify/notify "Could not resolve :client/open")))
         (map? open-opts)
         (if-let [cmd (-> open-opts :open/cmd)]
-          ((resolve cmd) open-opts)
+          ((auto-resolve cmd) open-opts)
           (notify/notify ":client/open map form requires :open/cmd"))))))
 
 (comment
