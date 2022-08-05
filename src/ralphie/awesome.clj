@@ -33,6 +33,7 @@
   (:require
    [babashka.process :as process]
    [clojure.string :as string]
+   [malli.provider :as mp]
    [defthing.defcom :refer [defcom] :as defcom]
    [ralphie.awesome.fnl :as awm.fnl :refer [fnl]]
    [ralphie.notify :as notify]
@@ -41,19 +42,32 @@
 ;; This is hard-coded to the awesome keybinding writer! be careful!
 (def awm-fnl awm.fnl/awm-fnl) ;; awmfnlawmfnlawmfnl
 (def awm-cli awm.fnl/awm-cli) ;; awmfnlawmfnlawmfnl
-(def awm-lua awm.fnl/awm-lua) ;; awmfnlawmfnlawmfnl
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; malli schema
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(def client-schema
+  [:map
+   [:awesome.client {:optional true} [:map]]
+   [:awesome.client/window :int]])
+
 (def tag-schema
-  [:map])
+  [:map
+   [:awesome/tag {:optional true} [:map]]
+   [:awesome.tag/index :int]
+   [:awesome.tag/name :string]
+   [:awesome.tag/layout :string]
+   [:awesome.tag/selected [:maybe :boolean]]
+   [:awesome.tag/urgent [:maybe :boolean]]
+   [:awesome.tag/empty :boolean]
+   [:awesome.tag/clients {:optional true} [:sequential client-schema]]])
 
 (def screen-schema
   [:map
    [:awesome/screen [:map]]
-   [:awesome.screen [:sequential tag-schema]]])
+   [:awesome.screen/tags {:optional true} [:sequential tag-schema]]
+   [:awesome.screen/geometry [:map-of keyword? int?]]])
 
 
 (declare ->namespaced-tag)
@@ -71,20 +85,24 @@
      :awesome.screen/tags     tags
      :awesome.screen/geometry (:geometry screen)}))
 
-(defn screen []
-  (-> (fnl
-        (view
-          {:geometry (. s :geometry)
-           :tags     (lume.map
-                       s.tags
-                       (fn [t]
-                         ;; could fetch more tag details here...
-                         {:name  (. t :name)
-                          :index (. t :index)}))}))
-      ->namespaced-screen))
+(defn screen
+  ([] (screen nil))
+  ([_opts]
+   (-> (fnl
+         (view
+           {:geometry (. s :geometry)
+            :tags     (lume.map
+                        s.tags
+                        (fn [t]
+                          ;; could fetch more tag details here...
+                          {:name   (. t :name)
+                           :index  (. t :index)
+                           :layout (-?> t (. :layout) (. :name))}))}))
+       ->namespaced-screen)))
 
 (comment
-  (screen))
+  (screen)
+  (mp/provide (list (screen))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; tag fetchers
@@ -93,7 +111,7 @@
   "Recieves a raw-awm `client`, and moves data to namespaced keywords."
   [client]
   {:awesome/client          (dissoc client :name :urgent :instance :type :pid :class :ontop :master :window :focused
-                                    :tag-names)
+                                    :tag-names :first-tag :geometry)
    :awesome.client/name     (:name client)
    :awesome.client/class    (:class client)
    :awesome.client/instance (:instance client)
@@ -101,6 +119,7 @@
    :awesome.client/pid      (:pid client)
 
    :awesome.client/tag-names (:tag-names client)
+   :awesome.client/tag       (:first-tag client)
    :awesome.client/type      (:type client)
 
    :awesome.client/focused  (:focused client)
@@ -133,9 +152,9 @@
 
 (defn fetch-tags
   "Returns all awm tags as clojure maps, namespaced with :awesome.tag and :awesome.client keys."
-  ([] (fetch-tags {}))
-  ([_opts]
-   ;; TODO consider filtering on passed tag names, current tag
+  ([] (fetch-tags nil))
+  ([opts]
+   ;; TODO support `:tag-names #{}` as a list
    (try
      (->>
        (fnl
@@ -144,7 +163,9 @@
          (local m-window (if m-client m-client.window nil))
 
          (->
-           (root.tags)
+           ~(if (:only-current opts)
+              '[s.selected_tag]
+              '(root.tags))
            (lume.map
              (fn [t]
                {:name     t.name
@@ -154,10 +175,11 @@
                 :layout   (-?> t (. :layout) (. :name))
                 :clients
                 (->
-                  (t:clients)
+                  ~(if (:include-clients opts) '(t:clients) '[])
                   (lume.map
                     (fn [c]
                       {:name      (. c :name)
+                       :geometry  (c:geometry)
                        :ontop     c.ontop
                        :window    c.window
                        :urgent    c.urgent
@@ -167,6 +189,7 @@
                        :pid       c.pid
                        :role      c.role
                        :tag-names (-> (c:tags) (lume.map (fn [x] (. x :name))))
+                       :first-tag c.first_tag.name
                        :master    (= m-window c.window)
                        :focused   (= focused-window c.window)})))}))
            view))
@@ -176,25 +199,12 @@
        nil))))
 
 (comment
-  (->>
-    (fetch-tags)
-    first
-    :awesome.tag/clients
-    first
-    )
+  (some->> (fetch-tags) first :awesome.tag/clients)
 
-  (fnl
-    (->
-      (root.tags)
-      (lume.map
-        (fn [t]
-          {:clients
-           (->
-             (t:clients)
-             (lume.map
-               (fn [c]
-                 {:tag-names (-> (c:tags) (lume.map (fn [x] (. x :name))))})))}))
-      view)))
+  (some->> (fetch-tags {:include-clients true}) first :awesome.tag/clients first)
+  (some->> (fetch-tags {:only-current true}) first :awesome.tag/clients)
+  (some->> (fetch-tags {:only-current    true
+                        :include-clients true}) first :awesome.tag/clients))
 
 
 (defn tag-for-name
@@ -251,19 +261,24 @@
   (->>
     (fnl
       (local focused-window (if client.focus client.focus.window nil))
+      (local m-client (awful.client.getmaster))
+      (local m-window (if m-client m-client.window nil))
       (-> (client.get)
           (lume.map (fn [c]
-                      {:name      (. c :name)
+                      {:class     c.class
+                       :first-tag c.first_tag.name
+                       :focused   (= focused-window c.window)
                        :geometry  (c:geometry)
-                       :window    c.window
-                       :type      c.type
-                       :class     c.class
                        :instance  c.instance
+                       :master    (= m-window c.window)
+                       :name      (. c :name)
+                       :ontop     c.ontop
                        :pid       c.pid
                        :role      c.role
-                       :tags      (lume.map (c:tags) (fn [t] {:name (. t :name)}))
-                       :first_tag c.first_tag.name
-                       :focused   (= focused-window c.window)}))
+                       :tag-names (lume.map (c:tags) (fn [t] {:name (. t :name)}))
+                       :type      c.type
+                       :urgent    c.urgent
+                       :window    c.window}))
           view))
     (map ->namespaced-client)))
 

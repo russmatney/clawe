@@ -1,7 +1,8 @@
 (ns clawe.awesome
   (:require
    [clawe.wm.protocol :refer [ClaweWM]]
-   [ralphie.awesome :as awm]))
+   [ralphie.awesome :as awm]
+   [clawe.workspace :as workspace]))
 
 
 (defn awesome-client->clawe-client [client]
@@ -21,6 +22,19 @@
                   (map awesome-client->clawe-client)))
       (dissoc :awesome.tag/clients)))
 
+(defn attach-clients [clients tag]
+  (cond
+    (not clients) ;; no prefetched passed
+    tag
+
+    (seq (:workspace/clients tag)) ;; already have clients
+    tag ;; return the tag
+
+    :else
+    (assoc tag :workspace/clients ;; attach any matching clients
+           (->> clients
+                (filter (comp #{(:awesome.tag/name tag)} :awesome.client/tag))))))
+
 (defrecord Awesome []
   ClaweWM
 
@@ -28,17 +42,15 @@
 
   (-current-workspaces [_this opts]
     (->>
-      ;; TODO re-use pre-fetched clients if passed?
-      ;; TODO tags-only (no clients, maybe a bit faster?)
-      ;; TODO filter on current tags (less to serialize)
-      (awm/fetch-tags (merge {:include-clients false :only-current true} opts))
-      (filter :awesome.tag/selected)
-      (map tag->wsp)))
+      (awm/fetch-tags (merge {:only-current true} opts))
+      (map tag->wsp)
+      (map (partial attach-clients (:prefetched-clients opts)))))
 
   (-active-workspaces [_this opts]
     (->>
       (awm/fetch-tags opts)
-      (map tag->wsp)))
+      (map tag->wsp)
+      (map (partial attach-clients (:prefetched-clients opts)))))
 
   (-create-workspace [_this _opts workspace-title]
     (awm/ensure-tag workspace-title))
@@ -49,13 +61,13 @@
       (awm/ensure-tag workspace-title)
       (awm/focus-tag! workspace-title)))
 
-  (-fetch-workspace [_this _opts workspace-title]
+  (-fetch-workspace [_this opts workspace-title]
     (some->>
-      ;; TODO optimize (only fetch one)
-      (awm/fetch-tags)
+      (awm/fetch-tags {:tag-names #{workspace-title}})
       (filter (comp #{workspace-title} :awesome.tag/name))
       first
-      tag->wsp))
+      tag->wsp
+      (attach-clients (:prefetched-clients opts))))
 
   (-swap-workspaces-by-index [_this a b]
     (awm/swap-tags-by-index a b))
@@ -97,6 +109,15 @@
   (clawe.wm.protocol/-current-workspaces
     (Awesome.) {:include-clients true})
 
+  (awm/fetch-tags {:include-clients true
+                   :only-current    true})
+
+  (->>
+    (clawe.wm.protocol/-current-workspaces
+      (Awesome.)
+      {:prefetched-clients
+       (clawe.wm.protocol/-active-clients (Awesome.) nil)})
+    (map workspace/strip))
+
   (clawe.wm.protocol/-fetch-workspace
-    (Awesome.) nil "dontexist")
-  )
+    (Awesome.) nil "dontexist"))

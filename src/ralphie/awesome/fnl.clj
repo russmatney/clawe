@@ -76,8 +76,8 @@ util = require 'util';
         ;; (edn/read-string to-load)
         (load-string to-load)
         (catch Exception _e
-          (println "Exception while parsing output:" trimmed to-load)
-          ;; (println "e" e)
+          (println "awesome.fnl exception while parsing output:" trimmed to-load)
+          ;; if we fail to load-string, return the string version
           to-load)))))
 
 (defn awm-cli

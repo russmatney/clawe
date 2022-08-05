@@ -18,21 +18,24 @@
 ;; TODO collect these automagically
 (def test-nses
   (->>
-    [(when-not is-mac? 'ralphie.awesome-test)
-     'defthing.core-test
-     'defthing.defcom-test
-     ;; 'defthing.db-test
-     ;; 'ralphie.git-test
-     ;; 'ralphie.tmux-test
-     ;; 'ralphie.emacs-test
-     ;; 'ralphie.awesome-test
-     ;; 'components.timeline-test
-     ;; 'dates.tick-test
-     'clawe.schema-test
-     'clawe.config-test
-     'clawe.client-test
-     'clawe.toggle-test
-     ]
+    (concat
+      (when-not is-mac?
+        ['ralphie.awesome-test
+         'ralphie.awesome.fnl-test])
+      ['defthing.core-test
+       'defthing.defcom-test
+       ;; 'defthing.db-test
+       ;; 'ralphie.git-test
+       ;; 'ralphie.tmux-test
+       ;; 'ralphie.emacs-test
+       ;; 'ralphie.awesome-test
+       ;; 'components.timeline-test
+       ;; 'dates.tick-test
+       'clawe.schema-test
+       'clawe.config-test
+       'clawe.client-test
+       'clawe.toggle-test
+       ])
     (remove nil?)))
 
 (doall

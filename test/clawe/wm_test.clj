@@ -369,7 +369,8 @@
         (reset!
           clawe.config/*config*
           ;; matching on test-app-name
-          {:client/defs {test-client-key {:client/app-names [test-app-name]}}})
+          {:client/defs {test-client-key {:client/app-names [test-app-name]
+                                          :match/skip-title true}}})
 
         (let [clients (wm/active-clients)]
           (is (valid [:sequential client/schema] clients))
