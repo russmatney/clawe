@@ -79,7 +79,7 @@
     (awm/focus-client
       {:center?   (:float-and-center opts)
        :float?    (:float-and-center opts)
-       :bury-all? false}
+       :bury-all? true}
       ;; TODO consider :client/window-id client attr
       (:awesome.client/window client)))
 
