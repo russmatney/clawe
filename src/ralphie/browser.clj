@@ -151,10 +151,15 @@ Depends on `brotab`."
            (p/$ open -a "/Applications/Safari.app")
            p/check :out))
 
-       (->
-         ^{:out :string}
-         (p/$ xdg-open ~url)
-         p/check :out)))))
+       (if url
+         (->
+           ^{:out :string}
+           (p/$ xdg-open ~url)
+           p/check :out)
+
+         (->
+           (p/$ "/usr/bin/gtk-launch" "firefox")
+           p/check :out))))))
 
 (comment
   (open {:url "https://github.com"})
