@@ -23,8 +23,9 @@
   Supports prefetched `:prefetched-clients` to avoid the `wm/` call."
   ([client-def] (find-client nil client-def))
   ([opts client-def]
-   (let [all-clients (:prefetched-clients opts (wm/active-clients opts))
-         current (:current-workspace opts (wm/current-workspace))]
+   (let [all-clients (or (:prefetched-clients opts) (wm/active-clients opts))
+         current (or (:current-workspace opts) (wm/current-workspace
+                                                 {:prefetched-clients all-clients}))]
      (some->> all-clients
               (filter
                 (partial client/match?
@@ -52,10 +53,8 @@
   ([client] (client-in-current-workspace? nil client))
   ([opts client]
    (when client
-     (let [wsps (:current-workspaces opts (wm/current-workspaces
-                                            ;; pass :prefetched-clients through
-                                            (assoc opts :include-clients true)))]
-       (some->> wsps
+     (let [wsp (or (:current-workspace opts) (wm/current-workspace opts))]
+       (some->> [wsp] ;; may reach for checking multiple wsps later on
                 (map (fn [wsp] (workspace/find-matching-client wsp client)))
                 first)))))
 
@@ -76,22 +75,23 @@
 ;; determine toggle action
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn determine-toggle-action [client-key]
-  ;; TODO prefetch and pass opts into funcs
-  (let [def (clawe.config/client-def client-key)]
-    (if-not def
-      [:no-def client-key]
+(defn determine-toggle-action
+  ([client-key] (determine-toggle-action client-key nil))
+  ([client-key opts]
+   (let [def (clawe.config/client-def client-key)]
+     (if-not def
+       [:no-def client-key]
 
-      (let [client (find-client def)]
-        (cond
-          (not client) [:create-client def]
+       (let [client (find-client opts def)]
+         (cond
+           (not client) [:create-client def]
 
-          (client-in-current-workspace? client)
-          (if (:client/focused client)
-            [:hide-client client]
-            [:focus-client client])
+           (client-in-current-workspace? opts client)
+           (if (:client/focused client)
+             [:hide-client client]
+             [:focus-client client])
 
-          :else [:show-client client])))))
+           :else [:show-client client]))))))
 
 ;; TODO rofi for choosing+executing one of these events with any client in the config
 
@@ -99,19 +99,19 @@
 ;; execute-toggle-action
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn execute-toggle-action [tog-action args]
+(defn execute-toggle-action [tog-action opts]
   (let [[action client-or-def] tog-action]
     (case action
       :no-def
       (do
-        (println "WARN: [toggle] no def found for :client/key in" args)
-        (notify/notify "[no def]" (:client/key args "No --key")))
+        (println "WARN: [toggle] no def found for :client/key in" opts)
+        (notify/notify "[no def]" (:client/key opts "No --key")))
 
       :create-client
       (do
         (println "create" (client/strip client-or-def))
-        (notify/notify "[:create-client]" (:client/key args "No --key"))
-        (client.create/create-client client-or-def))
+        (notify/notify "[:create-client]" (:client/key opts "No --key"))
+        (client.create/create-client client-or-def opts))
 
       :hide-client
       (do
@@ -134,14 +134,10 @@
         (notify/notify "[:show-client]")
         ;; TODO consider 'wm/show-client' or :show/ opts
         ;; or a more :hyde/jekyll or toggle->focus function
-        (wm/move-client-to-workspace
-          ;; TODO how to cache this extra lookup... for free?
-          ;; wm could hold a cache? or just support a 'current'
-          ;; opt for this function - the wm might have a shortcut
-          ;; .... or just call it in a let and pass it all the way through
-          client-or-def (wm/current-workspace))
         (wm/focus-client {:float-and-center (:focus/float-and-center client-or-def true)}
-                         client-or-def))
+                         client-or-def)
+        (wm/move-client-to-workspace
+          client-or-def (or (:current-workspace opts) (wm/current-workspace))))
 
       (println "No matching action for:" action))))
 
@@ -156,10 +152,16 @@
    {:alias {:key :client/key}}}
   [args]
   (notify/notify "[toggle]" (:client/key args "No --key"))
-  (-> args
-      :client/key
-      determine-toggle-action
-      (execute-toggle-action args))
+  (let [all-clients (wm/active-clients)
+        current-workspace (wm/current-workspace
+                            {:prefetched-clients all-clients})
+        opts {:prefetched-clients all-clients
+              :current-workspace current-workspace}]
+    (-> args
+        :client/key
+        (determine-toggle-action opts)
+        (execute-toggle-action (merge args opts))))
+
   (clawe.doctor/update-topbar))
 
 (comment
