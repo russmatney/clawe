@@ -115,7 +115,6 @@
 
       :hide-client
       (do
-        ;; move to an ensured workspace? close? minimize? hide?
         (println "hide" (client/strip client-or-def))
         (notify/notify "[:hide-client]")
         (wm/hide-client client-or-def))
@@ -124,23 +123,23 @@
       (do
         (println "focus" (client/strip client-or-def))
         (notify/notify "[:focus-client]")
-        ;; this is sometimes 'send-focus' other times 'jumbotron'
+        ;; this is sometimes 'send-focus', other times 'jumbotron'
         (wm/focus-client {:float-and-center (:focus/float-and-center client-or-def true)}
                          client-or-def))
 
-      :show-client ;; i.e. move-to-current-wsp + focus
+      :show-client
       (do
         (println "show" (client/strip client-or-def))
         (notify/notify "[:show-client]")
-        ;; TODO consider 'wm/show-client' or :show/ opts
-        ;; or a more :hyde/jekyll or toggle->focus function
-        (wm/focus-client {:float-and-center (:focus/float-and-center client-or-def true)}
-                         client-or-def)
+        ;; TODO would like to focus+center first to avoid the jank on linux
+        ;; but on osx, do it the other way to avoid the auto-space-switch.
+        ;; suppose we need to float and center, then switch, then focus
         (wm/move-client-to-workspace
-          client-or-def (or (:current-workspace opts) (wm/current-workspace))))
+          client-or-def (or (:current-workspace opts) (wm/current-workspace)))
+        (wm/focus-client {:float-and-center (:focus/float-and-center client-or-def true)}
+                         client-or-def))
 
       (println "No matching action for:" action))))
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; toggle

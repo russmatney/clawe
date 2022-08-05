@@ -4,7 +4,7 @@
   {:exclude [(clojure.core.match/match)
              (wing.test/assert-match)
              match?
-             (ralphie.awesome/fnl)
+             (ralphie.awesome.fnl/fnl)
              (defthing.defcom/defcom)
              valid ;; supported by test-util as a clojure.test assert-expr
              ]}

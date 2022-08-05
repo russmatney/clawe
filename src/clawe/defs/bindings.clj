@@ -14,7 +14,6 @@
 
    [clawe.doctor :as clawe.doctor]
    [clawe.m-x :as c.m-x]
-   [clawe.toggle :as toggle]
    [clawe.wm :as wm]
    [clawe.rules :as c.rules]
    [clawe.sxhkd.bindings :refer [sxhkd-exec]]))
