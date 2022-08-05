@@ -1,15 +1,27 @@
 (ns clawe.toggle
   (:require
+   [babashka.process :as process]
+   [clojure.string :as string]
+
    [ralphie.notify :as notify]
+   [clawe.config :as clawe.config]
+   [clawe.client :as client]
    [clawe.doctor :as clawe.doctor]
    [clawe.wm :as wm]
-   [clawe.client :as client]
-   [clawe.workspace :as workspace]
-   [clawe.config :as clawe.config]))
+   [clawe.workspace :as workspace]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; open client
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn exec [{:keys [exec/cmd]}]
+  (-> cmd
+      (string/split #" ")
+      process/process
+      process/check))
+
+(comment
+  (exec {:exec/cmd "echo hi"}))
 
 (defn- auto-resolve [f]
   (if-let [n (namespace f)]
