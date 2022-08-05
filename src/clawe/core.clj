@@ -5,7 +5,6 @@
    clawe.awesome.rules
    clawe.client
    clawe.defs.bindings
-   clawe.defs.workspaces
    clawe.doctor
    clawe.toggle
    clawe.restart

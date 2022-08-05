@@ -14,7 +14,9 @@
  {"slack"
   {:client/app-names       ["Slack"],
    :client/workspace-title "slack",
-   :match/skip-title       true},
+   :match/skip-title       true
+   :client/open            {:open/cmd clawe.toggle/exec
+                            :exec/cmd "slack"}},
   "terminal"
   {:client/app-names          ["Alacritty"],
    :client/open
@@ -23,7 +25,7 @@
    :match/use-workspace-title true
    :hide/type                 :hide/close}
   "devweb"
-  {:client/app-names       ["Firefox Developer Edition"],
+  {:client/app-names       ["firefoxdeveloperedition" "google-chrome"],
    :client/workspace-title "devweb",
    :match/skip-title       true,
    :client/open            ralphie.browser/open-dev},
@@ -33,10 +35,11 @@
    :match/skip-title       true,
    :client/open            ralphie.browser/open},
   "spotify"
-  {:client/app-names       ["Spotify"],
+  {:client/app-names       ["spotify" "pavucontrol"],
    :client/workspace-title "spotify",
    :match/skip-title       true,
-   :client/open            ralphie.spotify/open},
+   :client/open            {:open/cmd clawe.toggle/exec
+                            :exec/cmd "spotify"}},
   "emacs"
   {:client/app-names          ["Emacs"],
    :client/open
@@ -48,7 +51,9 @@
   "discord"
   {:client/app-names       ["Discord"],
    :client/workspace-title "discord",
-   :match/skip-title       true},
+   :match/skip-title       true
+   :client/open            {:open/cmd clawe.toggle/exec
+                            :exec/cmd "discord"}},
   "messages" {:client/app-names ["Messages"]},
   "journal"
   {:client/window-title "journal",
@@ -58,4 +63,23 @@
    {:open/cmd             ralphie.emacs/open,
     :emacs.open/workspace "journal",
     :emacs.open/file      "~/todo/journal.org"}},
-  "godot"    {:client/app-names ["Godot"]}}}
+  "godot"    {:client/app-names ["godot"]}
+  "zoom"     {:client/app-names ["zoom" "zoom meeting" "slack call"]}
+  "onepass"
+  {:client/app-names       ["1password"]
+   :client/open
+   {:open/cmd clawe.toggle/exec
+    ;; TODO not cross-platform!
+    :exec/cmd "/usr/bin/gtk-launch 1password.desktop"}
+   :match/skip-title       true
+   :client/workspace-title "onepass"}
+  "obs"      {:client/app-names ["obs"]}
+  "doctor"
+  {:client/app-names       ["doctor"]
+   :client/window-title    "tauri/doctor-todo"
+   :client/open
+   {:open/cmd             ralphie.tmux/fire
+    :tmux.fire/cmd        "bb --config ~/russmatney/clawe/bb.edn todo"
+    :tmux.fire/session    "doctor-todo"
+    :tmux.fire/interrupt? true}
+   :client/workspace-title "doctor"}}}

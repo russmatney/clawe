@@ -29,6 +29,10 @@
    ;; string used to assign a workspace title when :hide/scratchpadding a client
    [:client/workspace-title {:optional true} :string]
 
+   [:client/open {:optional true} [:alt
+                                   :symbol
+                                   [:map [:open/cmd :symbol]]]]
+
    ;; if true, the title won't be used when matching this client against others
    [:match/skip-title {:optional true} :boolean]
    ;; if true, this client will be more forgiving when matching against others
