@@ -228,6 +228,9 @@
    (sys/start! `*wm*)
    (wm.protocol/-focus-client *wm* opts client)))
 
+(defn client->workspace-title [client]
+  (:client/workspace-title client (:client/window-title client)))
+
 ;; maybe something more like toggle->away - something more specific to the toggle UX
 (defn hide-client
   ([client] (hide-client nil client))
@@ -238,7 +241,7 @@
      :hide/scratchpad
      (wm.protocol/-move-client-to-workspace
        *wm* {:ensure-workspace true} client
-       (:client/workspace-title client (:client/window-title client)))
+       (client->workspace-title client))
 
      :hide/os-hide
      (println "to impl!")

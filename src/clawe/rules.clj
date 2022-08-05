@@ -1,14 +1,12 @@
 (ns clawe.rules
   "Rules are all about getting workspaces and clients in order."
   (:require
-   [clojure.string :as string]
-
-   [ralphie.awesome :as awm]
    [ralphie.notify :as notify]
 
-   [clawe.wm :as wm]
    [clawe.config :as clawe.config]
-   [clawe.doctor :as clawe.doctor]))
+   [clawe.doctor :as clawe.doctor]
+   [clawe.wm :as wm]
+   [clawe.workspace :as workspace]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Correct clients
@@ -110,108 +108,57 @@
                     (notify/notify "Error deleting tag" e))))))
      doall)))
 
-(defn clean-up-workspaces
-  ([] (clean-up-workspaces nil))
-  ([_]
-   (clean-workspaces) ;; remove empty wsps
-   (consolidate-workspaces) ;; move preferred indexes down
-   (reset-workspace-indexes)
-   (clawe.doctor/update-topbar))) ;; re-sort indexes (repo wsps move down)
-
-
 (defn correct-clients-and-workspaces
   "Runs over all open clients, rearranging according to workspace rules.
 
   Selects clients with callbacks to handle
   "
-  []
-  (let [workspaces        (->>
-                            ;; defs b/c we want to create missing wsps if there are any
-                            (wm/workspace-defs)
-                            (filter :rules/is-my-client?))
-        clients           (wm/active-clients)
-        _                 (def --w workspaces)
-        _                 (def --c clients)
-        wsp-by-client     (->>
-                            clients
-                            (group-by (fn [c]
-                                        (->> workspaces
-                                             (filter (fn [w] ((:rules/is-my-client? w) c)))
-                                             first))))
-        claimed-clients   (dissoc wsp-by-client nil)
-        unclaimed-clients (get wsp-by-client nil)
-        _                 (notify/notify
-                            {:notify/print?  true
-                             :notify/subject (str "Found " (count unclaimed-clients) " unclaimed clients")
-                             :notify/body    (->> unclaimed-clients
-                                                  (map
-                                                    #(str (:awesome.client/class %)
-                                                          " | "
-                                                          (:awesome.client/name %)))
-                                                  (string/join ", "))})
-        multi-tag-clients
-        (->>
-          clients
-          (filter (fn [c] (> (-> c :awesome.client/tags count) 1)))
 
-          )
+  ([] (correct-clients-and-workspaces nil))
+  ([opts]
+   (let [clients    (wm/active-clients)
+         workspaces (wm/active-workspaces {:prefetched-clients clients})
+         corrections
+         (->> clients
+              (map (fn [client]
+                     (if-let [wsp (some->> workspaces
+                                           (filter #(workspace/find-matching-client % client))
+                                           first)]
+                       (assoc client :client/workspace wsp)
+                       client)))
+              ;; assuming all clients have workspaces...and just one....
+              (remove (fn [client]
+                        (= (wm/client->workspace-title client)
+                           (-> client :client/workspace :workspace/title))))
+              (map (fn [client]
+                     [:move-client-to-wsp client (wm/client->workspace-title client)])))]
+     (if (:dry-run opts)
+       corrections
+       (do
+         (notify/notify (str "Found " (count corrections) " corrections to apply"))
+         (doall
+           (->> corrections
+                (map (fn [[action & rest]]
+                       (cond
+                         (= :move-client-to-wsp action)
+                         (let [[client wsp] rest]
+                           (wm/move-client-to-workspace client wsp))
 
-        _
-        (when (seq multi-tag-clients)
-          (notify/notify
-            {:notify/print?  true
-             :notify/subject (str "Found " (count multi-tag-clients) " clients with multiple tags")
-             :notify/body    (->> multi-tag-clients
-                                  (map
-                                    #(str (:awesome.client/class %)
-                                          " | "
-                                          (:awesome.client/name %)))
-                                  (string/join ", "))}))
+                         :else
+                         (println "Unsupported correction" action)))))))))))
 
-        mismatched-wsp-clients
-        (->>
-          claimed-clients
-          (map (fn [[w cs]]
-                 (let [w-name (:workspace/title w)]
-                   [w
-                    (->> cs
-                         (remove (fn [c]
-                                   (#{w-name}
-                                     (-> c :awesome.client/tags first :awesome.tag/name)))))])))
-          (into {})
-          (remove (comp zero? count second))
-          (into {}))]
+(comment
+  (clawe.config/reload-config)
+  (correct-clients-and-workspaces)
+  (correct-clients-and-workspaces
+    {:dry-run true})
+  )
 
-    (when (or true (seq mismatched-wsp-clients))
-      (notify/notify
-        {:notify/print?  true
-         :notify/subject (str "Found " (count mismatched-wsp-clients) " claimed clients on the wrong tag")
-         :notify/body    (->> mismatched-wsp-clients
-                              (map
-                                (fn [[w cs]]
-                                  (->> cs
-                                       (map
-                                         #(str (:awesome.client/class %)
-                                               " | "
-                                               (:awesome.client/name %)
-                                               " on "
-                                               (:workspace/title w)))
-                                       (apply str))))
-                              (string/join ", "))}))
-
-    (def -mwc mismatched-wsp-clients)
-    (log "Correcting mismatched clients")
-    (->>
-      mismatched-wsp-clients
-      (map
-        (fn [[w cs]]
-          (log (str "Ensuring workspace (vilomah): " (:workspace/title w)))
-          ;; TODO should this be a workspace-open function?
-          (awm/ensure-tag (:workspace/title w))
-          (doall (map
-                   #(do
-                      (log (str "Moving client to workspace: " (:workspace/title w)))
-                      (awm/move-client-to-tag (:awesome.client/window %)
-                                              (:workspace/title w)))
-                   cs))))
-      doall)))
+(defn clean-up-workspaces
+  ([] (clean-up-workspaces nil))
+  ([_]
+   (correct-clients-and-workspaces)
+   (clean-workspaces) ;; remove empty wsps
+   (consolidate-workspaces) ;; move preferred indexes down
+   (reset-workspace-indexes)
+   (clawe.doctor/update-topbar))) ;; re-sort indexes (repo wsps move down)

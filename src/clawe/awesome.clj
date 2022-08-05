@@ -24,11 +24,10 @@
 
 (defn attach-clients [clients tag]
   (cond
-    (not clients) ;; no prefetched passed
-    tag
-
-    (seq (:workspace/clients tag)) ;; already have clients
-    tag ;; return the tag
+    ;; no prefetched passed
+    (not clients)                  tag
+    ;; already have clients
+    (seq (:workspace/clients tag)) tag
 
     :else
     (assoc tag :workspace/clients ;; attach any matching clients

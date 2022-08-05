@@ -25,8 +25,9 @@
   (awm-workspace-rules "emacs")
   (awm-workspace-rules "emacs" "Emacs"))
 
-(defn workspace->awm-rules [{:workspace/keys [title app-names]}]
-  (apply awm-workspace-rules title app-names))
+(defn workspace->awm-rules [{:workspace/keys [title app-name app-names]}]
+  ;; case might matter here
+  (apply awm-workspace-rules title app-name app-names))
 
 (comment
   (workspace->awm-rules {:workspace/title "spotify"})
@@ -41,6 +42,7 @@
   The awesome config then reads this file into its rules."
   []
   (let [wsp-rules (->> (wm/workspace-defs)
+                       ;; if we need this, we need it for the clients too, not just the repos
                        (map workspace->awm-rules)
                        (walk/postwalk (fn [x]
                                         (if (seq? x)

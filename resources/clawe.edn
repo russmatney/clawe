@@ -39,7 +39,8 @@
   "zoom"     {:client/app-names ["zoom" "zoom meeting" "slack call"]},
   "obs"      {:client/app-names ["obs"]},
   "doctor"
-  {:client/app-names       ["doctor"],
+  {
+   :client/app-names       ["doctor"],
    :client/window-title    "tauri/doctor-todo",
    :client/create
    {:create/cmd           ralphie.tmux/fire,
@@ -67,6 +68,10 @@
    :match/skip-title       true,
    :client/create          {:create/cmd clawe.toggle/exec, :exec/cmd "discord"}},
   "messages" {:client/app-names ["Messages"]},
+  "topbar"
+  {:client/workspace-title "journal" ,
+   :client/app-names       ["doctor"],
+   :client/window-title    "tauri/doctor-topbar",}
   "journal"
   {:client/window-title "journal",
    :client/app-names    ["Emacs"],

@@ -339,8 +339,7 @@
 
 (defkbd correct-clients-and-workspaces
   [[:mod] "d"]
-  "Applies clawe rules"
-  (c.rules/correct-clients-and-workspaces))
+  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.rules/clean-up-workspaces"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Brightness
