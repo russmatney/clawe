@@ -13,7 +13,7 @@
 
 (defn active-workspaces []
   (->>
-    (wm/active-workspaces)
+    (wm/active-workspaces {:include-clients true})
     (map util/drop-complex-types)))
 
 (comment
