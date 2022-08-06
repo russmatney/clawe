@@ -159,13 +159,14 @@
   bb -cp $(clojure -Spath) --uberjar clawe.jar -m clawe.core # rebuild clawe
   See `build-uberjar`.
   "
-  []
-  (log "Restarting...")
-  (attempt-uberjar-rebuild)
+  ([] (restart nil))
+  ([_]
+   (log "Restarting...")
+   (attempt-uberjar-rebuild)
 
-  ;; reload afterwards, pretty much no matter what
-  (log "reloading clawe...")
-  (do-reload))
+   ;; reload afterwards, pretty much no matter what
+   (log "reloading clawe...")
+   (do-reload)))
 
 (defkbd clawe-restart
   [[:mod] "r"]
