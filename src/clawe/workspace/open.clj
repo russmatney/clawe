@@ -7,7 +7,9 @@
 
    [clawe.config :as clawe.config]
    [clawe.doctor :as clawe.doctor]
-   [clawe.wm :as wm]))
+   [clawe.rules :as clawe.rules]
+   [clawe.wm :as wm]
+   [clawe.client.create :as client.create]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Workspace opening/creation/installation
@@ -40,9 +42,9 @@
   [wsp]
   ;; creates (ensures) workspace before focusing
   (wm/focus-workspace wsp)
-  ;; TODO find or create client, and dedupe against toggle-app
-  ;; this is close, but the focus ends up wrong after the new wsp gets moved
-  #_(rules/reset-workspace-indexes)
+  (client.create/create-client "emacs")
+  (client.create/create-client "terminal")
+  (clawe.rules/clean-up-workspaces)
   (clawe.doctor/update-topbar) ;; no-op on mac for now
   wsp)
 
@@ -61,7 +63,9 @@
   [repo-id]
   (-> repo-id dir->repo-workspace create-workspace-def))
 
-(defn open-new-repo-wsp [local-repo]
+(defn open-new-repo-wsp
+  "Opens a passed "
+  [local-repo]
   (-> local-repo create-workspace-def)
   (-> local-repo open-new-workspace))
 

@@ -1,14 +1,8 @@
 (ns clawe.core
   (:require
    [defthing.defcom :as defcom]
-   clawe.awesome.rules
-   clawe.client
    clawe.defs.bindings
-   clawe.doctor
-   clawe.toggle
    clawe.restart
-   clawe.rules
-   clawe.m-x
    ralphie.core ;; so we include all ralphie commands
    ))
 

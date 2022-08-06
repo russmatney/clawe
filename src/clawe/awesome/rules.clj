@@ -41,7 +41,8 @@
 
   The awesome config then reads this file into its rules."
   []
-  (let [wsp-rules (->> (wm/workspace-defs)
+  (let [wsp-rules (->> []
+                       #_(wm/workspace-defs)
                        ;; if we need this, we need it for the clients too, not just the repos
                        (map workspace->awm-rules)
                        (walk/postwalk (fn [x]

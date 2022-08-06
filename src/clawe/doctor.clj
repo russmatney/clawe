@@ -9,10 +9,6 @@
   (when-not (clawe.config/is-mac?)
     (slurp (update-topbar-url))))
 
-(defn db-restart-conn []
-  (when-not (clawe.config/is-mac?)
-    (slurp (str (clawe.config/doctor-base-url) "/db/restart-conn"))))
-
 (defn reload []
   (when-not (clawe.config/is-mac?)
     (slurp (str (clawe.config/doctor-base-url) "/reload"))))

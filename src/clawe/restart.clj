@@ -11,9 +11,6 @@
    [ralphie.zsh :as zsh]
    [util :as util]
 
-   clawe.defs.bindings
-
-   [clawe.awesome.rules :as awm.rules]
    [clawe.awesome.bindings :as awm.bindings]
    [clawe.config :as clawe.config]
    [clawe.doctor :as clawe.doctor]
@@ -55,8 +52,6 @@
         ($ bb -cp ~cp --uberjar clawe.jar -m clawe.core )
         check)
       (notif "Clawe Uberjar: Rebuild Complete"))))
-
-(defcom rebuild-clawe build-uberjar)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; check if unit tests are passing
@@ -107,40 +102,6 @@
       (log "Strange unit tests response..."))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; restart
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defcom restart
-  "Maybe rebuild the clawe uberjar, then call `reload`.
-
-Rebuild requires the unit tests to pass, but if they fail, `reload` is called anyway.
-
-The uberjar can be manually rebuilt on the command line with:
-
-bb -cp $(clojure -Spath) --uberjar clawe.jar -m clawe.core # rebuild clawe
-See `build-uberjar`.
-"
-  (do
-    (log "Restarting...")
-    (attempt-uberjar-rebuild)
-
-    ;; reload afterwards, pretty much no matter what
-    (log "reloading clawe...")
-    (->
-      ;; kicking to process here so it can use the new uberjar
-      ;; Also helps avoid a circular dep, b/c reload depends on these bnds
-      ^{:out :inherit}
-      (proc/$ clawe reload)
-      proc/check :out slurp)))
-
-(defkbd clawe-restart
-  [[:mod] "r"]
-  {:binding/awm true}
-  ;; TODO support just passing in a defcom
-  ;; TODO consider moving keybindings into domain files?
-  (defcom/exec restart))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Reload
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -158,19 +119,7 @@ See `build-uberjar`.
      ;; NOTE this ensures the sxhkd tmux session as well, which is required for keybindings to work!
      (sxhkd.bindings/reset-bindings))
 
-   ;; Rules
-   (when-not (clawe.config/is-mac?)
-     (log "rewriting rules")
-     (awm.rules/write-awesome-rules)
-     (log "reapplying rules")
-     (rules/correct-clients-and-workspaces)
-     (log "finished rules"))
-
-   (log "Cleaning, consolidating, and updating indexes")
-   (rules/clean-workspaces)
-   (rules/consolidate-workspaces)
-   (rules/reset-workspace-indexes)
-
+   (rules/clean-up-workspaces)
 
    ;; Restart Notifications service
    (when-not (clawe.config/is-mac?)
@@ -196,7 +145,31 @@ See `build-uberjar`.
    (clawe.doctor/update-topbar)
    (log "Reload complete")))
 
-(defcom reload (do-reload))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; restart
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(comment
-  (defcom/exec reload))
+(defn restart
+  "Maybe rebuild the clawe uberjar, then call `reload`.
+
+  Rebuild requires the unit tests to pass, but if they fail, `reload` is called anyway.
+
+  The uberjar can be manually rebuilt on the command line with:
+
+  bb -cp $(clojure -Spath) --uberjar clawe.jar -m clawe.core # rebuild clawe
+  See `build-uberjar`.
+  "
+  []
+  (log "Restarting...")
+  (attempt-uberjar-rebuild)
+
+  ;; reload afterwards, pretty much no matter what
+  (log "reloading clawe...")
+  (do-reload))
+
+(defkbd clawe-restart
+  [[:mod] "r"]
+  {:binding/awm true}
+  ;; TODO support just passing in a defcom
+  ;; TODO consider moving keybindings into domain files?
+  (restart))
