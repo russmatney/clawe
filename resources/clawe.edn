@@ -1,93 +1,98 @@
 {:doctor-base-url "http://localhost:3334",
  :workspace/defs
- {"rewrite-clj"   {:workspace/directory "~/clj-commons/rewrite-clj"},
-  "dino"          {:workspace/directory "~/russmatney/dino"},
-  "clawe"         {:workspace/directory "~/russmatney/clawe"},
+ {"rewrite-clj" {:workspace/directory "~/clj-commons/rewrite-clj"},
+  "dino" {:workspace/directory "~/russmatney/dino"},
+  "org-crud" {:workspace/directory "~/russmatney/org-crud"},
+  "clawe" {:workspace/directory "~/russmatney/clawe"},
   "godot-git-plugin"
   {:workspace/directory "~/godotengine/godot-git-plugin"},
   "advent-of-code"
   {:workspace/directory "~/russmatney/advent-of-code"},
   "beatemup-three"
   {:workspace/directory "~/russmatney/beatemup-three"},
+  "fabb" {:workspace/directory "~/teknql/fabb"},
   "protomoon-two" {:workspace/directory "~/russmatney/protomoon-two"},
-  "malli"         {:workspace/directory "~/metosin/malli"},
-  "journal"       {:workspace/directory "~/todo"},
-  "godot"         {:workspace/directory "~/godotengine/godot"}},
- :repo-roots      ["~/russmatney/*" "~/teknql/*"],
+  "dotfiles" {:workspace/directory "~/russmatney/dotfiles"},
+  "malli" {:workspace/directory "~/metosin/malli"},
+  "journal" {:workspace/directory "~/todo"},
+  "godot" {:workspace/directory "~/godotengine/godot"}},
+ :repo-roots ["~/russmatney/*" "~/teknql/*"],
  :client/defs
  {"slack"
-  {:client/app-names       ["Slack"],
+  {:client/app-names ["Slack"],
    :client/workspace-title "slack",
-   :match/skip-title       true,
-   :client/create          "slack"},
+   :match/skip-title true,
+   :client/create "slack"},
   "terminal"
-  {:client/app-names          ["Alacritty"],
+  {:client/app-names ["Alacritty"],
    :client/create
-   {:create/cmd        ralphie.tmux/open-session,
+   {:create/cmd ralphie.tmux/open-session,
     :tmux/session-name :create/use-workspace-title},
    :match/use-workspace-title true,
-   :hide/type                 :hide/close,
-   :focus/float-and-center    true},
+   :hide/type :hide/close,
+   :focus/float-and-center true},
   "devweb"
-  {:client/app-names       ["firefoxdeveloperedition" "google-chrome"
-                            "firefox developer edition"],
+  {:client/app-names
+   ["firefoxdeveloperedition"
+    "google-chrome"
+    "firefox developer edition"],
    :client/workspace-title "devweb",
-   :match/skip-title       true,
-   :client/create          ralphie.browser/open-dev},
+   :match/skip-title true,
+   :client/create ralphie.browser/open-dev},
   "web"
-  {:client/app-names       ["Safari" "firefox"],
+  {:client/app-names ["Safari" "firefox"],
    :client/workspace-title "web",
-   :match/skip-title       true,
-   :client/create          ralphie.browser/open},
-  "zoom"     {:client/app-names ["zoom" "zoom meeting" "slack call"]},
-  "obs"      {:client/app-names ["obs"]},
+   :match/skip-title true,
+   :client/create ralphie.browser/open},
+  "zoom" {:client/app-names ["zoom" "zoom meeting" "slack call"]},
+  "obs" {:client/app-names ["obs"]},
   "doctor"
-  {:client/app-names       ["doctor"],
-   :client/window-title    "tauri/doctor-todo",
+  {:client/app-names ["doctor"],
+   :client/window-title "tauri/doctor-todo",
    :client/create
-   {:create/cmd           ralphie.tmux/fire,
-    :tmux.fire/cmd        "bb --config ~/russmatney/clawe/bb.edn todo",
-    :tmux.fire/session    "doctor-todo",
+   {:create/cmd ralphie.tmux/fire,
+    :tmux.fire/cmd "bb --config ~/russmatney/clawe/bb.edn todo",
+    :tmux.fire/session "doctor-todo",
     :tmux.fire/interrupt? true},
    :client/workspace-title "doctor"},
   "spotify"
-  {:client/app-names       ["spotify" "pavucontrol"],
+  {:client/app-names ["spotify" "pavucontrol"],
    :client/workspace-title "spotify",
-   :match/skip-title       true,
-   :client/create          "spotify"},
+   :match/skip-title true,
+   :client/create "spotify"},
   "emacs"
-  {:client/app-names          ["Emacs"],
+  {:client/app-names ["Emacs"],
    :client/create
-   {:create/cmd           ralphie.emacs/open,
+   {:create/cmd ralphie.emacs/open,
     :emacs.open/workspace :create/use-workspace-title},
    :match/use-workspace-title true,
-   :hide/type                 :hide/close,
-   :focus/float-and-center    true},
+   :hide/type :hide/close,
+   :focus/float-and-center true},
   "aseprite" {:client/app-names ["Aseprite"]},
   "discord"
-  {:client/app-names       ["Discord"],
+  {:client/app-names ["Discord"],
    :client/workspace-title "discord",
-   :match/skip-title       true,
-   :client/create          "discord"},
+   :match/skip-title true,
+   :client/create "discord"},
   "topbar"
   {:client/workspace-title "journal",
-   :client/app-names       ["doctor"],
-   :client/window-title    "tauri/doctor-topbar"},
+   :client/app-names ["doctor"],
+   :client/window-title "tauri/doctor-topbar"},
   "messages" {:client/app-names ["Messages"]},
   "journal"
   {:client/window-title "journal",
-   :client/app-names    ["Emacs"],
-   :match/soft-title    true,
+   :client/app-names ["Emacs"],
+   :match/soft-title true,
    :client/create
-   {:create/cmd           ralphie.emacs/open,
+   {:create/cmd ralphie.emacs/open,
     :emacs.open/workspace "journal",
-    :emacs.open/file      "~/todo/journal.org"}},
+    :emacs.open/file "~/todo/journal.org"}},
   "onepass"
-  {:client/app-names       ["1password"],
-   :client/create          "/usr/bin/gtk-launch 1password.desktop",
-   :match/skip-title       true,
+  {:client/app-names ["1password"],
+   :client/create "/usr/bin/gtk-launch 1password.desktop",
+   :match/skip-title true,
    :client/workspace-title "onepass"},
   "godot"
-  {:client/app-names       ["godot"]
-   :client/workspace-title "godot"
-   :match/skip-title       true}}}
+  {:client/app-names ["godot"],
+   :client/workspace-title "godot",
+   :match/skip-title true}}}
