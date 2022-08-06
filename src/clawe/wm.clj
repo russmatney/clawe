@@ -7,7 +7,8 @@
    [clawe.config :as clawe.config]
    [clawe.wm.protocol :as wm.protocol]
    [clawe.yabai :as clawe.yabai]
-   [clawe.client :as client])
+   [clawe.client :as client]
+   [clojure.string :as string])
   (:import
    [clawe.awesome Awesome]
    [clawe.yabai Yabai]))
@@ -214,6 +215,9 @@
    (sys/start! `*wm*)
    (wm.protocol/-close-client *wm* opts client)))
 
+(comment
+  (close-client nil))
+
 ;; focus
 
 (defn focus-workspace
@@ -229,7 +233,24 @@
    (wm.protocol/-focus-client *wm* opts client)))
 
 (defn client->workspace-title [client]
-  (:client/workspace-title client (:client/window-title client)))
+  (or (:client/workspace-title client)
+      (let [wt (:client/window-title client)]
+        (cond
+          (re-seq #" " wt)
+          ;; term before first space
+          (->> (string/split wt #" ") first)
+
+          :else wt))))
+
+(comment
+  (clawe.config/reload-config)
+  (->>
+    (active-clients)
+    (filter (comp #{"Emacs"} :client/app-name))
+    (map client/strip)
+    (map #(assoc % :wsp-title (client->workspace-title %)))
+    )
+  )
 
 ;; maybe something more like toggle->away - something more specific to the toggle UX
 (defn hide-client
