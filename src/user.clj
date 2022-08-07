@@ -1,6 +1,5 @@
 (ns user
   (:require
-   [defthing.defworkspace :as defworkspace]
    [defthing.defkbd :as defkbd]
    [ralphie.awesome :as awm]
    [ralphie.notify :as notify]
@@ -50,7 +49,6 @@
 
 
   (defkbd/list-bindings)
-  (defworkspace/list-workspaces)
 
   ;; reload widgets (re-runs connect_for_each_screen)
   (awm/awm-cli "require('bar'); return init_bar();")

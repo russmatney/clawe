@@ -2,8 +2,6 @@
   (:require
    [criterium.core :as crit]
 
-   [defthing.defworkspace :as defworkspace]
-
    ))
 
 (comment
@@ -11,11 +9,11 @@
 
 
   (count
-    (defworkspace/list-workspaces))
+    #_(defworkspace/list-workspaces))
   (count
-    (defworkspace/latest-db-workspaces))
+    #_(defworkspace/latest-db-workspaces))
 
-  (crit/bench (defworkspace/list-workspaces))
+  (crit/bench nil #_(defworkspace/list-workspaces))
   ;; Evaluation count : 3269891160 in 60 samples of 54498186 calls.
   ;; Execution time mean : 16.731557 ns
   ;; Execution time std-deviation : 0.213694 ns
@@ -29,7 +27,7 @@
   ;; Variance from outliers : 1.6389 % Variance is slightly inflated by outliers
 
 
-  (crit/bench (defworkspace/latest-db-workspaces))
+  (crit/bench nil #_(defworkspace/latest-db-workspaces))
   ;; Evaluation count : 12960 in 60 samples of 216 calls.
   ;; Execution time mean : 9.216540 ms
   ;; Execution time std-deviation : 9.052453 ms

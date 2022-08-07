@@ -2,10 +2,7 @@
   (:require
    [ralphie.git :as r.git]
    [defthing.db :as db]
-   [defthing.defworkspace :as defworkspace]
-
    [babashka.fs :as fs]
-   [wing.core :as w]
    [clojure.string :as string]))
 
 (defn is-git-dir? [dir]

@@ -1,8 +1,7 @@
 (ns hooks.workspaces
   (:require
    [plasma.core :refer [defhandler defstream]]
-   #?@(:clj [[defthing.defworkspace :as defworkspace]
-             [api.workspaces]]
+   #?@(:clj [[api.workspaces]]
        :cljs [[wing.core :as w]
               [plasma.uix :refer [with-rpc with-stream]]])))
 
@@ -44,5 +43,4 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defhandler update-workspace [item]
-  (defworkspace/sync-workspaces-to-db item))
-
+  #_(defworkspace/sync-workspaces-to-db item))

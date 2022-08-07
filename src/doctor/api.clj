@@ -5,8 +5,7 @@
    [api.topbar :as topbar]
    [api.todos :as todos]
    [api.screenshots :as screenshots]
-   [api.wallpapers :as wallpapers]
-   [defthing.db :as defthing.db]))
+   [api.wallpapers :as wallpapers]))
 
 
 (defn route
@@ -34,12 +33,7 @@
     (= uri "/todos/update")
     (do
       (todos/update-todos)
-      {:status 200 :body "updated todos"})
-
-    (= uri "/db/restart-conn")
-    (do
-      (defthing.db/restart-conn)
-      {:status 200 :body "Restarted defthing.db connection"})))
+      {:status 200 :body "updated todos"})))
 
 (comment
   (route {:uri "/reload"}))
