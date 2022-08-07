@@ -11,22 +11,22 @@
    [uix.dom.alpha :as uix.dom]
    [wing.core :as w]
    [wing.uix.router :as router]
+   [datascript.transit :as dt]
 
-   [components.icons]
-   [components.debug]
    [pages.core :as pages]
-   [pages.todos]
-   [pages.commits]
-   [pages.events]
-   [pages.screenshots]
-   [pages.wallpapers]
-   [pages.workspaces]
-   [pages.counter]
-   [pages.counts]
-   [pages.garden]
-   [pages.posts]
-   [pages.repos]
-   [pages.journal]
+   [pages.todos :as pages.todos]
+   [pages.db :as pages.db]
+   [pages.commits :as pages.commits]
+   [pages.events :as pages.events]
+   [pages.screenshots :as pages.screenshots]
+   [pages.wallpapers :as pages.wallpapers]
+   [pages.workspaces :as pages.workspaces]
+   [pages.counter :as pages.counter]
+   [pages.counts :as pages.counts]
+   [pages.garden :as pages.garden]
+   [pages.posts :as pages.posts]
+   [pages.repos :as pages.repos]
+   [pages.journal :as pages.journal]
    [doctor.ui.views.topbar :as views.topbar]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -34,7 +34,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def route-defs
-  [{:route "/" :page-name :page/home :label "Home" :comp pages.events/page}
+  [{:route "/" :page-name :page/home :label "Home" :comp pages.db/page}
+   {:route "/db" :page-name :page/db :label "DB" :comp pages.db/page}
    {:route "/todo" :page-name :page/todos :label "Todos" :comp pages.todos/page}
    {:route "/commits" :page-name :page/commits :label "Commits" :comp pages.commits/page}
    {:route "/events" :page-name :page/events :label "Events" :comp pages.events/page}
@@ -101,9 +102,15 @@
   (plasma.client/use-transport!
     (plasma.client/websocket-transport
       ws-url
-      {:on-open                on-open
-       :on-close               on-close
-       :on-error               on-error
-       :transit-write-handlers ttl/write-handlers
-       :transit-read-handlers  ttl/read-handlers}))
+      {:on-open  on-open
+       :on-close on-close
+       :on-error on-error
+       :transit-write-handlers
+       (merge
+         ttl/write-handlers
+         dt/write-handlers)
+       :transit-read-handlers
+       (merge
+         ttl/read-handlers
+         dt/read-handlers)}))
   (mount-root))

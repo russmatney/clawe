@@ -42,12 +42,13 @@
 
   :full-stack-deps
   {:extra-deps
-   {;; dev
+   { ;; dev
     cider/cider-nrepl             {:mvn/version "0.28.5"}
     refactor-nrepl/refactor-nrepl {:mvn/version "3.5.3"}
 
     ;; db
-    datascript/datascript {:mvn/version "1.3.13"}
+    datascript/datascript                 {:mvn/version "1.3.13"}
+    datascript-transit/datascript-transit {:mvn/version "0.3.0"}
 
     ;; core
     org.clojure/core.async {:mvn/version "1.5.648"}
@@ -69,7 +70,7 @@
     ;; required (along with joda npm deps) for tick to work in cljs
     thheller/shadow-cljsjs {:mvn/version "0.0.22"}
 
-    teknql/plasma {;; :git/url "https://github.com/teknql/plasma.git"
+    teknql/plasma { ;; :git/url "https://github.com/teknql/plasma.git"
                    ;; :sha     "f1ae782d6bfc50fc33d065dca0ecf9e432a98ffe"
                    :local/root "../../teknql/plasma"}
 

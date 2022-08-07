@@ -24,7 +24,8 @@
    [doctor.api :as doctor.api]
    [garden.core :as garden]
    [garden.watcher :as garden.watcher]
-   [ralphie.notify :as notify]))
+   [ralphie.notify :as notify]
+   [datascript.transit :as dt]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Plasma config
@@ -43,9 +44,13 @@
                               (-> % :ctx :request (select-keys
                                                     #{:event-name :fn-var :args})))
      :transit-read-handlers
-     (merge transit/default-read-handlers ttl/read-handlers)
+     (merge transit/default-read-handlers
+            ttl/read-handlers
+            dt/read-handlers)
      :transit-write-handlers
-     (merge transit/default-write-handlers ttl/write-handlers)
+     (merge transit/default-write-handlers
+            ttl/write-handlers
+            dt/write-handlers)
      :interceptors [(plasma.interceptors/auto-require (fn [_] (sys/start!)))
                     (plasma.interceptors/load-metadata)
                     #_{:name :doctor-logging

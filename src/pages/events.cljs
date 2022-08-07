@@ -1,13 +1,7 @@
 (ns pages.events
   (:require
-   [hooks.events]
-   [components.debug]
-   [components.chess]
-   [components.git]
-   [components.screenshot]
-   [components.timeline]
-   [components.todo]
-   [components.events]))
+   [hooks.events :as hooks.events]
+   [components.events :as components.events]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; event page

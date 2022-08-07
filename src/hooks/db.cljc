@@ -22,7 +22,8 @@
    (defn use-db []
      (let [conn       (plasma.uix/state nil)
            handle-get (fn [items]
-                        (println "creating new db from items" (count items))
+                        (println "creating new db from items"
+                                 (count items))
                         (->
                           (d/empty-db)
                           (d/db-with items)
@@ -37,4 +38,5 @@
        (with-rpc [] (get-db) handle-get)
        (with-stream [] (db-stream) handle-stream)
 
-       {:conn conn})))
+
+       {:conn @conn})))
