@@ -9,6 +9,7 @@
    [ring.adapter.undertow.websocket :as undertow.ws]
 
    [api.commits :as api.commits]
+   [api.db :as api.db]
    [api.events :as api.events]
    [api.repos :as api.repos]
    [api.screenshots :as api.screenshots]
@@ -68,6 +69,8 @@
    api.screenshots/*screenshots-stream*
    api.events/*events-stream*
    api.commits/*commits-stream*
+   api.db/*db-stream*
+   api.db/*tx->fe-db*
    api.repos/*repos-stream*
    api.wallpapers/*wallpapers-stream*
    garden/*garden-stream*
