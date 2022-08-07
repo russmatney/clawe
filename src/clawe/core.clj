@@ -4,7 +4,8 @@
    clawe.defs.bindings
    clawe.restart
    ralphie.core ;; so we include all ralphie commands
-   ))
+   
+   [clojure.string :as string]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; main
@@ -18,3 +19,9 @@
         dt         (- end-time start-time)]
     (println "[CLAWE] complete" args "in" dt "ms" (str "[" end-time "]"))
     res))
+
+(comment
+  (->>
+    ["hello!"]
+    (map #(string/split % #"~")))
+  )

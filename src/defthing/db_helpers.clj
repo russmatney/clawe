@@ -1,18 +1,18 @@
 (ns defthing.db-helpers
   (:require
    [taoensso.timbre :as log]
-   [wing.core :as w]))
-
+   [wing.core :as w]
+   [tick.core :as t]
+   [dates.tick :as dates.tick])
+  (:import
+   [java.time ZonedDateTime]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; transact helpers
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def converted-type-map
-  ;; TODO bb compatability
-  ;; {ZonedDateTime t/inst}
-  {}
-  )
+  {ZonedDateTime t/inst})
 
 (defn convert-matching-types [map-tx]
   (->> map-tx
@@ -22,11 +22,16 @@
                 [k v])))
        (into {})))
 
+(comment
+  (convert-matching-types
+    {:some-zdt (dates.tick/now)
+     :some     "val"}))
+
 (def supported-types
   (->> [6 1.0 "hi" :some-keyword true
         (java.lang.Integer. 3)
         #uuid "8992970d-6c3a-4a3a-b35d-dc5cd28f1484"
-        ;; (t/inst)
+        (t/inst)
         #{"some" "set" :of/things 5}
         ["a" :vector 6]]
        (map type)
@@ -61,6 +66,8 @@
                         :some-fn       (fn [] (print "complexity!"))
                         :some-set      #{"hi" "there"}
                         :some-vector   [3]
+                        :some-inst     (t/inst)
+                        :some-zdt      (dates.tick/now)
                         nil            "nil-str"}))
 
 (defn drop-unsupported-vals

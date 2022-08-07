@@ -20,6 +20,7 @@ Clawe (from CLojure-AWEsome) is a Clojure-centric AwesomeWM configuration.
   + [[https://github.com/babashka/babashka][Babashka]] makes it reasonable to develop in a clojure repl and have a result
     as accessible as a bash script
 
+
 Clawe pulls these things together to provide a reasonable feedback loop while
 working on your development environment.
 
@@ -138,12 +139,6 @@ if only json supported comments....
         "visible": true,
         "transparent": true
       }
-#+end_src
-* dtlv
-binary for datalevin required
-
-#+begin_src osx
-brew install huahaiy/brew/datalevin
 #+end_src
 * osx
 ** ubersicht

@@ -17,6 +17,7 @@
    [api.wallpapers :as api.wallpapers]
    [api.workspaces :as api.workspaces]
    [dates.transit-time-literals :as ttl]
+   [defthing.db :as defthing.db]
    [defthing.listeners :as defthing.listeners]
    [doctor.config :as doctor.config]
    [doctor.api :as doctor.api]
@@ -71,11 +72,12 @@
    api.wallpapers/*wallpapers-stream*
    garden/*garden-stream*
    garden/*journals-stream*
-   garden.watcher/*garden-watcher*]
+   garden.watcher/*garden-watcher*
+   defthing.listeners/*garden->expo*
+   defthing.db/*conn*]
   :start
   (let [port (:server/port doctor.config/*config*)]
     (log/info "Starting *server* on port" port)
-    (defthing.listeners/start-garden->expo-listener)
     (let [server
           (undertow/run-undertow
             (fn [{:keys [uri] :as req}]
@@ -105,7 +107,6 @@
       ;; be sure to return the server as the system
       server))
   :stop
-  (defthing.listeners/stop-garden->expo-listener)
   (.stop *server*))
 
 

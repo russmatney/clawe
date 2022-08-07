@@ -1,5 +1,5 @@
 (ns defthing.db
-  "Exposes functions for working with a datalevin database."
+  "Exposes functions for working with a datascript database."
   (:require
    [babashka.process :as process :refer [$]]
    [clojure.string :as string]
@@ -8,10 +8,11 @@
    [defthing.db-helpers :as db-helpers]
    [systemic.core :refer [defsys] :as sys]
    [taoensso.timbre :as log]
-
-   #?@(:bb [[pod.huahaiy.datalevin :as d]]
-       :clj [[datalevin.core :as d]])))
-
+   [datascript.core :as d]
+   [babashka.fs :as fs]
+   [clojure.edn :as edn]
+   [defthing.db :as db]
+   [dates.tick :as dates.tick]))
 
 (def db-schema
   {
@@ -79,69 +80,51 @@
    :org/urls
    {:db/cardinality :db.cardinality/many}})
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; clj datascript api
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn db-from-file []
+  (let [db-file (defthing.config/db-path)]
+    (if (fs/exists? db-file)
+      (->>
+        (slurp db-file)
+        (edn/read-string {:readers d/data-readers}))
+      (do
+        (log/info "No db file found creating empty one")
+        (d/empty-db)))))
 
-;; TODO close connections on server shutdown?
-;; TODO clean up dead connections at startup?
-(defsys *db-conn*
+(comment
+  (slurp (defthing.config/db-path))
+  (db-from-file))
+
+(declare write-db-to-file)
+
+(defsys *conn*
   :start
-  (let [path (defthing.config/db-path)]
-    (log/info "Starting datalevin db conn" path)
-    (d/get-conn path db-schema))
+  (let [raw-db (db-from-file)
+        conn   (-> (or raw-db (d/empty-db db-schema)) (d/conn-from-db))]
+    (d/listen! conn :db-backup-writer (fn [_] (write-db-to-file)))
+    conn)
   :stop
-  (when *db-conn*
-    (d/close *db-conn*))
-  nil)
+  (d/unlisten! *conn* :db-backup-writer))
+
+(defn print-db []
+  (sys/start! `*conn*)
+  (pr-str (d/db *conn*)))
+
+(defn write-db-to-file []
+  (log/info "Writing Expo DB to file")
+  (spit (defthing.config/db-path) (print-db)))
+
+(defn clear-db []
+  (fs/delete-if-exists (fs/file (defthing.config/db-path))))
 
 (comment
-  *db-conn*
-  (sys/start! `*db-conn*)
+  (clear-db)
+  (sys/restart! `*conn*)
 
-  (d/clear *db-conn*)
-
-  )
-
-(defn restart-conn
-  "Restart the connection - required when another connection transacts records.
-  (e.g. install-workspaces from clawe directly)
-  "
-  []
-  (when (sys/running? `*db-conn*)
-    (log/info "Resetting defthing.db/*conn*")
-    (sys/restart! `*db-conn*)))
-
-
-(comment
-  5
-  (restart-conn)
-
-  (sys/start! `*db-conn*)
-  )
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Dump
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn dump
-  "Return the database.
-
-  TODO could be parsed...
-  TODO this seemes to flatline ... maybe needs to stream?
-  "
-  []
-  (->
-    ($ dtlv -d ~(defthing.config/db-path) -g dump)
-    process/check
-    :out
-    slurp
-    string/split-lines))
-
-(comment
-  (->>
-    (dump)
-    (take-last 5)))
+  (write-db-to-file))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Transact
@@ -150,7 +133,7 @@
 (defn transact
   ([txs] (transact txs nil))
   ([txs opts]
-   (sys/start! `*db-conn*)
+   (sys/start! `*conn*)
    (let [on-error (:on-error opts)
          on-retry (:on-retry opts)
          txs      (->>
@@ -163,10 +146,7 @@
                     (into []))]
      (log/debug "Transacting records" (count txs))
      (try
-       (let [res (d/transact! *db-conn* txs)]
-         ;; (when (> (:datoms-transacted res) 0)
-         ;;   (log/info "txs" txs))
-         res)
+       (d/transact! *conn* txs)
        (catch Exception e
          (log/warn "Exception while transacting data!" e)
          (when on-error (on-error txs))
@@ -174,7 +154,11 @@
          (when on-retry (on-retry txs)))))))
 
 (comment
-  (transact [{:name "Datalevin"}])
+  (transact [{:name "Datascript"}])
+  (transact [{:now       (dates.tick/now)
+              :something "useful"}])
+  (declare query)
+  (query '[:find (pull ?e [*]) :where [?e :something ?n]])
   (transact [{:last "value" :multi 5 :key ["val" #{"hi"}]}])
   (transact [{:some-workspace "Clawe"} {:some-other-data "jaja"}])
   (transact [{:some-workspace "Clawe"
@@ -186,14 +170,14 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn query [q & args]
-  (sys/start! `*db-conn*)
+  (sys/start! `*conn*)
   (let [res (if args
-              (apply d/q q (d/db *db-conn*) args)
-              (d/q q (d/db *db-conn*)))]
+              (apply d/q q (d/db *conn*) args)
+              (d/q q (d/db *conn*)))]
     res))
 
 (comment
-  *db-conn*
+  *conn*
   (->>
     (query '[:find (pull ?e [*]) :where [?e _ _]])
     (map first)
@@ -218,7 +202,7 @@
   ;; or, and
   (query '[:find [(pull ?e [*])]
            :where (or
-                    [?e :name "Datalevin"]
+                    [?e :name "Datascript"]
                     [?e :last "value"])]))
 
 
@@ -227,33 +211,29 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; (defn retract [ent attr value]
-;;   (sys/start! `*db-conn*)
+;;   (sys/start! `*conn*)
 ;;   (let [res
 ;;         (if value
-;;           (apply d/retract ent (d/db *db-conn*) args)
-;;           (d/retract q (d/db *db-conn*)))]
+;;           (apply d/retract ent (d/db *conn*) args)
+;;           (d/retract q (d/db *conn*)))]
 ;;     res))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; cli
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defcom dump-db
-  "Dump the datalevin db"
-  (do
-    (println "defthing.db/dump-db called")
-    (doall
-      (->>
-        (dump)
-        (map println)))))
+(defn query-db
+  "Query the datascript db"
+  ([] (query-db nil))
+  ([args]
+   ;; no args supported yet, but this is here to be called from the cli
+   (println "defthing.db/query-db called" args)
+   (doall
+     (->>
+       (query '[:find (pull ?e [*])
+                :where [?e :doctor/type :type/garden]])
+       (take 3)
+       (map println)))))
 
-(defcom query-db
-  "Query the datalevin db"
-  (fn [_ args]
-    (println "defthing.db/query-db called" args)
-    (doall
-      (->>
-        (query '[:find (pull ?e [*])
-                 :where [?e :doctor/type :type/garden]])
-        (take 3)
-        (map println)))))
+(comment
+  (query-db))

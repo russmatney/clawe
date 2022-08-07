@@ -44,8 +44,7 @@
   (clj-sh/sh "zsh" "-c" command))
 
 (comment
-  (zsh (str "echo " "hi"))
-  )
+  (zsh (str "echo " "hi")))
 
 (defn expand
   [path & parts]

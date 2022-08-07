@@ -2,20 +2,17 @@
   (:require
    [taoensso.timbre :as log]
    [systemic.core :as sys :refer [defsys]]
-   [datalevin.core :as datalevin]
+   [datascript.core :as d]
 
    [defthing.db :as db]
    [expo.core :as expo]))
-;; NOTE babashka (clawe, ralphie) cannot require this namespace,
-;; because the datalevin pod does not support `listen!`
-;; (which makes sense, bb runs are short-lived, so this is definitely server-only)
 
 (defsys *garden->expo*
   :start (do
            (log/info "Adding :garden->expo db listener")
-           (sys/start! `db/*db-conn*)
-           (datalevin/listen!
-             db/*db-conn* :garden->expo
+           (sys/start! `db/*conn*)
+           (d/listen!
+             db/*conn* :garden->expo
              (fn [tx]
                (def tx tx)
                ;; NOTE don't you dare try to get a :datoms-transacted off of this tx!
@@ -28,7 +25,7 @@
   :stop
   (try
     (log/debug "Removing :garden->expo db listener")
-    (datalevin/unlisten! db/*db-conn* :garden->expo)
+    (d/unlisten! db/*conn* :garden->expo)
     (catch Exception e
       (log/debug "err removing listener" e)
       nil)))
@@ -43,6 +40,6 @@
   (sys/start! `*garden->expo*)
   (sys/stop! `*garden->expo*)
 
-  (datalevin/db db/*db-conn*)
+  (d/db db/*conn*)
 
   )

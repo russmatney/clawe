@@ -501,7 +501,7 @@
         nil))))
 
 (comment
-  (awm.fnl/awm-fnl '(awful.tag.find_by_name nil "datalevin"))
+  (awm.fnl/awm-fnl '(awful.tag.find_by_name nil "clawe"))
   (def -c (client-for-name "journal"))
   (move-client-to-tag (:awesome.client/window -c) "clawe"))
 

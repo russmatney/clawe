@@ -1,13 +1,11 @@
 (ns expo.db
   (:require
    [systemic.core :as sys :refer [defsys]]
-   [datascript.core :as ds]
+   [datascript.core :as d]
    [expo.config :as config]
    [clojure.edn :as edn]
    [taoensso.timbre :as log]
    [babashka.fs :as fs]))
-
-;; NOTE this is the datascript db that is serialized for the blog, not the internal datalevin db
 
 (def db-schema
   {
@@ -48,7 +46,7 @@
    {:db/cardinality :db.cardinality/many}})
 
 (comment
-  (ds/empty-db db-schema))
+  (d/empty-db db-schema))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; clj datascript api
@@ -59,21 +57,21 @@
     (when (fs/exists? db-file)
       (->>
         (slurp db-file)
-        (edn/read-string {:readers ds/data-readers})))))
+        (edn/read-string {:readers d/data-readers})))))
 
 (declare write-db-to-file)
 
 (defsys *conn*
   :start (let [raw-db (read-db-from-file)
-               conn   (-> (or raw-db (ds/empty-db db-schema)) (ds/conn-from-db))]
-           (ds/listen! conn :db-writer (fn [_] (write-db-to-file)))
+               conn   (-> (or raw-db (d/empty-db db-schema)) (d/conn-from-db))]
+           (d/listen! conn :db-writer (fn [_] (write-db-to-file)))
            conn)
   :stop
-  (ds/unlisten! *conn* :db-writer))
+  (d/unlisten! *conn* :db-writer))
 
 (defn print-db []
   (sys/start! `*conn*)
-  (pr-str (ds/db *conn*)))
+  (pr-str (d/db *conn*)))
 
 (defn write-db-to-file []
   (log/info "Writing Expo DB to file")
@@ -94,12 +92,12 @@
 
 (defn transact [txs]
   (sys/start! `*conn*)
-  (ds/transact! *conn* txs))
+  (d/transact! *conn* txs))
 
 (comment
   (transact [{:some/new   :piece/of-data
               :with/attrs 23
-              :ands/other :attrs/enum}]))
+              :and/other  :attrs/enum}]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; query
@@ -107,13 +105,13 @@
 
 (defn query [q & args]
   (sys/start! `*conn*)
-  (apply ds/q q (ds/db *conn*) args))
+  (apply d/q q (d/db *conn*) args))
 
 (comment
-  (ds/q '[:find (pull ?e [*])
-          :where
-          [?e :doctor/type :type/garden]]
-        (ds/db *conn*))
+  (d/q '[:find (pull ?e [*])
+         :where
+         [?e :doctor/type :type/garden]]
+       (d/db *conn*))
 
   (query '[:find (pull ?e [*])
            :where

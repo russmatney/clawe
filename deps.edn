@@ -46,7 +46,8 @@
     cider/cider-nrepl             {:mvn/version "0.28.5"}
     refactor-nrepl/refactor-nrepl {:mvn/version "3.5.3"}
 
-    datalevin/datalevin {:mvn/version "0.6.14"}
+    ;; db
+    datascript/datascript {:mvn/version "1.3.13"}
 
     ;; core
     org.clojure/core.async {:mvn/version "1.5.648"}
@@ -96,7 +97,4 @@
     hiccup-icons/hiccup-icons {:mvn/version "0.4.4"}
 
     ;; benchmarking
-    criterium/criterium {:mvn/version "0.4.6"}
-
-    ;; expo datastore (written from doctor's backend, read from expo frontend)
-    datascript/datascript {:mvn/version "1.3.13"}}}}}
+    criterium/criterium {:mvn/version "0.4.6"}}}}}

@@ -1,3 +1,1 @@
-{:db-path "dbs/newdb"
- ;; :db-path "dtlv://datalevin:datalevin@localhost:8898/newdb"
- }
+{:db-path "dbs/doctor-db.edn"}
