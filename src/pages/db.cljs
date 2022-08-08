@@ -19,14 +19,28 @@
 
 (comment
   (declare conn)
-  (->
+  (->>
     conn
     ents-with-doctor-type
+    (filter :org/tags)
     first
     ;; (dissoc :org/id)
     ;; (select-keys [:garden/file-name])
     )
   )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn garden-note [ent]
+  [:div
+   (str "[:db/id " (:db/id ent) "]")
+   #_[components.garden/garden-node ent]
+
+   [components.garden/selected-node ent]
+
+   [components.debug/raw-metadata ent]])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; event page
@@ -49,29 +63,56 @@
      [:div
       {:class ["font-mono"]}
 
-      (for [[i [k ents-by-type]]
+      (for [[i [k ents-for-type]]
             (->> ents
                  (group-by :doctor/type)
                  (map-indexed vector))]
-        ^{:key i}
-        [:div
-         (when (zero? i)
-           (some-> k str))
 
-         (for [[i ent] (->> ents-by-type
-                            (sort-by :db/id)
-                            (map-indexed vector))]
-           (let []
-             (def ent ent)
-             ^{:key i}
-             [:div
+        (let []
+          (def ents-for-type ents-for-type)
+          ^{:key i}
+          [:div
+           ;; doctor/type
+           [:span
+            {:class ["font-mono"]}
+            (when (zero? i) (some-> k str))]
 
-              (str "[:db/id " (:db/id ent) "]")
-              #_[components.garden/garden-node ent]
+           [:span
+            {:class ["font-nes" "pl-4"]}
+            (count ents-for-type)
 
-              [components.garden/selected-node ent]
+            (for [[i [tag group]]
+                  (->>
+                    ents-for-type
+                    (group-by :org/tags)
+                    (sort-by (comp count second))
+                    reverse
+                    (map-indexed vector))]
+              (let []
+                ^{:key i}
+                [:div
+                 [:span
+                  {:class ["font-mono"]}
+                  (or tag "(no tag)")]
 
-              [components.debug/raw-metadata ent]]))])]
+                 [:span
+                  {:class ["font-nes" "pl-4"]}
+                  (count group)]]))]
+
+           #_(for [[i ent] (->> ents-for-type
+                                (sort-by :db/id)
+                                (map-indexed vector))]
+               (let []
+                 (def ent ent)
+                 ^{:key i}
+                 [:div
+
+                  (str "[:db/id " (:db/id ent) "]")
+                  #_[components.garden/garden-node ent]
+
+                  [components.garden/selected-node ent]
+
+                  [components.debug/raw-metadata ent]]))]))]
 
      #_[:div
         {:class ["font-mono"]}

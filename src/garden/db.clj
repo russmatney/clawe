@@ -179,10 +179,12 @@
 (comment
   (sync-garden-paths-to-db
     {:page-size 20}
-    (garden/daily-paths 10))
+    (concat
+      (garden/basic-todo-paths)
+      (garden/daily-paths 30)))
 
   (sync-garden-notes-to-db
-    {:page-size 2000}
+    {:page-size 20}
     (->>
       ;; the big one!!
       (garden/all-garden-notes-flattened)

@@ -11,11 +11,13 @@
   (d/datoms @db/*conn* :eavt))
 
 (defsys *db-stream*
-  :start (s/stream)
+  :start (s/stream 100000)
   :stop (s/close! *db-stream*))
 
 (comment
-  (sys/start! `*db-stream*))
+  (sys/start! `*db-stream*)
+  (sys/restart! `*db-stream*)
+  )
 
 (defn update-stream [txs]
   (s/put! *db-stream* txs))
