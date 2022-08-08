@@ -111,6 +111,28 @@
 ;; cluster
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn cluster-single [opts scr]
+  [:div
+   {:class ["m-2"]}
+
+   (when (:file/web-asset-path scr)
+     [floating/popover
+      {:click       true :hover true
+       :anchor-comp [:div
+                     {:class ["border-city-blue-400"
+                              "border-opacity-40"
+                              "border"
+                              "w-36"]}
+                     [components.screenshot/thumbnail opts scr]]
+       :popover-comp
+       [:div
+        {:class ["w-2/3"
+                 "shadow"
+                 "shadow-city-blue-800"
+                 "border"
+                 "border-city-blue-800"]}
+        [components.screenshot/img scr]]}])])
+
 (defn cluster [opts screenshots]
   [:div
    {:class ["flex" "flex-row" "flex-wrap"]}
@@ -118,24 +140,5 @@
    (for [[i event] (->> screenshots
                         (sort-by :event/timestamp t/<)
                         (map-indexed vector))]
-     [:div
-      {:key   i
-       :class ["m-2"]}
-
-      (when (:file/web-asset-path event)
-        [floating/popover
-         {:click       true :hover true
-          :anchor-comp [:div
-                        {:class ["border-city-blue-400"
-                                 "border-opacity-40"
-                                 "border"
-                                 "w-36"]}
-                        [components.screenshot/thumbnail opts event]]
-          :popover-comp
-          [:div
-           {:class ["w-2/3"
-                    "shadow"
-                    "shadow-city-blue-800"
-                    "border"
-                    "border-city-blue-800"]}
-           [components.screenshot/img event]]}])])])
+     ^{:key i}
+     [cluster-single opts event])])

@@ -2,7 +2,8 @@
   (:require
    [plasma.core :refer [defhandler defstream]]
    #?@(:clj [[manifold.stream :as s]
-             [api.db :as api.db]]
+             [api.db :as api.db]
+             [api.screenshots :as api.screenshots]]
        :cljs [[datascript.core :as d]
               [plasma.uix :refer [with-rpc with-stream]]])))
 
@@ -26,6 +27,15 @@
     first-batch))
 
 (defstream db-stream [] api.db/*db-stream*)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; ingestors
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defhandler ingest-screenshots []
+  (api.screenshots/ingest-screenshots)
+  :ok)
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Frontend

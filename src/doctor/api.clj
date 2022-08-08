@@ -4,7 +4,7 @@
    [api.workspaces :as workspaces]
    [api.topbar :as topbar]
    [api.todos :as todos]
-   [api.screenshots :as screenshots]
+   [api.screenshots :as api.screenshots]
    [api.wallpapers :as wallpapers]))
 
 
@@ -27,7 +27,7 @@
 
     (= uri "/screenshots/update")
     (do
-      (screenshots/update-screenshots)
+      (api.screenshots/ingest-screenshots)
       {:status 200 :body "updated screenshots"})
 
     (= uri "/todos/update")

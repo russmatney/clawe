@@ -48,11 +48,21 @@
         ents-by-doctor-type (->> ents (group-by :doctor/type))]
     (def conn conn)
     [:div
-     {:class ["flex" "flex-col" "flex-auto"
+     {:class ["grid"
               "min-h-screen"
               "overflow-hidden"
               "bg-yo-blue-700"
               "text-white"]}
+
+     [:div {:class ["grid" "grid-cols-6"]}
+      [:button {:class    ["bg-slate-800"
+                           "p-4"
+                           "rounded-xl"]
+                :on-click (fn [_]
+                            (println "click it or ticket")
+                            (hooks.db/ingest-screenshots))}
+       ;; TODO some state/progress bar/something
+       "Ingest screenshots"]]
 
      [components.table/table
       {:headers [":doctor/type"

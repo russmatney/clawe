@@ -1,7 +1,7 @@
 (ns hooks.screenshots
   (:require
    [plasma.core :refer [defhandler defstream]]
-   #?@(:clj [[api.screenshots]]
+   #?@(:clj [[api.screenshots :as api.screenshots]]
        :cljs [[wing.core :as w]
               [plasma.uix :refer [with-rpc with-stream]]])))
 

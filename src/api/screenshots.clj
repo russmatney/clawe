@@ -2,7 +2,8 @@
   (:require
    [systemic.core :refer [defsys] :as sys]
    [manifold.stream :as s]
-   [screenshots.core :as screenshots]))
+   [screenshots.core :as screenshots]
+   [defthing.db :as db]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; API
@@ -22,3 +23,8 @@
 
 (comment
   (update-screenshots))
+
+(defn ingest-screenshots []
+  (->> (screenshots/all-screenshots)
+       (take 30)
+       (db/transact)))

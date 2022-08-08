@@ -1,8 +1,9 @@
 (ns components.table
   (:require
+   [tick.core :as t]
    [components.debug :as components.debug]
    [components.wallpaper :as components.wallpaper]
-   [tick.core :as t]
+   [components.screenshot :as components.screenshot]
    [components.floating :as floating]
    [components.garden :as components.garden]))
 
@@ -76,7 +77,7 @@
      {:headers ["File" "Name" "Parent" "Words" "Raw"]
       :rows    (->>
                  entities
-                 (sort-by :file/last-modified)
+                 (sort-by :file/last-modified) ;; TODO this is per file, not per item
                  reverse
                  (take 10) ;; only take the top 10 tags
                  (map (fn [note]
@@ -102,7 +103,6 @@
                           {:label "raw"}
                           note]])))}
 
-
      (#{:type/wallpaper} doctor-type)
      {:headers ["Img" "Wallpaper" "Used count" "Last Time Set" "Raw"]
       :rows    (->> entities
@@ -124,6 +124,28 @@
                             [components.debug/raw-metadata
                              {:label "raw"}
                              wp]])))}
+
+     (#{:type/screenshot} doctor-type)
+     {:headers ["Img" "Name" "Time" "Raw"]
+      :rows    (->> entities
+                    (sort-by :screenshot/time)
+                    (reverse)
+                    (take 10) ;; only take the last 10
+                    (map (fn [scr]
+                           [[components.screenshot/cluster-single nil scr]
+                            ;; [floating/popover
+                            ;;  {:hover true :click true
+                            ;;   :anchor-comp
+                            ;;   [:img {:src   (-> scr :file/web-asset-path)
+                            ;;          :class ["max-h-24"]}]
+                            ;;   :popover-comp
+                            ;;   [:div nil]}]
+                            (-> scr :name)
+                            (-> scr :screenshot/time (t/new-duration :millis) t/instant)
+
+                            [components.debug/raw-metadata
+                             {:label "raw"}
+                             scr]])))}
 
      :else
      {:headers ["No headers"]
