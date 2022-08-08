@@ -42,9 +42,11 @@
   [wsp]
   ;; creates (ensures) workspace before focusing
   (wm/focus-workspace wsp)
-  (client.create/create-client "emacs")
-  (client.create/create-client "terminal")
-  (clawe.rules/clean-up-workspaces)
+  ;; TODO open clients for workspace
+  ;; could be clients with matching workspace titles, or some other matching rule
+  ;; (client.create/create-client "emacs")
+  ;; (client.create/create-client "terminal")
+  ;; (clawe.rules/clean-up-workspaces) ;; deletes empty workspace immediately after creating it
   (clawe.doctor/update-topbar)
   wsp)
 

@@ -2,6 +2,7 @@
   (:require
    [hooks.db :as hooks.db]
    [datascript.core :as d]
+   [components.table :as components.table]
    [components.debug :as components.debug]
    [components.garden :as components.garden]))
 
@@ -21,13 +22,8 @@
   (declare conn)
   (->>
     conn
-    ents-with-doctor-type
-    (filter :org/tags)
-    first
-    ;; (dissoc :org/id)
-    ;; (select-keys [:garden/file-name])
-    )
-  )
+    ents-with-doctor-type))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -47,73 +43,30 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn page [_opts]
-  (let [{:keys [conn]} (hooks.db/use-db)
-        ents           (ents-with-doctor-type conn)]
+  (let [{:keys [conn]}      (hooks.db/use-db)
+        ents                (ents-with-doctor-type conn)
+        ents-by-doctor-type (->> ents (group-by :doctor/type))]
     (def conn conn)
     [:div
      {:class ["flex" "flex-col" "flex-auto"
               "min-h-screen"
               "overflow-hidden"
               "bg-yo-blue-700"
-
               "text-white"]}
 
-     "DB"
+     [components.table/table
+      {:headers [":doctor/type"
+                 "Entities"]
+       :rows    (concat
+                  [["all" (count ents)]]
+                  (map (fn [[type ents]]
+                         [(str type) (count ents)])
+                       ents-by-doctor-type))}]
 
      [:div
       {:class ["font-mono"]}
 
-      (for [[i [k ents-for-type]]
-            (->> ents
-                 (group-by :doctor/type)
-                 (map-indexed vector))]
-
-        (let []
-          (def ents-for-type ents-for-type)
-          ^{:key i}
-          [:div
-           ;; doctor/type
-           [:span
-            {:class ["font-mono"]}
-            (when (zero? i) (some-> k str))]
-
-           [:span
-            {:class ["font-nes" "pl-4"]}
-            (count ents-for-type)
-
-            (for [[i [tag group]]
-                  (->>
-                    ents-for-type
-                    (group-by :org/tags)
-                    (sort-by (comp count second))
-                    reverse
-                    (map-indexed vector))]
-              (let []
-                ^{:key i}
-                [:div
-                 [:span
-                  {:class ["font-mono"]}
-                  (or tag "(no tag)")]
-
-                 [:span
-                  {:class ["font-nes" "pl-4"]}
-                  (count group)]]))]
-
-           #_(for [[i ent] (->> ents-for-type
-                                (sort-by :db/id)
-                                (map-indexed vector))]
-               (let []
-                 (def ent ent)
-                 ^{:key i}
-                 [:div
-
-                  (str "[:db/id " (:db/id ent) "]")
-                  #_[components.garden/garden-node ent]
-
-                  [components.garden/selected-node ent]
-
-                  [components.debug/raw-metadata ent]]))]))]
-
-     #_[:div
-        {:class ["font-mono"]}
-        (pr-str conn)]]))
+      (for [[i [doctor-type ents-for-type]]
+            (->> ents-by-doctor-type (map-indexed vector))]
+        ^{:key i}
+        [components.table/table-for-doctor-type doctor-type ents-for-type])]]))
