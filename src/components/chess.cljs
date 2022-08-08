@@ -344,21 +344,23 @@
 ;; cluster
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn cluster-single [opts game]
+  [:div
+   {:class []}
+   [floating/popover
+    {:offset 5
+     :click  true
+     :anchor-comp
+     [:div
+      {:class ["cursor-pointer"]}
+      [thumbnail opts game]]
+     :popover-comp
+     [detail-popover opts game]}]])
+
 (defn cluster [opts games]
   (when (seq games)
     [:div
      {:class ["flex" "flex-col"]}
      (for [game games]
-       [:div
-        {:key   (:lichess.game/id game)
-         :class []}
-
-        [floating/popover
-         {:offset 5
-          :click  true
-          :anchor-comp
-          [:div
-           {:class ["cursor-pointer"]}
-           [thumbnail opts game]]
-          :popover-comp
-          [detail-popover opts game]}]])]))
+       ^{:key (:lichess.game/id game)}
+       [cluster-single opts game])]))

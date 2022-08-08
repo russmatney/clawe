@@ -3,6 +3,7 @@
    [tick.core :as t]
    [components.debug :as components.debug]
    [components.wallpaper :as components.wallpaper]
+   [components.chess :as components.chess]
    [components.screenshot :as components.screenshot]
    [components.floating :as floating]
    [components.garden :as components.garden]))
@@ -138,6 +139,22 @@
                             [components.debug/raw-metadata
                              {:label "raw"}
                              scr]])))}
+
+     (#{:type/lichess-game} doctor-type)
+     {:headers ["" "Opening" "Created at" "Raw"]
+      :rows    (->> entities
+                    (sort-by :lichess.game/created-at)
+                    (reverse)
+                    (take 5)
+                    (map (fn [{:lichess.game/keys [] :as game}]
+                           [[components.chess/cluster-single nil game]
+                            (-> game :lichess.game/opening-name)
+                            (-> game :lichess.game/created-at (t/new-duration :millis) t/instant)
+                            [components.debug/raw-metadata
+                             {:label "raw"}
+                             game]])))}
+
+
 
      :else
      ;; fallback to table of keys/vals
