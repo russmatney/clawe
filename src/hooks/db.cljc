@@ -41,6 +41,10 @@
   (chess.db/ingest-lichess-games)
   :ok)
 
+(defhandler clear-lichess-games-cache []
+  (chess.core/clear-cache)
+  :ok)
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Frontend

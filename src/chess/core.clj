@@ -120,7 +120,7 @@
 (defonce *lichess-cache (atom {}))
 
 (defn clear-cache []
-  (reset! *lichess-cache nil))
+  (reset! *lichess-cache {}))
 
 (defn fetch-games
   ([]

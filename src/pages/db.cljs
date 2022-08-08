@@ -56,12 +56,12 @@
 
      [:div {:class ["grid" "grid-cols-6"]}
       (for [{:keys [label on-click]}
-            [
+            [{:label    "Clear lichess cache"
+              :on-click (fn [_] (hooks.db/clear-lichess-games-cache))}
              {:label    "Ingest lichess games"
               :on-click (fn [_] (hooks.db/ingest-lichess-games))}
              {:label    "Ingest screenshots"
-              :on-click (fn [_] (hooks.db/ingest-screenshots))}]
-            ]
+              :on-click (fn [_] (hooks.db/ingest-screenshots))}]]
         [:button {:class    ["bg-slate-800"
                              "p-4"
                              "rounded-xl"]
