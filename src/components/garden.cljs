@@ -31,9 +31,9 @@
                 "flex" "flex-col" "p-2"
                 "bg-yo-blue-500"]}
        [:div
-        [:div
-         {:class ["text-sm"]}
-         word-count " words"]]
+        #_[:div
+           {:class ["text-sm"]}
+           word-count " words"]]
 
        (when (seq body)
          (for [[i line] (map-indexed vector body)]

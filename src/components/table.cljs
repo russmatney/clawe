@@ -3,7 +3,8 @@
    [components.debug :as components.debug]
    [components.wallpaper :as components.wallpaper]
    [tick.core :as t]
-   [components.floating :as floating]))
+   [components.floating :as floating]
+   [components.garden :as components.garden]))
 
 
 (defn table
@@ -50,31 +51,64 @@
                           "align-middle"]}
             cell])])]]]])
 
+(defn garden-by-tag-table-def [entities]
+  {:headers ["Tag" "Count" "Example"]
+   :rows    (->>
+              entities
+              (group-by :org/tags)
+              (sort-by (comp count second))
+              reverse
+              (take 10) ;; only take the top 10 tags
+              (map (fn [[tag group]]
+                     [[:span
+                       (or tag "(no tag)")]
+                      [:span
+                       {:class ["font-nes"]}
+                       (count group)]
+                      [components.debug/raw-metadata
+                       {:label (-> group first :org/name)}
+                       (first group)]])))} )
+
 (defn table-for-doctor-type [doctor-type entities]
   [components.table/table
    (cond
      (#{:type/garden} doctor-type)
-     {:headers ["Tag" "Count" "Example"]
+     {:headers ["File" "Name" "Parent" "Words" "Raw"]
       :rows    (->>
                  entities
-                 (group-by :org/tags)
-                 (sort-by (comp count second))
+                 (sort-by :file/last-modified)
                  reverse
                  (take 10) ;; only take the top 10 tags
-                 (map (fn [[tag group]]
-
-                        [[:span
-                          (or tag "(no tag)")]
-                         [:span
-                          {:class ["font-nes"]}
-                          (count group)]
+                 (map (fn [note]
+                        [(:org/short-path note)
+                         (:org/name note)
+                         (:org/parent-name note)
+                         [floating/popover
+                          {:hover true :click true
+                           :anchor-comp
+                           [:span
+                            {:class [(when (seq (:org/body-string note))
+                                       "text-city-pink-400")]}
+                            (:org/word-count note)]
+                           :popover-comp
+                           [:div
+                            {:class
+                             ["text-city-blue-400"
+                              "flex" "flex-col" "p-2"
+                              "bg-yo-blue-500"]}
+                            (:org/name note)
+                            [components.garden/org-body note]]}]
                          [components.debug/raw-metadata
-                          {:label (-> group first :org/name)}
-                          (first group)]])))}
+                          {:label "raw"}
+                          note]])))}
+
 
      (#{:type/wallpaper} doctor-type)
      {:headers ["Img" "Wallpaper" "Used count" "Last Time Set" "Raw"]
       :rows    (->> entities
+                    (sort-by :wallpaper/last-time-set)
+                    (reverse)
+                    (take 10) ;; only take the last 10
                     (map (fn [wp]
                            [[floating/popover
                              {:hover true :click true

@@ -64,7 +64,9 @@
                        ents-by-doctor-type))}]
 
      [:div
-      {:class ["font-mono"]}
+
+      [components.table/table
+       (components.table/garden-by-tag-table-def (:type/garden ents-by-doctor-type))]
 
       (for [[i [doctor-type ents-for-type]]
             (->> ents-by-doctor-type (map-indexed vector))]
