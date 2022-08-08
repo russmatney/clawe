@@ -332,28 +332,28 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def log-format-keys
-  {:git.commit/hash              "%H"
-   :git.commit/short-hash        "%h"
-   ;; :git.commit/tree             "%T"
-   ;; :git.commit/abbreviated-tree "%t"
-   :git.commit/parent-hash       "%P"
-   :git.commit/parent-short-hash "%p"
-   ;; :git.commit/refs               "%D"
-   ;; :git.commit/encoding           "%e"
-   :git.commit/subject           "%s"
-   ;; :git.commit/sanitized-subject-line "%f"
-   :git.commit/body              "%b"
-   :git.commit/full-message      "%B"
-   ;; :git.commit/commit-notes           "%N"
-   ;; :git.commit/verification-flag      "%G?"
-   ;; :git.commit/signer                 "%GS"
-   ;; :git.commit/signer-key             "%GK"
-   :git.commit/author-name       "%aN"
-   :git.commit/author-email      "%aE"
-   :git.commit/author-date       "%aD"
-   ;; :git.commit/commiter-name          "%cN"
-   ;; :git.commit/commiter-email         "%cE"
-   ;; :git.commit/commiter-date "%cD"
+  {:commit/hash              "%H"
+   :commit/short-hash        "%h"
+   ;; :commit/tree             "%T"
+   ;; :commit/abbreviated-tree "%t"
+   :commit/parent-hash       "%P"
+   :commit/parent-short-hash "%p"
+   ;; :commit/refs               "%D"
+   ;; :commit/encoding           "%e"
+   :commit/subject           "%s"
+   ;; :commit/sanitized-subject-line "%f"
+   :commit/body              "%b"
+   :commit/full-message      "%B"
+   ;; :commit/commit-notes           "%N"
+   ;; :commit/verification-flag      "%G?"
+   ;; :commit/signer                 "%GS"
+   ;; :commit/signer-key             "%GK"
+   :commit/author-name       "%aN"
+   :commit/author-email      "%aE"
+   :commit/author-date       "%aD"
+   ;; :commit/commiter-name          "%cN"
+   ;; :commit/commiter-email         "%cE"
+   ;; :commit/commiter-date "%cD"
    })
 (def delimiter "^^^^^")
 (defn log-format-str []
@@ -385,7 +385,7 @@
         ((fn [s] (str "[" s "]")))
         (string/replace delimiter "\"")
         edn/read-string
-        (->> (map #(assoc % :git.commit/directory dir))))
+        (->> (map #(assoc % :commit/directory dir))))
       (catch Exception e
         (println "Error fetching commits for dir" dir opts)
         (println e)
@@ -399,10 +399,10 @@
   (commits-for-dir {:dir "/Users/russ/russmatney/dotfiles" :n 10}))
 
 (defn ->stats-header [[commit author date]]
-  {:git.commit/hash         (-> commit (string/split #" ") second)
-   :git.commit/author-name  (when author (some-> (re-find #"Author: (.+) <" author) second))
-   :git.commit/author-email (when author (some-> (re-find #"<(.+)>" author) second))
-   :git.commit/author-date  (when date (some-> (re-find #"Date: (.+)$" date) second string/trim))})
+  {:commit/hash         (-> commit (string/split #" ") second)
+   :commit/author-name  (when author (some-> (re-find #"Author: (.+) <" author) second))
+   :commit/author-email (when author (some-> (re-find #"<(.+)>" author) second))
+   :commit/author-date  (when date (some-> (re-find #"Date: (.+)$" date) second string/trim))})
 
 (defn safe-read-string
   [str message raw]
@@ -450,10 +450,10 @@
   ([dir stat-lines]
    (try
      (let [parsed-stat-lines (->> stat-lines (map (partial ->stat-line dir)) (remove nil?))]
-       {:git.commit/lines-added   (->> parsed-stat-lines (map :git.stat/lines-added) (remove nil?) (reduce +))
-        :git.commit/lines-removed (->> parsed-stat-lines (map :git.stat/lines-removed) (remove nil?) (reduce +))
-        :git.commit/files-renamed (->> parsed-stat-lines (filter :git.stat/is-rename?) count)
-        :git.commit/stat-lines    parsed-stat-lines})
+       {:commit/lines-added   (->> parsed-stat-lines (map :git.stat/lines-added) (remove nil?) (reduce +))
+        :commit/lines-removed (->> parsed-stat-lines (map :git.stat/lines-removed) (remove nil?) (reduce +))
+        :commit/files-renamed (->> parsed-stat-lines (filter :git.stat/is-rename?) count)
+        :commit/stat-lines    parsed-stat-lines})
      (catch Exception e
        (println "Failed to parse ->stats with lines" dir stat-lines)
        (println e)

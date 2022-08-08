@@ -50,7 +50,7 @@
     [scratchpad-schema
      awesome-tag-schema
      defworkspace-schema
-     [:map [:git/repo string?]]]))
+     [:map [:repo/directory string?]]]))
 
 (comment
   (mg/generate workspace-schema))

@@ -154,6 +154,18 @@
                              {:label "raw"}
                              game]])))}
 
+     (#{:type/repo} doctor-type)
+     {:headers ["Repo" "Raw"]
+      :rows    (->> entities
+                    (sort-by :db/id)
+                    (reverse)
+                    (take 10)
+                    (map (fn [repo]
+                           [(-> repo :repo/short-path)
+                            [components.debug/raw-metadata
+                             {:label "raw"}
+                             repo]])))}
+
 
 
      :else

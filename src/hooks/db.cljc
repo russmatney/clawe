@@ -3,6 +3,8 @@
    [plasma.core :refer [defhandler defstream]]
    #?@(:clj [[manifold.stream :as s]
              [api.db :as api.db]
+             [git.core :as git]
+             [chess.core :as chess]
              [api.screenshots :as api.screenshots]
              [chess.db :as chess.db]]
        :cljs [[datascript.core :as d]
@@ -42,9 +44,12 @@
   :ok)
 
 (defhandler clear-lichess-games-cache []
-  (chess.core/clear-cache)
+  (chess/clear-cache)
   :ok)
 
+(defhandler ingest-clawe-repos []
+  (git/ingest-clawe-repos)
+  :ok)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Frontend

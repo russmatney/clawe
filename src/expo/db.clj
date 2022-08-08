@@ -10,10 +10,10 @@
 (def db-schema
   {
    ;; unique string ids
-   :git.commit/hash
+   :commit/hash
    {:db/valueType :db.type/ref
     :db/unique    :db.unique/identity}
-   :git.repo/directory
+   :repo/directory
    {:db/valueType :db.type/ref
     :db/unique    :db.unique/identity}
    :lichess.game/id

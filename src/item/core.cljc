@@ -2,7 +2,7 @@
 
 (def time-keys
   #{:screenshot/time-string
-    :git.commit/author-date
+    :commit/author-date
     :org/closed
     :org/scheduled
     :org/deadline
@@ -20,4 +20,4 @@
 (comment
   (->time-string "x")
   (->time-string {:screenshot/time-string "x"})
-  (->time-string {:git.commit/author-date "x"}))
+  (->time-string {:commit/author-date "x"}))

@@ -28,7 +28,7 @@
 (defn event-counts [events]
   (let [count-by (fn [f] (->> events (filter f) count))]
     {:screenshot-count (count-by :screenshot/time-string)
-     :commit-count     (count-by :git.commit/hash)
+     :commit-count     (count-by :commit/hash)
      :org-note-count   (count-by :org/title)
      :chess-game-count (count-by :lichess.game/id)}))
 
@@ -170,7 +170,7 @@
 
 (defn event-cluster [opts events]
   (let [screenshots (->> events (filter :file/web-asset-path))
-        commits     (->> events (filter :git.commit/hash))
+        commits     (->> events (filter :commit/hash))
         chess-games (->> events (filter :lichess.game/id))
         _org-notes  (->> events (filter :org/title))]
     [:div

@@ -3,27 +3,47 @@
    [ralphie.git :as r.git]
    [defthing.db :as db]
    [babashka.fs :as fs]
+   [clawe.wm :as wm]
+   [ralphie.zsh :as zsh]
    [clojure.string :as string]))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; repos
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn dir->db-repo [dir]
+  (let [reversed  (-> dir (string/split #"/") reverse)
+        repo-name (first reversed)
+        user-name (second reversed)]
+    {:repo/name       repo-name
+     :repo/user-name  user-name
+     :repo/short-path (str user-name "/" repo-name)
+     :repo/directory  (zsh/expand "~/" user-name "/" repo-name)
+     :doctor/type     :type/repo}))
+
 (defn is-git-dir? [dir]
-  (and
-    (fs/exists? (str dir "/.git"))
-    (not
-      (or
-        (string/includes? dir ".emacs.d")
-        (string/includes? dir "bb-filewatcher-example")
-        (string/includes? dir "some-proj")
-        (string/includes? dir "canvas-toying")
-        (string/includes? dir "clojuregodottest")
-        (string/includes? dir "suit")
-        (string/includes? dir "re-dnd")
-        (string/includes? dir "find-deps")
-        (string/includes? dir "shadow-electron-starter")
-        (string/includes? dir "bb-task-completion")))
-    (or
-      (string/includes? dir "russmatney")
-      (string/includes? dir "todo")
-      (string/includes? dir "teknql"))))
+  (when dir
+    (fs/exists? (str dir "/.git"))))
+
+(defn clawe-git-dirs []
+  (->>
+    (wm/workspace-defs)
+    (map :workspace/directory)
+    (filter is-git-dir?)))
+
+(comment
+  (wm/workspace-defs)
+  (clawe-git-dirs)
+  )
+
+(defn ingest-clawe-repos []
+  (let [dirs  (clawe-git-dirs)
+        repos (->> dirs (map dir->db-repo))]
+    (println "Ingesting" (count repos) "repos from clawe")
+    (db/transact repos)))
+
+(comment
+  (ingest-clawe-repos))
 
 ;; TODO move to git/db ns
 (defn db-git-dirs
@@ -38,6 +58,11 @@
     (map first)
     (filter is-git-dir?)))
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; commits
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defn commits-for-dir [opts]
   (println "commits-for-dir" opts)
   (let [commits
@@ -48,7 +73,7 @@
         (try
           (r.git/commit-stats-for-dir opts)
           (catch Exception _e nil))]
-    ;; these should have the same :git.commit/hash, so will merge in the db
+    ;; these should have the same :commit/hash, so will merge in the db
     (->> (concat [] commits commit-stats)
          (remove nil?))))
 
@@ -82,7 +107,7 @@
     (db/query
       '[:find (pull ?e [*])
         :where
-        [?e :git.commit/hash ?hash]])
+        [?e :commit/hash ?hash]])
     (map first)))
 
 (comment

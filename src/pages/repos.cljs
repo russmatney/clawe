@@ -11,7 +11,6 @@
      (for [[i repo] (map-indexed vector repos)]
        [:div
         {:key   i
-         :class [""]
-         }
+         :class [""]}
 
-        [:div (:git.repo/name repo)]])]))
+        [:div (:repo/name repo)]])]))

@@ -25,9 +25,9 @@
    {:db/unique :db.unique/identity}
    :workspace/title
    {:db/unique :db.unique/identity}
-   :git.commit/hash
+   :commit/hash
    {:db/unique :db.unique/identity}
-   :git.repo/directory
+   :repo/directory
    {:db/unique :db.unique/identity}
    :lichess.game/id
    {:db/unique :db.unique/identity}
@@ -116,7 +116,7 @@
   (fs/delete-if-exists (fs/file (defthing.config/db-path))))
 
 (defn reload-conn []
-  (if (and `*conn* (sys/running? *conn*))
+  (if (and `*conn* (sys/running? `*conn*))
     (sys/restart! `*conn*)
     (sys/start! `*conn*)))
 
@@ -127,7 +127,7 @@
   (sys/start! `*conn*)
   (sys/restart! `*conn*)
 
-  *conn*
+  (:schema @*conn*)
 
   (write-db-to-file))
 
