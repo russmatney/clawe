@@ -51,6 +51,11 @@
   (git/ingest-clawe-repos)
   :ok)
 
+(defhandler ingest-commits-for-repo [repo]
+  (println "ingesting commits for repo" repo)
+  (git/ingest-commits-for-repo repo)
+  :ok)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Frontend
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

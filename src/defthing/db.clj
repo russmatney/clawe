@@ -21,14 +21,14 @@
    {:db/unique :db.unique/identity}
 
    ;; unique string ids
-   :scratchpad.db/id
-   {:db/unique :db.unique/identity}
-   :workspace/title
-   {:db/unique :db.unique/identity}
+
    :commit/hash
    {:db/unique :db.unique/identity}
    :repo/directory
    {:db/unique :db.unique/identity}
+   :commit/repo
+   {:db/valueType :db.type/ref}
+
    :lichess.game/id
    {:db/unique :db.unique/identity}
 

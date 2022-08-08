@@ -42,26 +42,56 @@
     (println "Ingesting" (count repos) "repos from clawe")
     (db/transact repos)))
 
-(comment
-  (ingest-clawe-repos))
-
-;; TODO move to git/db ns
-(defn db-git-dirs
+(defn db-repos
   "Fetches git-dirs for all :workspace/directories in the db"
   []
   (->>
     (db/query
-      '[:find ?directory
-        ;; TODO maybe repos/workspaces opt-in to git history?
+      '[:find (pull ?e [*])
         :where
-        [?e :workspace/directory ?directory]])
-    (map first)
-    (filter is-git-dir?)))
+        [?e :doctor/type :type/repo]])
+    (map first)))
 
+(comment
+  (ingest-clawe-repos)
+  (db-repos))
+
+(defn fetch-repo
+  "Fetches git-dirs for all :workspace/directories in the db"
+  [{:keys [repo/short-path repo/directory]}]
+  (some->>
+    (db/query
+      '[:find (pull ?e [*])
+        :in $ ?short-path ?directory
+        :where
+        [?e :doctor/type :type/repo]
+        (or
+          [?e :repo/short-path ?short-path]
+          [?e :repo/directory ?directory])]
+      short-path directory)
+    ffirst))
+
+(comment
+  (fetch-repo {:repo/short-path "russmatney/clawe"})
+  (fetch-repo {:repo/short-path "notreal"})
+  (fetch-repo {:repo/directory  (zsh/expand "~/russmatney/clawe")
+               :repo/short-path "russmatney/clawe"})
+  ;; ambiguous still works...
+  (fetch-repo {:repo/directory  (zsh/expand "~/teknql/fabb")
+               :repo/short-path "russmatney/clawe"}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; commits
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn ->db-commit [commit]
+  (cond-> commit
+    true
+    (assoc :doctor/type :type/commit)
+
+    ;; TODO proper ref between these
+    (:commit/directory commit)
+    (assoc :commit/repo {:repo/directory (:commit/directory commit)})))
 
 (defn commits-for-dir [opts]
   (println "commits-for-dir" opts)
@@ -78,28 +108,43 @@
          (remove nil?))))
 
 (defn commits-for-git-dirs
-  ([] (commits-for-git-dirs {}))
-  ([{:keys [n dirs]}]
-   (let [n (or n 10)]
-     (->>
-       (or dirs (db-git-dirs))
-       (map #(commits-for-dir {:dir % :n n}))
-       (remove nil?)
-       (apply concat)))))
+  [{:keys [n dirs]}]
+  (let [n (or n 10)]
+    (when dirs
+      (->>
+        dirs
+        (map #(commits-for-dir {:dir % :n n}))
+        (remove nil?)
+        (apply concat)))))
 
 (comment
   (count
     (commits-for-git-dirs {:n 10})))
 
 (defn sync-commits-to-db
-  ([] (sync-commits-to-db {}))
-  ([opts]
-   (doall
-     (->> (commits-for-git-dirs opts)
-          (map db/transact)))))
+  [opts]
+  (let [commits (->> (commits-for-git-dirs opts)
+                     (remove nil?)
+                     (map ->db-commit))]
+    (if (seq commits)
+      (do
+        (println "syncing" (count commits) "commits to the db")
+        (def commits commits)
+        (db/transact commits))
+      (println "No commits found for opts" opts))))
+
+(defn ingest-commits-for-repo [repo]
+  (if-let [db-repo (fetch-repo repo)]
+    (do
+      (println "ingesting commits for repo" db-repo)
+      (sync-commits-to-db
+        {:dirs [(:repo/directory db-repo)]
+         :n    2}))
+    (println "No DB Repo for repo desc" repo)))
 
 (comment
-  (sync-commits-to-db {:n 10}))
+  (ingest-commits-for-repo {:repo/short-path "russmatney/clawe"})
+  )
 
 (defn list-db-commits []
   (->>
@@ -107,7 +152,7 @@
     (db/query
       '[:find (pull ?e [*])
         :where
-        [?e :commit/hash ?hash]])
+        [?e :doctor/type :type/commit]])
     (map first)))
 
 (comment
