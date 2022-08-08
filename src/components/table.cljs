@@ -1,5 +1,9 @@
 (ns components.table
-  (:require [components.debug :as components.debug]))
+  (:require
+   [components.debug :as components.debug]
+   [components.wallpaper :as components.wallpaper]
+   [tick.core :as t]
+   [components.floating :as floating]))
 
 
 (defn table
@@ -35,14 +39,15 @@
      [:div {:class ["table-row-group" "bg-slate-800"]}
       (for [[i cells] (->> rows (map-indexed vector))]
         ^{:key i}
-        [:div {:class ["table-row" "py-2" "border" "border-b-2"]}
+        [:div {:class ["table-row" "py-2" "border" "border-b-2" "text-sm"
+                       ]}
          (for [[j cell] (->> cells (map-indexed vector))]
            ^{:key j}
            [:div {:class ["table-cell"
                           "border-b" "border-slate-700"
-                          "p4 pl-8"
+                          "p-2 pl-8"
                           "text-slate-300"
-                          "text-sm"]}
+                          "align-middle"]}
             cell])])]]]])
 
 (defn table-for-doctor-type [doctor-type entities]
@@ -68,12 +73,20 @@
                           (first group)]])))}
 
      (#{:type/wallpaper} doctor-type)
-     {:headers ["Wallpaper" "Used count" "Last Time Set" "Raw"]
+     {:headers ["Img" "Wallpaper" "Used count" "Last Time Set" "Raw"]
       :rows    (->> entities
                     (map (fn [wp]
-                           [(:file/file-name wp)
+                           [[floating/popover
+                             {:hover true :click true
+                              :anchor-comp
+                              [:img {:src   (-> wp :file/web-asset-path)
+                                     :class ["max-h-24"]}]
+                              :popover-comp
+                              [components.wallpaper/wallpaper-comp wp]}]
+                            (-> wp :wallpaper/short-path)
                             (:wallpaper/used-count wp)
-                            (:wallpaper/last-time-set wp)
+                            (-> wp :wallpaper/last-time-set (t/new-duration :millis) t/instant)
+
                             [components.debug/raw-metadata
                              {:label "raw"}
                              wp]])))}
