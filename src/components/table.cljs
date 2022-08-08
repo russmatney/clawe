@@ -108,7 +108,7 @@
       :rows    (->> entities
                     (sort-by :wallpaper/last-time-set)
                     (reverse)
-                    (take 10) ;; only take the last 10
+                    (take 5)
                     (map (fn [wp]
                            [[floating/popover
                              {:hover true :click true
@@ -130,7 +130,7 @@
       :rows    (->> entities
                     (sort-by :screenshot/time)
                     (reverse)
-                    (take 10) ;; only take the last 10
+                    (take 5)
                     (map (fn [scr]
                            [[components.screenshot/cluster-single nil scr]
                             ;; [floating/popover
@@ -148,5 +148,15 @@
                              scr]])))}
 
      :else
-     {:headers ["No headers"]
-      :rows    [["No rows"]]})])
+     ;; fallback to table of keys/vals
+     (let [first-ent (-> entities first)
+           headers   (-> first-ent keys)]
+       {:headers (concat ["Raw"] (map str headers))
+        :rows    (->> entities
+                      (take 3)
+                      (map (fn [ent]
+                             (concat
+                               [[components.debug/raw-metadata {:label "raw"} ent]]
+                               (->> headers
+                                    (map (fn [h]
+                                           (str (get ent h)))))))))}))])
