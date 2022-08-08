@@ -145,20 +145,22 @@
          (map (fn transact-garden-notes [notes]
                 (db/transact
                   notes
-                  {:on-error            -on-error-log-notes
-                   :on-unsupported-type (fn [note]
-                                          (log/debug "Unsupported type on note" note))
+                  {:on-error -on-error-log-notes
+                   :on-unsupported-type
+                   (fn [note]
+                     (log/debug "Unsupported type on note" note))
                    ;; retry logic that narrows in on bad records
                    ;; NOTE not ideal if we care about things belonging to the same transaction
-                   :on-retry            (fn [notes]
-                                          (let [size (count notes)
-                                                half (/ size 2)]
-                                            (if (> size 1)
-                                              (do
-                                                (log/info "Retrying with smaller groups." (count notes))
-                                                (transact-garden-notes (->> notes (take half)))
-                                                (transact-garden-notes (->> notes (drop half) (take half))))
-                                              (log/info "Problemmatic record:" notes))))}))))))))
+                   :on-retry
+                   (fn [notes]
+                     (let [size (count notes)
+                           half (/ size 2)]
+                       (if (> size 1)
+                         (do
+                           (log/info "Retrying with smaller groups." (count notes))
+                           (transact-garden-notes (->> notes (take half)))
+                           (transact-garden-notes (->> notes (drop half) (take half))))
+                         (log/info "Problemmatic record:" notes))))}))))))))
 
 (comment
   (let [x         [2 3 4 5 6 7 8]
@@ -177,10 +179,7 @@
 (comment
   (sync-garden-paths-to-db
     {:page-size 20}
-    (garden/daily-paths 1))
-  (log/set-level! :info)
-  log/*config*
-
+    (garden/daily-paths 10))
 
   (sync-garden-notes-to-db
     {:page-size 2000}
@@ -199,8 +198,10 @@
 
 (defn fetch-db-garden-notes
   []
-  (db/query '[:find (pull ?e [*])
-              :where [?e :doctor/type :type/garden]]))
+  (->>
+    (db/query '[:find (pull ?e [*])
+                :where [?e :doctor/type :type/garden]])
+    (map first)))
 
 (defn notes-with-tags [tags]
   (->>

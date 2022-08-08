@@ -14,7 +14,7 @@
   Recursively renders the items nested content, if items are found
   as :org/items on the passed org node."
   ([item] (org-body nil item))
-  ([{:keys [nested?]} {:org/keys [body items word-count status] :as item}]
+  ([{:keys [nested?]} {:org/keys [body body-string items word-count status] :as item}]
    [:div
     {:class (concat ["font-mono"])}
 
@@ -25,7 +25,7 @@
         "todo: "
         status]])
 
-    (when (seq body)
+    (when (or (seq body) (seq body-string))
       [:div
        {:class ["text-city-blue-400"
                 "flex" "flex-col" "p-2"
@@ -35,14 +35,18 @@
          {:class ["text-sm"]}
          word-count " words"]]
 
-       (for [[i line] (map-indexed vector body)]
-         (let [{:keys [text]} line]
-           (cond
-             (= "" text)
-             ^{:key i} [:span {:class ["py-1"]} " "]
+       (when (seq body)
+         (for [[i line] (map-indexed vector body)]
+           (let [{:keys [text]} line]
+             (cond
+               (= "" text)
+               ^{:key i} [:span {:class ["py-1"]} " "]
 
-             :else
-             ^{:key i} [:span text])))])
+               :else
+               ^{:key i} [:span text]))))
+
+       (when (and (not (seq body)) body-string)
+         [:pre body-string])])
 
     [components.debug/raw-metadata
      {:label "Raw org item"}
@@ -71,7 +75,7 @@
               ["text-lg" "font-mono"])}
            (:org/name item)])
 
-        ;; body
+        ;; recurse
         [org-body {:nested? true} item]])]]))
 
 
@@ -122,13 +126,14 @@
 
 (defn selected-node
   [{:org.prop/keys [title]
+    :org/keys      [name]
     :as            item}]
 
   [:div
    {:class ["flex" "flex-col" "p-2"]}
    [:span
     {:class ["font-nes" "text-xl" "text-city-green-200" "p-2"]}
-    title]
+    (or name title)]
 
    [source-file-link item]
 

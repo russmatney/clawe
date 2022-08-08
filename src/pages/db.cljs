@@ -23,11 +23,10 @@
     conn
     ents-with-doctor-type
     first
-    (dissoc :org/id)
-    (select-keys [:garden/file-name])
+    ;; (dissoc :org/id)
+    ;; (select-keys [:garden/file-name])
     )
   )
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; event page
@@ -59,14 +58,18 @@
          (when (zero? i)
            (some-> k str))
 
-         (for [[i ent] (->> ents-by-type (map-indexed vector))]
+         (for [[i ent] (->> ents-by-type
+                            (sort-by :db/id)
+                            (map-indexed vector))]
            (let []
              (def ent ent)
              ^{:key i}
              [:div
-              [components.garden/garden-node ent]
 
-              #_[components.garden/org-file ent]
+              (str "[:db/id " (:db/id ent) "]")
+              #_[components.garden/garden-node ent]
+
+              [components.garden/selected-node ent]
 
               [components.debug/raw-metadata ent]]))])]
 

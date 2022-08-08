@@ -1,9 +1,6 @@
 (ns defthing.db
   "Exposes functions for working with a datascript database."
   (:require
-   [babashka.process :as process :refer [$]]
-   [clojure.string :as string]
-   [defthing.defcom :refer [defcom]]
    [defthing.config :as defthing.config]
    [defthing.db-helpers :as db-helpers]
    [systemic.core :refer [defsys] :as sys]
@@ -15,45 +12,34 @@
    [dates.tick :as dates.tick]))
 
 (def db-schema
-  {
-   ;; uuids
+  {;; uuids
    :topbar/id
-   {:db/valueType :db.type/uuid
-    :db/unique    :db.unique/identity}
+   {:db/unique :db.unique/identity}
    :test/id
-   {:db/valueType :db.type/uuid
-    :db/unique    :db.unique/identity}
+   {:db/unique :db.unique/identity}
    :misc/id
-   {:db/valueType :db.type/uuid
-    :db/unique    :db.unique/identity}
+   {:db/unique :db.unique/identity}
 
    ;; unique string ids
    :scratchpad.db/id
-   {:db/valueType :db.type/string
-    :db/unique    :db.unique/identity}
+   {:db/unique :db.unique/identity}
    :workspace/title
-   {:db/valueType :db.type/string
-    :db/unique    :db.unique/identity}
+   {:db/unique :db.unique/identity}
    :git.commit/hash
-   {:db/valueType :db.type/string
-    :db/unique    :db.unique/identity}
+   {:db/unique :db.unique/identity}
    :git.repo/directory
-   {:db/valueType :db.type/string
-    :db/unique    :db.unique/identity}
+   {:db/unique :db.unique/identity}
    :lichess.game/id
-   {:db/valueType :db.type/string
-    :db/unique    :db.unique/identity}
+   {:db/unique :db.unique/identity}
 
-   :time/rn
-   {:db/valueType :db.type/instant}
+   ;; :time/rn
+   ;; {:db/valueType :db.type/instant}
 
    ;; org attrs
    :org/id
-   {:db/valueType :db.type/uuid
-    :db/unique    :db.unique/identity}
+   {:db/unique :db.unique/identity}
    :org/fallback-id
-   {:db/valueType :db.type/string
-    :db/unique    :db.unique/identity}
+   {:db/unique :db.unique/identity}
 
    ;; manys
    :org/link-text
@@ -80,6 +66,10 @@
    :org/urls
    {:db/cardinality :db.cardinality/many}})
 
+(comment
+  (d/empty-db db-schema)
+  )
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; clj datascript api
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -92,7 +82,7 @@
         (edn/read-string {:readers d/data-readers}))
       (do
         (log/info "No db file found creating empty one")
-        (d/empty-db)))))
+        (d/empty-db db-schema)))))
 
 (comment
   (slurp (defthing.config/db-path))
@@ -122,6 +112,8 @@
 
 (comment
   (clear-db)
+  ;; if not running, this restart restarts _everything_
+  (sys/start! `*conn*)
   (sys/restart! `*conn*)
 
   (write-db-to-file))
@@ -155,10 +147,11 @@
 
 (comment
   (transact [{:name "Datascript"}])
+  (transact [{:workspace/title "datascript" :my/misc "valvalval"}])
   (transact [{:now       (dates.tick/now)
               :something "useful"}])
   (declare query)
-  (query '[:find (pull ?e [*]) :where [?e :something ?n]])
+  (query '[:find (pull ?e [*]) :where [?e :workspace/title ?n]])
   (transact [{:last "value" :multi 5 :key ["val" #{"hi"}]}])
   (transact [{:some-workspace "Clawe"} {:some-other-data "jaja"}])
   (transact [{:some-workspace "Clawe"

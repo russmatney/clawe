@@ -29,7 +29,7 @@
              (fn [tx]
                #_(def tx tx)
                (try
-                 (log/info "garden note transacted!" tx)
+                 (log/info "sending datoms to the frontend")
                  (update-stream (:tx-data tx))
                  (catch Exception e
                    (log/warn "Error in tx->fe-db db listener" e)

@@ -17,7 +17,7 @@
                (def tx tx)
                ;; NOTE don't you dare try to get a :datoms-transacted off of this tx!
                (try
-                 (log/info "garden note transacted!" tx)
+                 (log/info "garden note transacted!")
                  (expo/update-posts)
                  (catch Exception e
                    (log/warn "Error in garden->expo db listener" e)
