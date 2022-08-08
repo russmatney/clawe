@@ -15,6 +15,7 @@
   "dotfiles"      {:workspace/directory "~/russmatney/dotfiles"},
   "malli"         {:workspace/directory "~/metosin/malli"},
   "journal"       {:workspace/directory "~/todo"},
+  "steam"         {:workspace/directory "~"},
   "godot"         {:workspace/directory "~/godotengine/godot"}},
  :repo-roots      ["~/russmatney/*" "~/teknql/*"],
  :client/defs

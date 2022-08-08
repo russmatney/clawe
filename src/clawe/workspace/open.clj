@@ -45,7 +45,7 @@
   (client.create/create-client "emacs")
   (client.create/create-client "terminal")
   (clawe.rules/clean-up-workspaces)
-  (clawe.doctor/update-topbar) ;; no-op on mac for now
+  (clawe.doctor/update-topbar)
   wsp)
 
 (defn create-workspace-def [repo-wsp]
