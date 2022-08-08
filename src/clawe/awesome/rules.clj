@@ -1,7 +1,6 @@
 (ns clawe.awesome.rules
   "Manages the awesomeWM rules."
   (:require
-   [clawe.wm :as wm]
    [clojure.string :as string]
    [clojure.walk :as walk]
    [ralphie.zsh :as zsh]))
