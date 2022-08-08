@@ -32,6 +32,9 @@
    :lichess.game/id
    {:db/unique :db.unique/identity}
 
+   :file/full-path
+   {:db/unique :db.unique/identity}
+
    ;; :time/rn
    ;; {:db/valueType :db.type/instant}
 
@@ -77,9 +80,12 @@
 (defn db-from-file []
   (let [db-file (defthing.config/db-path)]
     (if (fs/exists? db-file)
-      (->>
-        (slurp db-file)
-        (edn/read-string {:readers d/data-readers}))
+      (->
+        (edn/read-string {:readers d/data-readers} (slurp db-file))
+        ;; support swapping in the schema to allow for schema updates
+        (d/datoms :eavt)
+        (d/conn-from-datoms db-schema)
+        d/db)
       (do
         (log/info "No db file found creating empty one")
         (d/empty-db db-schema)))))
@@ -92,8 +98,7 @@
 
 (defsys *conn*
   :start
-  (let [raw-db (db-from-file)
-        conn   (-> (or raw-db (d/empty-db db-schema)) (d/conn-from-db))]
+  (let [conn (d/conn-from-db (db-from-file))]
     (d/listen! conn :db-backup-writer (fn [_] (write-db-to-file)))
     conn)
   :stop
@@ -110,11 +115,19 @@
 (defn clear-db []
   (fs/delete-if-exists (fs/file (defthing.config/db-path))))
 
+(defn reload-conn []
+  (if (and `*conn* (sys/running? *conn*))
+    (sys/restart! `*conn*)
+    (sys/start! `*conn*)))
+
 (comment
+  (reload-conn)
   (clear-db)
   ;; if not running, this restart restarts _everything_
   (sys/start! `*conn*)
   (sys/restart! `*conn*)
+
+  *conn*
 
   (write-db-to-file))
 
