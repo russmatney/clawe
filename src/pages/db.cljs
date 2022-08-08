@@ -55,14 +55,19 @@
               "text-white"]}
 
      [:div {:class ["grid" "grid-cols-6"]}
-      [:button {:class    ["bg-slate-800"
-                           "p-4"
-                           "rounded-xl"]
-                :on-click (fn [_]
-                            (println "click it or ticket")
-                            (hooks.db/ingest-screenshots))}
-       ;; TODO some state/progress bar/something
-       "Ingest screenshots"]]
+      (for [{:keys [label on-click]}
+            [
+             {:label    "Ingest lichess games"
+              :on-click (fn [_] (hooks.db/ingest-lichess-games))}
+             {:label    "Ingest screenshots"
+              :on-click (fn [_] (hooks.db/ingest-screenshots))}]
+            ]
+        [:button {:class    ["bg-slate-800"
+                             "p-4"
+                             "rounded-xl"]
+                  :on-click on-click}
+         label])
+      ]
 
      [components.table/table
       {:headers [":doctor/type"

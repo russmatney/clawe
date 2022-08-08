@@ -5,17 +5,35 @@
    [defthing.db :as db]
    [clojure.edn :as edn]))
 
+(defn ->db-game [game]
+  (let [created-at   (some-> game :lichess.game/created-at-str dates.tick/parse-time-string)
+        last-move-at (some-> game :lichess.game/last-move-at-str dates.tick/parse-time-string)]
+    (cond-> game
+      true
+      (assoc :doctor/type :type/lichess-game)
+
+      created-at
+      (assoc :lichess.game/created-at created-at)
+
+      last-move-at
+      (assoc :lichess.game/last-move-at last-move-at)
+
+      (-> game :lichess.game/analysis seq)
+      (update :lichess.game/analysis edn/read-string))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; fetch games
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn games-since [{:keys [since]}]
-  (chess/fetch-games
-    {:opening  true
-     :evals    true
-     :literate true
-     :analysis true
-     :since    since}))
+  (->>
+    (chess/fetch-games
+      {:opening  true
+       :evals    true
+       :literate true
+       :analysis true
+       :since    since})
+    (map ->db-game)))
 
 (defn games-since-last-week []
   (games-since {:since (dates.tick/a-week-ago-ms)}))
@@ -30,6 +48,11 @@
 (defn sync-games-to-db
   ([] (sync-games-to-db (games-since-last-week)))
   ([games] (db/transact games)))
+
+(defn ingest-lichess-games []
+  (let [games (games-since-last-month)]
+    (println "ingesting" (count games) " games")
+    (sync-games-to-db games)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; fetch games from db

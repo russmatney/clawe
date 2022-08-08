@@ -3,7 +3,8 @@
    [plasma.core :refer [defhandler defstream]]
    #?@(:clj [[manifold.stream :as s]
              [api.db :as api.db]
-             [api.screenshots :as api.screenshots]]
+             [api.screenshots :as api.screenshots]
+             [chess.db :as chess.db]]
        :cljs [[datascript.core :as d]
               [plasma.uix :refer [with-rpc with-stream]]])))
 
@@ -34,6 +35,10 @@
 
 (defhandler ingest-screenshots []
   (api.screenshots/ingest-screenshots)
+  :ok)
+
+(defhandler ingest-lichess-games []
+  (chess.db/ingest-lichess-games)
   :ok)
 
 

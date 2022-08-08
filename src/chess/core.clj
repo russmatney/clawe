@@ -91,8 +91,8 @@
 
           :lichess.game/analysis (str analysis)
 
-          :lichess.game/created-at createdAt
-          :lichess.game/last-move-at lastMoveAt
+          :lichess.game/created-at-str createdAt
+          :lichess.game/last-move-at-str lastMoveAt
 
           :lichess.game/opening-name (-> opening :name)
           :lichess.game/opening-eco (-> opening :eco)

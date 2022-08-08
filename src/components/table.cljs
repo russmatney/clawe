@@ -41,8 +41,7 @@
      [:div {:class ["table-row-group" "bg-slate-800"]}
       (for [[i cells] (->> rows (map-indexed vector))]
         ^{:key i}
-        [:div {:class ["table-row" "py-2" "border" "border-b-2" "text-sm"
-                       ]}
+        [:div {:class ["table-row" "py-2" "border" "border-b-2" "text-sm"]}
          (for [[j cell] (->> cells (map-indexed vector))]
            ^{:key j}
            [:div {:class ["table-cell"
@@ -133,13 +132,6 @@
                     (take 5)
                     (map (fn [scr]
                            [[components.screenshot/cluster-single nil scr]
-                            ;; [floating/popover
-                            ;;  {:hover true :click true
-                            ;;   :anchor-comp
-                            ;;   [:img {:src   (-> scr :file/web-asset-path)
-                            ;;          :class ["max-h-24"]}]
-                            ;;   :popover-comp
-                            ;;   [:div nil]}]
                             (-> scr :name)
                             (-> scr :screenshot/time (t/new-duration :millis) t/instant)
 
