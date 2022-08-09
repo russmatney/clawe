@@ -166,6 +166,15 @@
                              {:label "raw"}
                              repo]])))}
 
+     (#{:type/commit} doctor-type)
+     {:headers ["Subject" "Raw"]
+      :rows    (->> entities
+                    (take 3)
+                    (map (fn [commit]
+                           [(:commit/subject commit)
+                            [components.debug/raw-metadata
+                             {:label "raw"}
+                             commit]])))}
 
 
      :else

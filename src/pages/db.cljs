@@ -2,9 +2,7 @@
   (:require
    [hooks.db :as hooks.db]
    [datascript.core :as d]
-   [components.table :as components.table]
-   [components.debug :as components.debug]
-   [components.garden :as components.garden]))
+   [components.table :as components.table]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; db by :doctor/type
@@ -23,20 +21,6 @@
   (->>
     conn
     ents-with-doctor-type))
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn garden-note [ent]
-  [:div
-   (str "[:db/id " (:db/id ent) "]")
-   #_[components.garden/garden-node ent]
-
-   [components.garden/selected-node ent]
-
-   [components.debug/raw-metadata ent]])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; event page
@@ -68,8 +52,7 @@
                              "p-4"
                              "rounded-xl"]
                   :on-click on-click}
-         label])
-      ]
+         label])]
 
      [components.table/table
       {:headers [":doctor/type"
