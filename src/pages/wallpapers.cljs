@@ -1,16 +1,24 @@
 (ns pages.wallpapers
   (:require
-   [hooks.wallpapers]
-   [components.wallpaper]))
+   [hooks.db :as hooks.db]
+   [doctor.ui.db :as ui.db]
+   [pages.db.tables :as db.tables]))
 
-(defn page [_opts]
-  (let [{:keys [items]} (hooks.wallpapers/use-wallpapers)]
+(defn page [{:keys [conn]}]
+  (let [n     150
+        items (ui.db/wallpapers conn {:n n})]
     [:div
-     {:class ["flex" "flex-row" "flex-wrap"
-              "min-h-screen"
-              "overflow-hidden"
-              "bg-yo-blue-700"
-              ]}
-     (for [[i it] (->> items (map-indexed vector))]
-       ^{:key i}
-       [components.wallpaper/wallpaper-comp nil it])]))
+     [:button {:class ["bg-slate-800"
+                       "p-4"
+                       "border"
+                       "border-slate-600"
+                       "rounded-xl"
+                       "font-mono"
+                       "text-white"]
+               :on-click
+               (fn [_] (hooks.db/ingest-wallpapers))}
+      "Ingest wallpapers"]
+
+     [:div
+      {:class ["p-2"]}
+      [db.tables/table-for-doctor-type {:n n} :type/wallpaper items]]]))

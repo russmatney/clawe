@@ -92,14 +92,34 @@
 ;; screenshots
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn screenshots [conn {:keys [n]}]
-  (when conn
-    (let [n (or n 30)]
-      (->>
-        (d/q '[:find (pull ?e [*])
-               :where
-               [?e :doctor/type :type/screenshot]]
-             conn)
-        (map first)
-        (sort-by :screenshot/time t/>)
-        (take n)))))
+(defn screenshots
+  ([conn] (screenshots conn nil))
+  ([conn {:keys [n]}]
+   (when conn
+     (let [n (or n 30)]
+       (->>
+         (d/q '[:find (pull ?e [*])
+                :where
+                [?e :doctor/type :type/screenshot]]
+              conn)
+         (map first)
+         (sort-by :screenshot/time t/>)
+         (take n))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; wallpapers
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn wallpapers
+  ([conn] (wallpapers conn nil))
+  ([conn {:keys [n]}]
+   (when conn
+     (let [n (or n 30)]
+       (->>
+         (d/q '[:find (pull ?e [*])
+                :where
+                [?e :doctor/type :type/wallpaper]]
+              conn)
+         (map first)
+         (sort-by :wallpaper/last-time-set >)
+         (take n))))))

@@ -51,7 +51,9 @@
              {:label    "Clear lichess cache"
               :on-click (fn [_] (hooks.db/clear-lichess-games-cache))}
              {:label    "Ingest screenshots"
-              :on-click (fn [_] (hooks.db/ingest-screenshots))}]]
+              :on-click (fn [_] (hooks.db/ingest-screenshots))}
+             {:label    "Ingest wallpapers"
+              :on-click (fn [_] (hooks.db/ingest-wallpapers))}]]
         [:button {:class    ["bg-slate-800"
                              "p-4"
                              "border"

@@ -5,7 +5,7 @@
    [api.topbar :as topbar]
    [api.todos :as todos]
    [screenshots.core :as screenshots]
-   [api.wallpapers :as wallpapers]))
+   [wallpapers.core :as wallpapers]))
 
 
 (defn route

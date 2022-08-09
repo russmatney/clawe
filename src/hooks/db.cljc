@@ -6,7 +6,8 @@
              [git.core :as git]
              [chess.core :as chess]
              [screenshots.core :as screenshots]
-             [chess.db :as chess.db]]
+             [chess.db :as chess.db]
+             [wallpapers.core :as wallpapers]]
        :cljs [[datascript.core :as d]
               [plasma.uix :refer [with-rpc with-stream]]])))
 
@@ -54,6 +55,14 @@
 (defhandler ingest-commits-for-repo [repo]
   (println "ingesting commits for repo" repo)
   (git/ingest-commits-for-repo repo)
+  :ok)
+
+(defhandler ingest-wallpapers []
+  (wallpapers/ingest-wallpapers)
+  :ok)
+
+(defhandler set-wallpaper [item]
+  (wallpapers/set-wallpaper item)
   :ok)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

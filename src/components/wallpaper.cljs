@@ -2,14 +2,13 @@
   (:require
    [uix.core.alpha :as uix]
    [tick.core :as t]
-   [hooks.wallpapers :as hooks.wallpaper]))
+   [components.debug :as components.debug]
+   [doctor.ui.actions :as actions]))
 
 (defn wallpaper-comp
   ([item] (wallpaper-comp nil item))
   ([_opts item]
-   (let [{:keys [#_name
-                 db/id
-                 #_wallpaper/full-path
+   (let [{:keys [db/id
                  wallpaper/short-path
                  file/web-asset-path
                  wallpaper/last-time-set
@@ -38,8 +37,10 @@
       (when used-count
         [:div {:class ["text-lg"]} used-count])
 
+      [components.debug/raw-metadata {:label "Raw"} item]
+
       [:div.my-3
-       (for [ax (hooks.wallpapers/->actions item)]
+       (for [ax (actions/->actions item)]
          ^{:key (:action/label ax)}
          [:div
           {:class    ["cursor-pointer"

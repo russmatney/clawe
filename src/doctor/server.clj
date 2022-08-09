@@ -13,7 +13,6 @@
    [api.db :as api.db]
    [api.topbar :as api.topbar]
    [api.todos :as api.todos]
-   [api.wallpapers :as api.wallpapers]
    [api.workspaces :as api.workspaces]
    [db.core :as db]
    [db.listeners :as db.listeners]
@@ -69,7 +68,6 @@
    api.todos/*todos-stream*
    api.db/*db-stream*
    api.db/*tx->fe-db*
-   api.wallpapers/*wallpapers-stream*
    garden/*garden-stream*
    garden/*journals-stream*
    garden.watcher/*garden-watcher*

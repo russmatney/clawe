@@ -79,27 +79,30 @@
 ;; wallpaper/screenshots
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn wallpaper-table-def [entities]
-  {:headers ["Img" "Wallpaper" "Used count" "Last Time Set" "Raw"]
-   :rows    (->> entities
-                 (sort-by :wallpaper/last-time-set)
-                 (reverse)
-                 (take 5)
-                 (map (fn [wp]
-                        [[floating/popover
-                          {:hover true :click true
-                           :anchor-comp
-                           [:img {:src   (-> wp :file/web-asset-path)
-                                  :class ["max-h-24"]}]
-                           :popover-comp
-                           [components.wallpaper/wallpaper-comp wp]}]
-                         (-> wp :wallpaper/short-path)
-                         (:wallpaper/used-count wp)
-                         (-> wp :wallpaper/last-time-set (t/new-duration :millis) t/instant)
+(defn wallpaper-table-def
+  ([wps] (wallpaper-table-def nil wps))
+  ([opts wps]
+   {:headers ["Img" "Wallpaper" "Used count" "Last Time Set" "Raw"]
+    :rows    (->> wps
+                  (sort-by :wallpaper/last-time-set)
+                  (reverse)
+                  (take (:n opts 5))
+                  (map (fn [wp]
+                         [[floating/popover
+                           {:hover true :click true
+                            :anchor-comp
+                            [:img {:src   (-> wp :file/web-asset-path)
+                                   :class ["max-h-24"]}]
+                            :popover-comp
+                            [components.wallpaper/wallpaper-comp wp]}]
+                          (-> wp :wallpaper/short-path)
+                          (:wallpaper/used-count wp)
+                          (some-> wp :wallpaper/last-time-set
+                                  (t/new-duration :millis) t/instant)
 
-                         [components.debug/raw-metadata
-                          {:label "raw"}
-                          wp]])))})
+                          [components.debug/raw-metadata
+                           {:label "raw"}
+                           wp]])))}))
 
 (defn screenshot-table-def [entities]
   {:headers ["Img" "Name" "Time" "Raw"]
@@ -194,7 +197,7 @@
       (garden-note-table-def entities)
 
       (#{:type/wallpaper} doctor-type)
-      (wallpaper-table-def entities)
+      (wallpaper-table-def opts entities)
 
       (#{:type/screenshot} doctor-type)
       (screenshot-table-def entities)
