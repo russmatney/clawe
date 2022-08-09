@@ -1,6 +1,6 @@
 (ns dates.tick
   (:require
-   [ralphie.notify :as notify]
+   #?@(:clj [[ralphie.notify :as notify]])
    [clojure.string :as string]
    [tick.core :as t]))
 
@@ -51,7 +51,7 @@
        (map (fn [parse]
               #(try
                  (parse %)
-                 (catch Exception e e nil))))))
+                 (catch #?(:clj Exception :cljs js/Error) e e nil))))))
 
 (defn parse-time-string
   [time-string]
@@ -61,7 +61,8 @@
     (if-let [time ((apply some-fn wrapped-parse-attempts) time-string)]
       time
       (do
-        (notify/notify "Error parsing time string" time-string)
+        #?(:clj (notify/notify "Error parsing time string" time-string)
+           :cljs (println "Error parsing time string" time-string))
         nil))))
 
 (comment
