@@ -27,9 +27,8 @@
 ;; event page
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn page [_opts]
-  (let [{:keys [conn]}      (hooks.db/use-db)
-        ents                (ents-with-doctor-type conn)
+(defn page [{:keys [conn]}]
+  (let [ents                (ents-with-doctor-type conn)
         ents-by-doctor-type (->> ents (group-by :doctor/type))]
     (def conn conn)
     [:div
