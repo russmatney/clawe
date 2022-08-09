@@ -1,8 +1,15 @@
-(ns pages.events.db
+(ns doctor.ui.db
   (:require
    [datascript.core :as d]
    [tick.core :as t]
    [dates.tick :as dates.tick]))
+
+;; TODO tests for this namespace
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; events
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 
 (def event-types
   #{:type/commit
@@ -37,8 +44,8 @@
              (sort-by t/>)
              first)))
 
-(defn db-events
-  ([conn] (db-events conn event-types))
+(defn events
+  ([conn] (events conn event-types))
   ([conn event-types]
    (when conn
      (->> (d/q '[:find (pull ?e [*])
@@ -55,3 +62,29 @@
                  ;; HACK decorating on the frontend
                  ;; we should be creating multiple events per item during ingestion
                  (assoc ev :event/timestamp (item->latest-timestamp ev))))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; repos/commits
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn commits-for-repo [conn repo]
+  (when conn
+    (d/q '[:find (pull ?e [*])
+           :in $ ?dir
+           :where
+           [?e :doctor/type :type/commit]
+           [?e :commit/directory ?dir]]
+         conn
+         (:repo/directory repo))))
+
+(defn repo-for-commit [conn commit]
+  (when conn
+    (->>
+      (d/q '[:find [(pull ?e [*])]
+             :in $ ?dir
+             :where
+             [?e :doctor/type :type/repo]
+             [?e :repo/directory ?dir]]
+           conn
+           (:commit/directory commit))
+      first)))

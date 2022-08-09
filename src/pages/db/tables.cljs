@@ -11,10 +11,19 @@
    [components.chess :as components.chess]
    [components.screenshot :as components.screenshot]
    [components.git :as components.git]
-   [datascript.core :as d]) )
+   [doctor.ui.db :as ui.db]))
+
+(defn basic-text-popover [text]
+  [:div
+   {:class
+    ["text-city-blue-400"
+     "flex" "flex-col" "p-2"
+     "bg-yo-blue-500"]}
+   text])
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; table defs
+;; garden tables
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn garden-by-tag-table-def [entities]
@@ -34,14 +43,6 @@
                       [components.debug/raw-metadata
                        {:label (-> group first :org/name)}
                        (first group)]])))} )
-
-(defn basic-text-popover [text]
-  [:div
-   {:class
-    ["text-city-blue-400"
-     "flex" "flex-col" "p-2"
-     "bg-yo-blue-500"]}
-   text])
 
 (defn garden-note-table-def [entities]
   {:headers ["File" "Name" "Parent" "Words" "Raw"]
@@ -73,6 +74,10 @@
              [components.debug/raw-metadata
               {:label "raw"}
               note]])))})
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; wallpaper/screenshots
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn wallpaper-table-def [entities]
   {:headers ["Img" "Wallpaper" "Used count" "Last Time Set" "Raw"]
@@ -111,6 +116,10 @@
                           {:label "raw"}
                           scr]])))})
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; lichess
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defn lichess-game-table-def [entities]
   {:headers ["" "Opening" "Created at" "Raw"]
    :rows    (->> entities
@@ -125,20 +134,9 @@
                           {:label "raw"}
                           game]])))})
 
-(defn commits-for-repo [conn repo]
-  (when conn
-    (d/q '[:find (pull ?e [*])
-           :in $ ?dir
-           :where
-           [?e :doctor/type :type/commit]
-           [?e :commit/directory ?dir]]
-         conn
-         (:repo/directory repo))))
-
-(comment
-  (declare conn)
-  (commits-for-repo conn {:repo/directory "/home/russ/russmatney/clawe"})
-  )
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; repos/commits
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn repo-table-def
   ([repos] (repo-table-def nil repos))
@@ -150,7 +148,7 @@
                   (take 10)
                   (map (fn [repo]
                          [(-> repo :repo/short-path)
-                          (let [commits (commits-for-repo conn repo)]
+                          (let [commits (ui.db/commits-for-repo conn repo)]
                             (count commits))
                           [:button {:class    ["bg-slate-600" "p-4" "rounded-xl"]
                                     :on-click (fn [_]
@@ -160,18 +158,6 @@
                            {:label "raw"}
                            repo]])))}))
 
-(defn repo-for-commit [conn commit]
-  (when conn
-    (->>
-      (d/q '[:find [(pull ?e [*])]
-             :in $ ?dir
-             :where
-             [?e :doctor/type :type/repo]
-             [?e :repo/directory ?dir]]
-           conn
-           (:commit/directory commit))
-      first)))
-
 (defn commit-table-def
   ([commits] (commit-table-def nil commits))
   ([{:keys [conn]} commits]
@@ -180,7 +166,7 @@
                   (sort-by (comp dates.tick/parse-time-string :commit/author-date) t/>)
                   (take 10)
                   (map (fn [commit]
-                         (let [repo (repo-for-commit conn commit)]
+                         (let [repo (ui.db/repo-for-commit conn commit)]
                            [[components.git/short-hash-link commit repo]
                             (if (seq (:commit/body commit))
                               [floating/popover
@@ -194,6 +180,10 @@
                             [components.debug/raw-metadata
                              {:label "raw"}
                              commit]]))))}))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; public
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn table-for-doctor-type
   ([type entities] (table-for-doctor-type nil type entities))

@@ -7,6 +7,8 @@
    [cognitect.transit :as transit]
    [ring.adapter.undertow :as undertow]
    [ring.adapter.undertow.websocket :as undertow.ws]
+   [datascript.transit :as dt]
+   [dates.transit-time-literals :as ttl]
 
    [api.db :as api.db]
    [api.screenshots :as api.screenshots]
@@ -14,15 +16,13 @@
    [api.todos :as api.todos]
    [api.wallpapers :as api.wallpapers]
    [api.workspaces :as api.workspaces]
-   [dates.transit-time-literals :as ttl]
    [db.core :as db]
    [db.listeners :as db.listeners]
    [doctor.config :as doctor.config]
    [doctor.api :as doctor.api]
    [garden.core :as garden]
    [garden.watcher :as garden.watcher]
-   [ralphie.notify :as notify]
-   [datascript.transit :as dt]))
+   [ralphie.notify :as notify]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Plasma config
