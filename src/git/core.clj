@@ -1,7 +1,7 @@
 (ns git.core
   (:require
    [ralphie.git :as r.git]
-   [defthing.db :as db]
+   [db.core :as db]
    [babashka.fs :as fs]
    [clawe.wm :as wm]
    [ralphie.zsh :as zsh]

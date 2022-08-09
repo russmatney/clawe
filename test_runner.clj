@@ -24,7 +24,7 @@
          'ralphie.awesome.fnl-test])
       ['defthing.core-test
        'defthing.defcom-test
-       ;; 'defthing.db-test
+       ;; 'db.core-test
        ;; 'ralphie.git-test
        ;; 'ralphie.tmux-test
        ;; 'ralphie.emacs-test

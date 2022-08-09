@@ -3,7 +3,7 @@
    [systemic.core :refer [defsys] :as sys]
    [manifold.stream :as s]
    [git.core :as git]
-   [defthing.db :as db]
+   [db.core :as db]
    [babashka.fs :as fs]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

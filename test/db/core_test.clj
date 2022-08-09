@@ -1,8 +1,8 @@
-(ns defthing.db-test
+(ns db.core-test
   (:require
    [clojure.test :refer [deftest is testing use-fixtures]]
-   [defthing.db :as sut]
-   [defthing.config :as defthing.config]
+   [db.core :as sut]
+   [db.config :as db.config]
    [dates.tick :as dates.tick]
    [tick.core :as t]
    [systemic.core :as sys]
@@ -13,16 +13,16 @@
   :once
   (fn [f]
     (sys/with-system
-      [defthing.config/*config* {:db-path "dbs/testdb.edn"}]
+      [db.config/*config* {:db-path "dbs/testdb.edn"}]
 
-      (let [p (defthing.config/db-path)]
+      (let [p (db.config/db-path)]
         (when (fs/exists? p)
           (fs/delete p)))
 
       (f)
 
       ;; overkill
-      (let [p (defthing.config/db-path)]
+      (let [p (db.config/db-path)]
         (when (fs/exists? p)
           (fs/delete p))))))
 

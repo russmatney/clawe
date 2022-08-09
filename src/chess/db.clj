@@ -2,7 +2,7 @@
   (:require
    [chess.core :as chess]
    [dates.tick :as dates.tick]
-   [defthing.db :as db]
+   [db.core :as db]
    [clojure.edn :as edn]))
 
 (defn ->db-game [game]

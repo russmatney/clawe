@@ -2,7 +2,7 @@
   (:require
    [systemic.core :refer [defsys] :as sys]
    [manifold.stream :as s]
-   [defthing.db :as db]
+   [db.core :as db]
    [wing.core :as w]
    [dates.tick :as dt]
    [garden.core :as garden]))

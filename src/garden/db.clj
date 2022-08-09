@@ -1,6 +1,6 @@
 (ns garden.db
   (:require
-   [defthing.db :as db]
+   [db.core :as db]
    [garden.core :as garden]
    [clojure.string :as string]
    [taoensso.timbre :as log]))
@@ -10,7 +10,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn fallback-id
-  "Used as a backup for dumping unique org items into the defthing.db.
+  "Used as a backup for dumping unique org items into the db.core.
 
   Handling changing names/re-arranging org-files without the uuids is a bit hairy...
   We could 'retire'/'archive' all nodes per :org/source-file every time a

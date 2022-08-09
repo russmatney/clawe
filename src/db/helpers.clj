@@ -1,4 +1,4 @@
-(ns defthing.db-helpers
+(ns db.helpers
   (:require
    [taoensso.timbre :as log]
    [wing.core :as w]
@@ -78,7 +78,7 @@
    (let [supported-keys   (supported-type-keys opts map-tx)
          [to-tx rejected] (w/partition-keys map-tx supported-keys)]
      (when (and (seq rejected) (:log-rejected opts))
-       (log/debug "defthing db transact rejected vals" rejected))
+       (log/debug "db transact rejected vals" rejected))
      (->> to-tx
           ;; might be unnecessary b/c it's not 'supported'
           (remove (comp nil? second))

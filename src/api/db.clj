@@ -2,7 +2,7 @@
   (:require
    [systemic.core :as sys :refer [defsys]]
    [manifold.stream :as s]
-   [defthing.db :as db]
+   [db.core :as db]
    [datascript.core :as d]
    [taoensso.timbre :as log]))
 

@@ -2,7 +2,7 @@
   (:require
    [expo.db :as expo.db]
    [garden.db :as garden.db]
-   [defthing.db :as db]))
+   [db.core :as db]))
 
 (def ignored-tags #{"archived"})
 

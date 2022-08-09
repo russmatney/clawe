@@ -7,7 +7,7 @@
    [ralphie.spotify :as r.spotify]
    [babashka.process :as process]
    [clojure.string :as string]
-   [defthing.db :as db]
+   [db.core :as db]
    [dates.tick :as dates.tick]
    [tick.core :as t]))
 

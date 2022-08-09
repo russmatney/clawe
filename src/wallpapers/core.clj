@@ -4,7 +4,7 @@
    [clojure.string :as string]
    [babashka.fs :as fs]
    [babashka.process :as process]
-   [defthing.db :as db]
+   [db.core :as db]
    [ralphie.notify :as notify]
    [defthing.defwallpaper :as defwallpaper]))
 

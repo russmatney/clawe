@@ -1,4 +1,4 @@
-(ns defthing.config
+(ns db.config
   (:require
    [systemic.core :as sys :refer [defsys]]
    [aero.core :as aero]
@@ -6,7 +6,7 @@
    [ralphie.zsh :as zsh]))
 
 (defn ->config []
-  (aero/read-config (io/resource "defthing.edn")))
+  (aero/read-config (io/resource "db.edn")))
 
 (comment
   (->config))

@@ -1,17 +1,16 @@
-(ns defthing.db
+(ns db.core
   "Exposes functions for working with a datascript database."
   (:require
-   [defthing.config :as defthing.config]
-   [defthing.db-helpers :as db-helpers]
+   [db.config :as db.config]
+   [db.helpers :as helpers]
    [systemic.core :refer [defsys] :as sys]
    [taoensso.timbre :as log]
    [datascript.core :as d]
    [babashka.fs :as fs]
    [clojure.edn :as edn]
-   [defthing.db :as db]
    [dates.tick :as dates.tick]))
 
-(def db-schema
+(def schema
   {;; uuids
    :topbar/id
    {:db/unique :db.unique/identity}
@@ -70,7 +69,7 @@
    {:db/cardinality :db.cardinality/many}})
 
 (comment
-  (d/empty-db db-schema)
+  (d/empty-db schema)
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -78,20 +77,20 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn db-from-file []
-  (let [db-file (defthing.config/db-path)]
+  (let [db-file (db.config/db-path)]
     (if (fs/exists? db-file)
       (->
         (edn/read-string {:readers d/data-readers} (slurp db-file))
         ;; support swapping in the schema to allow for schema updates
         (d/datoms :eavt)
-        (d/conn-from-datoms db-schema)
+        (d/conn-from-datoms schema)
         d/db)
       (do
         (log/info "No db file found creating empty one")
-        (d/empty-db db-schema)))))
+        (d/empty-db schema)))))
 
 (comment
-  (slurp (defthing.config/db-path))
+  (slurp (db.config/db-path))
   (db-from-file))
 
 (declare write-db-to-file)
@@ -110,10 +109,10 @@
 
 (defn write-db-to-file []
   (log/info "Writing Expo DB to file")
-  (spit (defthing.config/db-path) (print-db)))
+  (spit (db.config/db-path) (print-db)))
 
 (defn clear-db []
-  (fs/delete-if-exists (fs/file (defthing.config/db-path))))
+  (fs/delete-if-exists (fs/file (db.config/db-path))))
 
 (defn reload-conn []
   (if (and `*conn* (sys/running? `*conn*))
@@ -145,8 +144,8 @@
                     (if (map? txs) [txs] txs)
                     (map (fn [tx] (if (map? tx)
                                     (->> tx
-                                         db-helpers/convert-matching-types
-                                         (db-helpers/drop-unsupported-vals opts))
+                                         helpers/convert-matching-types
+                                         (helpers/drop-unsupported-vals opts))
                                     tx)))
                     (into []))]
      (log/debug "Transacting records" (count txs))
@@ -233,7 +232,7 @@
   ([] (query-db nil))
   ([args]
    ;; no args supported yet, but this is here to be called from the cli
-   (println "defthing.db/query-db called" args)
+   (println "db.core/query-db called" args)
    (doall
      (->>
        (query '[:find (pull ?e [*])

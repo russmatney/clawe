@@ -1,7 +1,8 @@
+;; TODO get this outta here
 (ns defthing.defwallpaper
   (:require
    [ralphie.zsh :as zsh]
-   [defthing.db :as db]))
+   [db.core :as db]))
 
 
 (comment

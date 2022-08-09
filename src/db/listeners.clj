@@ -1,10 +1,10 @@
-(ns defthing.listeners
+(ns db.listeners
   (:require
    [taoensso.timbre :as log]
    [systemic.core :as sys :refer [defsys]]
    [datascript.core :as d]
 
-   [defthing.db :as db]
+   [db.core :as db]
    [expo.core :as expo]))
 
 (defsys *garden->expo*

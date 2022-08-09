@@ -3,7 +3,7 @@
    [systemic.core :refer [defsys] :as sys]
    [manifold.stream :as s]
    [screenshots.core :as screenshots]
-   [defthing.db :as db]))
+   [db.core :as db]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; API
