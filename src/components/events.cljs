@@ -8,7 +8,9 @@
    [components.chess :as components.chess]
    [components.git :as components.git]
    [components.screenshot :as components.screenshot]
-   [components.timeline :as components.timeline]))
+   [components.timeline :as components.timeline]
+   [components.garden :as components.garden]
+   [components.floating :as floating]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; pure event helpers
@@ -26,11 +28,11 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn event-counts [events]
-  (let [count-by (fn [f] (->> events (filter f) count))]
-    {:screenshot-count (count-by :screenshot/time-string)
-     :commit-count     (count-by :commit/hash)
-     :org-note-count   (count-by :org/title)
-     :chess-game-count (count-by :lichess.game/id)}))
+  (let [count-by (fn [t] (->> events (filter (comp #{t} :doctor/type)) count))]
+    {:screenshot-count (count-by :type/screenshot)
+     :commit-count     (count-by :type/commit)
+     :org-note-count   (count-by :type/garden)
+     :chess-game-count (count-by :type/lichess-game)}))
 
 (defn event-count-comp [{:keys [label count]}]
   (when (and count (> count 0))
@@ -169,16 +171,27 @@
   (cons 1 '(2 3)))
 
 (defn event-cluster [opts events]
-  (let [screenshots (->> events (filter :file/web-asset-path))
-        commits     (->> events (filter :commit/hash))
-        chess-games (->> events (filter :lichess.game/id))
-        _org-notes  (->> events (filter :org/title))]
+  (let [screenshots  (->> events (filter (comp #{:type/screenshot} :doctor/type)))
+        commits      (->> events (filter (comp #{:type/commit} :doctor/type)))
+        chess-games  (->> events (filter (comp #{:type/lichess-game} :doctor/type)))
+        garden-notes (->> events (filter (comp #{:type/garden} :doctor/type)))]
     [:div
      {:class ["flex" "flex-col"]}
 
      [components.chess/cluster opts chess-games]
      [components.screenshot/cluster opts screenshots]
-     [components.git/commit-list opts commits]]))
+     [components.git/commit-list opts commits]
+
+     ;; weak for now, but it's getting surfaced!
+     [floating/popover
+      {:hover true :click true
+       :anchor-comp
+       [:div (str (count garden-notes) " garden notes")]
+       :popover-comp
+       [:div
+        (for [note garden-notes]
+          ^{:key [(:org/name note)]}
+          [components.garden/garden-node note])]}]]))
 
 (defn event-clusters
   [opts events]

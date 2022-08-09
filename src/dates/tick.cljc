@@ -17,6 +17,7 @@
    "yyyy-MM-ddTHH:mm:ss"
    "yyyy-MM-dd HH:mm:ss"
    "yyyy-MM-dd E HH:mm"
+   "yyyyMMdd:HHmmss"
    :iso-local-date-time])
 
 ;; :iso-local-time
@@ -84,6 +85,7 @@
   (t/instant 1650486902722)
   (parse-time-string 1650486902722)
 
+  (parse-time-string "20220722:105834")
 
   (parse-time-string "x")
   (parse-time-string "2022-02-26_15:47:52-0500")
@@ -100,6 +102,17 @@
 
 (defn now []
   (t/zoned-date-time))
+
+(defn add-tz [inst]
+  ;; TODO this is not really right...
+  (if (t/instant inst)
+    (t/in inst "America/New_York")
+    inst))
+
+(comment
+  (t/instant? (t/inst))
+  (add-tz (t/instant (t/inst)))
+  (add-tz (t/instant (t/zoned-date-time))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ago

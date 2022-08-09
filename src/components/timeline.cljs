@@ -2,7 +2,8 @@
   (:require
    [tick.core :as t]
    [wing.core :as w]
-   [components.floating :as floating]))
+   [components.floating :as floating]
+   [dates.tick :as dates.tick]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; misc date helpers
@@ -29,6 +30,16 @@
           :all-dates      all-dates
           :all-months     (t/range oldest newest (t/new-period 1 :months))
           :dates-by-month dates-by-month})))))
+
+(comment
+  ;; errors b/c insts need tzs to do durations
+  (timestamps-date-data
+    {:months-ago 2}
+    [(t/inst)])
+
+  (timestamps-date-data
+    {:months-ago 2}
+    [(dates.tick/now)]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; day picker component
