@@ -25,7 +25,6 @@
    [pages.counts :as pages.counts]
    [pages.garden :as pages.garden]
    [pages.posts :as pages.posts]
-   [pages.repos :as pages.repos]
    [pages.journal :as pages.journal]
    [doctor.ui.views.topbar :as views.topbar]
    [hooks.db :as hooks.db]))
@@ -49,7 +48,6 @@
    {:route "/wallpapers" :page-name :page/wallpapers :label "Wallpapers" :comp pages.wallpapers/page}
    {:route "/garden" :page-name :page/garden :label "Garden" :comp pages.garden/page}
    {:route "/posts" :page-name :page/posts :label "Posts" :comp pages.posts/page}
-   {:route "/repos" :page-name :page/repos :label "Repos" :comp pages.repos/page}
    {:route "/journal" :page-name :page/journal :label "Journal" :comp pages.journal/page}])
 
 (def routes

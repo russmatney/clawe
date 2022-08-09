@@ -8,10 +8,7 @@
    [ring.adapter.undertow :as undertow]
    [ring.adapter.undertow.websocket :as undertow.ws]
 
-   [api.commits :as api.commits]
    [api.db :as api.db]
-   [api.events :as api.events]
-   [api.repos :as api.repos]
    [api.screenshots :as api.screenshots]
    [api.topbar :as api.topbar]
    [api.todos :as api.todos]
@@ -72,11 +69,8 @@
    api.topbar/*topbar-metadata-stream*
    api.todos/*todos-stream*
    api.screenshots/*screenshots-stream*
-   api.events/*events-stream*
-   api.commits/*commits-stream*
    api.db/*db-stream*
    api.db/*tx->fe-db*
-   api.repos/*repos-stream*
    api.wallpapers/*wallpapers-stream*
    garden/*garden-stream*
    garden/*journals-stream*

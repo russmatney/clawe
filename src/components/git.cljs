@@ -1,11 +1,8 @@
 (ns components.git
   (:require
    [tick.core :as t]
-
-   [components.debug]
-   [components.floating :as floating]
-   [hooks.repos]
-   [hooks.commits]))
+   [components.debug :as components.debug]
+   [components.floating :as floating]))
 
 
 (declare repo-popover-content)
@@ -164,9 +161,9 @@
 (defn repo-popover-content
   ([repo] [repo-popover-content nil repo])
   ([_opts repo]
-   (let [commits-resp (hooks.commits/use-commits)
-         commits      (:items commits-resp)
-         commits      (->> commits (filter (comp #{(:repo/path repo)} :commit/directory)))]
+   ;; TODO maybe restore
+   (let [commits []
+         commits (->> commits (filter (comp #{(:repo/path repo)} :commit/directory)))]
      [:div
       {:class ["text-white"
                "bg-yo-blue-800"
@@ -182,19 +179,18 @@
 
       [commit-list nil commits]])))
 
-(defn repo-popover [repo]
-  [:div
-   {:class    ["hover:text-city-blue-800"
-               "cursor-pointer"]
-    :on-click (fn [_] (hooks.repos/fetch-commits repo))}
-   [components.floating/popover
-    {:hover true :click true
-     :anchor-comp
-     [:div
-      {:class ["text-white"
-               "hover:text-city-pink-400"]}
-      (or
-        (short-repo repo)
-        (:repo/path repo))]
-     :popover-comp
-     [repo-popover-content repo]}]])
+(defn repo-popover
+  ([repo] [repo-popover nil repo])
+  ([opts repo]
+   [:div
+    [components.floating/popover
+     {:hover true :click true
+      :anchor-comp
+      [:div
+       {:class ["text-white"
+                "hover:text-city-pink-400"]}
+       (or
+         (short-repo repo)
+         (:repo/path repo))]
+      :popover-comp
+      [repo-popover-content opts repo]}]]))
