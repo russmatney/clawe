@@ -62,7 +62,8 @@
 
   (-fetch-workspace [_this opts workspace-title]
     (some->>
-      (awm/fetch-tags {:tag-names #{workspace-title}})
+      (awm/fetch-tags (merge {:tag-names #{workspace-title}}
+                             opts))
       (filter (comp #{workspace-title} :awesome.tag/name))
       first
       tag->wsp
