@@ -10,7 +10,6 @@
 ;; events
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
 (def event-types
   #{:type/commit
     :type/screenshot
@@ -88,3 +87,19 @@
            conn
            (:commit/directory commit))
       first)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; screenshots
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn screenshots [conn {:keys [n]}]
+  (when conn
+    (let [n (or n 30)]
+      (->>
+        (d/q '[:find (pull ?e [*])
+               :where
+               [?e :doctor/type :type/screenshot]]
+             conn)
+        (map first)
+        (sort-by :screenshot/time t/>)
+        (take n)))))

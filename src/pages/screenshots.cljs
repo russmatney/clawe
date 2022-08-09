@@ -1,10 +1,11 @@
 (ns pages.screenshots
   (:require
-   [hooks.screenshots]
-   [components.screenshot :as screenshot]))
+   [components.screenshot :as screenshot]
+   [doctor.ui.db :as ui.db]))
 
-(defn page [_opts]
-  (let [{:keys [items]} (hooks.screenshots/use-screenshots)]
+(defn page [{:keys [conn]}]
+  (let [
+        items (ui.db/screenshots conn {:n 30})]
     [:div
      {:class ["flex" "flex-row" "flex-wrap" "flex-auto"
               "min-h-screen"

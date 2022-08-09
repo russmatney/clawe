@@ -5,7 +5,7 @@
              [api.db :as api.db]
              [git.core :as git]
              [chess.core :as chess]
-             [api.screenshots :as api.screenshots]
+             [screenshots.core :as screenshots]
              [chess.db :as chess.db]]
        :cljs [[datascript.core :as d]
               [plasma.uix :refer [with-rpc with-stream]]])))
@@ -36,7 +36,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defhandler ingest-screenshots []
-  (api.screenshots/ingest-screenshots)
+  (screenshots/ingest-screenshots)
   :ok)
 
 (defhandler ingest-lichess-games []

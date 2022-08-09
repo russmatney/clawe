@@ -3,7 +3,9 @@
             [ralphie.zsh :as zsh]
             [clojure.string :as string]
             [babashka.fs :as fs]
-            [dates.tick :as dates.tick]))
+            [dates.tick :as dates.tick]
+            [db.core :as db]))
+
 
 
 (defn local-screenshot-file-paths []
@@ -48,3 +50,8 @@
   (->> (local-screenshot-file-paths)
        (map fname->screenshot)
        (remove nil?)))
+
+(defn ingest-screenshots []
+  (->> (all-screenshots)
+       (take 30)
+       (db/transact)))

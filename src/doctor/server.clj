@@ -11,7 +11,6 @@
    [dates.transit-time-literals :as ttl]
 
    [api.db :as api.db]
-   [api.screenshots :as api.screenshots]
    [api.topbar :as api.topbar]
    [api.todos :as api.todos]
    [api.wallpapers :as api.wallpapers]
@@ -68,7 +67,6 @@
   [api.workspaces/*workspaces-stream*
    api.topbar/*topbar-metadata-stream*
    api.todos/*todos-stream*
-   api.screenshots/*screenshots-stream*
    api.db/*db-stream*
    api.db/*tx->fe-db*
    api.wallpapers/*wallpapers-stream*
