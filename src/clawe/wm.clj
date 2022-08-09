@@ -18,11 +18,14 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defsys *wm*
+  :extra-deps
+  [clawe.config/*config*]
   :start
   (if (clawe.config/is-mac?) (Yabai.) (Awesome.)))
 
 (defn reload-wm []
-  (sys/restart! `*wm*))
+  (when (sys/running? `*wm*)
+    (sys/restart! `*wm*)))
 
 (comment
   (reload-wm)

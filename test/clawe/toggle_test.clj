@@ -20,8 +20,8 @@
   (-active-clients [_this _opts]
     (->> workspaces (mapcat :workspace/clients))))
 
-(defn set-defs [defs]
-  (reset! clawe.config/*config* {:client/defs defs}))
+(defn clawe-conf [defs]
+  (atom {:client/defs defs}))
 
 (use-fixtures
   :once
@@ -164,8 +164,8 @@
 (deftest journal-find-client-test
   (testing "no clients or workspaces, not found"
     (sys/with-system
-      [wm/*wm* (TestWM. [])]
-      (set-defs {"journal" journal-def})
+      [wm/*wm* (TestWM. [])
+       clawe.config/*config* (clawe-conf {"journal" journal-def})]
       (is (not (toggle/find-client journal-def)))
 
       (is (= [:create-client journal-def]
@@ -173,8 +173,8 @@
 
   (testing "journal-wsp without journal client, not found"
     (sys/with-system
-      [wm/*wm* (TestWM. (gen-workspaces [:jwsp]))]
-      (set-defs {"journal" journal-def})
+      [wm/*wm* (TestWM. (gen-workspaces [:jwsp]))
+       clawe.config/*config* (clawe-conf {"journal" journal-def})]
       (is (not (toggle/find-client journal-def)))
 
       (is (= [:create-client journal-def]
@@ -182,8 +182,8 @@
 
   (testing "myrepo with myrepo emacs client, not found"
     (sys/with-system
-      [wm/*wm* (TestWM. (gen-workspaces [:myrepo-wsp+cli]))]
-      (set-defs {"journal" journal-def})
+      [wm/*wm* (TestWM. (gen-workspaces [:myrepo-wsp+cli]))
+       clawe.config/*config* (clawe-conf {"journal" journal-def})]
       (is (not (toggle/find-client journal-def)))
 
       (is (= [:create-client journal-def]
@@ -191,8 +191,8 @@
 
   (testing "journal-wsp current and unfocused journal client, found"
     (sys/with-system
-      [wm/*wm* (TestWM. (gen-workspaces [:jwsp+cli]))]
-      (set-defs {"journal" journal-def})
+      [wm/*wm* (TestWM. (gen-workspaces [:jwsp+cli]))
+       clawe.config/*config* (clawe-conf {"journal" journal-def})]
 
       ;; find-client
       (let [client (toggle/find-client journal-def)]
@@ -208,8 +208,8 @@
 
   (testing "journal-wsp current and focused journal client, found"
     (sys/with-system
-      [wm/*wm* (TestWM. (gen-workspaces [:jwsp+cli-focused]))]
-      (set-defs {"journal" journal-def})
+      [wm/*wm* (TestWM. (gen-workspaces [:jwsp+cli-focused]))
+       clawe.config/*config* (clawe-conf {"journal" journal-def})]
 
       ;; find-client
       (let [client (toggle/find-client journal-def)]
@@ -225,8 +225,8 @@
 
   (testing "journal-wsp with jclient is current, repo-wsp with emacs client, found in current"
     (sys/with-system
-      [wm/*wm* (TestWM. (gen-workspaces [:jwsp+cli :myrepo-wsp+cli]))]
-      (set-defs {"journal" journal-def})
+      [wm/*wm* (TestWM. (gen-workspaces [:jwsp+cli :myrepo-wsp+cli]))
+       clawe.config/*config* (clawe-conf {"journal" journal-def})]
 
       ;; find-client
       (let [client (toggle/find-client journal-def)]
@@ -243,8 +243,8 @@
 
   (testing "journal-wsp with focused jclient, repo-wsp with emacs client, found in current"
     (sys/with-system
-      [wm/*wm* (TestWM. (gen-workspaces [:jwsp+cli-focused :myrepo-wsp+cli]))]
-      (set-defs {"journal" journal-def})
+      [wm/*wm* (TestWM. (gen-workspaces [:jwsp+cli-focused :myrepo-wsp+cli]))
+       clawe.config/*config* (clawe-conf {"journal" journal-def})]
 
       ;; find-client
       (let [client (toggle/find-client journal-def)]
@@ -261,8 +261,8 @@
 
   (testing "journal-wsp with jclient, but repo-wsp is current, found, not in current"
     (sys/with-system
-      [wm/*wm* (TestWM. (gen-workspaces [:myrepo-wsp+cli :jwsp+cli]))]
-      (set-defs {"journal" journal-def})
+      [wm/*wm* (TestWM. (gen-workspaces [:myrepo-wsp+cli :jwsp+cli]))
+       clawe.config/*config* (clawe-conf {"journal" journal-def})]
 
       ;; find-client
       (let [client (toggle/find-client journal-def)]
@@ -277,8 +277,8 @@
 
   (testing "empty journal-wsp, myrepo-wsp is current with unfocused journal-client, found in current"
     (sys/with-system
-      [wm/*wm* (TestWM. (gen-workspaces [:myrepo-wsp+jcli :jwsp]))]
-      (set-defs {"journal" journal-def})
+      [wm/*wm* (TestWM. (gen-workspaces [:myrepo-wsp+jcli :jwsp]))
+       clawe.config/*config* (clawe-conf {"journal" journal-def})]
 
       ;; find-client
       (let [client (toggle/find-client journal-def)]
@@ -295,8 +295,8 @@
 
   (testing "empty journal-wsp, myrepo-wsp is current with focused journal-client, found in current"
     (sys/with-system
-      [wm/*wm* (TestWM. (gen-workspaces [:myrepo-wsp+jcli-focused :jwsp]))]
-      (set-defs {"journal" journal-def})
+      [wm/*wm* (TestWM. (gen-workspaces [:myrepo-wsp+jcli-focused :jwsp]))
+       clawe.config/*config* (clawe-conf {"journal" journal-def})]
 
       ;; find-client
       (let [client (toggle/find-client journal-def)]
@@ -313,8 +313,8 @@
 
   (testing "empty journal-wsp is current, myrepo-wsp with journal-client, found, not in current"
     (sys/with-system
-      [wm/*wm* (TestWM. (gen-workspaces [:jwsp :myrepo-wsp+jcli]))]
-      (set-defs {"journal" journal-def})
+      [wm/*wm* (TestWM. (gen-workspaces [:jwsp :myrepo-wsp+jcli]))
+       clawe.config/*config* (clawe-conf {"journal" journal-def})]
 
       ;; find-client
       (let [client (toggle/find-client journal-def)]

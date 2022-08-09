@@ -26,6 +26,9 @@
         "Confirming we reverted to the og workspace" 1000
         (workspace/match? (wm/current-workspace) og-wsp)))))
 
+(defn clawe-conf [defs]
+  (atom {:client/defs defs}))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; malli validation
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -283,10 +286,12 @@
   (testing "mixes and expands data from config/workspace-def"
     (let [dir          "~/russmatney/blah"
           expected-dir (zsh/expand dir)]
-      (sys/with-system [wm/*wm* (OneWorkspaceWM.)]
-        (reset! clawe.config/*config*
-                {:workspace/defs
-                 {test-wsp-title {:workspace/directory "~/russmatney/blah"}}})
+      (sys/with-system
+        [wm/*wm* (OneWorkspaceWM.)
+         clawe.config/*config*
+         (atom
+           {:workspace/defs
+            {test-wsp-title {:workspace/directory "~/russmatney/blah"}}})]
         (let [curr (wm/current-workspace)]
           (is (valid workspace/schema curr))
           (is (= test-wsp-title (curr :workspace/title)))
@@ -301,11 +306,11 @@
     (let [dir          "~/russmatney/blah"
           expected-dir (zsh/expand dir)]
       (sys/with-system
-        [wm/*wm* (OneWorkspaceWM.)]
-        (reset!
-          clawe.config/*config*
-          {:workspace/defs
-           {test-wsp-title {:workspace/directory "~/russmatney/blah"}}})
+        [wm/*wm* (OneWorkspaceWM.)
+         clawe.config/*config*
+         (atom
+           {:workspace/defs
+            {test-wsp-title {:workspace/directory "~/russmatney/blah"}}})]
         (let [wsps (wm/active-workspaces)]
           (is (valid [:sequential workspace/schema] wsps))
           (is (= test-wsp-title
@@ -365,12 +370,12 @@
   (testing "merges config def data"
     (let [test-client-key "my-client-key"]
       (sys/with-system
-        [wm/*wm* (OneClientWM.)]
-        (reset!
-          clawe.config/*config*
-          ;; matching on test-app-name
-          {:client/defs {test-client-key {:client/app-names [test-app-name]
-                                          :match/skip-title true}}})
+        [wm/*wm* (OneClientWM.)
+         clawe.config/*config*
+         ;; matching on test-app-name
+         (atom
+           {:client/defs {test-client-key {:client/app-names [test-app-name]
+                                           :match/skip-title true}}})]
 
         (let [clients (wm/active-clients)]
           (is (valid [:sequential client/schema] clients))
@@ -384,18 +389,19 @@
     (let [hard-match-key "hard-match-key"
           soft-match-key "soft-match-key"]
       (sys/with-system
-        [wm/*wm* (OneClientWM.)]
-        (reset! clawe.config/*config*
-                {:client/defs
-                 ;; hard-match doesn't match any clients
-                 {hard-match-key {:misc/data           "specific"
-                                  :client/app-names    [test-app-name]
-                                  :client/window-title (str test-client-title "-hard-match")}
-                  ;; soft-match matches our client b/c of :match/soft-title
-                  soft-match-key {:misc/data           "vague"
-                                  :client/app-names    [test-app-name]
-                                  :client/window-title (str test-client-title "-soft-match")
-                                  :match/soft-title    true}}})
+        [wm/*wm* (OneClientWM.)
+         clawe.config/*config*
+         (atom
+           {:client/defs
+            ;; hard-match doesn't match any clients
+            {hard-match-key {:misc/data           "specific"
+                             :client/app-names    [test-app-name]
+                             :client/window-title (str test-client-title "-hard-match")}
+             ;; soft-match matches our client b/c of :match/soft-title
+             soft-match-key {:misc/data           "vague"
+                             :client/app-names    [test-app-name]
+                             :client/window-title (str test-client-title "-soft-match")
+                             :match/soft-title    true}}})]
 
         (let [clients (wm/active-clients)
               client  (first clients)
@@ -431,20 +437,24 @@
   (testing "re-uses the map key as the title."
     (let [dir          "~/russmatney/blah"
           expected-dir (zsh/expand dir)]
-      (reset! clawe.config/*config*
-              {:workspace/defs
-               {test-wsp-title {:workspace/directory "~/russmatney/blah"}}})
-      (is (= test-wsp-title
-             (-> (wm/workspace-defs) first :workspace/title)))
-      (is (= expected-dir
-             (-> (wm/workspace-defs) first :workspace/directory))))))
+      (sys/with-system
+        [clawe.config/*config*
+         (atom
+           {:workspace/defs
+            {test-wsp-title {:workspace/directory "~/russmatney/blah"}}})]
+        (is (= test-wsp-title
+               (-> (wm/workspace-defs) first :workspace/title)))
+        (is (= expected-dir
+               (-> (wm/workspace-defs) first :workspace/directory)))))))
 
 (deftest client-defs-test
   (testing "uses the key as the client/key"
     (let [key     "journal"
           j-title "journal-title"]
-      (reset! clawe.config/*config*
-              {:client/defs
-               {key {:client/window-title j-title}}})
-      (is (= key (-> (wm/client-defs) first :client/key)))
-      (is (= j-title (-> (wm/client-defs) first :client/window-title))))))
+      (sys/with-system
+        [clawe.config/*config*
+         (atom
+           {:client/defs
+            {key {:client/window-title j-title}}})]
+        (is (= key (-> (wm/client-defs) first :client/key)))
+        (is (= j-title (-> (wm/client-defs) first :client/window-title)))))))

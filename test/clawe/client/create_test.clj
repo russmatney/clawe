@@ -7,14 +7,13 @@
    [clawe.wm :as wm]
    [systemic.core :as sys]))
 
-(defn set-defs [defs]
-  (reset! clawe.config/*config* {:client/defs defs}))
 
 (use-fixtures
   :once
   (fn [f]
     (f)
     ;; reload the config to have mercy on the repl-user
+    ;; shouldn't be required b/c we're using with-system...
     (clawe.config/reload-config)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -41,25 +40,31 @@
 (deftest create-client-pull-defs-tests
   (testing "pulls defs by string from the config"
     (let [x (atom nil)]
-      (set-defs {"my-client"
+      (sys/with-system
+        [clawe.config/*config*
+         (atom {:client/defs
+                {"my-client"
                  {:client/create
                   {:create/cmd `reset-atom
                    :atom       x
-                   :val        "some-val"}}})
-      (is (nil? @x))
-      (create/create-client "my-client")
-      (is (= "some-val" @x))))
+                   :val        "some-val"}}}})]
+        (is (nil? @x))
+        (create/create-client "my-client")
+        (is (= "some-val" @x)))))
 
   (testing "pulls defs by :client/key from the config"
     (let [x (atom nil)]
-      (set-defs {"my-client"
+      (sys/with-system
+        [clawe.config/*config*
+         (atom {:client/defs
+                {"my-client"
                  {:client/create
                   {:create/cmd `reset-atom
                    :atom       x
-                   :val        "some-val"}}})
-      (is (nil? @x))
-      (create/create-client {:client/key "my-client"})
-      (is (= "some-val" @x)))))
+                   :val        "some-val"}}}})]
+        (is (nil? @x))
+        (create/create-client {:client/key "my-client"})
+        (is (= "some-val" @x))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; zero-arity symbol
