@@ -50,11 +50,12 @@
 
 (defn active-repos []
   (->>
-    (git/db-git-dirs)
+    []
+    #_(git/db-git-dirs)
     (map ->repo)))
 
 (comment
-  (git/db-git-dirs)
+  #_(git/db-git-dirs)
   (git/list-db-commits))
 
 (defsys *repos-stream*

@@ -12,8 +12,8 @@
 
 (defn short-repo [it]
   (some->>
-    (or (:commit/directory it)
-        (:repo/path it))
+    (or (:repo/directory it)
+        (:commit/directory it))
     (re-seq #"([A-Za-z-]+/[A-Za-z-]+)$")
     first
     first))
