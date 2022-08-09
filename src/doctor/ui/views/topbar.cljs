@@ -8,11 +8,11 @@
 
    [components.icons :as icons]
    [components.charts :as charts]
-   [components.actions]
+   [components.actions :as components.actions]
 
-   [hooks.todos]
-   [hooks.topbar]
-   [hooks.workspaces]
+   [hooks.todos :as hooks.todos]
+   [hooks.topbar :as hooks.topbar]
+   [hooks.workspaces :as hooks.workspaces]
 
    [doctor.ui.tauri :as tauri]))
 
@@ -25,23 +25,10 @@
 ;; Actions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; (defn hours [n] (* 1000 60 60 n))
-
-;; (defn ms-ago [ms-timestamp]
-;;   (- (js/Date.now) ms-timestamp))
-
-(defn update-display-name [wsp n]
-  (when (and wsp n)
-    (-> wsp
-        (assoc :workspace/display-name n)
-        hooks.workspaces/update-workspace)
-    ;; TODO trigger re-fetch? eventually pull the new data? update in a frontend store?
-    ))
-
 (defn ->actions
   ([wsp] (->actions nil wsp))
-  ([{:keys [hovering?]} wsp]
-   (let [{:keys [awesome.tag/selected
+  ([_opts wsp]
+   (let [{:keys [
                  git/dirty?
                  git/needs-push?
                  git/needs-pull?

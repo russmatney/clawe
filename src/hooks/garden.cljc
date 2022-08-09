@@ -2,7 +2,7 @@
   (:require
    [plasma.core :refer [defhandler defstream]]
    #?@(:clj [[garden.core :as garden]
-             [api.emacs]]
+             [ralphie.emacs :as emacs]]
        :cljs [[plasma.uix :refer [with-rpc with-stream]]])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -27,9 +27,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defhandler open-in-emacs [item]
-  (println "open in emacs!!!")
-  (println "opening file:" item)
-  (api.emacs/open-in-emacs item)
+  (when-let [path (:org/source-file item)]
+    (emacs/open-in-emacs {:emacs/file-path path}))
   :ok)
 
 (comment

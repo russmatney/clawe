@@ -37,10 +37,3 @@
                                   (w/distinct-by :awesome.client/window))
         :active-workspaces   @workspaces
         :selected-workspaces (->> @workspaces (filter :awesome.tag/selected))})))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Workspace commands
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defhandler update-workspace [item]
-  #_(defworkspace/sync-workspaces-to-db item))

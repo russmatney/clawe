@@ -1,7 +1,7 @@
 (ns pages.workspaces
   (:require
    [clojure.string :as string]
-   [hooks.workspaces :as workspaces]
+   [hooks.workspaces :as hooks.workspaces]
    [components.icons :as icons]
    [components.debug :as debug]))
 
@@ -16,18 +16,6 @@
   (and
     (-> client :awesome.client/name #{"tauri/doctor-topbar"})
     (-> client :awesome.client/focused not)))
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; actions
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn ->actions [w]
-  [{:action/label    "Update workspace display name"
-    :action/on-click #(-> w
-                          (assoc :workspace/display-name %)
-                          (hooks.workspaces/update-workspace))}])
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Detail window

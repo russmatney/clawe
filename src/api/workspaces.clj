@@ -2,8 +2,6 @@
   (:require
    [systemic.core :refer [defsys] :as sys]
    [manifold.stream :as s]
-   [malli.transform :as mt]
-   [malli.core :as m]
    [clawe.wm :as wm]
    [util :as util]))
 
@@ -17,8 +15,7 @@
     (map util/drop-complex-types)))
 
 (comment
-  (active-workspaces)
-  )
+  (active-workspaces))
 
 (defsys *workspaces-stream*
   :start (s/stream)
@@ -33,19 +30,3 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-(comment
-  (def -w
-    (->> (wm/active-workspaces)
-         first
-         ))
-
-  (->>
-    (active-workspaces)
-    (sort-by :awesome.tag/index)
-    first)
-
-  (update-workspaces)
-
-  )

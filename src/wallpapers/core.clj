@@ -16,14 +16,9 @@
                     p
                     (str "/" p)))))))
 
-(comment
-  (zsh/expand "~/AbdelrhmanNile/onedark-wallpapers/onedark\\ wallpapers/*"))
-
 (defn local-wallpapers-file-paths []
   (->
-    (concat
-      (wp-dir->paths "~/Dropbox/wallpapers/**/*")
-      #_(wp-dir->paths "~/AbdelrhmanNile/onedark-wallpapers/onedark\\ wallpapers/*"))
+    (wp-dir->paths "~/Dropbox/wallpapers/**/*")
     (->> (filter #(re-seq #"\.(jpg|png)$" %)))))
 
 (comment
