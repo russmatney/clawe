@@ -23,11 +23,12 @@
     conn
     ents-with-doctor-type))
 
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; event page
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn page [{:keys [conn]}]
+(defn page [{:keys [conn] :as opts}]
   (let [ents                (ents-with-doctor-type conn)
         ents-by-doctor-type (->> ents (group-by :doctor/type))]
     (def conn conn)
@@ -38,7 +39,10 @@
               "bg-yo-blue-700"
               "text-white"]}
 
-     [:div {:class ["grid" "grid-cols-6"]}
+     [:div
+      {:class ["grid" "grid-cols-6"
+               "space-x-2"
+               "p-2"]}
       (for [{:keys [label on-click]}
             [{:label    "Ingest clawe repos"
               :on-click (fn [_] (hooks.db/ingest-clawe-repos))}
@@ -50,25 +54,33 @@
               :on-click (fn [_] (hooks.db/ingest-screenshots))}]]
         [:button {:class    ["bg-slate-800"
                              "p-4"
-                             "rounded-xl"]
+                             "border"
+                             "border-slate-600"
+                             "rounded-xl"
+                             "font-mono"]
                   :on-click on-click}
          label])]
 
-     [components.table/table
-      {:headers [":doctor/type"
-                 "Entities"]
-       :rows    (concat
-                  [["all" (count ents)]]
-                  (map (fn [[type ents]]
-                         [(str type) (count ents)])
-                       ents-by-doctor-type))}]
+     [:div
+      {:class ["p-2"]}
+      [components.table/table
+       {:headers [":doctor/type"
+                  "Entities"]
+        :rows    (concat
+                   [["all" (count ents)]]
+                   (map (fn [[type ents]]
+                          [(str type) (count ents)])
+                        ents-by-doctor-type))}]]
 
      [:div
-
-      [components.table/table
-       (tables/garden-by-tag-table-def (:type/garden ents-by-doctor-type))]
+      [:div
+       {:class ["p-2"]}
+       [components.table/table
+        (tables/garden-by-tag-table-def (:type/garden ents-by-doctor-type))]]
 
       (for [[i [doctor-type ents-for-type]]
             (->> ents-by-doctor-type (map-indexed vector))]
         ^{:key i}
-        [tables/table-for-doctor-type doctor-type ents-for-type])]]))
+        [:div
+         {:class ["p-2"]}
+         [tables/table-for-doctor-type opts doctor-type ents-for-type]])]]))

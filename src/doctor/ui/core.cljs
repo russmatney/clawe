@@ -58,7 +58,6 @@
        (into [])))
 
 (defn view [opts]
-  (println "view rerunning" opts)
   (let [page-name          (-> router/*match* uix/context :data :name)
         by-page-name       (w/index-by :page-name route-defs)
         {:keys [comp comp-only]
