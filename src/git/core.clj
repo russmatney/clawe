@@ -11,6 +11,8 @@
 ;; repos
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; TODO this doesn't work for ~/todo (ends up with /home/russ/russ/todo)
+;; TODO add a few unit tests
 (defn dir->db-repo [dir]
   (let [reversed  (-> dir (string/split #"/") reverse)
         repo-name (first reversed)
@@ -139,7 +141,7 @@
       (println "ingesting commits for repo" db-repo)
       (sync-commits-to-db
         {:dirs [(:repo/directory db-repo)]
-         :n    2}))
+         :n    30}))
     (println "No DB Repo for repo desc" repo)))
 
 (comment

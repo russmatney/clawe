@@ -43,6 +43,28 @@
 ;; commit-popover
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn short-hash-link [commit repo]
+  (let [repo-name (:repo/short-path repo (short-repo commit))]
+    [:a {:class [(when repo-name "text-city-pink-300")
+                 (when repo-name "hover:text-city-pink-200")
+                 (when repo-name "hover:cursor-pointer")]
+         ;; TODO not all commits have public repos (ignore dropbox)
+         ;; TODO build this link for db commits when ingested
+         :href  (when repo-name (str "https://github.com/"
+                                     repo-name "/commit/"
+                                     (:commit/hash commit)))}
+     (:commit/short-hash commit)]))
+
+(defn added-removed [commit]
+  [:div
+   {:class ["flex" "flex-row" "gap-x-2"]}
+   [:div
+    {:class ["text-city-red-400"]}
+    (str "+" (:commit/lines-added commit 0))]
+   [:div
+    {:class ["text-city-green-400"]}
+    (str "-" (:commit/lines-removed commit 0))]])
+
 (defn commit-popover-content
   ([commit] [commit-popover-content nil commit])
   ([_opts commit]
@@ -75,27 +97,12 @@
              [repo-popover-content repo]}]
            repo-name)]
 
-        [:a {:class [(when repo-name "text-city-pink-300")
-                     (when repo-name "hover:text-city-pink-200")
-                     (when repo-name "hover:cursor-pointer")]
-             ;; TODO not all commits have public repos (ignore dropbox)
-             ;; TODO build this link for db commits when ingested
-             :href  (when repo-name (str "https://github.com/"
-                                         repo-name "/commit/"
-                                         (:commit/hash commit)))}
-         (:commit/short-hash commit)]
+        [short-hash-link commit]
 
         (when (or
                 (:commit/lines-added commit)
                 (:commit/lines-removed commit))
-          [:div
-           {:class ["flex" "flex-row" "gap-x-2"]}
-           [:div
-            {:class ["text-city-red-400"]}
-            (str "+" (:commit/lines-added commit 0))]
-           [:div
-            {:class ["text-city-green-400"]}
-            (str "-" (:commit/lines-removed commit 0))]])
+          [added-removed commit])
 
         [:div
          {:class ["ml-auto"
