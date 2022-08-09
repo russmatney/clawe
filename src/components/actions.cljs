@@ -8,4 +8,4 @@
      {:class ["flex" "flex-row" "flex-wrap"]}
      (for [[i ax] (map-indexed vector actions)]
        ^{:key i}
-       [icons/action-icon ax])]))
+       [icons/action-icon-button ax])]))

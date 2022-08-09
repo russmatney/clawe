@@ -123,3 +123,22 @@
          (map first)
          (sort-by :wallpaper/last-time-set >)
          (take n))))))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; garden-notes
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn garden-notes
+  ([conn] (garden-notes conn nil))
+  ([conn {:keys [n]}]
+   (when conn
+     (let [n (or n 100)]
+       (->>
+         (d/q '[:find (pull ?e [*])
+                :where
+                [?e :doctor/type :type/garden]]
+              conn)
+         (map first)
+         (sort-by :org/created-at >)
+         (take n))))))

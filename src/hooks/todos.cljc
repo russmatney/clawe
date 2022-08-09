@@ -3,6 +3,7 @@
    [plasma.core :refer [defhandler defstream]]
    #?@(:clj [[api.todos :as todos]]
        :cljs [[hiccup-icons.fa :as fa]
+              [doctor.ui.handlers :as handlers]
               [plasma.uix :refer [with-rpc with-stream]]])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -81,11 +82,9 @@
    (defn ->actions [todo]
      (let [{:keys [todo/status]} todo]
        (->>
-         [;; TODO impl
-          ;; {:action/label    "open-in-emacs"
-          ;;  :action/on-click #(open-in-emacs todo)
-          ;;  ;; :action/icon     fa/arrow-circle-down-solid
-          ;;  }
+         [{:action/label    "open-in-emacs"
+           :action/on-click #(handlers/open-in-emacs todo)
+           :action/icon     fa/arrow-circle-down-solid}
           (when-not (:db/id todo)
             {:action/label    "add-to-db"
              :action/on-click #(add-to-db todo)})

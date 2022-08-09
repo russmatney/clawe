@@ -1,8 +1,8 @@
 (ns components.garden
   (:require
-   ;; [hooks.garden :as hooks.garden]
    [components.debug :as components.debug]
-   [uix.core.alpha :as uix]))
+   [uix.core.alpha :as uix]
+   [doctor.ui.handlers :as handlers]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; body
@@ -14,7 +14,7 @@
   Recursively renders the items nested content, if items are found
   as :org/items on the passed org node."
   ([item] (org-body nil item))
-  ([{:keys [nested?]} {:org/keys [body body-string items word-count status] :as item}]
+  ([{:keys [nested?]} {:org/keys [body body-string items status] :as item}]
    [:div
     {:class (concat ["font-mono"])}
 
@@ -89,11 +89,11 @@
     :as       item}]
 
   [:span
-   {:class ["font-mono" "text-xl" "text-city-green-200" "p-2"
-            "hover:text-city-pink-400"
-            "cursor-pointer"]
+   {:class    ["font-mono" "text-xl" "text-city-green-200" "p-2"
+               "hover:text-city-pink-400"
+               "cursor-pointer"]
     ;; TODO some other strat that keeps hooks out of comps
-    :on-click (fn [_] #_(hooks.garden/open-in-emacs item))}
+    :on-click (fn [_] (handlers/open-in-emacs item))}
    (or short-path source-file)])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -143,7 +143,7 @@
 ;; Org file
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn org-file [{:org/keys      [name tags urls word-count]
+(defn org-file [{:org/keys      [name tags urls]
                  :org.prop/keys [filetags created-at title]
                  :as            item}]
   [:div

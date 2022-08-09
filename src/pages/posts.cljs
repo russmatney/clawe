@@ -3,14 +3,13 @@
    [wing.core :as w]
    [wing.uix.router :as router]
    [uix.core.alpha :as uix]
-   [promesa.core :as promesa]
-
-   [hooks.garden]
-   [components.garden]
-   [components.floating]
-   [components.format]
    [clojure.string :as string]
-   [tick.core :as t]))
+   [tick.core :as t]
+
+   [components.garden :as components.garden]
+   [components.floating :as components.floating]
+   [components.format :as components.format]
+   [doctor.ui.db :as ui.db]))
 
 (defn post-link
   "A link to a blog-post-y rendering of a garden note"
@@ -63,7 +62,7 @@
 
 (defn page [_opts]
   (let [selected-item-name (router/use-route-parameters [:query :item-name])
-        {:keys [items]}    (hooks.garden/use-garden)
+        items              (ui.db/garden-notes {:n 500})
         default-selection  (cond->> items
                              @selected-item-name
                              (filter (comp #{@selected-item-name} :org/name))
@@ -128,9 +127,8 @@
                              (swap! open-posts (fn [op] (w/toggle op it)))
                              (reset! last-selected it)
                              (reset! selected-item-name (:org/name it))
-                             (promesa/handle
-                               (hooks.garden/full-item it)
-                               #(reset! full-item %)))
+                             ;; just re-using the item again for now
+                             (reset! full-item it))
              :is-selected? (@open-posts it)}
             (assoc it :index i)]
            :popover-comp

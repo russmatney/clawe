@@ -122,7 +122,7 @@
     icon  [:div {:class class} icon]
     :else text))
 
-(defn action-icon [{:action/keys [label icon on-click tooltip]}]
+(defn action-icon-button [{:action/keys [label icon on-click tooltip]}]
   [:div
    {:class    ["px-2"
                "cursor-pointer" "hover:text-city-blue-300"

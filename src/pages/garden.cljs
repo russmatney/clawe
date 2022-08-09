@@ -1,12 +1,12 @@
 (ns pages.garden
   (:require
-   [hooks.garden]
-   [components.garden]
-   [uix.core.alpha :as uix]))
+   [components.garden :as components.garden]
+   [uix.core.alpha :as uix]
+   [doctor.ui.db :as ui.db]))
 
-(defn page [_opts]
-  (let [{:keys [items]} (hooks.garden/use-garden)
-        selected        (uix/state (first items)) ]
+(defn page [{:keys [conn]}]
+  (let [items    (ui.db/garden-notes conn {:n 500})
+        selected (uix/state (first items)) ]
     [:div
      {:class ["flex" "flex-col" "flex-wrap"
               "overflow-hidden"

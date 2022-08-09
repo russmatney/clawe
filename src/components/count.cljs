@@ -2,7 +2,7 @@
   (:require
    [uix.core.alpha :as uix]
    [components.floating :as floating]
-   [hooks.garden]))
+   [doctor.ui.handlers :as handlers]))
 
 (defn count-comp
   ([item] (count-comp nil item))
@@ -51,7 +51,7 @@
          {:class    ["font-mono"
                      "hover:text-city-blue-400"]
           :on-click (fn [_]
-                      (let [res (hooks.garden/open-in-emacs item)]
+                      (let [res (handlers/open-in-emacs item)]
                         (println "open-in-emacs res" res)
                         (.then res (fn [x] (println "heh" x)))))}
          source-file]
