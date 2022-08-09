@@ -2,7 +2,8 @@
   (:require
    [hooks.db :as hooks.db]
    [datascript.core :as d]
-   [components.table :as components.table]))
+   [components.table :as components.table]
+   [pages.db.tables :as tables]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; db by :doctor/type
@@ -66,9 +67,9 @@
      [:div
 
       [components.table/table
-       (components.table/garden-by-tag-table-def (:type/garden ents-by-doctor-type))]
+       (tables/garden-by-tag-table-def (:type/garden ents-by-doctor-type))]
 
       (for [[i [doctor-type ents-for-type]]
             (->> ents-by-doctor-type (map-indexed vector))]
         ^{:key i}
-        [components.table/table-for-doctor-type doctor-type ents-for-type])]]))
+        [tables/table-for-doctor-type doctor-type ents-for-type])]]))
