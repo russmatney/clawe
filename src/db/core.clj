@@ -210,18 +210,18 @@
                     [?e :name "Datascript"]
                     [?e :last "value"])]))
 
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Retract
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; (defn retract [ent attr value]
-;;   (sys/start! `*conn*)
-;;   (let [res
-;;         (if value
-;;           (apply d/retract ent (d/db *conn*) args)
-;;           (d/retract q (d/db *conn*)))]
-;;     res))
+(defn retract [ent-id]
+  (sys/start! `*conn*)
+  (let [ent-ids (if (coll? ent-id) ent-id [ent-id])]
+    (d/transact *conn*
+                (->> ent-ids
+                     (map (fn [ent-id]
+                            [:db.fn/retractEntity ent-id]))
+                     (into [])))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; cli
