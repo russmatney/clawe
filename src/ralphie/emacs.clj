@@ -133,13 +133,29 @@
   (open {:emacs.open/workspace "clawe"
          :emacs.open/file      (zsh/expand "~/russmatney/clawe/readme.org")}))
 
+(defn open-in-emacs-str [opts]
+  (let [file-path  (some opts [:emacs/file-path])
+        frame-name (:emacs/frame-name opts)]
+    (str
+      "(progn "
+      (when frame-name (str
+                         "\n(let ((named-frame (car
+(filtered-frame-list (lambda (frame) (equal (frame-parameter frame 'name) \"" frame-name "\"))))))
+                                          (if named-frame
+                                            (select-frame named-frame)))"))
+      (when file-path (str "\n(find-file \"" file-path "\") " " ")) " )")))
+
+(comment
+  (open-in-emacs-str
+    {:emacs/file-path  "some-file-path"
+     :emacs/frame-name "journal"
+     }))
+
 (defn open-in-emacs
   "Opens a file in the last-focused existing emacs client.
   Expects an absolute file-path."
   [opts]
-  (let [file-path (some opts [:emacs/file-path])
-        eval-str  (str
-                    "(progn " (when file-path (str " (find-file \"" file-path "\") " " ")) " )")]
+  (let [eval-str (open-in-emacs-str opts)]
     (-> ($ emacsclient --no-wait --eval ~eval-str)
         check)))
 
