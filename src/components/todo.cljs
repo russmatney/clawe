@@ -18,10 +18,9 @@
 
 (defn todo
   [{:keys [on-select]} item]
-  (let [{:db/keys       [id]
-         :org/keys      [body urls]
-         :org.prop/keys [archive-time]
-         :todo/keys     [name file-name last-started-at]} item]
+  (let [{:db/keys   [id]
+         :org/keys  [body urls]
+         :todo/keys [name file-name last-started-at]} item]
     [:div
      {:class    ["py-2" "px-4"
                  "border" "border-city-blue-600"
@@ -84,7 +83,7 @@
 ;; line
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn line [opts todo]
+(defn line [_opts todo]
   [:div
    {:class ["flex" "flex-row" "items-center"]}
 

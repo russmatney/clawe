@@ -6,7 +6,6 @@
    [taoensso.timbre :as log]
    [wing.core :as w]
    [datascript.core :as d]
-   [cljs.reader :as cljs.reader]
    [clojure.edn :as edn]
    [pages.core :as pages]
    [expo.pages.home :as home]
@@ -37,7 +36,9 @@
         opts               (-> opts
                                (assoc :db/conn conn)
                                (assoc :db/db db))
-        page-name          (-> router/*match* uix/context :data :name)
+        page-name          (->
+                             #_{:clj-kondo/ignore [:unresolved-var]}
+                             router/*match* uix/context :data :name)
         by-page-name       (w/index-by :page-name route-defs)
         {:keys [comp comp-only]
          :as   _route-def} (by-page-name page-name)]

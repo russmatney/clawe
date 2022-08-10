@@ -2,8 +2,6 @@
   (:require
    [datascript.core :as d]
    [tick.core :as t]
-   [dates.tick :as dates.tick]
-   [item.core :as item]
    [wing.core :as w]))
 
 ;; TODO tests for this namespace

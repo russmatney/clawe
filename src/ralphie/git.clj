@@ -155,10 +155,13 @@
 ;; repo?
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn repo?
+(defn dir-is-repo?
   "Returns true if the passed path is a git repo"
   [repo-path]
   (fs/exists? (str (zsh/expand repo-path) "/.git")))
+
+(comment
+  (dir-is-repo? "hi"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; fetch
@@ -368,7 +371,7 @@
   "Retuns metadata for `n` commits at the specified `dir`.
   ;; TODO support before/after
   "
-  [{:keys [dir n before after] :as opts}]
+  [{:keys [dir n _before _after] :as opts}]
   (let [dir (if (string/starts-with? dir "/")
               dir (zsh/expand "~/" dir))
         n   (or n 10)]
@@ -495,7 +498,7 @@
   "Retuns metadata for `n` commits at the specified `dir`.
   ;; TODO support before/after
   "
-  [{:keys [dir n before after] :as opts}]
+  [{:keys [dir n _before _after] :as opts}]
   (let [dir (if (string/starts-with? dir "/")
               dir (zsh/expand "~/" dir))
         n   (or n 10)]

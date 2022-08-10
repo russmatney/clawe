@@ -546,7 +546,7 @@ dy will become its new position. "
 
 (defn destroy-space [{:keys             [space-label]
                       :yabai.space/keys [label index]
-                      :as               input}]
+                      :as               _input}]
   (let [label (or label space-label index)]
     (when label
       (notify/notify "Destroying space" label)

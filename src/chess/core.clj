@@ -38,32 +38,27 @@
 (def lichess-api-user (str lichess-api-base "/api/user"))
 (def lichess-api-user-activity (str lichess-api-user "/" @lichess-username
                                     "/activity"))
-(def lichess-api-puzzle-activity (str lichess-api-user
-                                      "/puzzle-activity?max=5"))
+;; (def lichess-api-puzzle-activity (str lichess-api-user
+;;                                       "/puzzle-activity?max=5"))
 
 (comment
-  (def --acct
-    (curl/get
-      lichess-api-account
-      {:headers {:authorization (str "Bearer " @lichess-token)}
-       :as      :json}))
+  (curl/get
+    lichess-api-account
+    {:headers {:authorization (str "Bearer " @lichess-token)}
+     :as      :json})
 
-  (def --account-current-games
-    (curl/get lichess-api-account-playing
-                {:headers {:authorization (str "Bearer " @lichess-token)}
-                 :as      :json}))
+  (curl/get lichess-api-account-playing
+            {:headers {:authorization (str "Bearer " @lichess-token)}
+             :as      :json})
 
 
-  (def --user-activity-json
-    (curl/get lichess-api-user-activity
-                {:headers {:authorization (str "Bearer " @lichess-token)}
-                 :as      :json})))
+  (curl/get lichess-api-user-activity
+            {:headers {:authorization (str "Bearer " @lichess-token)}
+             :as      :json}))
 
 (defn lichess-request
   "Makes a request to lichess.
-  Starts the *lichess-env* to ensure username/token are available.
-
-  TODO check status and handle errors"
+  Starts the *lichess-env* to ensure username/token are available."
   [req-str]
   (println "Requesting from lichess!" req-str)
   (when-not (sys/running? `*lichess-env*)
@@ -148,17 +143,16 @@
        (->> (map parse-game))))))
 
 (comment
-  (def --user-games
-    (fetch-games {:opening true
-                  :evals   true
-                  :max     5
-                  }))
+  (fetch-games {:opening true
+                :evals   true
+                :max     5
+                })
 
   (fetch-games)
   (clear-cache))
 
 (defn parse-study [st]
-  (let [{:keys [pgn id players opening]} st]
+  (let [{:keys [_pgn _id _players _opening]} st]
     (-> st
         ;; (assoc :lichess/id id
         ;;        :lichess/url (str "https://lichess.org/" id)

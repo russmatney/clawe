@@ -1,11 +1,10 @@
 (ns ralphie.emacs
   (:require
-   [ralphie.notify :refer [notify]]
+   [ralphie.notify :as notify :refer [notify]]
    [babashka.process :as process :refer [$ check]]
    [clojure.string :as string]
    [babashka.fs :as fs]
-   [ralphie.zsh :as zsh]
-   [ralphie.notify :as notify]))
+   [ralphie.zsh :as zsh]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; emacs server/client fns

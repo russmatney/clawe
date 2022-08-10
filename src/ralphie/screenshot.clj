@@ -41,6 +41,3 @@
                      :on-select (fn [_arg] (full-screen))}
                     {:label     "select region"
                      :on-select (fn [_arg] (select-region))}])))))
-
-(comment
-  (defcom/exec take-screenshot))

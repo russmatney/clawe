@@ -2,15 +2,11 @@
   (:require
    [clojure.string :as string]
    [defthing.defcom :refer [defcom] :as defcom]
-   [defthing.core :as defthing]
-   [clojure.edn :as edn]))
+   [defthing.core :as defthing]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Getters
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn defkbd? [bd]
-  (#{:clawe/binding} (:type bd)))
 
 (defn list-bindings []
   (defthing/list-things :clawe/binding))
@@ -24,18 +20,9 @@
                       (:name bd))))
           first)]
 
+    (defcom/find-command #(#{(:binding/command-name kbd)} (:name %))))
 
-    (defcom/find-command #(#{(:binding/command-name kbd)} (:name %)))
-    )
-
-  (defcom/list-commands)
-
-
-  )
-
-(defn get-binding [bd]
-  (defthing/get-thing :clawe/binding
-    (comp #{(:name bd bd)} :name)))
+  (defcom/list-commands))
 
 (defn get-command
   "Returns the defcom entry for the passed defkbd"
@@ -50,9 +37,6 @@
   "
   [{:binding/keys [command-name]}]
   (str "clawe " command-name))
-
-(defn binding-bb-cli-command
-  [{:binding/keys [command-name]}])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Rofi
@@ -165,7 +149,7 @@
     [[:mod :ctrl :shift] "h"]
     (println "Do i run at eval time?"))
 
-  (edn/read-string (-> say-bye :binding/body-str))
+  ;; (edn/read-string (-> say-bye :binding/body-str))
 
   (->>
     (list-bindings)

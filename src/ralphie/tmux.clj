@@ -7,7 +7,6 @@
    [wing.core :as w]
 
    [defthing.defcom :refer [defcom] :as defcom]
-   [ralphie.awesome :as awm]
    [ralphie.config :as config]
    [ralphie.notify :as notify]
    [ralphie.rofi :as rofi]
@@ -287,7 +286,7 @@
 
          cmd-str (or cmd-str cmd)
          ;; fallback to a session in the current tag/workspace
-         session (or session (awm/current-tag-name))
+         session (or session "fallback-session-name")
 
          ;; leave the window/pane empty to get the last-active ones
          initial-target (str session ":" window "." pane)]

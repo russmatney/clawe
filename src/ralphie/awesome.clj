@@ -221,26 +221,9 @@
      (filter (comp #{name} :awesome.tag/name))
      first)))
 
-;; TODO benchmark these - the fennel version may have more overhead, or it could be negligible
-(defn current-tag-name []
-  (awm.fnl/awm-lua "return s.selected_tag.name"))
-(defn current-tag-name-2 []
-  ;; interesting that i couldn't just `s.selected-tag.name`
-  (fnl (. s.selected_tag :name)))
-
 (comment
-  ;; TODO benchmark
-  (current-tag-name)
-  (current-tag-name-2))
+  (tag-for-name "clawe"))
 
-(defn current-tag-names []
-  (try
-    (fnl (->
-           s.selected_tags
-           (lume.map (fn [t] (. t :name)))
-           view))
-    (catch Exception _e
-      nil)))
 
 (defn tag-exists? [tag-name]
   (fnl (-> (root.tags)
@@ -351,9 +334,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; common awm tag functions
 
-(defn create-tag! [tag-name]
-  (fnl (awful.tag.add ~tag-name {:layout awful.layout.suit.tile})))
-
 (defn ensure-tag
   "Creates a tag with the passed name if it does not exist."
   [tag-name]
@@ -370,6 +350,9 @@
 
 (defn toggle-tag [tag-name]
   (fnl (awful.tag.viewtoggle (awful.tag.find_by_name s ~tag-name))))
+
+(comment
+  (toggle-tag "clawe"))
 
 (defn delete-tag! [tag-name]
   (fnl
@@ -390,8 +373,10 @@
   "Deletes the current focused tag."
   delete-current-tag!)
 
+#_{:clj-kondo/ignore [:unused-binding]}
 (defn swap-tags-by-index [idx-1 idx-2]
   (fnl
+    #_{:clj-kondo/ignore [:unused-binding]}
     (let [screen (awful.screen.focused)
           tags   screen.tags
           tag    (. tags ~idx-1)
@@ -403,6 +388,7 @@
                     :dir/up   1
                     :dir/down -1)]
     (fnl
+      #_{:clj-kondo/ignore [:unused-binding]}
       (let [screen        (awful.screen.focused)
             tags          screen.tags
             current-index s.selected_tag.index
@@ -437,6 +423,9 @@
           ;; TODO filter things to bury/not-bury?
           (tset c :ontop false)
           (tset c :floating false))))
+
+(comment
+  (bury-floating-clients))
 
 (defn focus-client
   "
@@ -606,20 +595,6 @@
 (comment (check-for-errors))
 
 (defcom awesome-doctor check-for-errors)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Reloading in the running awm instance
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn hotswap-module-names
-  "Hotswap lua modules by name."
-  [names]
-  (->> names
-       (map #(str "lume.hotswap('" % "');"))
-       ;; might not be necessary
-       ;; reverse ;; move 'bar' hotswap to last
-       (string/join "\n")
-       (awm.fnl/awm-lua {:quiet? true})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Awesome-$ (shell command)

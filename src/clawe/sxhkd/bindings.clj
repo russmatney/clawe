@@ -74,8 +74,8 @@
     [[:mod] "Blah"]
     (sxhkd-exec "bb -x clawe.workspace.open/rofi-open-workspace"))
 
-  (binding->sxhkd-key test-sxhkd-raw-1)
-  (binding->sxhkd-key test-sxhkd-raw-2)
+  ;; (binding->sxhkd-key test-sxhkd-raw-1)
+  ;; (binding->sxhkd-key test-sxhkd-raw-2)
 
   (binding->sxhkd-key
     {:binding/key          [[:mod] "Yah!"]

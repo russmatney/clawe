@@ -82,6 +82,7 @@
      (defmacro ~name [form#]
        (quote-fn resolver# form#))))
 
+#_{:clj-kondo/ignore [:unresolved-symbol]}
 (defquote template identity)
 
 ;; Dropping the rest of this.

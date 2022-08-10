@@ -5,7 +5,9 @@
    [components.debug]))
 
 (defn page [_opts]
-  (let [page-name     (-> router/*match* uix/context :data :name)
+  (let [page-name     (->
+                        #_{:clj-kondo/ignore [:unresolved-var]}
+                        router/*match* uix/context :data :name)
         query-params  (router/use-route-parameters [:query])
         the-count     (router/use-route-parameters [:query :count])
         the-count-int (try (js/parseInt @the-count) (catch js/Error _e 0))]

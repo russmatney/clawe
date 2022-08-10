@@ -18,7 +18,6 @@
    [db.listeners :as db.listeners]
    [doctor.config :as doctor.config]
    [doctor.api :as doctor.api]
-   [garden.core :as garden]
    [garden.watcher :as garden.watcher]
    [ralphie.notify :as notify]))
 
@@ -68,8 +67,6 @@
    api.todos/*todos-stream*
    api.db/*db-stream*
    api.db/*tx->fe-db*
-   garden/*garden-stream*
-   garden/*journals-stream*
    garden.watcher/*garden-watcher*
    ;; this is also disabled in the impl
    ;; db.listeners/*garden->expo*

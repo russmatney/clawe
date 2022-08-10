@@ -10,7 +10,9 @@
 
 (defn menu [menu-opts]
   (when menu-opts
-    (let [current-page-name (-> router/*match* uix/context :data :name)]
+    (let [current-page-name (->
+                              #_{:clj-kondo/ignore [:unresolved-var]}
+                              router/*match* uix/context :data :name)]
       [:div
        {:class
         ["flex" "flex-col" "p-6"
@@ -53,8 +55,10 @@
   ([main] [page [] main {}])
   ([main opts] [page [] main opts])
   ([menu-opts main page-opts]
-   (let [params            (router/use-route-parameters)
-         current-page-name (-> router/*match* uix/context :data :name)]
+   (let [_params           (router/use-route-parameters)
+         current-page-name (->
+                             #_{:clj-kondo/ignore [:unresolved-var]}
+                             router/*match* uix/context :data :name)]
      [:div
       {:class ["bg-city-blue-900"
                "min-h-screen"

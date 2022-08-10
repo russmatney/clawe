@@ -64,7 +64,7 @@
         "+")
       rating-diff])])
 
-(defn thumbnail [opts game]
+(defn thumbnail [_opts game]
   (let [{:lichess.game/keys
          [white-player black-player
           white-rating-diff black-rating-diff
@@ -270,7 +270,7 @@
 ;; detail-popover
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn detail-popover [opts game]
+(defn detail-popover [_opts game]
   (let [{:lichess.game/keys
          [white-player black-player
           white-rating-diff black-rating-diff
@@ -364,3 +364,6 @@
      (for [game games]
        ^{:key (:lichess.game/id game)}
        [cluster-single opts game])]))
+
+(comment
+  (cluster nil nil))

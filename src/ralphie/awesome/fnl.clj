@@ -267,6 +267,7 @@ util = require 'util';
     `(awm-fnl ~opts (backtick/template (do ~@fnl-forms)))))
 
 (comment
+  #_{:clj-kondo/ignore [:unused-binding]}
   (let [val "some-val"]
     (fnl
       ;; require naughty

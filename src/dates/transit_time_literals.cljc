@@ -20,19 +20,19 @@
                                Duration
                                Year
                                YearMonth]]))
-  #?(:clj (:import (java.io ByteArrayOutputStream ByteArrayInputStream)
-                   (java.time Period
-                              LocalDate
-                              LocalDateTime
-                              ZonedDateTime
-                              Instant
-                              ZoneId
-                              DayOfWeek
-                              LocalTime
-                              Month
-                              Duration
-                              Year
-                              YearMonth))))
+  #?(:clj (:import
+           (java.time Period
+                      LocalDate
+                      LocalDateTime
+                      ZonedDateTime
+                      Instant
+                      ZoneId
+                      DayOfWeek
+                      LocalTime
+                      Month
+                      Duration
+                      Year
+                      YearMonth))))
 
 (def time-classes
   {'period          Period

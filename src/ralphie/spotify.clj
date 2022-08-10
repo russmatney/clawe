@@ -56,7 +56,7 @@
      :notify/body    "bod"
      :notify/id      "spotify-volume"})
 
-  (defcom/exec spotify-volume "up")
+  ;;(defcom/exec spotify-volume "up")
   (adjust-spotify-volume "up"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

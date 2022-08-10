@@ -7,9 +7,7 @@
 
    [clawe.config :as clawe.config]
    [clawe.doctor :as clawe.doctor]
-   [clawe.rules :as clawe.rules]
-   [clawe.wm :as wm]
-   [clawe.client.create :as client.create]))
+   [clawe.wm :as wm]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Workspace opening/creation/installation

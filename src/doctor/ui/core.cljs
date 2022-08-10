@@ -56,7 +56,9 @@
        (into [])))
 
 (defn view [opts]
-  (let [page-name          (-> router/*match* uix/context :data :name)
+  (let [page-name          (->
+                             #_{:clj-kondo/ignore [:unresolved-var]}
+                             router/*match* uix/context :data :name)
         by-page-name       (w/index-by :page-name route-defs)
         {:keys [comp comp-only]
          :as   _route-def} (by-page-name page-name)

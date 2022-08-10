@@ -5,12 +5,7 @@
    [uix.core.alpha :as uix]
    [wing.core :as w]
 
-   [components.chess :as components.chess]
-   [components.git :as components.git]
-   [components.screenshot :as components.screenshot]
    [components.timeline :as components.timeline]
-   [components.garden :as components.garden]
-   [components.floating :as floating]
    [dates.tick :as dates.tick]
    [pages.db.tables :as tables]))
 
@@ -187,22 +182,7 @@
      (when (seq screenshots)
        [tables/table-for-doctor-type opts :type/screenshot screenshots])
      (when (seq garden-notes)
-       [tables/table-for-doctor-type opts :type/garden garden-notes])
-
-     #_[components.chess/cluster opts chess-games]
-     #_[components.screenshot/cluster opts screenshots]
-     #_[components.git/commit-list opts commits]
-
-     ;; weak for now, but it's getting surfaced!
-     #_[floating/popover
-        {:hover true :click true
-         :anchor-comp
-         [:div (str (count garden-notes) " garden notes")]
-         :popover-comp
-         [:div
-          (for [note garden-notes]
-            ^{:key [(:org/name note)]}
-            [components.garden/garden-node note])]}]]))
+       [tables/table-for-doctor-type opts :type/garden garden-notes])]))
 
 (defn event-clusters
   [opts events]

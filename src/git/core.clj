@@ -131,7 +131,6 @@
     (if (seq commits)
       (do
         (println "syncing" (count commits) "commits to the db")
-        (def commits commits)
         (db/transact commits))
       (println "No commits found for opts" opts))))
 

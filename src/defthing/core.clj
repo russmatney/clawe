@@ -14,6 +14,9 @@
   []
   (reset! registry* {}))
 
+(comment
+  (clear-registry))
+
 (defn add-thing
   "Adds an x to the registry using the `thing-key`.
 
@@ -141,7 +144,11 @@
   TODO consider partitioning xorfs with a runtime/macro-time eval,
   like in emacs use-package.
   "
-  ([opts thing-sym] (defthing opts thing-sym {}))
+  (#_{:clj-kondo/ignore [:unused-binding]}
+     [opts thing-sym]
+     #_{:clj-kondo/ignore [:clojure-lsp/unused-public-var
+                           :inline-def]}
+     (defthing opts thing-sym {}))
   ([opts thing-sym & xorfs]
    (let [{:keys [thing-key post-ops]} (if (map? opts) opts
                                           {:thing-key opts :post-ops []})
