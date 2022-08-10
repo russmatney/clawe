@@ -7,10 +7,9 @@
 
 (defn use-recent-garden-notes [conn]
   (let [notes             (plasma.uix/state nil)
-        recent-file-paths (->> (ui.db/garden-files conn) (take 3))
-        ]
+        recent-file-paths (->> (ui.db/garden-files conn) (take 3))]
     (println "using recent garden notes" recent-file-paths)
-    (with-rpc []
+    (with-rpc [conn]
       (when recent-file-paths
         (handlers/full-garden-items recent-file-paths))
       (fn [items]

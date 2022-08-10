@@ -1,8 +1,8 @@
 (ns pages.wallpapers
   (:require
-   [hooks.db :as hooks.db]
    [doctor.ui.db :as ui.db]
-   [pages.db.tables :as db.tables]))
+   [pages.db.tables :as db.tables]
+   [doctor.ui.handlers :as handlers]))
 
 (defn page [{:keys [conn]}]
   (let [n     150
@@ -16,7 +16,7 @@
                        "font-mono"
                        "text-white"]
                :on-click
-               (fn [_] (hooks.db/ingest-wallpapers))}
+               (fn [_] (handlers/ingest-wallpapers))}
       "Ingest wallpapers"]
 
      [:div

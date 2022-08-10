@@ -1,5 +1,6 @@
 (ns doctor.ui.actions
-  (:require [hooks.db :as hooks.db]))
+  (:require
+   [doctor.ui.handlers :as handlers]))
 
 
 (defn ->actions [item]
@@ -9,5 +10,5 @@
         [
          {:action/label    "Set as background"
           :action/on-click (fn [_]
-                             (hooks.db/set-wallpaper item))}]
+                             (handlers/set-wallpaper item))}]
         (remove nil?)))))

@@ -2,12 +2,7 @@
   (:require
    [plasma.core :refer [defhandler defstream]]
    #?@(:clj [[manifold.stream :as s]
-             [api.db :as api.db]
-             [git.core :as git]
-             [chess.core :as chess]
-             [screenshots.core :as screenshots]
-             [chess.db :as chess.db]
-             [wallpapers.core :as wallpapers]]
+             [api.db :as api.db]]
        :cljs [[datascript.core :as d]
               [plasma.uix :as plasma.uix :refer [with-rpc with-stream]]])))
 
@@ -31,39 +26,6 @@
     first-batch))
 
 (defstream db-stream [] api.db/*db-stream*)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; ingestors
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defhandler ingest-screenshots []
-  (screenshots/ingest-screenshots)
-  :ok)
-
-(defhandler ingest-lichess-games []
-  (chess.db/ingest-lichess-games)
-  :ok)
-
-(defhandler clear-lichess-games-cache []
-  (chess/clear-cache)
-  :ok)
-
-(defhandler ingest-clawe-repos []
-  (git/ingest-clawe-repos)
-  :ok)
-
-(defhandler ingest-commits-for-repo [repo]
-  (println "ingesting commits for repo" repo)
-  (git/ingest-commits-for-repo repo)
-  :ok)
-
-(defhandler ingest-wallpapers []
-  (wallpapers/ingest-wallpapers)
-  :ok)
-
-(defhandler set-wallpaper [item]
-  (wallpapers/set-wallpaper item)
-  :ok)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Frontend

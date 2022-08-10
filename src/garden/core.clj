@@ -10,10 +10,6 @@
 ;; org file paths
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; TODO quite alot of zsh/expand in here
-;; probably lots of room to improve performance when collecting all these files
-;; we need a monad!
-
 ;; daily
 
 (defn daily-path

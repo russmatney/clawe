@@ -48,9 +48,10 @@
        (when (and (not (seq body)) body-string)
          [:pre body-string])])
 
-    [components.debug/raw-metadata
-     {:label "Raw org item"}
-     (dissoc item :org/items)]
+    #_(when @hovering?
+        [components.debug/raw-metadata
+         {:label "Raw org item"}
+         (dissoc item :org/items)])
 
     [:div
      (for [[i item] (map-indexed vector items)]
@@ -92,8 +93,7 @@
    {:class    ["font-mono" "text-xl" "text-city-green-200" "p-2"
                "hover:text-city-pink-400"
                "cursor-pointer"]
-    ;; TODO some other strat that keeps hooks out of comps
-    :on-click (fn [_] (handlers/open-in-emacs item))}
+    :on-click (fn [_] (handlers/open-in-journal item))}
    (or short-path source-file)])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

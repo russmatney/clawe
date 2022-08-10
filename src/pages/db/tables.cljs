@@ -1,6 +1,5 @@
 (ns pages.db.tables
   (:require
-   [hooks.db :as hooks.db]
    [dates.tick :as dates.tick]
    [tick.core :as t]
    [components.table :as components.table]
@@ -11,8 +10,8 @@
    [components.chess :as components.chess]
    [components.screenshot :as components.screenshot]
    [components.git :as components.git]
-   [doctor.ui.db :as ui.db]
    [plasma.uix :as plasma.uix :refer [with-rpc]]
+   [doctor.ui.db :as ui.db]
    [doctor.ui.handlers :as handlers]))
 
 (defn basic-text-popover [text]
@@ -83,8 +82,7 @@
     (with-rpc []
       (when source-file
         (handlers/full-garden-item source-file))
-      (fn [item]
-        (reset! note item)))
+      #(reset! note %))
     {:note @note}))
 
 (defn full-note-popover [note]
@@ -195,7 +193,7 @@
                               (count commits))
                             [:button {:class    ["bg-slate-600" "p-4" "rounded-xl"]
                                       :on-click (fn [_]
-                                                  (hooks.db/ingest-commits-for-repo repo))}
+                                                  (handlers/ingest-commits-for-repo repo))}
                              "Ingest latest commits"]
                             [components.debug/raw-metadata
                              {:label "raw"}

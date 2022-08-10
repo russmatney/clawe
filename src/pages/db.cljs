@@ -1,9 +1,9 @@
 (ns pages.db
   (:require
-   [hooks.db :as hooks.db]
    [datascript.core :as d]
    [components.table :as components.table]
-   [pages.db.tables :as tables]))
+   [pages.db.tables :as tables]
+   [doctor.ui.handlers :as handlers]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; db by :doctor/type
@@ -43,15 +43,15 @@
                "p-2"]}
       (for [{:keys [label on-click]}
             [{:label    "Ingest clawe repos"
-              :on-click (fn [_] (hooks.db/ingest-clawe-repos))}
+              :on-click (fn [_] (handlers/ingest-clawe-repos))}
              {:label    "Ingest lichess games"
-              :on-click (fn [_] (hooks.db/ingest-lichess-games))}
+              :on-click (fn [_] (handlers/ingest-lichess-games))}
              {:label    "Clear lichess cache"
-              :on-click (fn [_] (hooks.db/clear-lichess-games-cache))}
+              :on-click (fn [_] (handlers/clear-lichess-games-cache))}
              {:label    "Ingest screenshots"
-              :on-click (fn [_] (hooks.db/ingest-screenshots))}
+              :on-click (fn [_] (handlers/ingest-screenshots))}
              {:label    "Ingest wallpapers"
-              :on-click (fn [_] (hooks.db/ingest-wallpapers))}]]
+              :on-click (fn [_] (handlers/ingest-wallpapers))}]]
         ^{:key label}
         [:button {:class    ["bg-slate-800"
                              "p-4"

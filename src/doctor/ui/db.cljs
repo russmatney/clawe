@@ -3,7 +3,8 @@
    [datascript.core :as d]
    [tick.core :as t]
    [dates.tick :as dates.tick]
-   [item.core :as item]))
+   [item.core :as item]
+   [wing.core :as w]))
 
 ;; TODO tests for this namespace
 
@@ -128,7 +129,7 @@
                 [?e :org/source-file ?source-file]]
               conn)
          (map first)
-         distinct
+         (w/distinct-by :org/source-file)
          (sort-by :file/last-modified >)
          (map :org/source-file)
          (take n))))))

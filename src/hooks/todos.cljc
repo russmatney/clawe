@@ -83,7 +83,7 @@
      (let [{:keys [todo/status]} todo]
        (->>
          [{:action/label    "open-in-emacs"
-           :action/on-click #(handlers/open-in-emacs todo)
+           :action/on-click #(handlers/open-in-journal todo)
            :action/icon     fa/arrow-circle-down-solid}
           (when-not (:db/id todo)
             {:action/label    "add-to-db"
