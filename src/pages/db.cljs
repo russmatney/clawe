@@ -31,7 +31,6 @@
 (defn page [{:keys [conn] :as opts}]
   (let [ents                (ents-with-doctor-type conn)
         ents-by-doctor-type (->> ents (group-by :doctor/type))]
-    (def conn conn)
     [:div
      {:class ["grid"
               "min-h-screen"
@@ -67,11 +66,18 @@
       {:class ["p-2"]}
       [components.table/table
        {:headers [":doctor/type"
-                  "Entities"]
+                  "Entities"
+                  "Keys counts"]
         :rows    (concat
-                   [["all" (count ents)]]
+                   ;; first row is special, has all
+                   [["all" (count ents) "n/a"]]
                    (map (fn [[type ents]]
-                          [(str type) (count ents)])
+                          [(str type) (count ents) (->> ents
+                                                        (map (comp count keys))
+                                                        (map #(str % " "))
+                                                        (distinct)
+                                                        (take 5)
+                                                        (apply str ))])
                         ents-by-doctor-type))}]]
 
      [:div
