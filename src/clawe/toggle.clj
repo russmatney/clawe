@@ -18,14 +18,16 @@
 (defn find-client
   "Returns a client matching the passed `client-def`.
 
+  The current workspace is fetched to support per-workspace client matching.
+
   Matches via `client/match?`, passing the def twice to use any `:match/` opts.
 
   Supports prefetched `:prefetched-clients` to avoid the `wm/` call."
   ([client-def] (find-client nil client-def))
   ([opts client-def]
    (let [all-clients (or (:prefetched-clients opts) (wm/active-clients opts))
-         current (or (:current-workspace opts) (wm/current-workspace
-                                                 {:prefetched-clients all-clients}))]
+         current     (or (:current-workspace opts) (wm/current-workspace
+                                                     {:prefetched-clients all-clients}))]
      (some->> all-clients
               (filter
                 (partial client/match?
@@ -131,13 +133,7 @@
       (do
         (println "show" (client/strip client-or-def))
         (notify/notify "[:show-client]")
-        ;; TODO would like to focus+center first to avoid the jank on linux
-        ;; but on osx, do it the other way to avoid the auto-space-switch.
-        ;; suppose we need to float and center, then switch, then focus
-        (wm/move-client-to-workspace
-          client-or-def (or (:current-workspace opts) (wm/current-workspace)))
-        (wm/focus-client {:float-and-center (:focus/float-and-center client-or-def true)}
-                         client-or-def))
+        (wm/show-client opts client-or-def))
 
       (println "No matching action for:" action))))
 
@@ -151,11 +147,11 @@
    {:alias {:key :client/key}}}
   [args]
   (notify/notify "[toggle]" (:client/key args "No --key"))
-  (let [all-clients (wm/active-clients)
+  (let [all-clients       (wm/active-clients)
         current-workspace (wm/current-workspace
                             {:prefetched-clients all-clients})
-        opts {:prefetched-clients all-clients
-              :current-workspace current-workspace}]
+        opts              {:prefetched-clients all-clients
+                           :current-workspace  current-workspace}]
     (-> args
         :client/key
         (determine-toggle-action opts)

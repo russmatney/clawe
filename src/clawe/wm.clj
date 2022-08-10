@@ -178,13 +178,16 @@
     first))
 
 (defn fetch-client [client]
-  ;; TODO refactor into protocol (perf)
-  (some->>
-    (active-clients)
-    (filter (partial client/match? client))
-    first))
+  (when-let [client (cond (map? client)    client
+                          (string? client) (clawe.config/client-def client))]
+    ;; TODO refactor into protocol (perf)
+    (some->>
+      (active-clients)
+      (filter (partial client/match? client))
+      first)))
 
 (comment
+  (fetch-client "journal")
   (focused-client)
   (active-clients))
 
@@ -233,7 +236,24 @@
   ([client] (focus-client nil client))
   ([opts client]
    (sys/start! `*wm*)
-   (wm.protocol/-focus-client *wm* opts client)))
+   (let [client (cond (map? client)    client
+                      (string? client) (fetch-client client))]
+     (wm.protocol/-focus-client *wm* opts client))))
+
+(declare move-client-to-workspace)
+(defn show-client
+  "Opts `:current-workspace`, `:focus/float-and-center`, `focus-client` opts"
+  ([client] (show-client nil client))
+  ([opts client]
+   (let [client (cond (map? client)    client
+                      (string? client) (fetch-client client))]
+     ;; TODO would like to focus+center first to avoid the jank on linux
+     ;; but on osx, do it the other way to avoid the auto-space-switch.
+     ;; suppose we need to float and center, then switch, then focus
+     (move-client-to-workspace
+       client (or (:current-workspace opts) (current-workspace)))
+     (focus-client (merge {:float-and-center (:focus/float-and-center client true)} opts)
+                   client))))
 
 (defn client->workspace-title [client]
   (or (:client/workspace-title client)
