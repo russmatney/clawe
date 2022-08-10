@@ -143,27 +143,30 @@
 ;; Org file
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn org-file [{:org/keys      [name tags urls]
-                 :org.prop/keys [filetags created-at title]
-                 :as            item}]
-  [:div
-   {:class ["text-white"]}
-
+(defn org-file
+  ([item] (org-file nil item))
+  ([_opts
+    {:org/keys      [name tags urls]
+     :org.prop/keys [filetags created-at title]
+     :as            item}]
    [:div
-    {:class ["text-lg"]}
-    created-at]
+    {:class ["text-white"]}
 
-   [source-file-link item]
+    [:div
+     {:class ["text-lg"]}
+     created-at]
 
-   [:div
-    {:class ["text-xl"]}
-    (or title name)]
+    [source-file-link item]
 
-   [:div
-    {:class ["text-lg"]}
-    ;; TODO parse filetags into tags?
-    filetags
-    (when (seq tags) tags)
-    (when (seq urls) urls)]
+    [:div
+     {:class ["text-xl"]}
+     (or title name)]
 
-   [org-body item]])
+    [:div
+     {:class ["text-lg"]}
+     ;; TODO parse filetags into tags?
+     filetags
+     (when (seq tags) tags)
+     (when (seq urls) urls)]
+
+    [org-body item]]))

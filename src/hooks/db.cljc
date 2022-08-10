@@ -9,7 +9,7 @@
              [chess.db :as chess.db]
              [wallpapers.core :as wallpapers]]
        :cljs [[datascript.core :as d]
-              [plasma.uix :refer [with-rpc with-stream]]])))
+              [plasma.uix :as plasma.uix :refer [with-rpc with-stream]]])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; API

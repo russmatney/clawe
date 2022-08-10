@@ -113,3 +113,22 @@
          (map first)
          (sort-by :org/created-at >)
          (take n))))))
+
+
+(defn garden-files
+  "Returns garden source-files"
+  ([conn] (garden-files conn nil))
+  ([conn {:keys [n]}]
+   (when conn
+     (let [n (or n 100)]
+       (->>
+         (d/q '[:find (pull ?e [:org/source-file :file/last-modified])
+                :where
+                [?e :doctor/type :type/garden]
+                [?e :org/source-file ?source-file]]
+              conn)
+         (map first)
+         distinct
+         (sort-by :file/last-modified >)
+         (map :org/source-file)
+         (take n))))))

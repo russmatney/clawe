@@ -1,9 +1,7 @@
 (ns garden.core
   (:require
    [babashka.fs :as fs]
-   [manifold.stream :as s]
    [org-crud.core :as org-crud]
-   [systemic.core :refer [defsys] :as sys]
    [ralphie.zsh :as r.zsh]
    [util]
    [dates.tick :as dates.tick]))
@@ -219,67 +217,14 @@
   (->> (all-garden-notes-flattened)
        (remove (comp uuid? :org/id))
        (map :org/level)
-       (frequencies)
-       )
-  )
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; journal
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn active-journals
-  "Returns currently active journal notes.
-
-  - journal.org
-  - projects.org
-  - dailies for the last 3 days (today inclusive)
-  "
-  []
-  (->>
-    (paths->nested-garden-notes
-      (concat
-        (daily-paths 3)
-        (basic-todo-paths)))
-    (sort-by :org/source-file)
-    (map util/drop-complex-types)))
-
-(defsys *journals-stream*
-  :start (s/stream)
-  :stop (s/close! *journals-stream*))
-
-(defn update-journals []
-  (s/put! *journals-stream* (active-journals)))
-
-(comment
-  (active-journals)
-  (update-journals))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; get-garden
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn get-garden []
-  (->>
-    (all-garden-notes-nested)
-    (map util/drop-complex-types)))
-
-(defsys *garden-stream*
-  :start (s/stream)
-  :stop (s/close! *garden-stream*))
-
-(defn update-garden []
-  (s/put! *garden-stream* (get-garden)))
-
-(comment
-  (sys/start! `*garden-stream*)
-  (->> (get-garden) (count))
-  (update-garden))
+       (frequencies)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; get-full-item
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn full-item
-  [{:org/keys [source-file]}]
-  (org-crud/path->nested-item source-file))
+  [opts]
+  (println "fetching full-item for opts" opts)
+  (let [source-file (:org/source-file opts opts)]
+    (org-crud/path->nested-item source-file)))
