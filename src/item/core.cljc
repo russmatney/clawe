@@ -39,7 +39,8 @@
                         :org.prop/archive-time
                         :org/scheduled
                         :org/deadline
-                        :org/closed}})
+                        :org/closed
+                        :file/last-modified}})
 
 (defn ->latest-timestamp
   "Returns the latest timestamp for the passed item."

@@ -5,7 +5,6 @@
    [datascript.core :as d]
 
    [db.core :as db]
-   [expo.core :as expo]
    [item.core :as item]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -52,7 +51,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn ensure-timestamps [tx]
-  (def tx tx)
   (->> tx
        :tx-data
        (map :e) ;; dat entity

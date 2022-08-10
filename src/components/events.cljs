@@ -10,7 +10,8 @@
    [components.screenshot :as components.screenshot]
    [components.timeline :as components.timeline]
    [components.garden :as components.garden]
-   [components.floating :as floating]))
+   [components.floating :as floating]
+   [dates.tick :as dates.tick]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; pure event helpers
@@ -200,6 +201,8 @@
     [:div
      (for [[i [bucket evts]] (->> grouped-events (map-indexed vector))]
        (let [{:keys [start end]} bucket
+             start               (dates.tick/add-tz start)
+             end                 (dates.tick/add-tz end)
              show-end?           (cond
                                    (t/= start end)                 false
                                    (t/< (t/between start end)

@@ -25,16 +25,13 @@
                  :in $ ?event-types
                  :where
                  [?e :doctor/type ?type]
-                 [(?event-types ?type)]]
+                 [?e :event/timestamp ?ts]
+                 ;; TODO consider lower bound/min time here
+                 ]
                conn event-types)
           (map first)
-          (remove (comp nil? item/->latest-timestamp))
-          (sort-by item/->latest-timestamp t/>)
-          (take 200)
-          (map (fn [ev]
-                 ;; HACK decorating on the frontend
-                 ;; we should be creating multiple events per item during ingestion
-                 (assoc ev :event/timestamp (item/->latest-timestamp ev))))))))
+          (sort-by :event/timestamp t/>)
+          (take 200)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; repos/commits

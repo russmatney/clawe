@@ -3,7 +3,8 @@
    [db.core :as db]
    [garden.core :as garden]
    [clojure.string :as string]
-   [taoensso.timbre :as log]))
+   [taoensso.timbre :as log]
+   [item.core :as item]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ->db-item
@@ -55,15 +56,27 @@
                         v)]))
           (into {}))
 
+
         true
-        (->
-          (assoc :doctor/type :type/garden)
-          (dissoc :org/body
-                  :org/items
-                  :org.prop/link-ids ;; old linking props
-                  :org.prop/begin-src ;; TODO proper source block handling
-                  :org.prop/end-src
-                  )))
+        (assoc :doctor/type :type/garden)
+
+        ;; if this can be calced...
+        (item/->latest-timestamp
+          ;; kind of annoying item depends on this type
+          (assoc item :doctor/type :type/garden))
+        ;; then assoc it
+        (assoc :event/timestamp
+               (item/->latest-timestamp
+                 ;; kind of annoying item depends on this type
+                 (assoc item :doctor/type :type/garden)))
+
+        true
+        (dissoc :org/body
+                :org/items
+                :org.prop/link-ids ;; old linking props
+                :org.prop/begin-src ;; TODO proper source block handling
+                :org.prop/end-src
+                ))
       (log/info "Could not create fallback id for org item" item))))
 
 ;; this should not be necessary

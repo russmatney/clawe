@@ -22,7 +22,9 @@
                                     (t/>> newest (t/new-period 1 :days))
                                     (t/new-period 1 :days))
            dates-by-month
-           (->> all-dates (w/group-by t/month))]
+           (->> all-dates
+                (map dates.tick/add-tz)
+                (w/group-by t/month))]
        (when newest
          {:timestamps     timestamps
           :newest         newest
@@ -40,6 +42,7 @@
   (timestamps-date-data
     {:months-ago 2}
     [(dates.tick/now)]))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; day picker component
