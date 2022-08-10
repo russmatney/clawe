@@ -11,7 +11,8 @@
    [components.timeline :as components.timeline]
    [components.garden :as components.garden]
    [components.floating :as floating]
-   [dates.tick :as dates.tick]))
+   [dates.tick :as dates.tick]
+   [pages.db.tables :as tables]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; pure event helpers
@@ -179,20 +180,29 @@
     [:div
      {:class ["flex" "flex-col"]}
 
-     [components.chess/cluster opts chess-games]
-     [components.screenshot/cluster opts screenshots]
-     [components.git/commit-list opts commits]
+     (when (seq chess-games)
+       [tables/table-for-doctor-type opts :type/lichess-game chess-games])
+     (when (seq commits)
+       [tables/table-for-doctor-type opts :type/commit commits])
+     (when (seq screenshots)
+       [tables/table-for-doctor-type opts :type/screenshot screenshots])
+     (when (seq garden-notes)
+       [tables/table-for-doctor-type opts :type/garden garden-notes])
+
+     #_[components.chess/cluster opts chess-games]
+     #_[components.screenshot/cluster opts screenshots]
+     #_[components.git/commit-list opts commits]
 
      ;; weak for now, but it's getting surfaced!
-     [floating/popover
-      {:hover true :click true
-       :anchor-comp
-       [:div (str (count garden-notes) " garden notes")]
-       :popover-comp
-       [:div
-        (for [note garden-notes]
-          ^{:key [(:org/name note)]}
-          [components.garden/garden-node note])]}]]))
+     #_[floating/popover
+        {:hover true :click true
+         :anchor-comp
+         [:div (str (count garden-notes) " garden notes")]
+         :popover-comp
+         [:div
+          (for [note garden-notes]
+            ^{:key [(:org/name note)]}
+            [components.garden/garden-node note])]}]]))
 
 (defn event-clusters
   [opts events]
