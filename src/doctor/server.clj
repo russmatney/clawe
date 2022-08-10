@@ -109,10 +109,15 @@
   :stop
   (.stop *server*))
 
+(defn restart []
+  (if (sys/running? `*server*)
+    (sys/restart! `*server*)
+    (sys/start! `*server*)))
 
 (comment
+  (restart)
+  *server*
   @sys/*registry*
   (sys/stop!)
   (sys/start! `*server*)
-  (sys/restart! `*server*)
-  *server*)
+  (sys/restart! `*server*))

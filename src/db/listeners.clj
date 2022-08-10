@@ -51,14 +51,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn ensure-timestamps [tx]
-  (->> tx
-       :tx-data
-       (map :e) ;; dat entity
-       (into #{}))
   (let [ent-updates
         (->> tx
              :tx-data
-             (map :e) ;; dat entity
+             (map :e)
              (into #{})
              (d/pull-many @db/*conn* '[*])
              (remove :event/timestamp)
@@ -69,6 +65,49 @@
     (when (> (count ent-updates) 0)
       (log/info "[DB] Adding :event/timestamp to " (count ent-updates) " records")
       (db/transact ent-updates))))
+
+(comment
+  ;; reingest with this running per entity before transacting
+  (declare transact)
+
+  ;; ents without timestamp?
+  (->>
+    (d/datoms @db/*conn* :eavt)
+    (map :e)
+    distinct
+    (partition-all 200)
+    (mapcat #(d/pull-many @db/*conn* '[*] %))
+    (remove :event/timestamp)
+    #_(map count))
+
+  ;; add ts to ents missing timestamp
+  (->>
+    (d/datoms @db/*conn* :eavt)
+    (map :e)
+    (distinct)
+    (partition-all 200)
+    (map #(d/pull-many @db/*conn* '[*] %))
+    (mapcat (fn [ent-group]
+              (->> ent-group
+                   (remove :event/timestamp)
+                   (map (fn [ent]
+                          (if-let [ts (item/->latest-timestamp ent)]
+                            (do
+                              (def ent ent)
+                              (item/->latest-timestamp ent)
+                              (assoc ent :event/timestamp ts))
+                            ent)))
+                   (filter :event/timestamp))))
+    (remove nil?)
+    (partition-all 200)
+    #_(map count)
+    (map (fn [ent-group]
+           (def ent-group ent-group)
+           (println "updating ents" (count ent-group))
+           (db/transact ent-group)))
+    )
+
+  )
 
 (defsys *data-expander*
   :start
@@ -97,10 +136,9 @@
   (->>
     (db/query '[:find (pull ?e [*])
                 :where
-                [?e :doctor/type :type/commit]
-                ])
+                [?e :doctor/type :type/commit]])
     (map first)
-    (filter :event/timestamp)
+    (remove :event/timestamp)
     first
     #_item/->latest-timestamp
     #_((fn [ent]

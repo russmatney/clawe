@@ -53,6 +53,7 @@
               :on-click (fn [_] (hooks.db/ingest-screenshots))}
              {:label    "Ingest wallpapers"
               :on-click (fn [_] (hooks.db/ingest-wallpapers))}]]
+        ^{:key label}
         [:button {:class    ["bg-slate-800"
                              "p-4"
                              "border"

@@ -1,17 +1,17 @@
 (ns db.core
   "Exposes functions for working with a datascript database."
   (:require
+   [babashka.fs :as fs]
+   [clojure.edn :as edn]
+   [datascript.core :as d]
+   [dates.tick :as dates.tick]
    [db.config :as db.config]
    [db.helpers :as helpers]
    [systemic.core :refer [defsys] :as sys]
-   [taoensso.timbre :as log]
-   [datascript.core :as d]
-   [babashka.fs :as fs]
-   [clojure.edn :as edn]
-   [dates.tick :as dates.tick]))
+   [taoensso.timbre :as log]))
 
 (def schema
-  {;; uuids
+  { ;; uuids
    :topbar/id
    {:db/unique :db.unique/identity}
    :test/id
@@ -128,7 +128,30 @@
 
   (:schema @*conn*)
 
-  (write-db-to-file))
+  (write-db-to-file)
+
+
+  ;; reingest
+
+  (declare transact)
+  (->>
+    (d/datoms @*conn* :eavt)
+    (partition-all 20000)
+    (map
+      #(d/transact *conn* %)))
+
+  ;; all entities
+  (d/pull-many @*conn* '[*] (d/q '[:find ?e :where [?e :db/id _]] @*conn*))
+  (d/q '[:find (pull ?e [*]) :where [?e :db/id _]] @*conn*)
+
+  (->>
+    (d/q '[:find (pull ?e [*])
+           :where
+           [?e :doctor/type _]
+           #_ [(missing? ?e :event/timestamp)]]
+         @*conn*)
+    (map first)))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Transact
@@ -148,7 +171,7 @@
                                          (helpers/drop-unsupported-vals opts))
                                     tx)))
                     (into []))]
-     #_(log/debug "Transacting records" (count txs))
+     #_ (log/debug "Transacting records" (count txs))
      (try
        (d/transact! *conn* txs)
        (catch Exception e
