@@ -13,21 +13,14 @@
    [ralphie.pulseaudio :as r.pulseaudio]
 
    [clawe.doctor :as clawe.doctor]
-   [clawe.m-x :as c.m-x]
    [clawe.wm :as wm]
-   [clawe.rules :as c.rules]
    [clawe.sxhkd.bindings :refer [sxhkd-exec]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; rofi, launchers, command selectors
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; TODO should these live in m-x?
-(defkbd clawe-rofi-sxhkd
-  [[:mod] "w"]
-  (defcom/exec c.m-x/m-x))
-
-(defkbd clawe-rofi-awm
+(defkbd clawe-rofi-mx
   [[:mod] "x"]
   (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.m-x/do-m-x"))
 

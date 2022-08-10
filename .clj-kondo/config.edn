@@ -5,6 +5,7 @@
              (wing.test/assert-match)
              match?
              (ralphie.awesome.fnl/fnl)
+             (defthing.defkbd/defkbd)
              (defthing.defcom/defcom)
              valid ;; supported by test-util as a clojure.test assert-expr
              ]}
@@ -13,7 +14,8 @@
 
   :clojure-lsp/unused-public-var
   {:level                   :warning
-   :exclude-when-defined-by #{defthing.defcom/defcom}}}
+   :exclude-when-defined-by #{defthing.defcom/defcom
+                              defthing.defkbd/defkbd}}}
  :hooks
  {:analyze-call {plasma.core/defhandler hooks.plasma/defhandler
                  plasma.core/defstream  hooks.plasma/defhandler}}
@@ -21,7 +23,7 @@
            defthing.core/defthing clojure.core/def
            ;; preferred to exclude unresolved-symbol and unused-public-var
            ;; defthing.defcom/defcom             clojure.core/def
-           defthing.defkbd/defkbd clojure.core/def
+           ;; defthing.defkbd/defkbd clojure.core/def
 
            defthing.core-test/deftestworkspace clojure.core/def
            defthing.core-test/defsomething     clojure.core/def

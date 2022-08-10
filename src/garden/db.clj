@@ -45,8 +45,7 @@
                                  (map (fn [parent-id]
                                         ;; build ref for what this refers to
                                         {:org/id parent-id}))
-                                 (into [])
-                                 ))
+                                 (into [])))
 
         true
         (->>
