@@ -4,7 +4,8 @@
    [org-crud.core :as org-crud]
    [ralphie.zsh :as r.zsh]
    [util]
-   [dates.tick :as dates.tick]))
+   [dates.tick :as dates.tick]
+   [db.core :as db]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; org file paths
@@ -59,6 +60,9 @@
 (defn all-monthly-archive-paths []
   (r.zsh/expand-many "~/todo/archive/*.org"))
 
+(comment
+  (all-monthly-archive-paths))
+
 ;; todos
 
 (defn basic-todo-paths []
@@ -102,7 +106,7 @@
     (all-daily-paths)
     (workspace-paths)
     (flat-garden-paths)
-    (all-monthly-archive-paths)))
+    #_(all-monthly-archive-paths)))
 
 (comment
   (count
@@ -219,8 +223,47 @@
 ;; get-full-item
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn ensure-uuid [id]
+  (cond
+    (string? id)
+    (java.util.UUID/fromString id)
+
+    (uuid? id)
+    id))
+
+(comment
+  (ensure-uuid "hi")
+  (ensure-uuid #uuid "59782969-8B9A-4C98-9AE4-2282FF0A2A1F")
+  (ensure-uuid "59782969-8B9A-4C98-9AE4-2282FF0A2A1F"))
+
 (defn full-item
   [opts]
-  (println "fetching full-item for opts" opts)
-  (let [source-file (:org/source-file opts opts)]
-    (org-crud/path->nested-item source-file)))
+  (let [source-file (:org/source-file opts)
+        id          (:org/id opts)
+        source-file (cond
+                      source-file
+                      source-file
+
+                      id
+                      (->
+                        (db/query '[:find [(pull ?e [:org/source-file])]
+                                    :in $ ?id
+                                    :where
+                                    [?e :org/id ?id]]
+                                  (ensure-uuid id))
+                        first
+                        :org/source-file))]
+    (if source-file
+      (org-crud/path->nested-item source-file)
+
+      ;; TODO in this case, get the source-file from the org-roam db and ingest it
+      (println "Could not find source-file for opts" opts))))
+
+(comment
+  (db/query '[:find [(pull ?e [:org/source-file])]
+              :in $ ?id
+              :where
+              [?e :org/id ?id]] #uuid "59782969-8B9A-4C98-9AE4-2282FF0A2A1F")
+  (full-item {:org/id "notid"})
+  (full-item {:org/id "3a89063f-ef16-4156-9858-fc941b448057"})
+  (full-item {:org/id #uuid "59782969-8B9A-4C98-9AE4-2282FF0A2A1F"}))

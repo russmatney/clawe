@@ -237,9 +237,9 @@
 ;; Retract
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn retract [ent-id]
+(defn retract [ent-ids]
   (sys/start! `*conn*)
-  (let [ent-ids (if (coll? ent-id) ent-id [ent-id])]
+  (let [ent-ids (if (coll? ent-ids) ent-ids [ent-ids])]
     (d/transact *conn*
                 (->> ent-ids
                      (map (fn [ent-id]

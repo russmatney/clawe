@@ -204,6 +204,14 @@
       ;; (drop 15000)
       ))
 
+  (sync-garden-paths-to-db
+    {:page-size 20}
+    (->> (garden/all-garden-notes-nested)
+         (sort-by :file/last-modified)
+         (reverse)
+         (take 200)
+         (map :org/source-file)))
+
   (count
     (garden/all-garden-notes-flattened)))
 
@@ -234,4 +242,26 @@
   (count (fetch-db-garden-notes))
 
   (notes-with-tags #{"post"})
-  )
+
+  (->>
+    (db/query '[:find (pull ?e [*])
+                :where
+                [?e :doctor/type :type/garden]
+                [?e :org.prop/archive-time ?atime]])
+    (map first)
+    (map :org/source-file))
+
+  ;; delete notes
+  (->>
+    (db/query '[:find ?e
+                :where
+                [?e :doctor/type :type/garden]
+                [?e :org/source-file ?file]
+                [(string/includes? ?file "/archive/")]
+                ])
+    (map first)
+    ;; (partition-all 200)
+    ;; (map db/retract)
+    ;; (doall)
+    ;; count
+    ))

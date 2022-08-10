@@ -10,7 +10,6 @@
    [components.chess :as components.chess]
    [components.screenshot :as components.screenshot]
    [components.git :as components.git]
-   [plasma.uix :as plasma.uix :refer [with-rpc]]
    [doctor.ui.db :as ui.db]
    [doctor.ui.handlers :as handlers]))
 
@@ -77,20 +76,6 @@
                 {:label "raw"}
                 note]])))}))
 
-(defn use-full-garden-note [source-file]
-  (let [note (plasma.uix/state nil)]
-    (with-rpc []
-      (when source-file
-        (handlers/full-garden-item source-file))
-      #(reset! note %))
-    {:note @note}))
-
-(defn full-note-popover [note]
-  (let [{:keys [note]} (use-full-garden-note (:org/source-file note))]
-    [:div
-     {:class ["bg-city-blue-900"]}
-     [components.garden/org-file note]]))
-
 (defn garden-file-table-def [entities]
   (let [notes (->> entities (filter (comp #{:type/garden} :doctor/type)))]
     {:headers ["File" "Name" "Raw"]
@@ -104,7 +89,7 @@
               [[floating/popover
                 {:hover        true :click true
                  :anchor-comp  (:org/short-path note)
-                 :popover-comp [full-note-popover note]}]
+                 :popover-comp [components.garden/full-note-popover note]}]
                (:org/name note)
                [components.debug/raw-metadata
                 {:label "raw"}

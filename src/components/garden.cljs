@@ -2,7 +2,100 @@
   (:require
    [components.debug :as components.debug]
    [uix.core.alpha :as uix]
-   [doctor.ui.handlers :as handlers]))
+   [doctor.ui.handlers :as handlers]
+   [clojure.string :as string]
+   [components.floating :as floating]
+   [plasma.uix :as plasma.uix :refer [with-rpc]]))
+
+
+(defn use-full-garden-note [item]
+  (let [note (plasma.uix/state nil)]
+    (with-rpc []
+      (when item
+        (handlers/full-garden-item item))
+      #(reset! note %))
+    {:note @note}))
+
+(declare org-file)
+(defn full-note-popover [note]
+  (let [{:keys [note]} (use-full-garden-note note)]
+    [:div
+     {:class ["bg-city-blue-900"]}
+     [org-file note]]))
+
+(defn link-text-with-popover [{:keys [link-id link-text]}]
+  [floating/popover
+   {:hover        true :click true
+    :anchor-comp  [:div
+                   [:span
+                    {:class ["text-city-pink-400"
+                             "cursor-pointer"]}
+                    link-text]]
+    :popover-comp [full-note-popover {:org/id link-id}]}])
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; name/line
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(def id-regex
+  "The second group is anything except a closing \\]."
+  #"\[\[id:([A-Za-z0-9-]+)\]\[([^\]]+)\]\]")
+
+(defn text->comps
+  ([text] (text->comps nil text))
+  ([opts text]
+   (let [matches  (re-seq id-regex text)
+         to-regex (fn [s]
+                    (re-pattern
+                      (str "("
+                           (-> s
+                               (string/replace "[" "\\[")
+                               (string/replace "]" "\\]"))
+                           ")")))]
+     (->> matches
+          (reduce
+            (fn [comps [match link-id link-text]]
+              (->> comps
+                   (mapcat
+                     (fn [comp]
+                       (if-not (string? comp)
+                         [comp]
+                         (let [splits (string/split comp (to-regex match))]
+                           (if (#{1} (count splits))
+                             [(first splits)] ;; return the unmatched, untouched string
+                             (->> splits
+                                  (map (fn [split]
+                                         (if (not (= split match))
+                                           split ;; return not-a-match, leave as string so further matches don't have to dig
+                                           ^{:key (str match)}
+                                           [link-text-with-popover
+                                            (merge {:link-id link-id :link-text link-text}
+                                                   opts)])))))))))) ;; component here
+              ) [text])
+          (remove empty?)
+          (map (fn [comp-or-str]
+                 (if (string? comp-or-str)
+                   ;; wrap strings in :spans (better spacing control)
+                   ^{:key comp-or-str} [:span comp-or-str]
+                   comp-or-str)))
+          (into [])))))
+(comment
+  (text->comps
+    "[[id:3a89063f-ef16-4156-9858-fc941b448057][sudo]] and proper [[id:3a89063f-ef16-4156-9858-fc941b448057][vim]] config?")
+  (re-pattern "([hi])")
+  )
+
+(defn text-with-links
+  ([text] (text-with-links nil text))
+  ([opts text]
+   (when (seq text)
+     [:span
+      {:class ["flex" "flex-row" "space-x-2"]}
+      (for [[i comp] (->> (text->comps opts text) (map-indexed vector))]
+        ^{:key i} comp)])))
+
+
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; body
@@ -14,7 +107,7 @@
   Recursively renders the items nested content, if items are found
   as :org/items on the passed org node."
   ([item] (org-body nil item))
-  ([{:keys [nested?]} {:org/keys [body body-string items status] :as item}]
+  ([{:keys [nested?] :as opts} {:org/keys [body body-string items status] :as item}]
    [:div
     {:class (concat ["font-mono"])}
 
@@ -43,15 +136,15 @@
                ^{:key i} [:span {:class ["py-1"]} " "]
 
                :else
-               ^{:key i} [:span text]))))
+               ^{:key i} [text-with-links opts text]))))
 
        (when (and (not (seq body)) body-string)
          [:pre body-string])])
 
-    #_(when @hovering?
-        [components.debug/raw-metadata
-         {:label "Raw org item"}
-         (dissoc item :org/items)])
+    (when true
+      [components.debug/raw-metadata
+       {:label "Raw org item"}
+       (dissoc item :org/items)])
 
     [:div
      (for [[i item] (map-indexed vector items)]
@@ -72,12 +165,11 @@
         (when (:org/name item)
           [:div
            {:class
-            (concat
-              ["text-lg" "font-mono"])}
-           (:org/name item)])
+            ["text-lg" "font-mono"]}
+           [text-with-links opts (:org/name item)]])
 
         ;; recurse
-        [org-body {:nested? true} item]])]]))
+        [org-body (merge {:nested? true} opts) item]])]]))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -145,7 +237,7 @@
 
 (defn org-file
   ([item] (org-file nil item))
-  ([_opts
+  ([opts
     {:org/keys      [name tags urls]
      :org.prop/keys [filetags created-at title]
      :as            item}]
@@ -169,4 +261,4 @@
      (when (seq tags) tags)
      (when (seq urls) urls)]
 
-    [org-body item]]))
+    [org-body opts item]]))

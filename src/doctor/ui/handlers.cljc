@@ -32,13 +32,13 @@
   :ok)
 
 (defhandler full-garden-items [paths]
-  (println "fetching items for paths" paths)
   (->> paths
        (map garden/full-item)
        (into [])))
 
-(defhandler full-garden-item [path]
-  (garden/full-item path))
+(defhandler full-garden-item [item]
+  (garden/full-item item))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; screenshots
