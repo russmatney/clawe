@@ -23,14 +23,13 @@
     conn
     ents-with-doctor-type))
 
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; event page
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn page [{:keys [conn] :as opts}]
-  (let [ents                (ents-with-doctor-type conn)
-        ents-by-doctor-type (->> ents (group-by :doctor/type))]
+  (let [ents       (ents-with-doctor-type conn)
+        table-defs (tables/all-table-defs opts ents)]
     [:div
      {:class ["grid"
               "min-h-screen"
@@ -63,33 +62,8 @@
                   :on-click on-click}
          label])]
 
-     [:div
-      {:class ["p-2"]}
-      [components.table/table
-       {:headers [":doctor/type"
-                  "Entities"
-                  "Keys counts"]
-        :rows    (concat
-                   ;; first row is special, has all
-                   [["all" (count ents) "n/a"]]
-                   (map (fn [[type ents]]
-                          [(str type) (count ents) (->> ents
-                                                        (map (comp count keys))
-                                                        (map #(str % " "))
-                                                        (distinct)
-                                                        (take 5)
-                                                        (apply str ))])
-                        ents-by-doctor-type))}]]
-
-     [:div
-      [:div
-       {:class ["p-2"]}
-       [components.table/table
-        (tables/garden-by-tag-table-def (:type/garden ents-by-doctor-type))]]
-
-      (for [[i [doctor-type ents-for-type]]
-            (->> ents-by-doctor-type (map-indexed vector))]
-        ^{:key i}
-        [:div
-         {:class ["p-2"]}
-         [tables/table-for-doctor-type opts doctor-type ents-for-type]])]]))
+     (for [[i table-def] (->> table-defs (map-indexed vector))]
+       ^{:key i}
+       [:div
+        {:class ["p-2"]}
+        [components.table/table table-def]])]))
