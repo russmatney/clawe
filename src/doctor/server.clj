@@ -71,7 +71,9 @@
    garden/*garden-stream*
    garden/*journals-stream*
    garden.watcher/*garden-watcher*
-   db.listeners/*garden->expo*
+   ;; this is also disabled in the impl
+   ;; db.listeners/*garden->expo*
+   db.listeners/*data-expander*
    db/*conn*]
   :start
   (let [port (:server/port doctor.config/*config*)]

@@ -108,7 +108,7 @@
   (pr-str (d/db *conn*)))
 
 (defn write-db-to-file []
-  (log/info "Writing Expo DB to file")
+  (log/info "Writing Doctor DB to file")
   (spit (db.config/db-path) (print-db)))
 
 (defn clear-db []
@@ -148,7 +148,7 @@
                                          (helpers/drop-unsupported-vals opts))
                                     tx)))
                     (into []))]
-     (log/debug "Transacting records" (count txs))
+     #_(log/debug "Transacting records" (count txs))
      (try
        (d/transact! *conn* txs)
        (catch Exception e
