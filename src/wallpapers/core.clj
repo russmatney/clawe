@@ -102,4 +102,5 @@
   "Reloads the current wallpaper. Falls back to the last-set wp."
   []
   (println "wallpapers-reload hit!")
-  (set-wallpaper {:skip-count true} (last-used-wallpaper)))
+  (when-let [wp (last-used-wallpaper)]
+    (set-wallpaper {:skip-count true} wp)))

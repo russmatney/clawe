@@ -11,6 +11,8 @@
    [ralphie.zsh :as zsh]
    [util :as util]
 
+   ;; required to put bindings in place, otherwise we write empty rc configs
+   clawe.defs.bindings
    [clawe.awesome.bindings :as awm.bindings]
    [clawe.config :as clawe.config]
    [clawe.doctor :as clawe.doctor]
