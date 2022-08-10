@@ -25,7 +25,7 @@
     client-create-schema
     {:create/cmd println}))
 
-;; TODO enforce schema against clawe.edn via clj-kondo
+;; consider enforcing this schema against clawe.edn via clj-kondo
 (def schema
   [:map
    [:client/app-name {:optional true} :string]
@@ -95,7 +95,7 @@
   the client with the desired match opts as the first arg to the 3-arity
   version of this function.
   "
-  ;; TODO support :match/use-workspace-title and :current-workspace-title as a passed opt
+  ;; `:client/key` comparison might be cheap/easy
   ([a b] (match? nil a b))
   ([opts a b]
    (let [a-app-names (->app-names a)
@@ -136,7 +136,4 @@
                         b-window-title))
                 (and (:match/use-workspace-title b)
                      (= (:current-workspace-title opts)
-                        a-window-title)))))
-
-       ;; TODO `:client/key` comparison might be cheap/easy
-       ))))
+                        a-window-title)))))))))

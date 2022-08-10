@@ -92,14 +92,14 @@
       {:center?   (:float-and-center opts)
        :float?    (:float-and-center opts)
        :bury-all? true}
-      ;; TODO consider :client/window-id client attr
+      ;; consider :client/window-id client attr
       (:awesome.client/window client)))
 
   (-move-client-to-workspace [this _opts c wsp]
     (let [workspace-title (if (string? wsp) wsp (:workspace/title wsp))]
       ;; ensure this workspace exists
       (clawe.wm.protocol/-create-workspace this nil workspace-title)
-      ;; TODO consider :client/window-id client attr
+      ;; consider :client/window-id client attr
       (awm/move-client-to-tag (:awesome.client/window c) workspace-title))))
 
 (comment

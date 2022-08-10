@@ -110,7 +110,6 @@
   (sorted-todos))
 
 (defn recent-org-items []
-  ;; TODO consider db pulling/overwriting/syncing
   (->>
     (garden/paths->flattened-garden-notes
       (concat

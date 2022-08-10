@@ -146,7 +146,6 @@
         workspace-rules.all))
 
 (fn init_rules []
-  ;; TODO be nice to update changed rules, not _all_
   (set awful.rules.rules global_rules))
 
 {: init_rules}

@@ -25,7 +25,7 @@
         mods       (->> mods
                         (map modifiers)
                         (map #(str "\"" % "\"")))]
-    ;; TODO this would read cleaner if it were quoted lisp instead of strings
+    ;; consider quoted lisp instead of strings
     (when (or raw-fnl awm)
       (str
         "  (awful.key " "[ " (string/join " " mods) " ] \"" key "\"" "\n    "
@@ -44,7 +44,7 @@
 (defn raw-append-global-keybindings
   "Returns a string of fennel to be evaluated."
   []
-  ;; TODO this adds a listener for each key, but does not clear any existing,
+  ;; NOTE this adds a listener for each key, but does not clear any existing,
   ;; still need to restart awesome to prevent bindings from firing multiple
   ;; listeners
   (let [awful-keys (->> (defkbd/list-bindings)
@@ -60,8 +60,7 @@
 
 (def spawn-fn-deps
   "Returns a string of fennel pre-amble to the clawe-bindings.fnl file.
-  Should include all fennel deps in bindings.
-  ;; TODO generate this based on keywords used in fennel commands?"
+  Should include all fennel deps in bindings."
   (string/join
     "\n"
     (list '(local gears (require :gears))

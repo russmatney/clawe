@@ -29,10 +29,9 @@
   [wsp]
   (->> wsp
        (filter
-         (fn [[k v]]
+         (fn [[_k v]]
            (cond
              (fn? v) false
-             ;; TODO consider whitelist of supported types
              :else   true)))
        (into {})))
 

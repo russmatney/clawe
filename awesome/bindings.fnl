@@ -69,9 +69,7 @@
                       (helpers.tag_back_and_forth keyed-tag.index)
                       (_G.update_topbar))
                     (let []
-                      ;; create tag
-                      ;; TODO fetch name  from config for index
-                      ;; include other tag config?
+                      ;; create tag on miss
                       (awful.tag.add (.. "num" it) {:layout (. layouts 1)
                                                     :selected true})))
                 (_G.update_topbar))))
@@ -118,8 +116,6 @@
           (= n "centerwork"))))))
 
 (fn focus-move [dir centerwork-dir centerwork-dir2]
-  ;; TODO should move floating windows if floating
-  ;; TODO consider toggling when there is a floating window
   (if (centerwork_layout?)
       (do
         (awful.client.focus.bydirection centerwork-dir)

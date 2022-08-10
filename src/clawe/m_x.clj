@@ -49,7 +49,6 @@
    (let [wsp (or wsp (wm/current-workspace))]
      (->>
        (concat
-         ;; TODO include open-wsp on these
          (->>
            (r.git/rofi-clone-suggestions-fast)
            (map (fn [x]

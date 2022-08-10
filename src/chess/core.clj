@@ -109,7 +109,6 @@
           :lichess.game/clock-increment (-> clock :increment)
           :lichess.game/clock-total-time (-> clock :totalTime)
 
-          ;; TODO remove this usage when other consumers are updated
           :lichess/id id
           :lichess/url (str "https://lichess.org/" id)))))
 
@@ -156,10 +155,7 @@
                   }))
 
   (fetch-games)
-  (clear-cache)
-
-  ;; TODO i ought to be storing these in clawe's db
-  )
+  (clear-cache))
 
 (defn parse-study [st]
   (let [{:keys [pgn id players opening]} st]
@@ -200,10 +196,7 @@
   ;; requires oauth
   (fetch-studies {:username "TeknqlTeam"})
   (fetch-studies)
-  (clear-cache)
-
-  ;; TODO i ought to be storing these in clawe's db
-  )
+  (clear-cache))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Lichess Import
@@ -264,6 +257,5 @@
        (string/join "\n")
        (println)
        ;; and copy from repl...
-       ;; TODO ought to just put it on my clipboard!
        )
   )

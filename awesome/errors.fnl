@@ -15,9 +15,6 @@
          :title  "Oops, there were errors during startup!"
          :text  _G.awesome.startup_errors }))
 
-   ;; TODO fix the default config's bg, bindings, etc
-   ;; TODO fix error handling ux
-
    ;; Handle runtime errors after startup
    (let []
      (var in_error false)

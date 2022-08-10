@@ -1,6 +1,6 @@
 #! /bin/sh
 
-# TODO perf, skip this check if some env var is set
+# perf, could skip this check if some env var is set
 if ! tmux has -t sxhkd; then
     tmux new-session -d -s sxhkd -n sxhkd
 fi

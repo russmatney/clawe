@@ -2,7 +2,6 @@
   (:require
    [babashka.process :as process :refer [$ check]]
    [clojure.string :as string]
-   [defthing.defcom :as defcom]
    [defthing.defkbd :refer [defkbd]]
 
    [ralphie.notify :as notify]
@@ -60,15 +59,6 @@
   (let [uuid (str (java.util.UUID/randomUUID))]
     (notify/notify "clippy!")
     (r.clip/set-clip uuid)))
-
-(comment
-  (->>
-    (defthing.defcom/list-commands)
-    (filter :name)
-    (filter (fn [com] (-> com :name (#(string/includes? % "uuid-on")))))
-    ;; first
-    ;; defthing.defcom/exec
-    ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Titlebars
@@ -222,7 +212,6 @@
 ;; Workspace toggling
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; TODO perhaps read the keys from clawe.edn as well, :toggle/kbd ?
 (defkbd toggle-terminal
   [[:mod] "Return"]
   (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key terminal"))
@@ -293,18 +282,11 @@
 
 (defkbd cycle-focus-next
   [[:mod] "Tab"]
-  (awm/awm-fnl '(awful.client.focus.byidx 1))
-  ;; (do
-  ;;   ;; TODO should be able to notify from sxhkd, but run this awm-fnl from awesome
-  ;;   (notify/notify "Client focus next!" (seq (awm/visible-clients))))
-  )
+  (awm/awm-fnl '(awful.client.focus.byidx 1)))
 
 (defkbd cycle-focus-prev
   [[:mod :shift] "Tab"]
-  (awm/awm-fnl '(awful.client.focus.byidx -1))
-  ;; (do
-  ;;   (notify/notify "Client focus prev!" (seq (awm/visible-clients))))
-  )
+  (awm/awm-fnl '(awful.client.focus.byidx -1)))
 
 (defkbd cycle-layout-next
   [[:mod] "e"]
@@ -340,38 +322,31 @@
 
 (defkbd brightness-up
   [[] "XF86MonBrightnessUp"]
-  (awm/awm-fnl
-    '(awful.spawn.easy_async "light -A 5" (fn []))))
+  (sxhkd-exec "light -A 5"))
 
 (defkbd brightness-down
   [[] "XF86MonBrightnessDown"]
-  (awm/awm-fnl
-    '(awful.spawn.easy_async "light -U 5" (fn []))))
+  (sxhkd-exec "light -U 5"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Play/Pause/Next/Prev
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; TODO support in sxhkd
 (defkbd spotify-pause
   [[] "XF86AudioPause"]
-  (awm/awm-fnl
-    '(awful.spawn.easy_async "spotifycli --playpause" (fn []))))
+  (sxhkd-exec "spotifycli --playpause"))
 
 (defkbd spotify-play
   [[] "XF86AudioPlay"]
-  (awm/awm-fnl
-    '(awful.spawn.easy_async "spotifycli --playpause" (fn []))))
+  (sxhkd-exec "spotifycli --playpause"))
 
 (defkbd audio-next
   [[] "XF86AudioNext"]
-  (awm/awm-fnl
-    '(awful.spawn.easy_async "playerctl next" (fn []))))
+  (sxhkd-exec "playerctl next"))
 
 (defkbd audio-prev
   [[] "XF86AudioPrev"]
-  (awm/awm-fnl
-    '(awful.spawn.easy_async "playerctl previous" (fn []))))
+  (sxhkd-exec "playerctl previous"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Muting input/output
@@ -379,8 +354,6 @@
 
 (defkbd toggle-input-mute
   [[:mod] "m"]
-  ;; TODO write another supported wrapper/unwrapper that lets me include clawe-based notifs here
-  ;; could even still write it's own defcom, and fire both the raw-fnl and clojure command
   (do
     (->
       ($ amixer set Capture toggle)
@@ -394,8 +367,7 @@
 
 (defkbd toggle-output-mute
   [[] "XF86AudioMute"]
-  (awm/awm-fnl
-    '(awful.spawn.easy_async "pactl set-sink-mute @DEFAULT_SINK@ toggle" (fn []))))
+  (sxhkd-exec "pactl set-sink-mute @DEFAULT_SINK@ toggle"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Volume up/down

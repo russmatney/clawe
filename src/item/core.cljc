@@ -49,7 +49,6 @@
     (some->> ks
              (map (fn [k]
                     (when-let [maybe-time (item k)]
-                      ;; HACK that jams a tz onto these... maybe it's fine?
                       (dates.tick/add-tz
                         (if (string? maybe-time)
                           (dates.tick/parse-time-string maybe-time)
