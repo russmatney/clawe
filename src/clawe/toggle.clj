@@ -25,7 +25,10 @@
   Supports prefetched `:prefetched-clients` to avoid the `wm/` call."
   ([client-def] (find-client nil client-def))
   ([opts client-def]
-   (let [all-clients (or (:prefetched-clients opts) (wm/active-clients opts))
+   (let [client-def  (cond
+                       (map? client-def)    client-def
+                       (string? client-def) (clawe.config/client-def client-def))
+         all-clients (or (:prefetched-clients opts) (wm/active-clients opts))
          current     (or (:current-workspace opts) (wm/current-workspace
                                                      {:prefetched-clients all-clients}))]
      (some->> all-clients
@@ -42,6 +45,17 @@
 
 (comment
   (clawe.config/reload-config)
+  (find-client "messages")
+  (clawe.config/client-def "messages")
+  (->>
+    (wm/active-clients)
+    (filter
+      (partial client/match?
+               (clawe.config/client-def "messages")))
+
+    #_(filter (comp #{"Messages"} :client/app-name))
+    )
+
   (->
     (clawe.config/client-def "terminal")
     find-client
@@ -103,6 +117,7 @@
 
 (defn execute-toggle-action [tog-action opts]
   (let [[action client-or-def] tog-action]
+    (println "Executing" action)
     (case action
       :no-def
       (do
