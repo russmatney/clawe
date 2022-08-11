@@ -2,7 +2,6 @@
   (:require
    [clojure.string :as string]
    [hiccup-icons.fa :as fa]
-   [hiccup-icons.mdi :as mdi]
    [tick.core :as t]
    [uix.core.alpha :as uix]
 
@@ -17,40 +16,7 @@
    [doctor.ui.tauri :as tauri]))
 
 (defn skip-bar-app? [client]
-  (and
-    (-> client :awesome.client/focused not)
-    (-> client :awesome.client/name #{"tauri/doctor-topbar"})))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Actions
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn ->actions
-  ([wsp] (->actions nil wsp))
-  ([_opts wsp]
-   (let [{:keys [
-                 git/dirty?
-                 git/needs-push?
-                 git/needs-pull?
-                 ;; git/last-fetch-timestamp
-                 ]} wsp]
-     (->>
-       [(when needs-push? {:action/icon {:icon    mdi/github-face
-                                         :color   "text-city-red-400"
-                                         :tooltip "Needs Push"}})
-        (when needs-pull? {:action/icon {:icon    mdi/github-face
-                                         :color   "text-city-blue-500"
-                                         :tooltip "Needs Pull"}})
-        (when dirty? {:action/icon {:icon    mdi/github-face
-                                    :color   "text-city-green-500"
-                                    :tooltip "Dirty"}})
-        ;; (when (and last-fetch-timestamp (> (ms-ago (* last-fetch-timestamp 1000)) (hours 3)))
-        ;;   {:action/icon {:icon    mdi/github-face
-        ;;                  :color   "text-city-yellow-500"
-        ;;                  :tooltip "Last Fetch over 3 hours ago"}})
-        ]
-       (remove nil?)))))
-
+  (-> client :client/window-title #{"tauri/doctor-topbar"}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Icons
@@ -58,42 +24,29 @@
 
 (defn bar-icon
   [{:keys [color icon src
-           on-mouse-over
-           on-mouse-out
            fallback-text
            classes]}]
   [:div
-   {:on-mouse-over on-mouse-over
-    :on-mouse-out  on-mouse-out
-    :class         ["flex" "flex-row" "items-center"]}
-   [:div
-    {:class (concat [color] classes)}
-    (cond
-      src   [:img {:class ["w-10"] :src src}]
-      icon  [:div {:class ["text-3xl"]} icon]
-      :else fallback-text)]])
+   {:class (concat [color] classes)}
+   (cond
+     src   [:img {:class ["w-10"] :src src}]
+     icon  [:div {:class ["text-3xl"]} icon]
+     :else fallback-text)])
 
 (defn client-icon-list
-  [{:keys [on-hover-client on-unhover-client workspace
-           ->show-name?
-           ]} clients]
+  [{:keys [workspace]} clients]
   (when (seq clients)
     [:div
-     {:class ["flex" "flex-row" "flex-wrap"]}
-     (for [c (->> clients (remove skip-bar-app?))]
-       (let [c-name                                         (->> c :awesome.client/name (take 15) (apply str))
-             {:awesome.client/keys [window urgent focused]} c
-             {:keys [color] :as icon-def}                   (icons/client->icon c workspace)]
-         ^{:key (or window c-name)}
+     {:class ["grid" "grid-flow-col"]}
+     (for [[i c] (->> clients (remove skip-bar-app?) (map-indexed vector))]
+       (let [c-name
+             (some->> c :client/window-title (take 15) (apply str))
+             {:client/keys [focused]} c
+             {:keys [color] :as icon-def}
+             (icons/client->icon c workspace)]
+         ^{:key i}
          [:div
-          {:class         ["flex" "flex-row" "items-center" "justify-center"]
-           :on-mouse-over #(on-hover-client c)
-           :on-mouse-out  #(on-unhover-client c)}
-          (when (and ->show-name? (->show-name? c))
-            [:span
-             {:class ["px-2"]}
-             c-name])
-
+          {:class ["w-8"]}
           [bar-icon (-> icon-def
                         (assoc
                           :fallback-text c-name
@@ -101,90 +54,49 @@
                           :classes ["border-opacity-0"
                                     (cond
                                       focused "text-city-orange-400"
-                                      urgent  "text-city-red-400"
                                       color   color
                                       :else   "text-city-blue-400")]))]]))]))
 
-(def cell-classes
-  ["flex" "flex-row" "justify-center"
-   "max-h-16" "px-2"
-   "border" "border-city-blue-600" "rounded" "border-opacity-50"
-   "bg-yo-blue-800"
-   "bg-opacity-10"
-   "text-white"])
-
-(defn clients-cell
-  [topbar-state clients]
-  (let [hovering? (uix/state false)]
-    [:div
-     {:class          cell-classes
-      :on-mouse-enter #(reset! hovering? true)
-      :on-mouse-leave #(reset! hovering? false)}
-     [:div {:class ["flex" "flex-row" "items-center" "justify-center"]}
-      ;; icons
-      [client-icon-list (assoc topbar-state
-                               :->show-name? (fn [{:keys [awesome.client/focused]}] focused))
-       clients]]]))
 
 (defn workspace-cell
-  [{:as   topbar-state
-    :keys [hovered-workspace on-hover-workspace on-unhover-workspace]}
-   {:as               wsp
-    :workspace/keys   [directory index clients]
-    :awesome.tag/keys [selected urgent]}
+  [topbar-state
+   {:as wsp :workspace/keys [index clients focused title]}
    {:keys [is-last]}]
-
-  (let [is-home-directory? (#{"/home/russ"} directory)
-        hovering?          (= hovered-workspace wsp)
-        show-name          (or hovering? (not is-home-directory?) urgent selected (#{0} (count clients)))
-        show-number        is-last]
+  (let [urgent      false
+        clients     (->> clients (remove skip-bar-app?))
+        show-name   (or (not (seq title)) urgent focused (zero? (count clients)))
+        show-number (or is-last (not (seq title)))]
     [:div
-     {:class          (conj cell-classes (cond selected "bg-opacity-60" :else "bg-opacity-10"))
-      :on-mouse-enter #(on-hover-workspace wsp)
-      :on-mouse-leave #(on-unhover-workspace wsp)}
-     [:div {:class ["flex" "flex-row" "items-center" "justify-center"]}
-      [client-icon-list (assoc topbar-state :workspace wsp) clients]
+     {:class ["grid" "grid-flow-col-dense" "place-items-center"
+              "h-full"
+              "bg-yo-blue-800"
+              "border" "border-city-blue-600"
+              "rounded" "border-opacity-50"
+              "text-white"
+              (cond focused "bg-opacity-60" :else "bg-opacity-30")]}
+     [client-icon-list (assoc topbar-state :workspace wsp) clients]
 
-      ;; number
-      [:div {:class [(if (or show-name show-number) "pl-2" "w-0")
-                     "transition-all"
-                     (cond urgent   "text-city-red-400"
-                           selected "text-city-orange-400"
-                           :else    "text-yo-blue-300")]}
-       [:div {:class ["font-nes" "text-lg"]}
-        ;; number/index
-        (let [show (or show-name show-number hovering? (zero? (count clients)))]
-          [:span {:class [(when show-name "pr-2")]}
-           (when show
-             (str "[" index "]"))])]]
+     ;; number/index
+     (when show-number
+       [:div {:class ["transition-all"
+                      (cond urgent  "text-city-red-400"
+                            focused "text-city-orange-400"
+                            :else   "text-yo-blue-300")]}
+        [:div {:class ["font-nes" "text-lg"]}
+         [:span (str "[" index "]")]]])
 
-      ;; name
-      [:div {:class [(when show-name "pr-2")
-                     (when-not show-name "w-0")
-                     "transition-all"
-                     (cond urgent   "text-city-red-400"
-                           selected "text-city-orange-400"
-                           :else    "text-yo-blue-300")]}
-       [:div {:class ["font-nes" "text-lg"]}
-        ;; name/title
-        (when show-name
-          [:span
-           (:workspace/title wsp)])]]
-
-      ;; actions
-      [:div
-       {:class ["flex" "flex-wrap" "flex-row" "text-yo-blue-300"]}
-       (for [[i ax] (map-indexed vector (->actions {:hovering? hovering?} wsp))]
-         ^{:key i}
-         [:div {:class    ["cursor-pointer" "hover:text-yo-blue-300"]
-                :on-click (:action/on-click ax)}
-          (if (seq (:action/icon ax))
-            [bar-icon (:action/icon ax)]
-            (:action/label ax))])]]]))
+     ;; name
+     (when show-name
+       [:div {:class ["transition-all"
+                      (cond urgent  "text-city-red-400"
+                            focused "text-city-orange-400"
+                            :else   "text-yo-blue-300")]}
+        [:div {:class ["font-nes" "text-lg"]}
+         (:workspace/title wsp "no title")]])]))
 
 (defn workspace-list [topbar-state wspcs]
   [:div
-   {:class ["flex" "flex-row" "justify-center"]}
+   {:class ["grid" "grid-flow-col" "h-full"]}
    (for [[i it] (->> wspcs (map-indexed vector))]
      ^{:key i}
      [workspace-cell topbar-state it {:is-last (= i (- (count wspcs) 1))}])])
@@ -195,24 +107,17 @@
 
 (defn sep [] [:span.px-2.font-mono "|"])
 
-(defn clock-host-metadata [{:keys [time topbar-above toggle-above-below]} metadata]
+(defn clock-host-metadata [{:keys [time]} metadata]
   [:div
-   {:class ["flex" "flex-row" "justify-center" "items-center"]}
+   {:class ["grid" "grid-flow-col"]}
 
-   [:div.font-mono
-    (some->> time
-             #_{:clj-kondo/ignore [:unresolved-var]}
-             (t/format (t/formatter "MM/dd HH:mm")))]
-
-   [sep]
    [:div
     {:class ["font-nes"]}
     (:hostname metadata)]
-
    [sep]
+
    [:div
     (if (:microphone/muted metadata) fa/microphone-slash-solid fa/microphone-solid)]
-
    (when (:battery/status metadata)
      [sep])
 
@@ -225,6 +130,7 @@
        (:battery/remaining-charge metadata)]])
 
    [sep]
+
    [:div
     {:class ["flex" "flex-row"]}
     (when-let [pcts
@@ -244,16 +150,10 @@
                     "rgb(255, 99, 132)")}]]))]
 
    [sep]
-   ;; current todos
-   (let [ct (-> metadata :todos/in-progress count)]
-     [:div.font-mono
-      (if (zero? ct)
-        "No in-progress todos"
-        (str ct " in-progress todo" (when (> ct 1) "s")))])
-   [sep]
    [:div.font-mono
-    {:on-click toggle-above-below}
-    (if topbar-above "above" "below")]])
+    (some->> time
+             #_{:clj-kondo/ignore [:unresolved-var]}
+             (t/format (t/formatter "MM/dd HH:mm")))][sep]])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Current task
@@ -263,7 +163,7 @@
   (when-let [todo (:todos/latest metadata)]
     (let [{:todo/keys [name]} todo]
       [:div
-       {:class ["flex" "flex-row" "justify-center" "items-center"]}
+       {:class ["grid" "grid-flow-col"]}
        [:div.font-mono.pr-3 name]
 
        [components.actions/action-list (hooks.todos/->actions todo)]])))
@@ -314,7 +214,7 @@
 (defn widget [_opts]
   (let [metadata                                      (hooks.topbar/use-topbar-metadata)
         {:keys [topbar/background-mode] :as metadata} @metadata
-        {:keys [active-workspaces active-clients]}    (hooks.workspaces/use-workspaces)
+        {:keys [active-workspaces]}                   (hooks.workspaces/use-workspaces)
         topbar-state                                  (use-topbar-state)
         {:keys [tauri? open?] :as popup}              (tauri/use-popup)]
     [:div
@@ -322,14 +222,14 @@
               (when (#{:bg/dark} background-mode) "bg-gray-700")
               (when (#{:bg/dark} background-mode) "bg-opacity-50")]}
      [:div
-      {:class ["flex" "flex-row" "justify-between" "pr-3"]}
+      {:class ["grid" "grid-flow-col-dense"
+               "auto-cols-fr"
+               "h-full"]}
 
       ;; workspaces
       [workspace-list topbar-state active-workspaces]
-      ;; active-clients
-      (when (seq active-clients) [clients-cell topbar-state active-clients])
 
-      [:div {:class ["flex" "flex-row" "space-x-2" "p-2" "text-city-pink-100"]}
+      [:div {:class ["grid" "grid-flow-col" "text-city-pink-100"]}
        ;; popup toggle
        (when (and tauri? @open?)
          [:button {:on-click (fn [_] ((:hide popup)))} "Hide Popup"])
