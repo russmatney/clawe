@@ -4,19 +4,24 @@
    [hiccup-icons.octicons :as octicons]
    ;; [hiccup-icons.fa :as fa]
    ;; [hiccup-icons.fa4 :as fa4]
-   [hiccup-icons.mdi :as mdi]))
+   [hiccup-icons.mdi :as mdi]
+   [clawe.client :as client]
+   [clawe.workspace :as workspace]))
 
 (defn client->icon [client workspace]
-  (let [{:awesome.client/keys [class name]} client
-        {:workspace/keys [title]}           workspace]
+  (let [{:client/keys [app-name window-title]} client]
+    #_(when (and (#{"Emacs"} app-name)
+                 (string/includes? "journal" window-title))
+        (println (client/strip client)
+                 (workspace/strip workspace)))
     (cond
-      (= "Emacs" class)
+      (#{"Emacs"} app-name)
       (cond
-        (= "journal" title)
+        (string/includes? "journal" window-title)
         {:color "text-city-blue-400"
          :src   "/assets/candy-icons/todo.svg"}
 
-        (= "garden" title)
+        (string/includes? "garden" window-title)
         {:color "text-city-blue-400"
          :src   "/assets/candy-icons/cherrytree.svg"}
 
@@ -24,96 +29,106 @@
         {:color "text-city-blue-400"
          :src   "/assets/candy-icons/emacs.svg"})
 
-      (= "VSCodium" class)
+      (#{"VSCodium"} app-name)
       {:color "text-city-green-600"
        :src   "/assets/candy-icons/vscodium.svg"}
 
-      (= "Alacritty" class)
+      (#{"Alacritty"} app-name)
       {:color "text-city-green-600"
        :src   "/assets/candy-icons/Alacritty.svg"}
 
-      (= "Spotify" class)
+      (#{"Spotify"} app-name)
       {:color "text-city-green-400"
        :src   "/assets/candy-icons/spotify.svg"}
 
-      (= "Audacity" class)
+      (#{"Audacity"} app-name)
       {:color "text-city-green-400"
        :src   "/assets/candy-icons/audacity.svg"}
 
-      (= "Pavucontrol" class)
+      (#{"Pavucontrol"} app-name)
       {:color "text-city-green-400"
        :src   "/assets/candy-icons/pavucontrol.svg"}
 
-      (= "firefox" class)
+      (#{"Messages"} app-name)
+      {:color "text-city-green-400"
+       :src   "/assets/candy-icons/messenger.svg"}
+
+      (#{"Safari"} app-name)
+      {:color "text-city-green-400"
+       :src   "/assets/candy-icons/browser.svg"}
+
+      (#{"firefox"} app-name)
       {:color "text-city-green-400"
        :src   "/assets/candy-icons/firefox.svg"}
 
-      (= "firefoxdeveloperedition" class)
+      (#{"firefoxdeveloperedition"
+         "Firefox Developer Edition"} app-name)
       {:color "text-city-green-600"
        :src   "/assets/candy-icons/firefox-nightly.svg"}
 
-      (= "Google-chrome" class)
+      (#{"Google-chrome"} app-name)
       {:color "text-city-green-600"
        :src   "/assets/candy-icons/google-chrome.svg"}
 
-      (= "DevHub" name)
+      (#{"DevHub"} window-title)
       {:color "text-city-green-600"
        :src   "/assets/candy-icons/github-desktop.svg"}
 
-      (string/includes? name "Slack call")
+      (string/includes? window-title "Slack call")
       {:color "text-city-green-600"
        :src   "/assets/candy-icons/shutter.svg"}
 
-      (= "Slack" class)
+      (#{"Slack"} app-name)
       {:color "text-city-green-400"
        :src   "/assets/candy-icons/slack.svg"}
 
-      (= "discord" class)
+      (#{"discord"} app-name)
       {:color "text-city-green-400"
        :src   "/assets/candy-icons/discord.svg"}
 
-      (= "Rofi" class)
+      (#{"Rofi"} app-name)
       {:color "text-city-green-400"
        :src   "/assets/candy-icons/kmenuedit.svg"}
 
-      (= "1Password" class)
+      (#{"1Password"} app-name)
       {:color "text-city-green-400"
        :src   "/assets/candy-icons/1password.svg"}
 
-      (= "zoom" class)
+      (#{"zoom"} app-name)
       {:color "text-city-green-400"
        :src   "/assets/candy-icons/Zoom.svg"}
 
-      (#{"tauri/doctor-topbar"
-         "tauri/doctor-popup"
-         "tauri/doctor-todo"
-         "Tauri App"} name)
+      (or (#{"tauri/doctor-topbar"
+             "tauri/doctor-popup"
+             "tauri/doctor-todo"
+             "Tauri App"} window-title)
+          (#{"doctor"} app-name))
       {:color "text-city-blue-600"
        :icon  mdi/doctor}
 
-      (string/includes? name "Developer Tools")
+      (string/includes? window-title "Developer Tools")
       {:color "text-city-blue-600"
        :src   "/assets/candy-icons/firefox-developer-edition.svg"}
 
-      (= "Godot" class)
+      (#{"Godot"} app-name)
       {:color "text-city-green-400"
        :src   "/assets/candy-icons/godot.svg"}
 
-      (= "Aseprite" class)
+      (#{"Aseprite"} app-name)
       {:color "text-city-green-400"
        :src   "/assets/candy-icons/winds.svg"}
 
-      (= "Steam" class)
+      (#{"Steam"} app-name)
       {:color "text-city-green-400"
        :src   "/assets/candy-icons/steam.svg"}
 
-      (= "obs" class)
+      (#{"obs"} app-name)
       {:color "text-city-green-400"
        :src   "/assets/candy-icons/obs.svg"}
 
       :else
       (do
-        (println "missing icon for client" client)
+        (println "missing icon for client" (client/strip client))
         {:icon octicons/question16}))))
 
 (defn icon-comp [{:keys [class src icon text]}]
