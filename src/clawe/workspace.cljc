@@ -10,8 +10,9 @@
 
 (def schema
   [:map
-   [:workspace/title string?]
-   [:workspace/directory string?]
+   [:workspace/title :string]
+   [:workspace/directory :string]
+   [:workspace/focused {:optional true} [:maybe :boolean]]
    [:workspace/index {:optional true} int?]
    [:workspace/initial-file {:optional true} string?]
    ;; extra app names used to match on clients when applying clawe.rules
