@@ -2,9 +2,9 @@
   (:require
    [systemic.core :refer [defsys] :as sys]
    [manifold.stream :as s]
-   [ralphie.battery :as r.battery]
-   [ralphie.pulseaudio :as r.pulseaudio]
-   [ralphie.spotify :as r.spotify]
+   ;; [ralphie.battery :as r.battery]
+   ;; [ralphie.pulseaudio :as r.pulseaudio]
+   ;; [ralphie.spotify :as r.spotify]
    [babashka.process :as process]
    [clojure.string :as string]
    [db.core :as db]
@@ -96,12 +96,12 @@
   (let [todos  (in-progress-todos)
         latest (some->> todos (sort-by :todo/last-started-at) reverse first)]
     (->
-      {:microphone/muted (r.pulseaudio/input-muted?)
-       :spotify/volume   (r.spotify/spotify-volume-label)
-       :audio/volume     (r.pulseaudio/default-sink-volume-label)
+      {:microphone/muted false  #_ (r.pulseaudio/input-muted?)
+       :spotify/volume   "TODO" #_ (r.spotify/spotify-volume-label)
+       :audio/volume     "TODO" #_ (r.pulseaudio/default-sink-volume-label)
        :hostname         (-> (process/$ hostname) process/check :out slurp string/trim)}
-      (merge (r.spotify/spotify-current-song)
-             (r.battery/info))
+      #_(merge (r.spotify/spotify-current-song)
+               (r.battery/info))
       (dissoc :spotify/album-url :spotify/album)
       (assoc :todos/in-progress todos)
       (assoc :todos/latest latest)
