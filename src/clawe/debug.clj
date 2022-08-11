@@ -50,9 +50,17 @@
      :pre-fn  (partial filter #(false? (:daemon %)))}))
 
 
+(comment
+  (cli/parse-opts
+    ["--all"
+     "--headers" "some"
+     "--headers" "keys"
+     ]
+    {:coerce {:all     :boolean
+              :headers [:string]}}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; workspaces, clients
+;; clients
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn print-active-clients
@@ -61,6 +69,7 @@
              :all     :boolean}}}
   ([] (print-active-clients nil))
   ([{:keys [headers] :as opts}]
+   (println "opts" opts)
    (cond->> (wm/active-clients)
 
      (not (:all opts))
@@ -76,12 +85,17 @@
 (comment
   (print-active-clients))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; workspaces
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defn print-active-workspaces
   {:org.babashka/cli
    {:coerce {:headers [:keyword]
              :all     :boolean}}}
   ([] (print-active-workspaces nil))
   ([{:keys [headers] :as opts}]
+   (println "opts" opts)
    (cond->> (wm/active-workspaces)
 
      (not (:all opts))
