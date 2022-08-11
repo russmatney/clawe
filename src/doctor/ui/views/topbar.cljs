@@ -81,18 +81,18 @@
        [:div {:class ["transition-all"
                       (cond urgent  "text-city-red-400"
                             focused "text-city-orange-400"
-                            :else   "text-yo-blue-300")]}
-        [:div {:class ["font-nes" "text-lg"]}
-         [:span (str "[" index "]")]]])
+                            :else   "text-yo-blue-300")
+                      "font-nes" "text-lg"]}
+        [:span (str "[" index "]")]])
 
      ;; name
      (when show-name
        [:div {:class ["transition-all"
                       (cond urgent  "text-city-red-400"
                             focused "text-city-orange-400"
-                            :else   "text-yo-blue-300")]}
-        [:div {:class ["font-nes" "text-lg"]}
-         (:workspace/title wsp "no title")]])]))
+                            :else   "text-yo-blue-300")
+                      "font-nes" "text-lg"]}
+        (:workspace/title wsp "no title")])]))
 
 (defn workspace-list [topbar-state wspcs]
   [:div
