@@ -12,10 +12,11 @@
       (assoc :client/app-name app)))
 
 (defn space->clawe-workspace
-  [{:yabai.space/keys [index label] :as space}]
+  [{:yabai.space/keys [index label has-focus] :as space}]
   (-> space
       (assoc :workspace/index index)
-      (assoc :workspace/title label)))
+      (assoc :workspace/title label)
+      (assoc :workspace/focused has-focus)))
 
 (defn clients-for-space [{:yabai.space/keys [windows]} clients]
   (->> windows

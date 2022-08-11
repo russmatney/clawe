@@ -15,6 +15,7 @@
   (-> tag
       (assoc :workspace/index (:awesome.tag/index tag))
       (assoc :workspace/title (:awesome.tag/name tag))
+      (assoc :workspace/focused (:awesome.tag/focused tag))
 
       ;; NOTE the `tag` may not include clients
       (assoc :workspace/clients
