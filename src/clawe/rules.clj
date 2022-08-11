@@ -86,6 +86,9 @@
 ;; clean up workspaces
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn is-bar-app? [client]
+  (-> client :client/window-title #{"tauri/doctor-topbar"}))
+
 (defn clean-workspaces
   "Closes workspaces with 0 clients."
   ([] (clean-workspaces nil))
@@ -96,7 +99,9 @@
      (filter (fn [wsp]
                (or
                  (-> wsp :workspace/title nil?)
-                 (-> wsp :workspace/clients seq empty?))))
+                 (->> wsp :workspace/clients
+                      (remove is-bar-app?)
+                      seq empty?))))
      (map
        (fn [it]
          (when-let [title (:workspace/title it)]
