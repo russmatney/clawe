@@ -21,7 +21,7 @@
 
 (defkbd clawe-rofi-mx
   [[:mod] "x"]
-  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.m-x/do-m-x"))
+  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.m-x/m-x"))
 
 (defkbd rofi-launcher
   [[:mod] "space"]

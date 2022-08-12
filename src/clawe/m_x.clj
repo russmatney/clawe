@@ -1,7 +1,7 @@
 (ns clawe.m-x
   (:require
    [defthing.defkbd :as defkbd]
-   [defthing.defcom :as defcom :refer [defcom]]
+   [defthing.defcom :as defcom]
 
    [ralphie.rofi :as r.rofi]
    [ralphie.core :as r.core]
@@ -12,7 +12,8 @@
    [ralphie.systemd :as r.systemd]
    [clawe.wm :as wm]
    [clawe.workspace.open :as workspace.open]
-   [clawe.config :as clawe.config]))
+   [clawe.config :as clawe.config]
+   [ralphie.rofi :as rofi]))
 
 (defn kill-things [_wsp]
   (concat
@@ -43,6 +44,34 @@
                                         :tmux.fire/session   (:workspace/title wsp)
                                         :tmux.fire/directory dir})))))))))
 
+(defn list-client-defs []
+  (->>
+    (clawe.config/client-defs)
+    (map (fn [d]
+           (-> d (assoc :rofi/label (str "client-def: " (:client/key d))
+                        :rofi/on-select
+                        (fn [d]
+                          (rofi/rofi
+                            {:msg (str d)}
+                            (->> d
+                                 (map (fn [[k val]]
+                                        {:rofi/label (str "["  k " " val "]")})))))))))))
+
+(defn list-workspace-defs []
+  (->>
+    (clawe.config/workspace-defs-with-titles)
+    vals
+    (map (fn [d]
+           (-> d (assoc :rofi/label (str "wsp-def: " (:workspace/title d))
+                        :rofi/description (:workspace/directory d)
+                        :rofi/on-select
+                        (fn [d]
+                          (rofi/rofi
+                            {:msg (str d)}
+                            (->> d
+                                 (map (fn [[k val]]
+                                        {:rofi/label (str "["  k " " val "]")})))))))))))
+
 (defn m-x-commands
   ([] (m-x-commands nil))
   ([{:keys [wsp]}]
@@ -67,6 +96,9 @@
 
          ;; open a known workspace
          (workspace.open/open-workspace-rofi-options)
+
+         (list-client-defs)
+         (list-workspace-defs)
 
          ;; all bindings
          (->> (defkbd/list-bindings) (map defkbd/->rofi))
@@ -95,12 +127,14 @@
     :rofi/on-select
     ((fn [f] (f)))))
 
-(defn do-m-x
-  ([] (do-m-x nil))
+(defn m-x
+  "Reun rofi with commands created in `m-x-commands`."
+  ([] (m-x nil))
   ([_]
    (let [wsp (wm/current-workspace)]
      (->> (m-x-commands {:wsp wsp})
           (r.rofi/rofi {:require-match? true
                         :msg            "Clawe commands"})))))
 
-(defcom m-x (do-m-x))
+(comment
+  (m-x))
