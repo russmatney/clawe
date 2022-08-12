@@ -6,7 +6,8 @@
 
    [ralphie.zsh :as zsh]
    [ralphie.notify :as notify]
-   [db.core :as db]))
+   [db.core :as db]
+   [clawe.config :as clawe.config]))
 
 (defn wp-dir->paths [root]
   (-> (zsh/expand root)
@@ -83,8 +84,16 @@
   ([opts w]
    (notify/notify "Setting wallpaper" w)
    (mark-wp-set w opts)
-   (-> (process/$ feh --bg-fill ~(:file/full-path w))
-       process/check :out slurp)))
+   (if (clawe.config/is-mac?)
+     (->
+       (process/$ osascript -e
+                  ~(str
+                     "tell application \"System Events\" to tell every desktop to set picture to \""
+                     (:file/full-path w)
+                     "\""))
+       process/check :out slurp)
+     (-> (process/$ feh --bg-fill ~(:file/full-path w))
+         process/check :out slurp))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
