@@ -4,9 +4,10 @@
    [hiccup-icons.fa :as fa]
    [components.floating :as floating]
    [components.garden :as components.garden]
-   [components.debug :as components.debug]))
+   [components.debug :as components.debug]
+   [clojure.string :as string]))
 
-(defn status [todo]
+(defn status-icon [todo]
   (case (:org/status todo)
     :status/done        fa/check-circle
     :status/not-started fa/sticky-note
@@ -32,7 +33,7 @@
       {:class ["grid"]}
       [:div
        {:class ["text-3xl"]}
-       [status item]]
+       [status-icon item]]
       #_[components.actions/action-list (hooks.todos/->actions item)]]
 
      [:span
@@ -91,9 +92,37 @@
   [:div
    {:class ["grid" "grid-flow-col" "space-x-2" "place-items-center"]}
 
-   [status todo]
+   [status-icon todo]
 
    [components.garden/text-with-links (:org/name todo)]
+
+   [components.debug/raw-metadata {:label "raw"} todo]])
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; todo-cell
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn todo-cell [_opts todo]
+  [:div
+   {:class ["grid" "grid-flow-row" "place-items-center"
+            "gap-4"
+            "border-2"
+            "border-slate-600"
+            "bg-slate-800"
+            "font-mono"
+            "w-96"
+            "text-center"]}
+
+   [:div
+    (:org/status todo)]
+
+   [:div
+    [components.garden/text-with-links (:org/name todo)]]
+
+   (when (seq (:org/parent-name todo))
+     [:div
+      [components.garden/text-with-links
+       (-> todo :org/parent-name (string/split #" > ") first)]])
 
    [components.debug/raw-metadata {:label "raw"} todo]])
 
@@ -106,7 +135,10 @@
     (when (seq todos)
       [:div {:class ["grid" "grid-flow-row" "place-items-center"]}
        [:div {:class ["text-2xl" "p-2" "pt-4"]} label]
-       [:div {:class ["grid" "grid-flow-row"]}
+       [:div {:class ["grid"
+                      "grid-flow-row"
+                      "gap-4"
+                      "grid-cols-3"]}
         (for [[i td] (->> todos
                           (sort-by :org/parent-name >)
                           (take n)
@@ -118,7 +150,8 @@
             :anchor-comp
             [:div
              {:class ["cursor-pointer"]}
-             [line {} td]]
+             #_[line nil td]
+             [todo-cell nil td]]
             :popover-comp
             [:div
              {:class []}

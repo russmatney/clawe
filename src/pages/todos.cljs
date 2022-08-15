@@ -206,5 +206,5 @@
         [components.todo/todo-list {:label     (str label " (" (count item-group) ")")
                                     :on-select (fn [it] (reset! selected it))
                                     :selected  @selected
-                                    :n         5}
+                                    :n         6}
          item-group])]]))

@@ -90,7 +90,7 @@
   ([opts text]
    (when (seq text)
      [:span
-      {:class ["flex" "flex-row" "space-x-2"]}
+      {:class ["grid" "grid-flow-col" "gap-x-2"]}
       (for [[i comp] (->> (text->comps opts text) (map-indexed vector))]
         ^{:key i} comp)])))
 
