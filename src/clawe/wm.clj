@@ -233,7 +233,9 @@
    (wm.protocol/-focus-workspace *wm* opts workspace)))
 
 (defn focus-client
-  ([client] (focus-client nil client))
+  ([client] (focus-client
+              ;; client supplies opts in single arity case
+              client client))
   ([opts client]
    (sys/start! `*wm*)
    (let [client (cond (map? client)    client
