@@ -7,9 +7,6 @@
 
    [components.icons :as icons]
    [components.charts :as charts]
-   [components.actions :as components.actions]
-
-   [hooks.todos :as hooks.todos]
    [hooks.topbar :as hooks.topbar]
    [hooks.workspaces :as hooks.workspaces]
 
@@ -166,7 +163,7 @@
        {:class ["grid" "grid-flow-col"]}
        [:div.font-mono.pr-3 name]
 
-       [components.actions/action-list (hooks.todos/->actions todo)]])))
+       #_[components.actions/action-list (hooks.todos/->actions todo)]])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Topbar widget and state

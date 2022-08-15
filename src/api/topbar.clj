@@ -99,7 +99,8 @@
       {:microphone/muted false  #_ (r.pulseaudio/input-muted?)
        :spotify/volume   "TODO" #_ (r.spotify/spotify-volume-label)
        :audio/volume     "TODO" #_ (r.pulseaudio/default-sink-volume-label)
-       :hostname         (-> (process/$ hostname) process/check :out slurp string/trim)}
+       :hostname         (-> (process/$ hostname) process/check :out slurp string/trim
+                             (string/replace ".local" ""))}
       #_(merge (r.spotify/spotify-current-song)
                (r.battery/info))
       (dissoc :spotify/album-url :spotify/album)

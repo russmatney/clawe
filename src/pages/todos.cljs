@@ -1,11 +1,11 @@
 (ns pages.todos
   (:require
    [uix.core.alpha :as uix]
-   [components.todo]
+   [components.todo :as components.todo]
    [components.floating :as floating]
-   [hooks.todos]
    [clojure.string :as string]
-   [tick.core :as t]))
+   [tick.core :as t]
+   [doctor.ui.db :as ui.db]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; grouping and filtering
@@ -19,7 +19,7 @@
 
 (def all-filter-defs
   {:file-name {:label            "File"
-               :group-by         :todo/file-name
+               :group-by         :org/short-path
                :group-filters-by (fn [fname]
                                    (some-> fname (string/split #"/") first))
                :filter-options   [{:label    "All Dailies"
@@ -33,7 +33,7 @@
                                              (take 10)
                                              (apply str))))}
    :status    {:label    "Status"
-               :group-by :todo/status}
+               :group-by :org/status}
    :in-db?    {:label    "DB"
                :group-by (comp (fn [x] (if x :in-db :in-org)) :db/id)}
    :scheduled {:label        "Scheduled"
@@ -99,7 +99,8 @@
            (let [group-filters-by (:group-filters-by filter-def (fn [_] nil))]
              [:div
               {:class ["flex" "flex-row" "flex-wrap" "gap-x-4"]}
-              (for [[i [group-label group]] (->> split (group-by (comp group-filters-by first)) (map-indexed vector))]
+              (for [[i [group-label group]] (->> split (group-by (comp group-filters-by first))
+                                                 (map-indexed vector))]
                 [:div
                  {:key   i
                   :class ["flex" "flex-col"]}
@@ -129,15 +130,15 @@
 ;; page
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn page [_opts]
-  (let [{:keys [items db-todos]} (hooks.todos/use-todos)
+(defn page [{:keys [conn]}]
+  (let [todos (ui.db/garden-todos conn)
 
-        selected        (uix/state (first items))
+        selected        (uix/state (first todos))
         items-group-by  (uix/state (some->> all-filter-defs first first))
         items-filter-by (uix/state default-filters)
 
         filtered-items
-        (if-not (seq @items-filter-by) items
+        (if-not (seq @items-filter-by) todos
                 (let [preds
                       (->> @items-filter-by
                            (group-by :filter-key)
@@ -151,7 +152,7 @@
                                                            ((fn [fns]
                                                               (apply some-fn fns))))]
                                     (comp is-match ->value)))))]
-                  (->> items (filter (apply every-pred preds)))))
+                  (->> todos (filter (apply every-pred preds)))))
 
         filtered-item-groups (->> filtered-items
                                   (group-by (some-> @items-group-by all-filter-defs :group-by))
@@ -167,7 +168,7 @@
 
      [:div
       {:class ["p-4"]}
-      [filter-grouper items {:set-group-by    #(reset! items-group-by %)
+      [filter-grouper todos {:set-group-by    #(reset! items-group-by %)
                              :toggle-filter-by
                              (fn [f-by]
                                (swap! items-filter-by
@@ -181,14 +182,14 @@
        {:label     "In Progress"
         :on-select (fn [it] (reset! selected it))
         :selected  @selected}
-       (->> db-todos (filter (comp #{:status/in-progress} :todo/status)))]
+       (->> todos (filter (comp #{:status/in-progress} :org/status)))]
 
       [components.todo/todo-list
-       {:label     "Incomplete DB Todos"
+       {:label     "Incomplete"
         :on-select (fn [it] (reset! selected it))
         :selected  @selected}
-       (->> db-todos (remove (comp #{:status/done
-                                     :status/cancelled} :todo/status)))]
+       (->> todos (remove (comp #{:status/done
+                                  :status/cancelled} :org/status)))]
 
       (for [[i {:keys [item-group label]}]
             (map-indexed vector filtered-item-groups)]

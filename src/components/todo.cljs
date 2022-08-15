@@ -2,12 +2,10 @@
   (:require
    [tick.core :as t]
    [hiccup-icons.fa :as fa]
-   [components.actions]
-   [components.floating :as floating]
-   [hooks.todos]))
+   [components.floating :as floating]))
 
 (defn status [todo]
-  (case (:todo/status todo)
+  (case (:org/status todo)
     :status/done        fa/check-circle
     :status/not-started fa/sticky-note
     :status/in-progress fa/pencil-alt-solid
@@ -19,8 +17,8 @@
 (defn todo
   [{:keys [on-select]} item]
   (let [{:db/keys   [id]
-         :org/keys  [body urls]
-         :todo/keys [name file-name last-started-at]} item]
+         :org/keys  [body urls name short-path]
+         :todo/keys [last-started-at]} item]
     [:div
      {:class    ["py-2" "px-4"
                  "border" "border-city-blue-600"
@@ -33,7 +31,7 @@
       [:div
        {:class ["text-3xl"]}
        [status item]]
-      [components.actions/action-list (hooks.todos/->actions item)]]
+      #_[components.actions/action-list (hooks.todos/->actions item)]]
 
      [:span
       {:class ["text-xl"]}
@@ -46,7 +44,7 @@
 
      [:div
       {:class ["font-mono"]}
-      file-name]
+      short-path]
 
      (when id
        [:div
@@ -71,7 +69,9 @@
        [:div
         {:class ["font-mono" "text-city-blue-400"
                  "flex" "flex-col" "pt-4" "p-2"]}
-        (for [[i url] (map-indexed vector urls)]
+        (for [[i url] (map-indexed vector
+                                   ;; TODO should be ingested as a list
+                                   (if (string? urls) [urls] urls))]
           ^{:key i}
           [:a {:class ["py-1"
                        "cursor-pointer"
@@ -92,7 +92,7 @@
     [status todo]]
 
    [:div
-    (:todo/name todo)]])
+    (:org/name todo)]])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; list

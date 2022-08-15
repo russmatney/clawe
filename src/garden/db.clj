@@ -22,8 +22,11 @@
   (when (and short-path name)
     (str name " " relative-index " " parent-name " > " short-path)))
 
+(defn ensure-list [xs]
+  (if (string? xs) [xs] xs))
+
 (defn garden-note->db-item
-  [{:org/keys [id links-to parent-ids] :as item}]
+  [{:org/keys [id links-to parent-ids urls] :as item}]
   (let [fallback (fallback-id item)]
     (if (or id fallback)
       (cond-> item
@@ -59,6 +62,9 @@
         true
         (assoc :doctor/type :type/garden)
 
+        true
+        (assoc :org/urls (ensure-list urls))
+
         ;; if this can be calced...
         (item/->latest-timestamp
           ;; kind of annoying item depends on this type
@@ -74,8 +80,7 @@
                 :org/items
                 :org.prop/link-ids ;; old linking props
                 :org.prop/begin-src ;; TODO proper source block handling
-                :org.prop/end-src
-                ))
+                :org.prop/end-src))
       (log/info "Could not create fallback id for org item" item))))
 
 ;; this should not be necessary
@@ -263,4 +268,22 @@
     ;; (map db/retract)
     ;; (doall)
     ;; count
-    ))
+    )
+
+  (->>
+    (db/query '[:find ?e
+                :where
+                [?e :org/source-file ?file]
+                [(string/includes? ?file "conflicted copy")]])
+    (map first)
+    (db/retract))
+
+  (->>
+    (db/query '[:find (pull ?e [:org/urls])
+                :where
+                [?e :org/urls ?urls]])
+    (map first)
+    (sort-by (comp count :org/urls) >)
+    (take 5)
+    )
+  )
