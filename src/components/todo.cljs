@@ -17,7 +17,7 @@
     (when (:org.prop/archive-time todo)
       [:div.text-sm.font-mono "Archived"])))
 
-(defn todo
+(defn todo-popover
   [{:keys [on-select]} item]
   (let [{:db/keys   [id]
          :org/keys  [body urls name short-path]
@@ -102,7 +102,8 @@
 ;; todo-cell
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn todo-cell [_opts todo]
+(defn todo-cell [{:keys [index selected on-select] :as opts}
+                 todo]
   [:div
    {:class ["grid" "grid-flow-row" "place-items-center"
             "gap-4"
@@ -114,7 +115,26 @@
             "text-center"]}
 
    [:div
-    (:org/status todo)]
+    {:class ["grid" "grid-flow-col" "gap-2"]}
+
+    [:div
+     (:org/status todo)]
+
+    [components.debug/raw-metadata {:label "raw"} todo]
+
+    [floating/popover
+     {:hover true :click true
+      :anchor-comp
+      [:div
+       {:class ["cursor-pointer"]}
+       "show"]
+      :popover-comp
+      [:div
+       {:class []}
+       [todo-popover
+        {:on-select    #(on-select todo)
+         :is-selected? (= selected todo)}
+        (assoc todo :index index)]]}]]
 
    [:div
     [components.garden/text-with-links (:org/name todo)]]
@@ -122,40 +142,25 @@
    (when (seq (:org/parent-name todo))
      [:div
       [components.garden/text-with-links
-       (-> todo :org/parent-name (string/split #" > ") first)]])
-
-   [components.debug/raw-metadata {:label "raw"} todo]])
+       (-> todo :org/parent-name (string/split #" > ") first)]])])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; list
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn todo-list [{:keys [label selected on-select n]} todos]
+(defn todo-list [{:keys [label n] :as opts} todos]
   (let [n (or n (count todos))]
     (when (seq todos)
       [:div {:class ["grid" "grid-flow-row" "place-items-center"]}
        [:div {:class ["text-2xl" "p-2" "pt-4"]} label]
-       [:div {:class ["grid"
-                      "grid-flow-row"
+       [:div {:class ["grid" "grid-flow-row" "grid-cols-3"
                       "gap-4"
-                      "grid-cols-3"]}
+                      "place-items-center"]}
         (for [[i td] (->> todos
                           (sort-by :org/parent-name >)
                           (take n)
                           (map-indexed vector))]
           ^{:key i}
-          [floating/popover
-           {:hover true
-            :click true
-            :anchor-comp
-            [:div
-             {:class ["cursor-pointer"]}
-             #_[line nil td]
-             [todo-cell nil td]]
-            :popover-comp
-            [:div
-             {:class []}
-             [todo
-              {:on-select    #(on-select td)
-               :is-selected? (= selected td)}
-              (assoc td :index i)]]}])]])))
+          [:div
+           #_[line nil td]
+           [todo-cell (assoc opts :index i) td]])]])))
