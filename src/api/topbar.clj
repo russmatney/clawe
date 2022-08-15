@@ -77,36 +77,20 @@
             topbar-id))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; todos
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn in-progress-todos []
-  (some->>
-    (db/query
-      '[:find (pull ?e [*])
-        :where
-        [?e :todo/status :status/in-progress]])
-    first))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; build metadata
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn build-topbar-metadata []
-  (let [todos  (in-progress-todos)
-        latest (some->> todos (sort-by :todo/last-started-at) reverse first)]
-    (->
-      {:microphone/muted false  #_ (r.pulseaudio/input-muted?)
-       :spotify/volume   "TODO" #_ (r.spotify/spotify-volume-label)
-       :audio/volume     "TODO" #_ (r.pulseaudio/default-sink-volume-label)
-       :hostname         (-> (process/$ hostname) process/check :out slurp string/trim
-                             (string/replace ".local" ""))}
-      #_(merge (r.spotify/spotify-current-song)
-               (r.battery/info))
-      (dissoc :spotify/album-url :spotify/album)
-      (assoc :todos/in-progress todos)
-      (assoc :todos/latest latest)
-      (assoc :topbar/background-mode (background-mode)))))
+  (->
+    {:microphone/muted false  #_ (r.pulseaudio/input-muted?)
+     :spotify/volume   "TODO" #_ (r.spotify/spotify-volume-label)
+     :audio/volume     "TODO" #_ (r.pulseaudio/default-sink-volume-label)
+     :hostname         (-> (process/$ hostname) process/check :out slurp string/trim
+                           (string/replace ".local" ""))}
+    #_(merge (r.spotify/spotify-current-song)
+             (r.battery/info))
+    (dissoc :spotify/album-url :spotify/album)
+    (assoc :topbar/background-mode (background-mode))))
 
 (comment
   (build-topbar-metadata))

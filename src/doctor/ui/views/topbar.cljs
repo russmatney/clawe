@@ -10,7 +10,11 @@
    [hooks.topbar :as hooks.topbar]
    [hooks.workspaces :as hooks.workspaces]
 
-   [doctor.ui.tauri :as tauri]))
+   [doctor.ui.tauri :as tauri]
+   [doctor.ui.db :as ui.db]
+   [components.garden :as components.garden]
+   [components.actions :as components.actions]
+   [doctor.ui.handlers :as handlers]))
 
 (defn skip-bar-app? [client]
   (-> client :client/window-title #{"tauri/doctor-topbar"}))
@@ -93,7 +97,7 @@
 
 (defn workspace-list [topbar-state wspcs]
   [:div
-   {:class ["grid" "grid-flow-col" "h-full"]}
+   {:class ["grid" "grid-flow-col" "h-full" "place-self-start"]}
    (for [[i it] (->> wspcs (map-indexed vector))]
      ^{:key i}
      [workspace-cell topbar-state it {:is-last (= i (- (count wspcs) 1))}])])
@@ -104,13 +108,32 @@
 
 (defn sep [] [:span.px-2.font-mono "|"])
 
-(defn clock-host-metadata [{:keys [time]} metadata]
+(defn clock-host-metadata [{:keys [time]}
+                           {:keys [topbar/background-mode] :as metadata}]
   [:div
-   {:class ["grid" "grid-flow-col"]}
+   {:class ["grid" "grid-flow-col" "self-center" "justify-self-end"
+            "place-items-center"]}
+
+   ;; bg toggle
+   [:div
+    [:button {:on-click (fn [_]
+                          (hooks.topbar/set-background-mode
+                            (if (#{:bg/dark} background-mode)
+                              :bg/light :bg/dark)))
+              :class    ["m-2" "p-2" "border"]}
+     fa/adjust-solid]]
+
+   [sep]
+
+   [:div
+    [:button {:on-click (fn [_] (js/location.reload))} "Reload"]]
+
+   [sep]
 
    [:div
     {:class ["font-nes"]}
     (:hostname metadata)]
+
    [sep]
 
    [:div
@@ -156,14 +179,17 @@
 ;; Current task
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn current-task [metadata]
-  (when-let [todo (:todos/latest metadata)]
-    (let [{:todo/keys [name]} todo]
-      [:div
-       {:class ["grid" "grid-flow-col"]}
-       [:div.font-mono.pr-3 name]
+(defn current-task [{:keys [conn]}]
+  (let [todos (ui.db/queued-todos conn)]
+    (when (seq todos)
+      (let [last-queued        (->> todos (sort-by :todo/queued-at >) first)
+            {:org/keys [name]} last-queued]
+        [:div
+         {:class ["grid" "grid-flow-col" "place-self-center"]}
+         [:div.font-mono.pr-3
+          [components.garden/text-with-links name]]
 
-       #_[components.actions/actions-list (hooks.todos/->actions todo)]])))
+         [components.actions/actions-list (handlers/todo->actions last-queued)]]))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Topbar widget and state
@@ -208,40 +234,23 @@
      :toggle-above-below     toggle-above-below
      :time                   @time}))
 
-(defn widget [_opts]
+(defn widget [opts]
   (let [metadata                                      (hooks.topbar/use-topbar-metadata)
         {:keys [topbar/background-mode] :as metadata} @metadata
         {:keys [active-workspaces]}                   (hooks.workspaces/use-workspaces)
-        topbar-state                                  (use-topbar-state)
-        {:keys [tauri? open?] :as popup}              (tauri/use-popup)]
+        topbar-state                                  (use-topbar-state)]
     [:div
      {:class ["h-screen" "overflow-hidden" "text-city-pink-200"
               (when (#{:bg/dark} background-mode) "bg-gray-700")
               (when (#{:bg/dark} background-mode) "bg-opacity-50")]}
      [:div
-      {:class ["grid" "grid-flow-col-dense"
-               "auto-cols-fr"
-               "h-full"]}
+      {:class ["grid" "grid-flow-col-dense" "auto-cols-fr" "h-full"]}
 
       ;; workspaces
       [workspace-list topbar-state active-workspaces]
 
-      [:div {:class ["grid" "grid-flow-col" "text-city-pink-100"]}
-       ;; popup toggle
-       (when (and tauri? @open?)
-         [:button {:on-click (fn [_] ((:hide popup)))} "Hide Popup"])
-       (when (and tauri? (not @open?))
-         [:button {:on-click (fn [_] ((:show popup)))} "Show Popup"])
-
-       ;; bg toggle
-       [:button {:on-click (fn [_]
-                             (hooks.topbar/set-background-mode
-                               (if (#{:bg/dark} background-mode)
-                                 :bg/light :bg/dark)))}
-        "BG Toggle"]
-       [:button {:on-click (fn [_] (js/location.reload))} "Reload"]]
+      ;; current task
+      [current-task opts]
 
       ;; clock/host/metadata
-      [clock-host-metadata topbar-state metadata]
-      ;; current task
-      [current-task metadata]]]))
+      [clock-host-metadata topbar-state metadata]]]))

@@ -145,3 +145,12 @@
          (map first)
          (sort-by :org/created-at >)
          (take n))))))
+
+(defn queued-todos [conn]
+  (->>
+    (d/q '[:find (pull ?e [*])
+           :where
+           [?e :todo/queued-at ?queued-at]]
+         conn)
+    (map first)
+    (remove (comp #{:status/cancelled :status/done} :org/status))))
