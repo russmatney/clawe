@@ -5,7 +5,9 @@
    [components.floating :as floating]
    [components.garden :as components.garden]
    [components.debug :as components.debug]
-   [clojure.string :as string]))
+   [components.actions :as components.actions]
+   [clojure.string :as string]
+   [doctor.ui.handlers :as handlers]))
 
 (defn status-icon [todo]
   (case (:org/status todo)
@@ -34,7 +36,7 @@
       [:div
        {:class ["text-3xl"]}
        [status-icon item]]
-      #_[components.actions/action-list (hooks.todos/->actions item)]]
+      #_[components.actions/actions-list (hooks.todos/->actions item)]]
 
      [:span
       {:class ["text-xl"]}
@@ -98,11 +100,13 @@
 
    [components.debug/raw-metadata {:label "raw"} todo]])
 
+(comment (line nil nil))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; todo-cell
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn todo-cell [{:keys [index selected on-select] :as opts}
+(defn todo-cell [{:keys [index selected on-select]}
                  todo]
   [:div
    {:class ["grid" "grid-flow-row" "place-items-center"
@@ -134,7 +138,9 @@
        [todo-popover
         {:on-select    #(on-select todo)
          :is-selected? (= selected todo)}
-        (assoc todo :index index)]]}]]
+        (assoc todo :index index)]]}]
+
+    [components.actions/actions-popup (handlers/todo->actions todo)]]
 
    [:div
     [components.garden/text-with-links (:org/name todo)]]

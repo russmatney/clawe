@@ -8,8 +8,9 @@
              [screenshots.core :as screenshots]
              [chess.db :as chess.db]
              [wallpapers.core :as wallpapers]
-             [clawe.wm :as wm]]
-       :cljs [])))
+             [clawe.wm :as wm]
+             [db.core :as db]]
+       :cljs [[hiccup-icons.fa :as fa]])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; garden
@@ -89,6 +90,11 @@
 ;; garden actions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defhandler delete-from-db [item]
+  (println "deleting-item-from-db" item)
+  (db/retract (:db/id item))
+  :ok)
+
 (defhandler add-to-db [todo]
   (println "upserting-to-db" todo)
   ;; (todos/upsert-todo-db todo)
@@ -132,29 +138,33 @@
   :ok)
 
 #?(:cljs
-   (defn garden-todo->actions [todo]
+   (defn todo->actions [todo]
      (let [{:keys [org/status]} todo]
        (->>
-         #_[{:action/label    "open-in-emacs"
-             :action/on-click #(handlers/open-in-journal todo)
-             :action/icon     fa/arrow-circle-down-solid}
-            (when-not (:db/id todo)
-              {:action/label    "add-to-db"
-               :action/on-click #(add-to-db todo)})
-            (when-not (#{:status/done} status)
-              {:action/label    "mark-complete"
-               :action/on-click #(mark-complete todo)
-               :action/icon     fa/check-circle})
-            (when-not (#{:status/in-progress} status)
-              {:action/label    "mark-in-progress"
-               :action/on-click #(mark-in-progress todo)
-               :action/icon     fa/pencil-alt-solid})
-            (when-not (#{:status/not-started} status)
-              {:action/label    "mark-not-started"
-               :action/on-click #(mark-not-started todo)
-               :action/icon     fa/sticky-note})
-            (when-not (#{:status/cancelled} status)
-              {:action/label    "mark-cancelled"
-               :action/on-click #(mark-cancelled todo)
-               :action/icon     fa/ban-solid})]
+         [
+          {:action/label    "open-in-emacs"
+           :action/on-click #(open-in-journal todo)
+           :action/icon     fa/arrow-circle-down-solid}
+          {:action/label    "delete-from-db"
+           :action/on-click #(delete-from-db todo)
+           :action/icon     fa/trash-alt-solid}
+          (when-not (:db/id todo)
+            {:action/label    "add-to-db"
+             :action/on-click #(add-to-db todo)})
+          (when-not (#{:status/done} status)
+            {:action/label    "mark-complete"
+             :action/on-click #(mark-complete todo)
+             :action/icon     fa/check-circle})
+          (when-not (#{:status/in-progress} status)
+            {:action/label    "mark-in-progress"
+             :action/on-click #(mark-in-progress todo)
+             :action/icon     fa/pencil-alt-solid})
+          (when-not (#{:status/not-started} status)
+            {:action/label    "mark-not-started"
+             :action/on-click #(mark-not-started todo)
+             :action/icon     fa/sticky-note})
+          (when-not (#{:status/cancelled} status)
+            {:action/label    "mark-cancelled"
+             :action/on-click #(mark-cancelled todo)
+             :action/icon     fa/ban-solid})]
          (remove nil?)))))

@@ -163,7 +163,7 @@
        {:class ["grid" "grid-flow-col"]}
        [:div.font-mono.pr-3 name]
 
-       #_[components.actions/action-list (hooks.todos/->actions todo)]])))
+       #_[components.actions/actions-list (hooks.todos/->actions todo)]])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Topbar widget and state
