@@ -96,14 +96,20 @@
   (db/retract (:db/id item))
   :ok)
 
+(defhandler queue-todo [todo]
+  (-> todo
+      (assoc :todo/queued-at (System/currentTimeMillis))
+      db/transact)
+  :ok)
+
 (defhandler add-to-db [todo]
   (println "upserting-to-db" todo)
   ;; (todos/upsert-todo-db todo)
   ;; (todos/update-todos)
   :ok)
 
-(defhandler mark-complete [todo]
-  (println "marking-complete" todo)
+(defhandler mark-done [todo]
+  (println "marking-done" todo)
   (-> todo
       (assoc :todo/status :status/done)
       (assoc :todo/last-completed-at (System/currentTimeMillis))
@@ -155,6 +161,11 @@
           {:action/label    "delete-from-db"
            :action/on-click #(delete-from-db todo)
            :action/icon     fa/trash-alt-solid}
+          (when-not (#{:status/cancelled
+                       :status/done} status)
+            {:action/label    "queue-todo"
+             :action/on-click #(queue-todo todo)
+             :action/icon     fa/tasks-solid})
           (when-not (#{:status/cancelled} status)
             {:action/label    "mark-cancelled"
              :action/on-click #(mark-cancelled todo)
@@ -163,8 +174,8 @@
             {:action/label    "add-to-db"
              :action/on-click #(add-to-db todo)})
           (when-not (#{:status/done} status)
-            {:action/label    "mark-complete"
-             :action/on-click #(mark-complete todo)
+            {:action/label    "mark-done"
+             :action/on-click #(mark-done todo)
              :action/icon     fa/check-circle})
           (when-not (#{:status/in-progress} status)
             {:action/label    "mark-in-progress"

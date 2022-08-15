@@ -7,7 +7,8 @@
    [components.debug :as components.debug]
    [components.actions :as components.actions]
    [clojure.string :as string]
-   [doctor.ui.handlers :as handlers]))
+   [doctor.ui.handlers :as handlers]
+   [dates.tick :as dates.tick]))
 
 (defn status-icon [todo]
   (case (:org/status todo)
@@ -107,7 +108,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn todo-cell [{:keys [index selected on-select]}
-                 todo]
+                 {:todo/keys [queued-at] :as todo}]
   [:div
    {:class ["grid" "grid-flow-row" "place-items-center"
             "gap-4"
@@ -141,6 +142,13 @@
         (assoc todo :index index)]]}]
 
     [components.actions/actions-popup (handlers/todo->actions todo)]]
+
+   (when queued-at
+     [:div
+      (str "queued: " (t/format "MMM d, h:mma"
+                                (dates.tick/add-tz
+                                  (t/instant
+                                    queued-at))))])
 
    [:div
     [components.garden/text-with-links (:org/name todo)]]

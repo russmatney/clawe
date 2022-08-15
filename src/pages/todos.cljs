@@ -185,11 +185,19 @@
      [:div
       {:class ["grid" "grid-flow-row"]}
 
-      #_[components.todo/todo-list
-         {:label     "In Progress"
-          :on-select (fn [it] (reset! selected it))
-          :selected  @selected}
-         (->> todos (filter (comp #{:status/in-progress} :org/status)))]
+      [components.todo/todo-list
+       {:label     "In Progress"
+        :on-select (fn [it] (reset! selected it))
+        :selected  @selected}
+       (->> todos (filter
+                    (fn [todo]
+                      (or
+                        (-> todo :org/status #{:status/in-progress})
+                        (and
+                          (-> todo :todo/queued-at)
+                          (not
+                            (-> todo :org/status #{:status/cancelled
+                                                   :status/done})))))))]
 
       #_[components.todo/todo-list
          {:label     "All Incomplete"
