@@ -59,6 +59,20 @@
     :tmux.fire/session    "doctor-todo",
     :tmux.fire/interrupt? true},
    :client/workspace-title "doctor"},
+  "doctor-be"
+  {:client/create
+   {:create/cmd           ralphie.tmux/fire
+    :tmux.fire/cmd        "clawebb doctor-be"
+    :tmux.fire/session    "clawe"
+    :tmux.fire/window     "1"
+    :tmux.fire/interrupt? true}}
+  "doctor-fe"
+  {:client/create
+   {:create/cmd           ralphie.tmux/fire
+    :tmux.fire/cmd        "clawebb clawe-fe"
+    :tmux.fire/session    "clawe"
+    :tmux.fire/window     "2"
+    :tmux.fire/interrupt? true}}
   "spotify"
   {:client/app-names       ["spotify" "pavucontrol"],
    :client/workspace-title "spotify",
