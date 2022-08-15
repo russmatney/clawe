@@ -3,7 +3,8 @@
    [tick.core :as t]
    [hiccup-icons.fa :as fa]
    [components.floating :as floating]
-   [components.garden :as components.garden]))
+   [components.garden :as components.garden]
+   [components.debug :as components.debug]))
 
 (defn status [todo]
   (case (:org/status todo)
@@ -28,7 +29,7 @@
       :on-click #(on-select)}
 
      [:div
-      {:class ["flex" "justify-between"]}
+      {:class ["grid"]}
       [:div
        {:class ["text-3xl"]}
        [status item]]
@@ -55,7 +56,8 @@
      (when (seq body)
        [:div
         {:class ["font-mono" "text-city-blue-400"
-                 "flex" "flex-col" "p-2"
+                 "grid" "grid-flow-col"
+                 "p-2"
                  "bg-yo-blue-500"]}
         (for [[i line] (map-indexed vector body)]
           (let [{:keys [text]} line]
@@ -69,7 +71,8 @@
      (when (seq urls)
        [:div
         {:class ["font-mono" "text-city-blue-400"
-                 "flex" "flex-col" "pt-4" "p-2"]}
+                 "grid" "grid-flow-col"
+                 "pt-4" "p-2"]}
         (for [[i url] (map-indexed vector
                                    ;; TODO should be ingested as a list
                                    (if (string? urls) [urls] urls))]
@@ -86,37 +89,40 @@
 
 (defn line [_opts todo]
   [:div
-   {:class ["flex" "flex-row" "items-center"]}
+   {:class ["grid" "grid-flow-col" "space-x-2" "place-items-center"]}
 
-   [:div
-    {:class ["p-2"]}
-    [status todo]]
+   [status todo]
 
-   [:div
-    [components.garden/text-with-links (:org/name todo)]]])
+   [components.garden/text-with-links (:org/name todo)]
+
+   [components.debug/raw-metadata {:label "raw"} todo]])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; list
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn todo-list [{:keys [label selected on-select]} todos]
-  (when (seq todos)
-    [:div {:class ["flex" "flex-col"]}
-     [:div {:class ["text-2xl" "p-2" "pt-4"]} label]
-     [:div {:class ["flex" "flex-col" "justify-center"]}
-      (for [[i td] (->> todos (map-indexed vector))]
-        ^{:key i}
-        [floating/popover
-         {:hover true
-          :click true
-          :anchor-comp
-          [:div
-           {:class ["cursor-pointer"]}
-           [line {} td]]
-          :popover-comp
-          [:div
-           {:class []}
-           [todo
-            {:on-select    #(on-select td)
-             :is-selected? (= selected td)}
-            (assoc td :index i)]]}])]]))
+(defn todo-list [{:keys [label selected on-select n]} todos]
+  (let [n (or n (count todos))]
+    (when (seq todos)
+      [:div {:class ["grid" "grid-flow-row" "place-items-center"]}
+       [:div {:class ["text-2xl" "p-2" "pt-4"]} label]
+       [:div {:class ["grid" "grid-flow-row"]}
+        (for [[i td] (->> todos
+                          (sort-by :org/parent-name >)
+                          (take n)
+                          (map-indexed vector))]
+          ^{:key i}
+          [floating/popover
+           {:hover true
+            :click true
+            :anchor-comp
+            [:div
+             {:class ["cursor-pointer"]}
+             [line {} td]]
+            :popover-comp
+            [:div
+             {:class []}
+             [todo
+              {:on-select    #(on-select td)
+               :is-selected? (= selected td)}
+              (assoc td :index i)]]}])]])))

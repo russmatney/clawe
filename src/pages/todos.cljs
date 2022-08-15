@@ -5,7 +5,8 @@
    [components.floating :as floating]
    [clojure.string :as string]
    [tick.core :as t]
-   [doctor.ui.db :as ui.db]))
+   [doctor.ui.db :as ui.db]
+   [dates.tick :as dates.tick]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; grouping and filtering
@@ -18,40 +19,43 @@
   (some-> fname (string/split #"/") first #{"workspaces"}))
 
 (def all-filter-defs
-  {:file-name {:label            "File"
-               :group-by         :org/short-path
-               :group-filters-by (fn [fname]
-                                   (some-> fname (string/split #"/") first))
-               :filter-options   [{:label    "All Dailies"
-                                   :match-fn is-daily-fname}
-                                  {:label    "All Workspaces"
-                                   :match-fn is-workspace-fname}]
-               :format-label     (fn [fname]
-                                   (some-> fname (string/split #"/") second
-                                           (string/replace #".org" "")
-                                           (->>
-                                             (take 10)
-                                             (apply str))))}
-   :status    {:label    "Status"
-               :group-by :org/status}
-   :in-db?    {:label    "DB"
-               :group-by (comp (fn [x] (if x :in-db :in-org)) :db/id)}
-   :scheduled {:label        "Scheduled"
-               :group-by     :org/scheduled
-               :format-label (fn [d] (if d (t/format "MMM d, YYYY" d) "Unscheduled"))}})
+  {:short-path {:label            "File"
+                :group-by         :org/short-path
+                :group-filters-by (fn [fname]
+                                    (some-> fname (string/split #"/") first))
+                :filter-options   [{:label    "All Dailies"
+                                    :match-fn is-daily-fname}
+                                   {:label    "All Workspaces"
+                                    :match-fn is-workspace-fname}]
+                :format-label     (fn [fname]
+                                    (some-> fname (string/split #"/") second
+                                            (string/replace #".org" "")
+                                            (->>
+                                              (take 10)
+                                              (apply str))))}
+   :status     {:label    "Status"
+                :group-by :org/status}
+   :in-db?     {:label    "DB"
+                :group-by (comp (fn [x] (if x :in-db :in-org)) :db/id)}
+   :scheduled  {:label        "Scheduled"
+                :group-by     :org/scheduled
+                :format-label (fn [d] (if d
+                                        (if (string? d) d
+                                            (->> d dates.tick/add-tz
+                                                 (t/format "MMM d, YYYY")))
+                                        "Unscheduled"))}})
 
 (def default-filters
   #{{:filter-key :status :match :status/not-started}
     {:filter-key :status :match :status/in-progress}
-    {:filter-key :file-name :match "todo/journal.org"}
-    {:filter-key :file-name :match "todo/projects.org"}
-    {:filter-key :file-name
+    {:filter-key :short-path :match "todo/journal.org"}
+    {:filter-key :short-path :match "todo/projects.org"}
+    {:filter-key :short-path
      :match-fn   is-daily-fname
      :label      "All Dailies"}
-    {:filter-key :file-name
+    {:filter-key :short-path
      :match-fn   is-workspace-fname
-     :label      "All Workspaces"}
-    })
+     :label      "All Workspaces"}})
 
 (defn filter-grouper [items {:keys [set-group-by toggle-filter-by
                                     items-group-by items-filter-by]}]
@@ -99,7 +103,9 @@
            (let [group-filters-by (:group-filters-by filter-def (fn [_] nil))]
              [:div
               {:class ["flex" "flex-row" "flex-wrap" "gap-x-4"]}
-              (for [[i [group-label group]] (->> split (group-by (comp group-filters-by first))
+              (for [[i [group-label group]] (->> split
+                                                 (group-by (comp group-filters-by first))
+                                                 (sort-by first)
                                                  (map-indexed vector))]
                 [:div
                  {:key   i
@@ -110,10 +116,8 @@
                     {:class ["font-nes" "mx-auto"]}
                     group-label])
 
-                 (for [[i [k v]] (->> group (sort-by second >) (map-indexed vector))]
-                   (let [filter-enabled?
-                         ;; TODO refactor to support 'all dailies' or 'all workspaces' as well
-                         (items-filter-by {:filter-key filter-key :match k})]
+                 (for [[i [k v]] (->> group (sort-by first >) (map-indexed vector))]
+                   (let [filter-enabled? (items-filter-by {:filter-key filter-key :match k})]
                      [:div
                       {:key      i
                        :class    ["flex" "flex-row" "font-mono"
@@ -131,9 +135,11 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn page [{:keys [conn]}]
-  (let [todos (ui.db/garden-todos conn)
+  (let [todos (ui.db/garden-todos conn {:n 1000})
 
-        selected        (uix/state (first todos))
+        selected (uix/state (first todos))
+
+        ;; TODO refactor this filtering/sorting stuff into a component/hook
         items-group-by  (uix/state (some->> all-filter-defs first first))
         items-filter-by (uix/state default-filters)
 
@@ -161,7 +167,7 @@
                                           :label      status})))]
 
     [:div
-     {:class ["flex" "flex-col" "flex-wrap"
+     {:class ["grid" "grid-flow-row" "place-items-center"
               "overflow-hidden"
               "min-h-screen"
               "text-city-pink-200"]}
@@ -177,24 +183,28 @@
                              :items-group-by  @items-group-by}]]
 
      [:div
-      {:class ["flex" "flex-row" "flex-wrap"]}
-      [components.todo/todo-list
-       {:label     "In Progress"
-        :on-select (fn [it] (reset! selected it))
-        :selected  @selected}
-       (->> todos (filter (comp #{:status/in-progress} :org/status)))]
+      {:class ["grid" "grid-flow-row"]}
 
-      [components.todo/todo-list
-       {:label     "Incomplete"
-        :on-select (fn [it] (reset! selected it))
-        :selected  @selected}
-       (->> todos (remove (comp #{:status/done
-                                  :status/cancelled} :org/status)))]
+      #_[components.todo/todo-list
+         {:label     "In Progress"
+          :on-select (fn [it] (reset! selected it))
+          :selected  @selected}
+         (->> todos (filter (comp #{:status/in-progress} :org/status)))]
+
+      #_[components.todo/todo-list
+         {:label     "All Incomplete"
+          :on-select (fn [it] (reset! selected it))
+          :selected  @selected}
+         (->> todos (remove (comp #{:status/done
+                                    :status/cancelled} :org/status)))]
 
       (for [[i {:keys [item-group label]}]
-            (map-indexed vector filtered-item-groups)]
+            (->> filtered-item-groups
+                 (sort-by :label >)
+                 (map-indexed vector))]
         ^{:key i}
         [components.todo/todo-list {:label     (str label " (" (count item-group) ")")
                                     :on-select (fn [it] (reset! selected it))
-                                    :selected  @selected}
+                                    :selected  @selected
+                                    :n         5}
          item-group])]]))
