@@ -70,6 +70,8 @@
     :yabai.window/title
     :yabai.window/id})
 
+(def default-client-sort :client/key)
+
 (def default-workspace-headers
   #{:workspace/title
     :workspace/index
@@ -78,15 +80,18 @@
     :workspace/focused
     :yabai.space/label})
 
+(def default-workspace-sort :workspace/index)
+
 (defn ls
   {:org.babashka/cli
    {:coerce {:type          :keyword
              :headers       [:keyword]
              :extra-headers [:keyword]
              :strip         :boolean
-             :all           :boolean}}}
+             :all           :boolean
+             :sort          :keyword}}}
   ([] (ls {:type :clients}))
-  ([{:keys [extra-headers headers strip type all]
+  ([{:keys [extra-headers headers strip type all sort]
      :or   {strip false all false}
      :as   opts}]
    (println "ls opts" opts)
@@ -99,10 +104,16 @@
                      :workspaces default-workspace-headers))
          headers (if (seq extra-headers)
                    (concat headers extra-headers)
-                   headers)]
+                   headers)
+         sort    (or sort (case type
+                            :clients    default-client-sort
+                            :workspaces default-workspace-sort))]
      (cond->> (case type
                 :clients (wm/active-clients)
                 :workspaces (wm/active-workspaces))
+
+       sort
+       (sort-by sort)
 
        ;; NOTE strip can remove fields that we might expect in `headers`
        (and (not all) strip)
