@@ -13,7 +13,9 @@
    [clawe.wm :as wm]
    [clawe.workspace.open :as workspace.open]
    [clawe.config :as clawe.config]
-   [ralphie.rofi :as rofi]))
+   [ralphie.rofi :as rofi]
+   [clawe.toggle :as toggle]
+   [clawe.client.create :as client.create]))
 
 (defn kill-things [_wsp]
   (concat
@@ -44,33 +46,40 @@
                                         :tmux.fire/session   (:workspace/title wsp)
                                         :tmux.fire/directory dir})))))))))
 
-(defn list-client-defs []
+(defn def->rofi-fields [def]
+  (->> def
+       (map (fn [[k val]]
+              {:rofi/label (str "["  k " " val "]")}))))
+
+(defn show-fields [def]
+  (rofi/rofi
+    {:msg (str def)}
+    (def->rofi-fields def)))
+
+(defn client-defs []
   (->>
     (clawe.config/client-defs)
-    (map (fn [d]
-           (-> d (assoc :rofi/label (str "client-def: " (:client/key d))
-                        :rofi/on-select
-                        (fn [d]
-                          (rofi/rofi
-                            {:msg (str d)}
-                            (->> d
-                                 (map (fn [[k val]]
-                                        {:rofi/label (str "["  k " " val "]")})))))))))))
+    (map (fn [d] (-> d (assoc :rofi/label (str "client-def: " (:client/key d))
+                              :rofi/on-select
+                              (fn [d]
+                                (rofi/rofi
+                                  {:msg "Client def action"}
+                                  [{:rofi/label     "Show Fields"
+                                    :rofi/on-select (fn [_] (show-fields d))}
+                                   {:rofi/label     "Create Client"
+                                    :rofi/on-select (fn [_] (client.create/create-client d))}
+                                   {:rofi/label     "Toggle Client"
+                                    :rofi/on-select (fn [_] (toggle/toggle d))}]))))))))
 
-(defn list-workspace-defs []
+(defn workspace-defs []
   (->>
     (clawe.config/workspace-defs-with-titles)
     vals
-    (map (fn [d]
-           (-> d (assoc :rofi/label (str "wsp-def: " (:workspace/title d))
-                        :rofi/description (:workspace/directory d)
-                        :rofi/on-select
-                        (fn [d]
-                          (rofi/rofi
-                            {:msg (str d)}
-                            (->> d
-                                 (map (fn [[k val]]
-                                        {:rofi/label (str "["  k " " val "]")})))))))))))
+    (map (fn [d] (-> d (assoc :rofi/label (str "wsp-def: " (:workspace/title d))
+                              :rofi/description (:workspace/directory d)
+                              :rofi/on-select
+                              (fn [d]
+                                (rofi/rofi {:msg (str d)} (def->rofi-fields d)))))))))
 
 (defn m-x-commands
   ([] (m-x-commands nil))
@@ -97,8 +106,8 @@
          ;; open a known workspace
          (workspace.open/open-workspace-rofi-options)
 
-         (list-client-defs)
-         (list-workspace-defs)
+         (client-defs)
+         (workspace-defs)
 
          ;; all bindings
          (->> (defkbd/list-bindings) (map defkbd/->rofi))
