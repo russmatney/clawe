@@ -60,53 +60,85 @@
               :headers [:string]}}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; clients
+;; ls
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn print-active-clients
+(def default-client-headers
+  #{:client/key
+    :client/window-title
+    :client/app-name
+    :yabai.window/title
+    :yabai.window/id})
+
+(def default-workspace-headers
+  #{:workspace/title
+    :workspace/index
+    :yabai.space/windows
+    :yabai.space/has-focus
+    :workspace/focused
+    :yabai.space/label})
+
+(defn ls
   {:org.babashka/cli
-   {:coerce {:headers [:keyword]
-             :all     :boolean}}}
-  ([] (print-active-clients nil))
-  ([{:keys [headers] :as opts}]
-   (println "opts" opts)
-   (cond->> (wm/active-clients)
+   {:coerce {:type          :keyword
+             :headers       [:keyword]
+             :extra-headers [:keyword]
+             :strip         :boolean
+             :all           :boolean}}}
+  ([] (ls {:type :clients}))
+  ([{:keys [extra-headers headers strip type all]
+     :or   {strip false all false}
+     :as   opts}]
+   (println "ls opts" opts)
+   (let [headers (cond
+                   (seq headers) headers
+                   all           nil
+                   :else
+                   (case type
+                     :clients    default-client-headers
+                     :workspaces default-workspace-headers))
+         headers (if (seq extra-headers)
+                   (concat headers extra-headers)
+                   headers)]
+     (cond->> (case type
+                :clients (wm/active-clients)
+                :workspaces (wm/active-workspaces))
 
-     (not (:all opts))
-     (map client/strip)
+       ;; NOTE strip can remove fields that we might expect in `headers`
+       (and (not all) strip)
+       (map
+         (case type
+           :clients    client/strip
+           :workspaces workspace/strip))
 
-     (seq headers)
-     (map (fn [m]
-            (select-keys m headers)))
+       (seq headers)
+       (map (fn [m] (select-keys m headers)))
 
-     true
-     (clojure.pprint/print-table))))
+       true
+       (clojure.pprint/print-table)))))
 
 (comment
-  (print-active-clients))
+  (ls {:type    :clients
+       :headers (conj default-client-headers :yabai.window/space)}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; workspaces
+;; ls consumers
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn print-active-workspaces
+(defn ls-clients
   {:org.babashka/cli
-   {:coerce {:headers [:keyword]
-             :all     :boolean}}}
-  ([] (print-active-workspaces nil))
-  ([{:keys [headers] :as opts}]
-   (println "opts" opts)
-   (cond->> (wm/active-workspaces)
+   {:coerce {:headers [:keyword] :all :boolean}}}
+  ([] (ls-clients nil))
+  ([opts] (ls (assoc opts :type :clients))))
 
-     (not (:all opts))
-     (map workspace/strip)
-
-     (seq headers)
-     (map (fn [m]
-            (select-keys m headers)))
-
-     true
-     (clojure.pprint/print-table))))
+(defn ls-workspaces
+  {:org.babashka/cli
+   {:coerce {:headers [:keyword] :all :boolean}}}
+  ([] (ls-clients nil))
+  ([opts] (ls (assoc opts :type :workspaces))))
 
 (comment
-  (print-active-workspaces))
+  (ls-clients)
+  (ls-clients {:headers (conj default-client-headers :yabai.window/space)})
+  (ls-workspaces))
+
