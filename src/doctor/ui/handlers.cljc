@@ -9,7 +9,8 @@
              [chess.db :as chess.db]
              [wallpapers.core :as wallpapers]
              [clawe.wm :as wm]
-             [db.core :as db]]
+             [db.core :as db]
+             [org-crud.api :as org-crud.api]]
        :cljs [[hiccup-icons.fa :as fa]])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -129,10 +130,16 @@
   :ok)
 
 (defhandler mark-cancelled [todo]
-  (println "marking-cancelled" todo)
+  (println "marking todo cancelled" todo)
+
+  ;; if the todo is still 'in-sync', this will propogate back around just fine
+  ;; if not..... good luck! we may want to cancel in the db ourselves in that case.
+  ;; could be resolved with a returned result signal here - did anything get updated?
+  (org-crud.api/update! todo {:org/status :status/cancelled})
+
   (-> todo
-      (assoc :todo/status :status/cancelled)
-      (assoc :todo/last-cancelled-at (System/currentTimeMillis))
+      ;; (assoc :todo/status :status/cancelled)
+      ;; (assoc :todo/last-cancelled-at (System/currentTimeMillis))
       #_todos/upsert-todo-db)
   #_(todos/update-todos)
   :ok)
@@ -148,6 +155,10 @@
           {:action/label    "delete-from-db"
            :action/on-click #(delete-from-db todo)
            :action/icon     fa/trash-alt-solid}
+          (when-not (#{:status/cancelled} status)
+            {:action/label    "mark-cancelled"
+             :action/on-click #(mark-cancelled todo)
+             :action/icon     fa/ban-solid})
           (when-not (:db/id todo)
             {:action/label    "add-to-db"
              :action/on-click #(add-to-db todo)})
@@ -162,9 +173,5 @@
           (when-not (#{:status/not-started} status)
             {:action/label    "mark-not-started"
              :action/on-click #(mark-not-started todo)
-             :action/icon     fa/sticky-note})
-          (when-not (#{:status/cancelled} status)
-            {:action/label    "mark-cancelled"
-             :action/on-click #(mark-cancelled todo)
-             :action/icon     fa/ban-solid})]
+             :action/icon     fa/sticky-note})]
          (remove nil?)))))
