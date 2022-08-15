@@ -2,7 +2,8 @@
   (:require
    [tick.core :as t]
    [hiccup-icons.fa :as fa]
-   [components.floating :as floating]))
+   [components.floating :as floating]
+   [components.garden :as components.garden]))
 
 (defn status [todo]
   (case (:org/status todo)
@@ -35,7 +36,7 @@
 
      [:span
       {:class ["text-xl"]}
-      name]
+      [components.garden/text-with-links name]]
 
      (when last-started-at
        [:div
@@ -63,7 +64,7 @@
               ^{:key i} [:span {:class ["py-1"]} " "]
 
               :else
-              ^{:key i} [:span text])))])
+              ^{:key i} [:span [components.garden/text-with-links text]])))])
 
      (when (seq urls)
        [:div
@@ -92,7 +93,7 @@
     [status todo]]
 
    [:div
-    (:org/name todo)]])
+    [components.garden/text-with-links (:org/name todo)]]])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; list

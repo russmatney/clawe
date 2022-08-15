@@ -79,11 +79,11 @@
                    ^{:key comp-or-str} [:span comp-or-str]
                    comp-or-str)))
           (into [])))))
+
 (comment
   (text->comps
     "[[id:3a89063f-ef16-4156-9858-fc941b448057][sudo]] and proper [[id:3a89063f-ef16-4156-9858-fc941b448057][vim]] config?")
-  (re-pattern "([hi])")
-  )
+  (re-pattern "([hi])"))
 
 (defn text-with-links
   ([text] (text-with-links nil text))
@@ -93,9 +93,6 @@
       {:class ["flex" "flex-row" "space-x-2"]}
       (for [[i comp] (->> (text->comps opts text) (map-indexed vector))]
         ^{:key i} comp)])))
-
-
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; body
