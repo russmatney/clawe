@@ -93,8 +93,21 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defhandler delete-from-db [item]
-  (println "deleting-item-from-db" item)
+  (println "deleting item from db" item)
   (db/retract (:db/id item))
+  :ok)
+
+(defhandler purge-org-source-file [item]
+  (println "purging-org-source-file from db" (:org/source-file item))
+  (when (:org/source-file item)
+    (->>
+      (db/query '[:find ?e
+                  :in $ ?source-file
+                  :where
+                  [?e :org/source-file ?source-file]]
+                (:org/source-file item))
+      (map first)
+      db/retract))
   :ok)
 
 (defhandler queue-todo [todo]
@@ -181,3 +194,18 @@
              :action/on-click #(cancel-todo todo)
              :action/icon     fa/ban-solid})]
          (remove nil?)))))
+
+#?(:cljs
+   (defn garden-file->actions [item]
+     [{:action/label    "open-in-emacs"
+       :action/on-click #(open-in-journal item)
+       :action/icon     fa/pencil-alt-solid}
+      {:action/label    "add-tag"
+       :action/on-click (fn [_]
+                          (let [res (js/prompt "Add tag")]
+                            (when (seq res)
+                              (add-tag item res))))
+       :action/icon     fa/tag-solid}
+      {:action/label    "purge-source-file"
+       :action/on-click #(purge-org-source-file item)
+       :action/icon     fa/trash-alt-solid}]))

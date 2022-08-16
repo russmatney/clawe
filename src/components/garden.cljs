@@ -5,7 +5,8 @@
    [doctor.ui.handlers :as handlers]
    [clojure.string :as string]
    [components.floating :as floating]
-   [plasma.uix :as plasma.uix :refer [with-rpc]]))
+   [plasma.uix :as plasma.uix :refer [with-rpc]]
+   [components.actions :as components.actions]))
 
 
 (defn use-full-garden-note [item]
@@ -178,12 +179,14 @@
   [{:org/keys [source-file short-path]
     :as       item}]
 
-  [:span
-   {:class    ["font-mono" "text-xl" "text-city-green-200" "p-2"
-               "hover:text-city-pink-400"
-               "cursor-pointer"]
-    :on-click (fn [_] (handlers/open-in-journal item))}
-   (or short-path source-file)])
+  [components.actions/actions-popup
+   {:actions (handlers/garden-file->actions item)
+    :comp
+    [:span
+     {:class ["font-mono" "text-xl" "text-city-green-200" "p-2"
+              "hover:text-city-pink-400"
+              "cursor-pointer"]}
+     (or short-path source-file)]}])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
