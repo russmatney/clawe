@@ -16,99 +16,15 @@
     :status/not-started fa/sticky-note
     :status/in-progress fa/pencil-alt-solid
     :status/cancelled   fa/ban-solid
-    :status/skipped     fa/ban-solid
+    :status/skipped     fa/eject-solid
     (when (:org.prop/archive-time todo)
       [:div.text-sm.font-mono "Archived"])))
-
-(defn todo-popover
-  [{:keys [on-select]} item]
-  (let [{:db/keys   [id]
-         :org/keys  [body urls name short-path]
-         :todo/keys [last-started-at]} item]
-    [:div
-     {:class    ["py-2" "px-4"
-                 "border" "border-city-blue-600"
-                 "bg-yo-blue-700"
-                 "text-white"]
-      :on-click #(on-select)}
-
-     [:div
-      {:class ["grid"]}
-      [:div
-       {:class ["text-3xl"]}
-       [status-icon item]]
-      #_[components.actions/actions-list (hooks.todos/->actions item)]]
-
-     [:span
-      {:class ["text-xl"]}
-      [components.garden/text-with-links name]]
-
-     (when last-started-at
-       [:div
-        {:class ["font-mono"]}
-        (t/instant (t/new-duration last-started-at :millis))])
-
-     [:div
-      {:class ["font-mono"]}
-      short-path]
-
-     (when id
-       [:div
-        {:class ["font-mono"]}
-        (str "DB ID: " id)])
-
-     (when (seq body)
-       [:div
-        {:class ["font-mono" "text-city-blue-400"
-                 "grid" "grid-flow-col"
-                 "p-2"
-                 "bg-yo-blue-500"]}
-        (for [[i line] (map-indexed vector body)]
-          (let [{:keys [text]} line]
-            (cond
-              (= "" text)
-              ^{:key i} [:span {:class ["py-1"]} " "]
-
-              :else
-              ^{:key i} [:span [components.garden/text-with-links text]])))])
-
-     (when (seq urls)
-       [:div
-        {:class ["font-mono" "text-city-blue-400"
-                 "grid" "grid-flow-col"
-                 "pt-4" "p-2"]}
-        (for [[i url] (map-indexed vector
-                                   ;; TODO should be ingested as a list
-                                   (if (string? urls) [urls] urls))]
-          ^{:key i}
-          [:a {:class ["py-1"
-                       "cursor-pointer"
-                       "hover:text-yo-blue-400"]
-               :href  url}
-           url])])]))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; line
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn line [_opts todo]
-  [:div
-   {:class ["grid" "grid-flow-col" "space-x-2" "place-items-center"]}
-
-   [status-icon todo]
-
-   [components.garden/text-with-links (:org/name todo)]
-
-   [components.debug/raw-metadata {:label "raw"} todo]])
-
-(comment (line nil nil))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; todo-cell
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn todo-cell [{:keys [index selected on-select]}
-                 {:todo/keys [queued-at] :as todo}]
+(defn todo-cell [_opts {:todo/keys [queued-at] :as todo}]
   [:div
    {:class ["grid" "grid-flow-row" "place-items-center"
             "gap-4"
@@ -132,14 +48,13 @@
       :anchor-comp
       [:div
        {:class ["cursor-pointer"]}
-       "show"]
+       (:org/short-path todo)]
       :popover-comp
       [:div
-       {:class []}
-       [todo-popover
-        {:on-select    #(on-select todo)
-         :is-selected? (= selected todo)}
-        (assoc todo :index index)]]}]
+       {:class ["p-4"
+                "bg-slate-800"
+                "border" "border-slate-900"]}
+       [components.garden/full-note-popover todo]]}]
 
     [components.actions/actions-popup (handlers/todo->actions todo)]]
 
@@ -182,5 +97,4 @@
                           (map-indexed vector))]
           ^{:key i}
           [:div
-           #_[line nil td]
-           [todo-cell (assoc opts :index i) td]])]])))
+           [todo-cell opts td]])]])))

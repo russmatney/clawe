@@ -18,8 +18,8 @@
     {:note @note}))
 
 (declare org-file)
-(defn full-note-popover [note]
-  (let [{:keys [note]} (use-full-garden-note note)]
+(defn full-note-popover [item]
+  (let [{:keys [note]} (use-full-garden-note item)]
     [:div
      {:class ["bg-city-blue-900"]}
      [org-file note]]))
