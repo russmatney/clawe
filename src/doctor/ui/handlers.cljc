@@ -10,7 +10,8 @@
              [wallpapers.core :as wallpapers]
              [clawe.wm :as wm]
              [db.core :as db]
-             [datascript.core :as d]]
+             [datascript.core :as d]
+             [org-crud.api :as org-crud.api]]
        :cljs [[hiccup-icons.fa :as fa]])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -107,6 +108,33 @@
        (d/transact db/*conn*))
   :ok)
 
+(defhandler cancel-todo [todo]
+  (org-crud.api/update! todo {:org/status :status/cancelled})
+  :ok)
+
+(defhandler complete-todo [todo]
+  (org-crud.api/update! todo {:org/status :status/done})
+  :ok)
+
+(defhandler start-todo [todo]
+  (org-crud.api/update! todo {:org/status :status/in-progress})
+  :ok)
+
+(defhandler skip-todo [todo]
+  (org-crud.api/update! todo {:org/status :status/skipped})
+  :ok)
+
+(defhandler clear-status [todo]
+  ;; when an item shouldn't be a todo
+  ;; TODO support! (doesn't work yet)
+  ;; org-crud doesn't support it, and the db doesn't auto-retract attrs yet
+  (org-crud.api/update! todo {:org/status nil})
+  :ok)
+
+(defhandler add-tag [item tag]
+  (org-crud.api/update! item {:org/tags tag})
+  :ok)
+
 #?(:cljs
    (defn todo->actions [todo]
      (let [{:keys [org/status]} todo]
@@ -114,16 +142,42 @@
          [{:action/label    "open-in-emacs"
            :action/on-click #(open-in-journal todo)
            :action/icon     fa/pencil-alt-solid}
+          {:action/label    "add-tag"
+           :action/on-click (fn [_]
+                              (let [res (js/prompt "Add tag")]
+                                (when (seq res)
+                                  (add-tag todo res))))
+           :action/icon     fa/tag-solid}
           {:action/label    "delete-from-db"
            :action/on-click #(delete-from-db todo)
            :action/icon     fa/trash-alt-solid}
-          (when-not (#{:status/cancelled
-                       :status/done} status)
+          (when-not (or (#{:status/cancelled :status/done} status)
+                        (:todo/queued-at todo))
             {:action/label    "queue-todo"
              :action/on-click #(queue-todo todo)
              :action/icon     fa/tasks-solid})
           (when (:todo/queued-at todo)
             {:action/label    "unqueue-todo"
              :action/on-click #(unqueue-todo todo)
-             :action/icon     fa/quidditch-solid})]
+             :action/icon     fa/quidditch-solid})
+          (when-not (#{:status/in-progress} status)
+            {:action/label    "start-todo"
+             :action/on-click #(start-todo todo)
+             :action/icon     fa/golf-ball-solid})
+          (when-not (#{:status/done} status)
+            {:action/label    "complete-todo"
+             :action/on-click #(complete-todo todo)
+             :action/icon     fa/check-circle-solid})
+          (when-not (#{:status/skipped} status)
+            {:action/label    "skip-todo"
+             :action/on-click #(skip-todo todo)
+             :action/icon     fa/eject-solid})
+          (when status
+            {:action/label    "clear-status"
+             :action/on-click #(clear-status todo)
+             :action/icon     fa/step-backward-solid})
+          (when-not (#{:status/cancelled} status)
+            {:action/label    "cancel-todo"
+             :action/on-click #(cancel-todo todo)
+             :action/icon     fa/ban-solid})]
          (remove nil?)))))
