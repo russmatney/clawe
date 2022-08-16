@@ -4,7 +4,8 @@
    #?@(:clj [[manifold.stream :as s]
              [api.db :as api.db]]
        :cljs [[datascript.core :as d]
-              [plasma.uix :as plasma.uix :refer [with-rpc with-stream]]])))
+              [plasma.uix :as plasma.uix :refer [with-rpc with-stream]]
+              [db.schema :refer [schema]]])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; API
@@ -38,10 +39,9 @@
                          (println "new datoms" (count items))
                          (if @conn
                            (d/transact! conn items)
-                           (->
-                             (d/empty-db)
-                             (d/db-with items)
-                             (#(reset! conn %)))))]
+                           (-> (d/empty-db schema)
+                               (d/db-with items)
+                               (#(reset! conn %)))))]
 
        (with-stream [] (db-stream) handle-resp)
        (with-rpc [] (get-db) handle-resp)
