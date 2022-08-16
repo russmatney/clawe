@@ -150,6 +150,12 @@
                                   (t/instant
                                     queued-at))))])
 
+   (when (-> todo :org/tags seq)
+     [:span
+      (for [t (:org/tags todo)]
+        ^{:key t}
+        [:span {:class ["font-mono"]} (str ":" t ":")])])
+
    [:div
     [components.garden/text-with-links (:org/name todo)]]
 
