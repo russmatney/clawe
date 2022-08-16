@@ -75,7 +75,7 @@
   (->>
     (clawe.config/client-defs)
     (map (fn [d] (-> d (assoc :rofi/label (str "client-def: " (:client/key d))
-                              :rofi/on-select (client-action-rofi d)))))))
+                              :rofi/on-select (fn [_] (client-action-rofi d))))))))
 
 (defn workspace-defs []
   (->>
