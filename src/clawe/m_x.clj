@@ -68,7 +68,7 @@
 
 (defn client-action-rofi [d]
   (rofi/rofi
-    {:msg "Client def action"}
+    {:msg "Client def actions"}
     (client-def->actions d)))
 
 (defn client-defs []
@@ -77,15 +77,29 @@
     (map (fn [d] (-> d (assoc :rofi/label (str "client-def: " (:client/key d))
                               :rofi/on-select (fn [_] (client-action-rofi d))))))))
 
+(defn wsp-def->actions [wsp]
+  [{:rofi/label     "Show Fields"
+    :rofi/on-select (fn [_] (show-fields wsp))}
+   {:rofi/label     "Open Workspace"
+    :rofi/on-select (fn [_] (workspace.open/open-new-workspace wsp))}
+   {:rofi/label     "Close Workspace"
+    :rofi/on-select (fn [_] (wm/delete-workspace wsp))}
+   {:rofi/label     "Focus Workspace"
+    :rofi/on-select (fn [_] (wm/focus-workspace wsp))}])
+
+(defn wsp-action-rofi [wsp]
+  (rofi/rofi
+    {:msg "Workspace def actions"}
+    (wsp-def->actions wsp)))
+
 (defn workspace-defs []
   (->>
     (clawe.config/workspace-defs-with-titles)
     vals
-    (map (fn [d] (-> d (assoc :rofi/label (str "wsp-def: " (:workspace/title d))
-                              :rofi/description (:workspace/directory d)
+    (map (fn [w] (-> w (assoc :rofi/label (str "wsp-def: " (:workspace/title w))
+                              :rofi/description (:workspace/directory w)
                               :rofi/on-select
-                              (fn [d]
-                                (rofi/rofi {:msg (str d)} (def->rofi-fields d)))))))))
+                              (fn [w] (wsp-action-rofi w))))))))
 
 (defn m-x-commands
   ([] (m-x-commands nil))
