@@ -55,7 +55,7 @@
 (defn client-def->actions [d]
   [{:rofi/label     "Show Fields"
     :rofi/on-select (fn [_] (show-fields d))}
-   {:rofi/label     "Create Client"
+   {:rofi/label     "(re)Create Client"
     :rofi/on-select (fn [_] (client.create/create-client d))}
    {:rofi/label     "Toggle Client"
     :rofi/on-select (fn [_] (toggle/toggle d))}
