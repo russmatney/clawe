@@ -26,7 +26,7 @@
   (if (string? xs) [xs] xs))
 
 (defn garden-note->db-item
-  [{:org/keys [id links-to parent-ids urls] :as item}]
+  [{:org/keys [id links-to parent-ids urls tags] :as item}]
   (let [fallback (fallback-id item)]
     (if (or id fallback)
       (cond-> item
@@ -59,11 +59,9 @@
           (into {}))
 
 
-        true
-        (assoc :doctor/type :type/garden)
-
-        true
-        (assoc :org/urls (ensure-list urls))
+        true (assoc :doctor/type :type/garden)
+        true (assoc :org/urls (ensure-list urls))
+        true (assoc :org/tags (ensure-list tags))
 
         ;; if this can be calced...
         (item/->latest-timestamp
@@ -228,6 +226,14 @@
   (->>
     (db/query '[:find (pull ?e [*])
                 :where [?e :doctor/type :type/garden]])
+    (map first)))
+
+(comment
+  (->>
+    (db/query '[:find (pull ?e [*])
+                :where
+                [?e :doctor/type :type/garden]
+                [?e :org/tags "dj"]])
     (map first)))
 
 (defn notes-with-tags [tags]
