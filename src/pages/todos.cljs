@@ -33,10 +33,10 @@
                                             (->>
                                               (take 10)
                                               (apply str))))}
+   :tags       {:label    "Tags"
+                :group-by :org/tags}
    :status     {:label    "Status"
                 :group-by :org/status}
-   :in-db?     {:label    "DB"
-                :group-by (comp (fn [x] (if x :in-db :in-org)) :db/id)}
    :scheduled  {:label        "Scheduled"
                 :group-by     :org/scheduled
                 :format-label (fn [d] (if d
@@ -64,6 +64,17 @@
    (for [[i [filter-key filter-def]] (map-indexed vector all-filter-defs)]
      (let [split             (->> items
                                   (group-by (:group-by filter-def))
+                                  (reduce (fn [item-groups-by-label [labels items]]
+                                            (if (coll? labels)
+                                              ;; update for each label
+                                              (reduce
+                                                (fn [by-label label]
+                                                  (update by-label label concat items))
+                                                item-groups-by-label
+                                                labels)
+                                              ;; simple case, just passing through
+                                              (assoc item-groups-by-label labels items)))
+                                          {})
                                   (map (fn [[v xs]] [v (count xs)])))
            group-by-enabled? (= items-group-by filter-key)]
        [:div
@@ -157,14 +168,31 @@
                                                            (concat pred-matches)
                                                            ((fn [fns]
                                                               (apply some-fn fns))))]
-                                    (comp is-match ->value)))))]
+                                    (fn [raw]
+                                      (-> raw ->value
+                                          ((fn [val]
+                                             (println "is-match?" val)
+                                             (if (coll? val)
+                                               (->> val (filter is-match) seq)
+                                               (is-match val))))))))))]
                   (->> todos (filter (apply every-pred preds)))))
 
         filtered-item-groups (->> filtered-items
                                   (group-by (some-> @items-group-by all-filter-defs :group-by))
-                                  (map (fn [[status its]]
+                                  (reduce (fn [item-groups-by-label [labels items]]
+                                            (if (coll? labels)
+                                              ;; update for each label
+                                              (reduce
+                                                (fn [by-label label]
+                                                  (update by-label label concat items))
+                                                item-groups-by-label
+                                                labels)
+                                              ;; simple case, just passing through
+                                              (assoc item-groups-by-label labels items)))
+                                          {})
+                                  (map (fn [[label its]]
                                          {:item-group its
-                                          :label      status})))]
+                                          :label      label})))]
 
     [:div
      {:class ["grid" "grid-flow-row" "place-items-center"
