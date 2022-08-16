@@ -121,6 +121,11 @@
        (d/transact db/*conn*))
   :ok)
 
+(defhandler add-uuid [item]
+  (when-not (:org/id item)
+    (org-crud.api/update! item {:org/id (random-uuid)}))
+  :ok)
+
 (defhandler cancel-todo [todo]
   (org-crud.api/update! todo {:org/status :status/cancelled})
   :ok)
@@ -155,6 +160,10 @@
          [{:action/label    "open-in-emacs"
            :action/on-click #(open-in-journal todo)
            :action/icon     fa/pencil-alt-solid}
+          (when-not (:org/id todo)
+            {:action/label    "add-uuid"
+             :action/on-click #(add-uuid todo)
+             :action/icon     fa/hashtag-solid})
           {:action/label    "add-tag"
            :action/on-click (fn [_]
                               (let [res (js/prompt "Add tag")]

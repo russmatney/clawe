@@ -33,13 +33,15 @@
             "bg-slate-800"
             "font-mono"
             "w-96"
-            "text-center"]}
+            "text-center"
+            "p-4"]}
 
    [:div
     {:class ["grid" "grid-flow-col" "gap-2"]}
 
     [:div
-     (:org/status todo)]
+     (status-icon todo)
+     #_(:org/status todo)]
 
     [components.debug/raw-metadata {:label "raw"} todo]
 
