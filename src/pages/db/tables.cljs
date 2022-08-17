@@ -93,7 +93,7 @@
               [[floating/popover
                 {:hover        true :click true
                  :anchor-comp  (:org/short-path note)
-                 :popover-comp [components.garden/full-note-popover note]}]
+                 :popover-comp [components.garden/full-note note]}]
                (:org/name note)
                [components.debug/raw-metadata {:label "raw"} note]
                [actions-cell note]])))}))

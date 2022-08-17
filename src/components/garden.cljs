@@ -18,7 +18,7 @@
     {:note @note}))
 
 (declare org-file)
-(defn full-note-popover [item]
+(defn full-note [item]
   (let [{:keys [note]} (use-full-garden-note item)]
     [:div
      {:class ["bg-city-blue-900"]}
@@ -29,11 +29,18 @@
    {:hover        true :click true
     :anchor-comp  [:div
                    [:span
-                    {:class ["inline"
+                    {:class ["inline-flex"
                              "text-city-pink-400"
                              "cursor-pointer"]}
                     link-text]]
-    :popover-comp [full-note-popover {:org/id link-id}]}])
+    :popover-comp [full-note {:org/id link-id}]}])
+
+(defn tags-comp [item]
+  (when (-> item :org/tags seq)
+    [:span
+     (for [t (:org/tags item)]
+       ^{:key t}
+       [:span {:class ["font-mono"]} (str ":" t ":")])]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; name/line
@@ -79,7 +86,7 @@
                  (if (string? comp-or-str)
                    ;; wrap strings in :spans (better spacing control)
                    ^{:key comp-or-str} [:span
-                                        {:class ["inline"]}
+                                        {:class ["inline-flex"]}
                                         comp-or-str]
                    comp-or-str)))
           (into [])))))
@@ -141,7 +148,8 @@
                [text-with-links opts text]))))
 
        (when (and (not (seq body)) body-string)
-         [:pre body-string])])
+         [:pre
+          [text-with-links opts body-string]])])
 
     (when true
       [components.debug/raw-metadata
@@ -243,7 +251,7 @@
   ([item] (org-file nil item))
   ([opts
     {:org/keys      [name tags urls]
-     :org.prop/keys [filetags created-at title]
+     :org.prop/keys [created-at title]
      :as            item}]
    [:div
     {:class ["text-white"]}
@@ -260,9 +268,7 @@
 
     [:div
      {:class ["text-lg"]}
-     ;; TODO parse filetags into tags?
-     filetags
-     (when (seq tags) tags)
+     (when (seq tags) [tags-comp item])
      (when (seq urls) urls)]
 
     [org-body opts item]]))

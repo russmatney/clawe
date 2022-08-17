@@ -16,10 +16,8 @@
   [{:keys [on-select is-selected?]} item]
   (let [{:org/keys      [tags]
          :org.prop/keys [title]
-         :time/keys     [last-modified]}
-
-        item
-        hovering? (uix/state false)]
+         :time/keys     [last-modified]} item
+        hovering?                        (uix/state false)]
     [:div
      {:class (->> ["flex" "flex-row" "flex-wrap"
                    "px-2"
@@ -43,7 +41,7 @@
         {:class ["font-mono"]}
         (components.format/s-shortener source-file)]
 
-     [:span.px-2 tags]
+     [components.garden/tags-comp item]
 
      [:span.ml-auto
       (when last-modified
@@ -60,9 +58,10 @@
              (< hours-ago 24) (str hours-ago " hour(s) ago")
              :else            (str days-ago " day(s) ago")))])]]))
 
-(defn page [_opts]
+(defn page [{:keys [conn]}]
   (let [selected-item-name (router/use-route-parameters [:query :item-name])
-        items              (ui.db/garden-notes {:n 500})
+        items              (->> (ui.db/garden-notes conn {:n 500})
+                                (filter (comp #{:level/root} :org/level)))
         default-selection  (cond->> items
                              @selected-item-name
                              (filter (comp #{@selected-item-name} :org/name))
@@ -75,7 +74,6 @@
                              first)
         ;; TODO preserve selection (query params?)
         last-selected (uix/state default-selection)
-        full-item     (uix/state nil)
         open-posts    (uix/state #{default-selection})]
     (println "item-name" @selected-item-name)
     ;; Posts
@@ -88,15 +86,6 @@
               "flex" "flex-col" "flex-wrap"
               "min-h-screen"
               "overflow-y-auto"]}
-
-     ;; top bar
-     [:div
-      {:class ["flex" "flex-col" "p-2"]}
-      (when (#{0} (count items))
-        [:div
-         {:class ["p-6" "text-lg" "text-white"]}
-         "Loading...................."
-         ])]
 
      ;; list/selected
      [:div
@@ -116,27 +105,16 @@
                          (map-indexed vector))]
 
          ^{:key i}
+         [post-link
+          {:on-select    (fn [_]
+                           ;; TODO set slugs in query params
+                           (swap! open-posts (fn [op] (w/toggle op it)))
+                           (reset! last-selected it)
+                           (reset! selected-item-name (:org/name it)))
+           :is-selected? (@open-posts it)}
+          (assoc it :index i)])]
 
-         [components.floating/popover
-          {:hover true
-           :click true
-           :anchor-comp
-           [post-link
-            {:on-select    (fn [_]
-                             ;; TODO set slugs in query params
-                             (swap! open-posts (fn [op] (w/toggle op it)))
-                             (reset! last-selected it)
-                             (reset! selected-item-name (:org/name it))
-                             ;; just re-using the item again for now
-                             (reset! full-item it))
-             :is-selected? (@open-posts it)}
-            (assoc it :index i)]
-           :popover-comp
-           [:div
-            {:class ["p-6 bg-yo-blue-700"]}
-            [components.garden/org-file it]]}])]
-
-      (when (and false (seq @open-posts))
+      (when (seq @open-posts)
         [:div
          {:class ["flex"
                   "flex-grow-1"
@@ -150,12 +128,4 @@
                           (map-indexed vector))]
            ^{:key (or (:org/source-file p) i)}
            [:div
-            (components.garden/selected-node p)])])
-
-      (when @full-item
-        [:div
-         {:class ["flex"
-                  "flex-grow-1"
-                  "p-2"
-                  "bg-yo-blue-700"]}
-         [components.garden/org-file @full-item]])]]))
+            (components.garden/org-file p)])])]]))

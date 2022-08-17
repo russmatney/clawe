@@ -41,16 +41,13 @@
     [components.garden/text-with-links (:org/name todo)]]
 
    [:div
-    (when (-> todo :org/tags seq)
-      [:span
-       (for [t (:org/tags todo)]
-         ^{:key t}
-         [:span {:class ["font-mono"]} (str ":" t ":")])])
+    [components.garden/tags-comp todo]
 
     (when (seq (:org/parent-name todo))
       [:div
        [components.garden/text-with-links
         (-> todo :org/parent-name (string/split #" > ") first)]])]
+
 
    (when queued-at
      [:div
@@ -80,7 +77,7 @@
        {:class ["p-4"
                 "bg-slate-800"
                 "border" "border-slate-900"]}
-       [components.garden/full-note-popover todo]]}]
+       [components.garden/full-note todo]]}]
 
     [components.actions/actions-popup (handlers/todo->actions todo)]]])
 
