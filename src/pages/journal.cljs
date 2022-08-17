@@ -19,11 +19,11 @@
 (defn page [{:keys [conn] :as opts}]
   (let [{:keys [notes]} (use-recent-garden-notes conn)]
     [:div
-     "Journals"
-
      (for [[i note] (map-indexed vector notes)]
        [:div
         {:key   i
-         :class [""]}
+         :class ["p-2"
+                 "bg-slate-800"
+                 "xl:mx-48" "mx-16" "mt-16"]}
 
         [components.garden/org-file opts note]])]))

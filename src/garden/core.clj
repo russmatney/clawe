@@ -142,19 +142,20 @@
   [item]
   (-> item :org/source-file fs/last-modified-time str))
 
+(defn ->short-path
+  [{:org/keys [source-file]}]
+  (str (-> source-file fs/parent fs/file-name)
+       "/" (fs/file-name source-file)))
+
+;; TODO consider adding some of these to org-crud
 (defn org->garden-note
-  [{:org/keys      [source-file]
-    :org.prop/keys [title created-at]
-    :as            item}]
+  [{:org/keys [source-file] :org.prop/keys [title] :as item}]
   (let [last-modified (get-last-modified item)]
-    (->
-      item
-      (assoc :garden/file-name (fs/file-name source-file)
-             :org/short-path (str (-> source-file fs/parent fs/file-name)
-                                  "/" (fs/file-name source-file))
-             :org.prop/created-at created-at
-             :org.prop/title (or title (fs/file-name source-file))
-             :file/last-modified last-modified))))
+    (-> item
+        (assoc :garden/file-name (fs/file-name source-file)
+               :org/short-path (->short-path item)
+               :org.prop/title (or title (fs/file-name source-file))
+               :file/last-modified last-modified))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; paths -> org items
@@ -223,19 +224,6 @@
 ;; get-full-item
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn ensure-uuid [id]
-  (cond
-    (string? id)
-    (java.util.UUID/fromString id)
-
-    (uuid? id)
-    id))
-
-(comment
-  (ensure-uuid "hi")
-  (ensure-uuid #uuid "59782969-8B9A-4C98-9AE4-2282FF0A2A1F")
-  (ensure-uuid "59782969-8B9A-4C98-9AE4-2282FF0A2A1F"))
-
 (defn full-item
   [opts]
   (let [source-file (:org/source-file opts)
@@ -250,13 +238,17 @@
                                     :in $ ?id
                                     :where
                                     [?e :org/id ?id]]
-                                  (ensure-uuid id))
+                                  (util/ensure-uuid id))
                         first
                         :org/source-file))]
     (if source-file
-      (org-crud/path->nested-item source-file)
+      (->
+        (org-crud/path->nested-item source-file)
+        (org->garden-note))
 
       ;; TODO in this case, get the source-file from the org-roam db and ingest it
+      ;; we may not have a source-file if we're requesting a full-item with some partial data
+      ;; (e.g. a link-id)
       (println "Could not find source-file for opts" opts))))
 
 (comment

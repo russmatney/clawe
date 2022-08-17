@@ -11,16 +11,6 @@
    [dates.tick :as dates.tick]
    [uix.core.alpha :as uix]))
 
-(defn status-icon [todo]
-  (case (:org/status todo)
-    :status/done        fa/check-circle
-    :status/not-started fa/sticky-note
-    :status/in-progress fa/pencil-alt-solid
-    :status/cancelled   fa/ban-solid
-    :status/skipped     fa/eject-solid
-    (when (:org.prop/archive-time todo)
-      [:div.text-sm.font-mono "Archived"])))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; todo-cell
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -60,7 +50,7 @@
     {:class ["grid" "grid-flow-col" "gap-2"]}
 
     [:div
-     (status-icon todo)
+     (components.garden/status-icon todo)
      #_(:org/status todo)]
 
     [components.debug/raw-metadata {:label "raw"} todo]

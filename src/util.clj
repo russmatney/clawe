@@ -50,3 +50,16 @@
   (-> ^{:dir dir}
       ($ clojure -Spath)
       check :out slurp))
+
+(defn ensure-uuid [id]
+  (cond
+    (string? id)
+    (java.util.UUID/fromString id)
+
+    (uuid? id)
+    id))
+
+(comment
+  (ensure-uuid "hi")
+  (ensure-uuid #uuid "59782969-8B9A-4C98-9AE4-2282FF0A2A1F")
+  (ensure-uuid "59782969-8B9A-4C98-9AE4-2282FF0A2A1F"))
