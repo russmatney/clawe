@@ -2,7 +2,7 @@
   (:require
    [tick.core :as t]
    [uix.core.alpha :as uix]
-   ["@headlessui/react" :as Headless]
+   [components.dialog :as dialog]
    [components.floating :as floating]))
 
 
@@ -22,34 +22,17 @@
 
 (defn screenshot-dialog
   [{:keys [open? on-close]}
-   {:keys [name file/full-path
-           file/web-asset-path]
-    :as   _item}]
-  [:> Headless/Dialog
-   {:class ["relative"
-            "z-50"]
-    :open  open? :on-close on-close}
-
-   [:div
-    {:class       ["fixed"
-                   "inset-0"
-                   "bg-city-black-700"
-                   "bg-opacity-60"]
-     :aria-hidden "true"}]
-
-   [:div {:class ["fixed inset-0 flex items-center justify-center"
-                  "m-24"
-                  "p-12"
-                  "bg-city-black-200"]}
-
-    [:> Headless/Dialog.Panel
-     [:> Headless/Dialog.Title name]
-     [:> Headless/Dialog.Description full-path]
-
-     (when web-asset-path
-       [:img {:src      web-asset-path
-              :on-click #(on-close)
-              :class    ["cursor-pointer"]}])]]])
+   {:keys [name file/full-path file/web-asset-path]}]
+  [dialog/dialog
+   {:open        open?
+    :on-close    on-close
+    :title       name
+    :description full-path
+    :content
+    (when web-asset-path
+      [:img {:src      web-asset-path
+             :on-click #(on-close)
+             :class    ["cursor-pointer"]}])}])
 
 
 (defn screenshot-comp
@@ -142,3 +125,6 @@
                         (map-indexed vector))]
      ^{:key i}
      [cluster-single opts event])])
+
+(comment
+  (cluster nil nil))
