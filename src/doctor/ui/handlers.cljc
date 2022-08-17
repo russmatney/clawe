@@ -232,6 +232,23 @@
        :action/on-click #(purge-org-source-file item)
        :action/icon     fa/trash-alt-solid}]))
 
+#?(:cljs
+   (defn ->actions [item]
+     (cond
+       ;; todos
+       (and (#{:type/garden} (:doctor/type item))
+            (:org/status item))
+       (todo->actions item)
+
+       ;; garden items
+       (#{:type/garden} (:doctor/type item))
+       (garden-file->actions item)
+
+       :else
+       [{:action/on-click #(delete-from-db item)
+         :action/label    "delete-from-db"
+         :action/icon     fa/trash-alt-solid}])))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ingest buttons
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

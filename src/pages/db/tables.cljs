@@ -11,7 +11,8 @@
    [components.screenshot :as components.screenshot]
    [components.git :as components.git]
    [doctor.ui.db :as ui.db]
-   [doctor.ui.handlers :as handlers]))
+   [doctor.ui.handlers :as handlers]
+   [components.actions :as components.actions]))
 
 (defn basic-text-popover [text]
   [:div
@@ -20,6 +21,10 @@
      "flex" "flex-col" "p-2"
      "bg-yo-blue-500"]}
    text])
+
+(defn actions-cell [item]
+  [components.actions/actions-popup
+   {:actions (handlers/->actions item)}])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; garden tables
@@ -46,7 +51,8 @@
 
 (defn garden-note-table-def [entities]
   (let [notes (->> entities (filter (comp #{:type/garden} :doctor/type)))]
-    {:headers ["File" "Name" "Parent" "Words" "Raw"]
+    {:headers ["File" "Name" "Parent" "Words" "Raw" "Actions"]
+     :n       5
      :rows
      (->>
        notes
@@ -54,8 +60,8 @@
        reverse
        (map (fn [note]
               [(:org/short-path note)
-               (:org/name note)
-               (:org/parent-name note)
+               [components.garden/text-with-links (:org/name note)]
+               [components.garden/text-with-links (:org/parent-name note)]
                [floating/popover
                 {:hover true :click true
                  :anchor-comp
@@ -69,15 +75,15 @@
                    ["text-city-blue-400"
                     "flex" "flex-col" "p-2"
                     "bg-yo-blue-500"]}
-                  (:org/name note)
+                  [components.garden/text-with-links (:org/name note)]
                   [components.garden/org-body note]]}]
-               [components.debug/raw-metadata
-                {:label "raw"}
-                note]])))}))
+               [components.debug/raw-metadata {:label "raw"} note]
+               [actions-cell note]])))}))
 
 (defn garden-file-table-def [entities]
   (let [notes (->> entities (filter (comp #{:type/garden} :doctor/type)))]
-    {:headers ["File" "Name" "Raw"]
+    {:headers ["File" "Name" "Raw" "Actions"]
+     :n       5
      :rows
      (->>
        notes
@@ -89,9 +95,8 @@
                  :anchor-comp  (:org/short-path note)
                  :popover-comp [components.garden/full-note-popover note]}]
                (:org/name note)
-               [components.debug/raw-metadata
-                {:label "raw"}
-                note]])))}))
+               [components.debug/raw-metadata {:label "raw"} note]
+               [actions-cell note]])))}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; wallpaper/screenshots
@@ -101,7 +106,7 @@
   ([wps] (wallpaper-table-def nil wps))
   ([opts wps]
    (let [wps (->> wps (filter (comp #{:type/wallpaper} :doctor/type)))]
-     {:headers ["Img" "Wallpaper" "Used count" "Last Time Set" "Raw"]
+     {:headers ["Img" "Wallpaper" "Used count" "Last Time Set" "Raw" "Actions"]
       :n       (:n opts 5)
       :rows    (->> wps
                     (sort-by :wallpaper/last-time-set >)
@@ -117,14 +122,13 @@
                             (:wallpaper/used-count wp)
                             (some-> wp :wallpaper/last-time-set
                                     (t/new-duration :millis) t/instant)
-
-                            [components.debug/raw-metadata
-                             {:label "raw"}
-                             wp]])))})))
+                            [components.debug/raw-metadata {:label "raw"} wp]
+                            [actions-cell wp]])))})))
 
 (defn screenshot-table-def [entities]
   (let [screenshots (->> entities (filter (comp #{:type/screenshot} :doctor/type)))]
-    {:headers ["Img" "Name" "Time" "Raw"]
+    {:headers ["Img" "Name" "Time" "Raw" "Actions"]
+     :n       5
      :rows    (->> screenshots
                    (sort-by :screenshot/time)
                    (reverse)
@@ -132,18 +136,17 @@
                           [[components.screenshot/cluster-single nil scr]
                            (-> scr :name)
                            (-> scr :screenshot/time (t/new-duration :millis) t/instant)
-
-                           [components.debug/raw-metadata
-                            {:label "raw"}
-                            scr]])))}))
+                           [components.debug/raw-metadata {:label "raw"} scr]
+                           [actions-cell scr]])))}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  ;; lichess
+;; lichess
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn lichess-game-table-def [entities]
   (let [games (->> entities (filter (comp #{:type/lichess-game} :doctor/type)))]
-    {:headers ["" "Opening" "Created at" "Raw"]
+    {:headers ["" "Opening" "Created at" "Raw" "Actions"]
+     :n       5
      :rows    (->> games
                    (sort-by :lichess.game/created-at)
                    (reverse)
@@ -151,9 +154,8 @@
                           [[components.chess/cluster-single nil game]
                            (-> game :lichess.game/opening-name)
                            (-> game :lichess.game/created-at (t/new-duration :millis) t/instant)
-                           [components.debug/raw-metadata
-                            {:label "raw"}
-                            game]])))}))
+                           [components.debug/raw-metadata {:label "raw"} game]
+                           [actions-cell game]])))}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; repos/commits
@@ -163,7 +165,8 @@
   ([repos] (repo-table-def nil repos))
   ([{:keys [conn]} repos]
    (let [repos (->> repos (filter (comp #{:type/repo} :doctor/type)))]
-     {:headers ["Repo" "Commits (in db)" "Ingest" "Raw"]
+     {:headers ["Repo" "Commits (in db)" "Ingest" "Raw" "Actions"]
+      :n       5
       :rows    (->> repos
                     (sort-by :db/id)
                     (reverse)
@@ -175,15 +178,15 @@
                                       :on-click (fn [_]
                                                   (handlers/ingest-commits-for-repo repo))}
                              "Ingest latest commits"]
-                            [components.debug/raw-metadata
-                             {:label "raw"}
-                             repo]])))})))
+                            [components.debug/raw-metadata {:label "raw"} repo]
+                            [actions-cell repo]])))})))
 
 (defn commit-table-def
   ([commits] (commit-table-def nil commits))
   ([{:keys [conn]} commits]
    (let [commits (->> commits (filter (comp #{:type/commit} :doctor/type)))]
-     {:headers ["Hash" "Subject" "Added/Removed" "Repo" "Raw"]
+     {:headers ["Hash" "Subject" "Added/Removed" "Repo" "Raw" "Actions"]
+      :n       5
       :rows    (->> commits
                     (sort-by (comp dates.tick/parse-time-string :commit/author-date) t/>)
                     (map (fn [commit]
@@ -198,9 +201,8 @@
                               [components.git/added-removed commit]
                               (if repo (:repo/short-path repo)
                                   (:commit/directory commit))
-                              [components.debug/raw-metadata
-                               {:label "raw"}
-                               commit]]))))})))
+                              [components.debug/raw-metadata {:label "raw"} commit]
+                              [actions-cell commit]]))))})))
 
 (defn summary-table-def [entities]
   (let [ents-by-doctor-type (->> entities (group-by :doctor/type))]
@@ -228,21 +230,23 @@
          headers   (->> first-ent keys
                         ;; only show a few keys to prevent super-wide table
                         (take 3))]
-     {:headers (concat ["Raw"] (map str headers))
+     {:headers (concat ["Raw" "Actions"] (map str headers))
+      :n       3
       :rows    (->> entities
                     (map (fn [ent]
                            (concat
-                             [[components.debug/raw-metadata {:label "raw"} ent]]
+                             [[components.debug/raw-metadata {:label "raw"} ent]
+                              [actions-cell ent]]
                              (->> headers
                                   (map (fn [h]
-                                         (str (get ent h)))))))))
-      :n       3})))
+                                         (str (get ent h)))))))))})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; public
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn all-table-defs [opts entities]
+  ;; TODO how to use fallback table?
   [(summary-table-def entities)
    (garden-by-tag-table-def entities)
    (garden-note-table-def entities)
@@ -251,11 +255,7 @@
    (screenshot-table-def entities)
    (lichess-game-table-def entities)
    (repo-table-def opts entities)
-   (commit-table-def opts entities)
-
-   ;; TODO how to work in fallback table?
-   ]
-  )
+   (commit-table-def opts entities)])
 
 (defn table-def-for-doctor-type
   ([type entities] (table-def-for-doctor-type nil type entities))
