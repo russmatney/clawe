@@ -15,6 +15,15 @@
        :cljs [[hiccup-icons.fa :as fa]])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; db items
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defhandler delete-from-db [item]
+  (println "deleting item from db" item)
+  (db/retract (:db/id item))
+  :ok)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; garden
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -41,6 +50,20 @@
 
 (defhandler full-garden-item [item]
   (garden/full-item item))
+
+
+(defhandler purge-org-source-file [item]
+  (println "purging-org-source-file from db" (:org/source-file item))
+  (when (:org/source-file item)
+    (->>
+      (db/query '[:find ?e
+                  :in $ ?source-file
+                  :where
+                  [?e :org/source-file ?source-file]]
+                (:org/source-file item))
+      (map first)
+      db/retract))
+  :ok)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -89,26 +112,8 @@
   :ok)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; garden actions
+;; todos
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defhandler delete-from-db [item]
-  (println "deleting item from db" item)
-  (db/retract (:db/id item))
-  :ok)
-
-(defhandler purge-org-source-file [item]
-  (println "purging-org-source-file from db" (:org/source-file item))
-  (when (:org/source-file item)
-    (->>
-      (db/query '[:find ?e
-                  :in $ ?source-file
-                  :where
-                  [?e :org/source-file ?source-file]]
-                (:org/source-file item))
-      (map first)
-      db/retract))
-  :ok)
 
 (defhandler queue-todo [todo]
   (-> todo
@@ -153,6 +158,11 @@
   (org-crud.api/update! item {:org/tags tag})
   :ok)
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; action lists
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 #?(:cljs
    (defn todo->actions [todo]
      (let [{:keys [org/status]} todo]
@@ -173,6 +183,9 @@
           {:action/label    "delete-from-db"
            :action/on-click #(delete-from-db todo)
            :action/icon     fa/trash-alt-solid}
+          {:action/label    "purge-source-file"
+           :action/on-click #(purge-org-source-file todo)
+           :action/icon     fa/trash-solid}
           (when-not (or (#{:status/cancelled :status/done} status)
                         (:todo/queued-at todo))
             {:action/label    "queue-todo"
@@ -201,8 +214,10 @@
           (when-not (#{:status/cancelled} status)
             {:action/label    "cancel-todo"
              :action/on-click #(cancel-todo todo)
-             :action/icon     fa/ban-solid})]
+             :action/icon     fa/ban-solid})
+          ]
          (remove nil?)))))
+
 
 #?(:cljs
    (defn garden-file->actions [item]

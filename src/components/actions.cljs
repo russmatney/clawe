@@ -14,7 +14,8 @@
 (defn actions-popup [opts-or-ax]
   (let [actions (:actions opts-or-ax opts-or-ax)]
     [floating/popover
-     {:hover true :click true
+     {:hover  true :click true
+      :offset 0
       :anchor-comp
       (:comp opts-or-ax
              [:div (:label opts-or-ax "Actions")])

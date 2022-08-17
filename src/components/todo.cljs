@@ -37,6 +37,28 @@
             "p-4"]}
 
    [:div
+    [components.garden/text-with-links (:org/name todo)]]
+
+   [:div
+    (when (-> todo :org/tags seq)
+      [:span
+       (for [t (:org/tags todo)]
+         ^{:key t}
+         [:span {:class ["font-mono"]} (str ":" t ":")])])
+
+    (when (seq (:org/parent-name todo))
+      [:div
+       [components.garden/text-with-links
+        (-> todo :org/parent-name (string/split #" > ") first)]])]
+
+   (when queued-at
+     [:div
+      (str "queued: " (t/format "MMM d, h:mma"
+                                (dates.tick/add-tz
+                                  (t/instant
+                                    queued-at))))])
+
+   [:div
     {:class ["grid" "grid-flow-col" "gap-2"]}
 
     [:div
@@ -46,7 +68,8 @@
     [components.debug/raw-metadata {:label "raw"} todo]
 
     [floating/popover
-     {:hover true :click true
+     {:hover  true :click true
+      :offset 0
       :anchor-comp
       [:div
        {:class ["cursor-pointer"]}
@@ -58,28 +81,7 @@
                 "border" "border-slate-900"]}
        [components.garden/full-note-popover todo]]}]
 
-    [components.actions/actions-popup (handlers/todo->actions todo)]]
-
-   (when queued-at
-     [:div
-      (str "queued: " (t/format "MMM d, h:mma"
-                                (dates.tick/add-tz
-                                  (t/instant
-                                    queued-at))))])
-
-   (when (-> todo :org/tags seq)
-     [:span
-      (for [t (:org/tags todo)]
-        ^{:key t}
-        [:span {:class ["font-mono"]} (str ":" t ":")])])
-
-   [:div
-    [components.garden/text-with-links (:org/name todo)]]
-
-   (when (seq (:org/parent-name todo))
-     [:div
-      [components.garden/text-with-links
-       (-> todo :org/parent-name (string/split #" > ") first)]])])
+    [components.actions/actions-popup (handlers/todo->actions todo)]]])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; list
