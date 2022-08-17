@@ -181,14 +181,25 @@
 (defn current-task [{:keys [conn]}]
   (let [todos (ui.db/queued-todos conn)]
     (when (seq todos)
-      (let [last-queued        (->> todos (sort-by :todo/queued-at >) first)
-            {:org/keys [name]} last-queued]
+      (let [queued  (->> todos (sort-by :todo/queued-at >) (into []))
+            n       (uix/state 0)
+            current (get queued @n)]
         [:div
          {:class ["grid" "grid-flow-col" "place-self-center"]}
-         [:div.font-mono.pr-3
-          [components.garden/text-with-links name]]
 
-         [components.actions/actions-list (handlers/todo->actions last-queued)]]))))
+         [components.actions/actions-list
+          {:actions
+           [(when (> @n 0)
+              {:action/label    "prev"
+               :action/on-click (fn [_] (swap! n dec))})
+            (when (< @n (dec (count queued)))
+              {:action/label    "next"
+               :action/on-click (fn [_] (swap! n inc))})]}]
+
+         [:div.font-mono.pr-3
+          [components.garden/text-with-links (:org/name current)]]
+
+         [components.actions/actions-list (handlers/todo->actions current)]]))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Topbar widget and state
@@ -243,7 +254,7 @@
               (when (#{:bg/dark} background-mode) "bg-gray-700")
               (when (#{:bg/dark} background-mode) "bg-opacity-50")]}
      [:div
-      {:class ["grid" "grid-flow-col-dense" "auto-cols-fr" "h-full"]}
+      {:class ["grid" "grid-flow-col" "h-full"]}
 
       ;; workspaces
       [workspace-list topbar-state active-workspaces]
