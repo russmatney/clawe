@@ -5,10 +5,9 @@
    ;; [hiccup-icons.fa :as fa]
    ;; [hiccup-icons.fa4 :as fa4]
    [hiccup-icons.mdi :as mdi]
-   [clawe.client :as client]
-   [clawe.workspace :as workspace]))
+   [clawe.client :as client]))
 
-(defn client->icon [client workspace]
+(defn client->icon [client _workspace]
   (let [{:client/keys [app-name window-title]} client]
     #_(when (and (#{"Emacs"} app-name)
                  (string/includes? "journal" window-title))

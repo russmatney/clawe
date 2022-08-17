@@ -15,14 +15,13 @@
          [icons/action-icon-button ax])])))
 
 (defn actions-popup [opts]
-  (let [actions (:actions opts opts)]
-    [floating/popover
-     {:hover  true :click true
-      :offset 0
-      :anchor-comp
-      (:comp opts
-             [:div (:label opts "Actions")])
-      :popover-comp
-      [:div
-       {:class ["bg-city-blue-400"]}
-       [actions-list opts]]}]))
+  [floating/popover
+   {:hover  true :click true
+    :offset 0
+    :anchor-comp
+    (:comp opts
+           [:div (:label opts "Actions")])
+    :popover-comp
+    [:div
+     {:class ["bg-city-blue-400"]}
+     [actions-list opts]]}])

@@ -10,7 +10,6 @@
    [hooks.topbar :as hooks.topbar]
    [hooks.workspaces :as hooks.workspaces]
 
-   [doctor.ui.tauri :as tauri]
    [doctor.ui.db :as ui.db]
    [components.garden :as components.garden]
    [components.actions :as components.actions]
