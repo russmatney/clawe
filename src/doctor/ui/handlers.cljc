@@ -11,7 +11,8 @@
              [clawe.wm :as wm]
              [db.core :as db]
              [datascript.core :as d]
-             [org-crud.api :as org-crud.api]]
+             [org-crud.api :as org-crud.api]
+             [garden.db :as garden.db]]
        :cljs [[hiccup-icons.fa :as fa]])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -27,16 +28,16 @@
 ;; garden
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defhandler ingest-garden []
+  (garden.db/sync-last-touched-garden-files {:n 20})
+  :ok)
+
 (defhandler open-in-journal [item]
   (when-let [path (:org/source-file item)]
     (wm/show-client "journal")
     (emacs/open-in-emacs {:emacs/file-path  path
                           :emacs/frame-name "journal"}))
   :ok)
-
-(comment
-  (open-in-journal {:org/source-file "/home/russ/todo/journal.org"}))
-
 
 (defhandler open-in-emacs [item]
   (when-let [path (:org/source-file item)]
@@ -51,7 +52,6 @@
 (defhandler full-garden-item [item]
   (garden/full-item item))
 
-
 (defhandler purge-org-source-file [item]
   (println "purging-org-source-file from db" (:org/source-file item))
   (when (:org/source-file item)
@@ -64,7 +64,6 @@
       (map first)
       db/retract))
   :ok)
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; screenshots
@@ -233,3 +232,21 @@
       {:action/label    "purge-source-file"
        :action/on-click #(purge-org-source-file item)
        :action/icon     fa/trash-alt-solid}]))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; ingest buttons
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn ingest-buttons []
+  [{:label    "Ingest garden latest"
+    :on-click (fn [_] (ingest-garden))}
+   {:label    "Ingest clawe repos"
+    :on-click (fn [_] (ingest-clawe-repos))}
+   {:label    "Ingest lichess games"
+    :on-click (fn [_] (ingest-lichess-games))}
+   {:label    "Clear lichess cache"
+    :on-click (fn [_] (clear-lichess-games-cache))}
+   {:label    "Ingest screenshots"
+    :on-click (fn [_] (ingest-screenshots))}
+   {:label    "Ingest wallpapers"
+    :on-click (fn [_] (ingest-wallpapers))}])

@@ -24,6 +24,26 @@
     ents-with-doctor-type))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; ingest buttons
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn ingest-buttons []
+  [:div
+   {:class ["grid" "grid-cols-6"
+            "space-x-2"
+            "p-2"]}
+   (for [{:keys [label on-click]} (handlers/ingest-buttons)]
+     ^{:key label}
+     [:button {:class    ["bg-slate-800"
+                          "p-4"
+                          "border"
+                          "border-slate-600"
+                          "rounded-xl"
+                          "font-mono"]
+               :on-click on-click}
+      label])])
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; event page
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -37,30 +57,7 @@
               "bg-yo-blue-700"
               "text-white"]}
 
-     [:div
-      {:class ["grid" "grid-cols-6"
-               "space-x-2"
-               "p-2"]}
-      (for [{:keys [label on-click]}
-            [{:label    "Ingest clawe repos"
-              :on-click (fn [_] (handlers/ingest-clawe-repos))}
-             {:label    "Ingest lichess games"
-              :on-click (fn [_] (handlers/ingest-lichess-games))}
-             {:label    "Clear lichess cache"
-              :on-click (fn [_] (handlers/clear-lichess-games-cache))}
-             {:label    "Ingest screenshots"
-              :on-click (fn [_] (handlers/ingest-screenshots))}
-             {:label    "Ingest wallpapers"
-              :on-click (fn [_] (handlers/ingest-wallpapers))}]]
-        ^{:key label}
-        [:button {:class    ["bg-slate-800"
-                             "p-4"
-                             "border"
-                             "border-slate-600"
-                             "rounded-xl"
-                             "font-mono"]
-                  :on-click on-click}
-         label])]
+     [ingest-buttons]
 
      (for [[i table-def] (->> table-defs (map-indexed vector))]
        ^{:key i}

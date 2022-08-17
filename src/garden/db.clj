@@ -191,6 +191,18 @@
         garden/paths->flattened-garden-notes
         (sync-garden-notes-to-db opts))))
 
+(defn sync-last-touched-garden-files
+  ([] (sync-last-touched-garden-files {:n 50}))
+  ([{:keys [n]}]
+   (sync-garden-paths-to-db
+     {:page-size 20}
+     ;; probably a more performant way to get the last 20 touched, haha
+     (->> (garden/all-garden-notes-nested)
+          (sort-by :file/last-modified)
+          (reverse)
+          (take n)
+          (map :org/source-file)))))
+
 (comment
   (sync-garden-paths-to-db
     {:page-size 20}
