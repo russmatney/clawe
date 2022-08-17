@@ -31,12 +31,13 @@
      :rows    (->>
                 notes
                 (group-by :org/tags)
+                ;; TODO explode counts per tag instead of tag-group, like in comp.filter
                 (sort-by (comp count second))
                 reverse
                 (take 10) ;; only take the top 10 tags
-                (map (fn [[tag group]]
+                (map (fn [[tags group]]
                        [[:span
-                         (or tag "(no tag)")]
+                         (if (seq tags) (str tags) "(no tag)")]
                         [:span
                          {:class ["font-nes"]}
                          (count group)]
