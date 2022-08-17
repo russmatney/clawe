@@ -29,7 +29,8 @@
    {:hover        true :click true
     :anchor-comp  [:div
                    [:span
-                    {:class ["text-city-pink-400"
+                    {:class ["inline"
+                             "text-city-pink-400"
                              "cursor-pointer"]}
                     link-text]]
     :popover-comp [full-note-popover {:org/id link-id}]}])
@@ -77,7 +78,9 @@
           (map (fn [comp-or-str]
                  (if (string? comp-or-str)
                    ;; wrap strings in :spans (better spacing control)
-                   ^{:key comp-or-str} [:span comp-or-str]
+                   ^{:key comp-or-str} [:span
+                                        {:class ["inline"]}
+                                        comp-or-str]
                    comp-or-str)))
           (into [])))))
 
@@ -91,8 +94,8 @@
   ([opts text]
    (when (seq text)
      [:span
-      {:class ["grid" "grid-flow-col" "gap-x-2"]}
-      (for [[i comp] (->> (text->comps opts text) (map-indexed vector))]
+      {:class ["inline-flex" "space-x-1"]}
+      (for [[i comp] (->> text (text->comps opts) (map-indexed vector))]
         ^{:key i} comp)])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -134,7 +137,8 @@
                ^{:key i} [:span {:class ["py-1"]} " "]
 
                :else
-               ^{:key i} [text-with-links opts text]))))
+               ^{:key i}
+               [text-with-links opts text]))))
 
        (when (and (not (seq body)) body-string)
          [:pre body-string])])
