@@ -105,7 +105,7 @@
 ;; Clock/host/metadata
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn sep [] [:span.px-2.font-mono "|"])
+(defn sep [] [:span.px.font-mono "|"])
 
 (defn clock-host-metadata [{:keys [time]}
                            {:keys [topbar/background-mode] :as metadata}]
@@ -148,14 +148,13 @@
        {:class ["pl-2"]}
        (:battery/remaining-charge metadata)]])
 
-   [sep]
-
-   [:div
-    {:class ["flex" "flex-row"]}
-    (when-let [pcts
-               (->>
-                 metadata
-                 (filter (fn [[_ v]] (when (and v (string? v)) (string/includes? v "%")))))]
+   (when-let [pcts
+              (->>
+                metadata
+                (filter (fn [[_ v]] (when (and v (string? v)) (string/includes? v "%")))))]
+     [sep]
+     [:div
+      {:class ["flex" "flex-row"]}
       (for [[k v] pcts]
         ^{:key k}
         [:div
@@ -166,13 +165,13 @@
            :color (case k
                     :spotify/volume "rgb(255, 205, 86)"
                     :audio/volume   "rgb(54, 162, 235)",
-                    "rgb(255, 99, 132)")}]]))]
+                    "rgb(255, 99, 132)")}]])])
 
    [sep]
    [:div.font-mono
     (some->> time
              #_{:clj-kondo/ignore [:unresolved-var]}
-             (t/format (t/formatter "MM/dd HH:mm")))][sep]])
+             (t/format (t/formatter "M/dd HH:mm")))]])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Current task
