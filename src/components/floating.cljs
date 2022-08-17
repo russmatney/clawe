@@ -27,7 +27,12 @@
                                                            #js {:restMs 150
                                                                 :delay  #js {:open 300}}))
                                  (when click (FUI/useClick context))
-                                 (FUI/useDismiss context)]
+                                 (FUI/useDismiss context
+                                                 ;; probably want opt-in/out for these
+                                                 #js {:escapeKey            true
+                                                      :outsidePointerDown   false
+                                                      :referencePointerDown false
+                                                      :bubbles              false})]
                                 (remove nil?)
                                 (into []))))]
 
