@@ -165,7 +165,7 @@
   ([repos] (repo-table-def nil repos))
   ([{:keys [conn]} repos]
    (let [repos (->> repos (filter (comp #{:type/repo} :doctor/type)))]
-     {:headers ["Repo" "Commits (in db)" "Ingest" "Raw" "Actions"]
+     {:headers ["Repo" "Commits (in db)" "Raw" "Actions"]
       :n       5
       :rows    (->> repos
                     (sort-by :db/id)
@@ -174,10 +174,6 @@
                            [(-> repo :repo/short-path)
                             (let [commits (ui.db/commits-for-repo conn repo)]
                               (count commits))
-                            [:button {:class    ["bg-slate-600" "p-4" "rounded-xl"]
-                                      :on-click (fn [_]
-                                                  (handlers/ingest-commits-for-repo repo))}
-                             "Ingest latest commits"]
                             [components.debug/raw-metadata {:label "raw"} repo]
                             [actions-cell repo]])))})))
 

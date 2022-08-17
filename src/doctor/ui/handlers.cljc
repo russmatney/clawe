@@ -233,6 +233,14 @@
        :action/icon     fa/trash-alt-solid}]))
 
 #?(:cljs
+   (defn repo->actions [item]
+     [{:action/on-click #(delete-from-db item)
+       :action/label    "delete-from-db"
+       :action/icon     fa/trash-alt-solid}
+      {:action/label    "ingest-commits"
+       :action/on-click #(ingest-commits-for-repo item)}]))
+
+#?(:cljs
    (defn ->actions [item]
      (cond
        ;; todos
@@ -240,9 +248,13 @@
             (:org/status item))
        (todo->actions item)
 
-       ;; garden items
+       ;; garden note
        (#{:type/garden} (:doctor/type item))
        (garden-file->actions item)
+
+       ;; repo actions
+       (#{:type/repo} (:doctor/type item))
+       (repo->actions item)
 
        :else
        [{:action/on-click #(delete-from-db item)
