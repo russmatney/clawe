@@ -182,7 +182,7 @@
           {:action/label    "delete-from-db"
            :action/on-click #(delete-from-db todo)
            :action/icon     fa/trash-alt-solid}
-          {:action/label    "purge-source-file"
+          {:action/label    "purge-file"
            :action/on-click #(purge-org-source-file todo)
            :action/icon     fa/trash-solid}
           (when-not (or (#{:status/cancelled :status/done} status)
@@ -203,9 +203,8 @@
              :action/on-click #(complete-todo todo)
              :action/icon     fa/check-circle-solid})
           (when-not (#{:status/skipped} status)
-            {:action/label    "skip-todo"
-             :action/on-click #(skip-todo todo)
-             :action/icon     fa/eject-solid})
+            {:action/label    "skip"
+             :action/on-click #(skip-todo todo)})
           (when status
             {:action/label    "clear-status"
              :action/on-click #(clear-status todo)
