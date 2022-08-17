@@ -3,23 +3,26 @@
    [components.icons :as icons]
    [components.floating :as floating]))
 
-(defn actions-list [actions]
-  (when actions
-    [:div
-     {:class ["flex" "flex-row" "flex-wrap"]}
-     (for [[i ax] (map-indexed vector actions)]
-       ^{:key i}
-       [icons/action-icon-button ax])]))
+(defn actions-list [opts-or-axs]
+  (let [actions (:actions opts-or-axs opts-or-axs)]
+    (when actions
+      [:div
+       {:class ["flex" "flex-row" "flex-wrap"]}
+       (for [[i ax] (->> actions
+                         (remove nil?)
+                         (map-indexed vector))]
+         ^{:key i}
+         [icons/action-icon-button ax])])))
 
-(defn actions-popup [opts-or-ax]
-  (let [actions (:actions opts-or-ax opts-or-ax)]
+(defn actions-popup [opts]
+  (let [actions (:actions opts opts)]
     [floating/popover
      {:hover  true :click true
       :offset 0
       :anchor-comp
-      (:comp opts-or-ax
-             [:div (:label opts-or-ax "Actions")])
+      (:comp opts
+             [:div (:label opts "Actions")])
       :popover-comp
       [:div
        {:class ["bg-city-blue-400"]}
-       [actions-list actions]]}]))
+       [actions-list opts]]}]))

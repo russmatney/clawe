@@ -8,7 +8,8 @@
    [components.actions :as components.actions]
    [clojure.string :as string]
    [doctor.ui.handlers :as handlers]
-   [dates.tick :as dates.tick]))
+   [dates.tick :as dates.tick]
+   [uix.core.alpha :as uix]))
 
 (defn status-icon [todo]
   (case (:org/status todo)
@@ -88,16 +89,30 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn todo-list [{:keys [label n] :as opts} todos]
-  (let [n (or n (count todos))]
+  (let [n    (or n (count todos))
+        na   (uix/state n)
+        step 3]
     (when (seq todos)
       [:div {:class ["grid" "grid-flow-row" "place-items-center"]}
-       [:div {:class ["text-2xl" "p-2" "pt-4"]} label]
+       [:div {:class ["p-2" "pt-4" "grid" "grid-flow-col" "w-full"]}
+        [:div {:class ["text-2xl"]}
+         label]
+        [:div
+         {:class ["self-center" "justify-self-end"]}
+         [components.actions/actions-list
+          {:actions
+           [(when (> @na step)
+              {:action/label    "show less"
+               :action/on-click (fn [_] (swap! na #(- % step)))})
+            (when (< @na (count todos))
+              {:action/label    "show more"
+               :action/on-click (fn [_] (swap! na #(+ % step)))})]}]]]
        [:div {:class ["grid" "grid-flow-row" "grid-cols-3"
                       "gap-4"
                       "place-items-center"]}
         (for [[i td] (->> todos
                           (sort-by :org/parent-name >)
-                          (take n)
+                          (take @na)
                           (map-indexed vector))]
           ^{:key i}
           [:div
