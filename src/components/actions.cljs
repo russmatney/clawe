@@ -7,7 +7,7 @@
   (let [actions (:actions opts-or-axs opts-or-axs)]
     (when actions
       [:div
-       {:class ["flex" "flex-row" "flex-wrap"]}
+       {:class ["grid" "grid-flow-col"]}
        (for [[i ax] (->> actions
                          (remove nil?)
                          (map-indexed vector))]

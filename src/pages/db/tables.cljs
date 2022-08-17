@@ -34,7 +34,6 @@
                 ;; TODO explode counts per tag instead of tag-group, like in comp.filter
                 (sort-by (comp count second))
                 reverse
-                (take 10) ;; only take the top 10 tags
                 (map (fn [[tags group]]
                        [[:span
                          (if (seq tags) (str tags) "(no tag)")]
@@ -53,7 +52,6 @@
        notes
        (sort-by :file/last-modified) ;; TODO this is per file, not per item
        reverse
-       (take 10) ;; only take the top 10 tags
        (map (fn [note]
               [(:org/short-path note)
                (:org/name note)
@@ -85,7 +83,6 @@
        notes
        (filter (comp #{:level/root} :org/level) )
        (sort-by :file/last-modified >)
-       (take 10) ;; only take the 10 most recent
        (map (fn [note]
               [[floating/popover
                 {:hover        true :click true
@@ -105,9 +102,9 @@
   ([opts wps]
    (let [wps (->> wps (filter (comp #{:type/wallpaper} :doctor/type)))]
      {:headers ["Img" "Wallpaper" "Used count" "Last Time Set" "Raw"]
+      :n       (:n opts 5)
       :rows    (->> wps
                     (sort-by :wallpaper/last-time-set >)
-                    (take (:n opts 5))
                     (map (fn [wp]
                            [[floating/popover
                              {:hover true :click true
@@ -131,7 +128,6 @@
      :rows    (->> screenshots
                    (sort-by :screenshot/time)
                    (reverse)
-                   (take 5)
                    (map (fn [scr]
                           [[components.screenshot/cluster-single nil scr]
                            (-> scr :name)
@@ -151,7 +147,6 @@
      :rows    (->> games
                    (sort-by :lichess.game/created-at)
                    (reverse)
-                   (take 5)
                    (map (fn [{:lichess.game/keys [] :as game}]
                           [[components.chess/cluster-single nil game]
                            (-> game :lichess.game/opening-name)
@@ -172,7 +167,6 @@
       :rows    (->> repos
                     (sort-by :db/id)
                     (reverse)
-                    (take 10)
                     (map (fn [repo]
                            [(-> repo :repo/short-path)
                             (let [commits (ui.db/commits-for-repo conn repo)]
@@ -192,7 +186,6 @@
      {:headers ["Hash" "Subject" "Added/Removed" "Repo" "Raw"]
       :rows    (->> commits
                     (sort-by (comp dates.tick/parse-time-string :commit/author-date) t/>)
-                    (take 10)
                     (map (fn [commit]
                            (let [repo (ui.db/repo-for-commit conn commit)]
                              [[components.git/short-hash-link commit repo]
@@ -237,13 +230,13 @@
                         (take 3))]
      {:headers (concat ["Raw"] (map str headers))
       :rows    (->> entities
-                    (take 3)
                     (map (fn [ent]
                            (concat
                              [[components.debug/raw-metadata {:label "raw"} ent]]
                              (->> headers
                                   (map (fn [h]
-                                         (str (get ent h)))))))))})))
+                                         (str (get ent h)))))))))
+      :n       3})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; public
