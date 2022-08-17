@@ -90,6 +90,7 @@
 
 (defn todo-list [{:keys [label n] :as opts} todos]
   (let [n    (or n (count todos))
+        n    (if (> n (count todos)) (count todos) n)
         na   (uix/state n)
         step 3]
     (when (seq todos)
