@@ -52,16 +52,15 @@
     (mapcat :org/tags)
     (into #{})))
 
-
 (defn tags-list [tags]
   (when (seq tags)
     [:div
      (for [t tags]
        ^{:key t}
-       [:span {:class ["font-mono"]} (str ":" t ":")])]))
+       [:span {:class ["font-mono"]} (str ":" t)])]))
 
 (defn tags-comp [item]
-  [tags-list ((-> item :org/tags))])
+  [tags-list (-> item :org/tags)])
 
 (defn all-nested-tags-comp [item]
   (let [all-tags (all-nested-tags item)]
@@ -166,13 +165,36 @@
 ;; body
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn org-body-text [opts item]
+  (when (-> item :org/body seq)
+    (let [lines (->> item :org/body
+                     (map-indexed vector)
+                     (reduce
+                       (fn [lines [i {:keys [text]}]]
+                         (cond
+                           (#{""} text)
+                           (concat lines [])))
+                       []))]
+      [:div
+       {:class ["flex" "flex-col"]}
+       (for [[i line] (->> item :org/body (map-indexed vector))]
+         (let [{:keys [text]} line]
+           (cond
+             (= "" text)
+             ^{:key i}
+             [:span {:class [(when-not (zero? i) "py-1")]} " "]
+
+             :else
+             ^{:key i}
+             [text-with-links opts text])))])))
+
 (defn org-body
   "Renders an org body.
 
   Recursively renders the items nested content, if items are found
   as :org/items on the passed org node."
   ([item] (org-body nil item))
-  ([{:keys [nested? show-raw] :as opts}
+  ([{:keys [show-raw] :as opts}
     {:org/keys [body body-string items] :as item}]
    (when (or (seq body-string) (seq items))
      [:div {:class ["font-mono" "max-w-[900px]"]}
@@ -180,22 +202,18 @@
       ;; checking for a body-string, which accounts for 'empty' body content blocks
       (when (seq body-string)
         [:div
-         {:class ["text-city-blue-400"
-                  "flex" "flex-col" "p-2"
-                  "bg-yo-blue-500"]}
+         {:class ["text-city-blue-400" "bg-yo-blue-500" "p-2"]}
 
          (when (seq body)
-           (for [[i line] (map-indexed vector body)]
-             (let [{:keys [text]} line]
-               (cond
-                 (= "" text)
-                 ^{:key i} [:span {:class ["py-1"]} " "]
+           [:div
+            {:class ["flex" "flex-col"]}
 
-                 :else
-                 ^{:key i}
-                 [text-with-links opts text]))))
+            (when show-raw
+              [components.debug/raw-metadata
+               {:label "Raw body" :no-sort true} body])
+            [org-body-text opts item]])
 
-         (when (and (not (seq body)) body-string)
+         (when (and (not (seq body)) (seq body-string))
            [:pre
             [text-with-links opts body-string]])])
 
@@ -211,7 +229,6 @@
            [:div
             {:class
              (concat
-               [(when-not nested? "pb-4")]
                (when (and (:org/level item) (= (:org/level item) 2))
                  ["border" "border-city-blue-800"])
                (cond
@@ -313,7 +330,6 @@
    (let [show-raw (uix/state false)
 
          all-urls (all-nested-urls item)]
-     (println all-urls)
      [:div
       {:class ["text-white"]}
 

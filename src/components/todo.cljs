@@ -1,7 +1,6 @@
 (ns components.todo
   (:require
    [tick.core :as t]
-   [hiccup-icons.fa :as fa]
    [components.floating :as floating]
    [components.garden :as components.garden]
    [components.debug :as components.debug]
@@ -27,9 +26,7 @@
             "text-center"
             "p-4"]}
 
-   [:div
-    [components.garden/text-with-links (:org/name todo)]]
-
+   [:div [components.garden/text-with-links (:org/name todo)]]
    [:div
     [components.garden/tags-comp todo]
 
