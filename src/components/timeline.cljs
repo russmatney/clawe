@@ -14,8 +14,8 @@
   ([{:keys [days-ago]} timestamps]
    (when (seq timestamps)
      (let [days-ago        (or days-ago 13)
-           newest          (some->> timestamps (sort t/>) first)
-           oldest          (some->> timestamps (sort t/<) first)
+           newest          (some->> timestamps (sort t/>) first dates.tick/add-tz)
+           oldest          (some->> timestamps (sort t/<) first dates.tick/add-tz)
            oldest-days-ago (t/<< newest (t/new-period days-ago :days))
            oldest          (if (t/> oldest oldest-days-ago) oldest oldest-days-ago)
            all-dates       (t/range oldest
