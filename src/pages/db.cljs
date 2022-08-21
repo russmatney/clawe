@@ -39,7 +39,8 @@
                           "border"
                           "border-slate-600"
                           "rounded-xl"
-                          "font-mono"]
+                          "font-mono"
+                          "text-white"]
                :on-click on-click}
       label])])
 
@@ -54,8 +55,7 @@
      {:class ["grid"
               "min-h-screen"
               "overflow-hidden"
-              "bg-yo-blue-700"
-              "text-white"]}
+              "bg-yo-blue-700"]}
 
      [ingest-buttons]
 

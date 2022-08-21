@@ -1,7 +1,8 @@
 (ns pages.events
   (:require
    [components.events :as components.events]
-   [doctor.ui.db :as ui.db]))
+   [doctor.ui.db :as ui.db]
+   [pages.db :as pages.db]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; event page
@@ -14,5 +15,6 @@
               "min-h-screen"
               "overflow-hidden"
               "bg-yo-blue-700"]}
+     [pages.db/ingest-buttons]
 
      [components.events/events-cluster nil events]]))
