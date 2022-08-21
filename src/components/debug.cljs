@@ -24,42 +24,37 @@
    (let [exclude-key (or exclude-key #{})]
      (cond
        (map? m)
-       (->> m
-            map-key-sort
-            (map (partial colorized-metadata (inc level) opts)))
+       (cond->> m
+         (not (:no-sort opts)) map-key-sort
+         true                  (map (partial colorized-metadata (inc level) opts)))
 
        :else
        (let [[k v] m]
          (when-not (exclude-key k)
            ^{:key k}
            [:div.font-mono
-            {:class ["text-city-gray-400" (str "px-" (* 2 level))]}
+            {:class ["text-slate-800" (str "px-" (* 2 level))]}
             "["
             [:span {:class ["text-city-pink-400"]} (str k)]
             " "
 
             (cond
               (and (map? v) (seq v))
-              (->> v
-                   map-key-sort
-                   (map (partial colorized-metadata (inc level) opts)))
+              (cond->> v
+                (not (:no-sort opts)) map-key-sort
+                true                  (map (partial colorized-metadata (inc level) opts)))
 
               (and (list? v) (seq v))
               (->> v (map (partial colorized-metadata (inc level) opts)))
 
               :else
-              [:span {:class ["text-city-green-400"
-                              "max-w-xs"
-                              ]}
+              [:span {:class ["text-city-green-400" "max-w-xs"]}
                (cond
                  (and (map? v) (empty? v))  "{}"
                  (and (list? v) (empty? v)) "[]"
-
-                 (nil? v) "nil"
-
+                 (nil? v)                   "nil"
                  :else
-                 (when v
-                   (components.format/s-shortener (str v))))])
+                 (when v (components.format/s-shortener (str v))))])
 
             "] "]))))))
 
@@ -82,6 +77,6 @@
                  "border"
                  "border-city-blue-800"]}
         (when metadata
-          (->> metadata
-               map-key-sort
-               (map #(colorized-metadata opts %))))]}])))
+          (cond->> metadata
+            (not (:no-sort opts)) map-key-sort
+            true                  (map #(colorized-metadata opts %))))]}])))
