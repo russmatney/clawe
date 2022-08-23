@@ -15,7 +15,8 @@
   (-> tag
       (assoc :workspace/index (:awesome.tag/index tag))
       (assoc :workspace/title (:awesome.tag/name tag))
-      (assoc :workspace/focused (:awesome.tag/focused tag))
+      ;; TODO focus/selected unit test and links to docs
+      (assoc :workspace/focused (:awesome.tag/selected tag))
 
       ;; NOTE the `tag` may not include clients
       (assoc :workspace/clients

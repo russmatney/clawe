@@ -644,6 +644,8 @@
                     (into []))))))
     flatten))
 
+;; TODO ignore the clj-kondo public-fn error properly
+(comment (rofi-kill-opts))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Sandbox
