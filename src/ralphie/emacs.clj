@@ -95,7 +95,7 @@
            (or (some wsp [:emacs.open/workspace
                           :workspace/title :org/name :clawe.defs/name])
                "ralphie-fallback")
-           initial-file (some wsp [:emacs.open/file :emacs/open-file :workspace/initial-file])
+           initial-file (some wsp [:emacs.open/file :emacs.open/directory])
            initial-file (determine-initial-file initial-file)
            elisp-hook   (:emacs.open/elisp-hook wsp)
            eval-str     (str

@@ -62,6 +62,10 @@
                                   (:workspace/title (or (:current-workspace opts)
                                                         (wm/current-workspace)))
 
+                                  (#{:create/use-workspace-directory} v)
+                                  (:workspace/directory (or (:current-workspace opts)
+                                                            (wm/current-workspace)))
+
                                   :else v)]))
                       (into {}))]
              ((auto-resolve cmd) create-opts))

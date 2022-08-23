@@ -85,7 +85,7 @@
 ;; converts :create/use-workspace/title to the current-workspace's title
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn reset-atom-use-wsp-title [{:keys [atom val]}]
+(defn reset-atom-with-val [{:keys [atom val]}]
   (reset! atom val))
 
 (defrecord TestWM [workspace]
@@ -93,16 +93,28 @@
   (-current-workspaces [_this _opts] workspace))
 
 (deftest create-client-use-workspace-title-test
-  (testing "any val named `:create/use-workspace-title` as the current wsp title swapped in"
+  (testing "any val named `:create/use-workspace-title` has the current wsp title swapped in"
     (let [x (atom nil)]
       (is (nil? @x))
       (sys/with-system
         [wm/*wm* (TestWM. [{:workspace/title "wsp-title"}])]
         (create/create-client {:client/create
-                               {:create/cmd `reset-atom-use-wsp-title
+                               {:create/cmd `reset-atom-with-val
                                 :atom       x
                                 :val        :create/use-workspace-title}})
         (is (= "wsp-title" @x))))))
+
+(deftest create-client-use-workspace-directory-test
+  (testing "any val named `:create/use-workspace-directory` has the current wsp directory swapped in"
+    (let [x (atom nil)]
+      (is (nil? @x))
+      (sys/with-system
+        [wm/*wm* (TestWM. [{:workspace/directory "wsp-dir"}])]
+        (create/create-client {:client/create
+                               {:create/cmd `reset-atom-with-val
+                                :atom       x
+                                :val        :create/use-workspace-directory}})
+        (is (= "wsp-dir" @x))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; exec

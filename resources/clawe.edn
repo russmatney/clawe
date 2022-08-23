@@ -31,8 +31,9 @@
   "terminal"
   {:client/app-names ["Alacritty"],
    :client/create
-   {:create/cmd ralphie.tmux/open-session,
-    :tmux/session-name :create/use-workspace-title},
+   {:create/cmd        ralphie.tmux/open-session,
+    :tmux/session-name :create/use-workspace-title,
+    :tmux/directory    :create/use-workspace-directory},
    :match/use-workspace-title true,
    :hide/type :hide/close,
    :focus/float-and-center true},
@@ -75,8 +76,9 @@
   "emacs"
   {:client/app-names ["Emacs"],
    :client/create
-   {:create/cmd ralphie.emacs/open,
-    :emacs.open/workspace :create/use-workspace-title},
+   {:create/cmd           ralphie.emacs/open,
+    :emacs.open/workspace :create/use-workspace-title,
+    :emacs.open/directory :create/use-workspace-directory},
    :match/use-workspace-title true,
    :hide/type :hide/close,
    :focus/float-and-center true},
