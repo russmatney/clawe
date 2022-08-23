@@ -111,7 +111,7 @@
            (git/rofi-clone-suggestions-fast)
            (map (fn [x]
                   (-> x
-                      (assoc :rofi/label (str "Clone: " (:rofi/label x)))
+                      (assoc :rofi/label (str "clone + create wsp: " (:rofi/label x)))
                       (update :rofi/on-select
                               (fn [f]
                                 ;; return a function wrapping the existing on-select

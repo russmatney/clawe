@@ -2,10 +2,8 @@
   (:require
    [babashka.process :refer [$ check]]
    [clojure.string :as string]
-   [ralphie.zsh :as zsh]
    [ralphie.awesome :as awm]
-   [ralphie.notify :as notify]
-   [ralphie.doctor :as doctor]))
+   [ralphie.notify :as notify]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; rofi-general
@@ -53,7 +51,7 @@
   ;; TODO support `:rofi/tag` and `:rofi/tags` for including search terms (like "clone")
   ([opts] (rofi opts (:xs opts)))
   ([{:keys [msg message on-select require-match?]} xs]
-   (doctor/log "Rofi called with" (count xs) "xs.")
+   (println "Rofi called with" (count xs) "xs.")
 
    ;; push any floating windows into the view
    (when-not notify/is-mac?
@@ -107,7 +105,7 @@
                   ;; TODO determine if simple nothing-selected or actual rofi error
                   (= 1 (:exit res))
                   (do
-                    (doctor/log "Rofi Nothing Selected (or Error)")
+                    (println "Rofi Nothing Selected (or Error)")
                     nil)
 
                   :else
@@ -169,26 +167,4 @@
       }
     ($ choose)
     check
-    :out)
-
-
-  )
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Suggestion helpers
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; TODO move to zsh namespace
-(defn zsh-history
-  "Zsh history as rofi-xs.
-  TODO cache/speed up/trim allowed entries
-  "
-  []
-  (->> (zsh/history)
-       reverse
-       ;; (sort-by :timestamp >)
-       (map (fn [{:keys [line]}]
-              {:label line :on-select :label}))))
-
-(comment
-  (take 3 (zsh-history)))
+    :out))

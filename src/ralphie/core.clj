@@ -10,7 +10,6 @@
    ralphie.lock
    ralphie.monitor
    ralphie.notify
-   ralphie.org
    ralphie.outdated
    ralphie.picom
    [ralphie.rofi :as rofi]

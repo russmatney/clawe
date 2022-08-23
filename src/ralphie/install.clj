@@ -19,6 +19,8 @@
 (defn zsh-completion-path [bin-name]
   (str (config/home-dir) "/.zsh/completion/_" bin-name))
 
+;; TODO refactor to scan for -x-able functions
+;; maybe call from zsh, rather than writing out the output?
 (defn install-zsh-completion
   "Creates and installas a zsh-completion file for all required `defcom`s,
   at the supplied bin-name. (ex. `ralphie` or `clawe`)."
@@ -41,6 +43,7 @@ _arguments -C \\
 ;; Build uberscript
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; DEPRECATED
 (defcom build-uberjar
   (let [proc "rebuilding-ralphie-uberjar"]
     (notify/notify {:subject          "Ralphie Uberjar: Rebuilding"

@@ -199,3 +199,22 @@
 
 (defcom clean-up-zsh-history-dry-run-cmd
   (clean-up-zsh-history {:dry-run true}))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Rofi zsh history
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn rofi-zsh-history
+  "Zsh history as rofi-xs.
+  TODO cache/speed up/trim allowed entries
+  "
+  []
+  (->> (history)
+       reverse
+       ;; (sort-by :timestamp >)
+       (map (fn [{:keys [line]}]
+              {:label line :on-select :label}))))
+
+(comment
+  (take 3 (rofi-zsh-history)))

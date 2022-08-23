@@ -11,6 +11,7 @@
    [ralphie.notify :as notify]
    [ralphie.rofi :as rofi]
    [ralphie.sh :as r.sh]
+   [ralphie.zsh :as zsh]
    [clojure.java.shell :as sh]))
 
 
@@ -385,7 +386,7 @@
   (fn [_cmd & args]
     (let [cmd (if (seq args)
                 (first args)
-                (rofi/rofi {:msg "Command to fire"} (rofi/zsh-history)))]
+                (rofi/rofi {:msg "Command to fire"} (zsh/rofi-zsh-history)))]
       (fire cmd))))
 
 (defcom fire-cmd-with-interrupt
@@ -394,7 +395,7 @@ if it is busy."
   (fn [_cmd & args]
     (let [cmd (if (seq args)
                 (first args)
-                (rofi/rofi {:msg "Command to fire"} (rofi/zsh-history)))]
+                (rofi/rofi {:msg "Command to fire"} (zsh/rofi-zsh-history)))]
       (fire {:tmux.fire/interrupt? true
              :tmux.fire/cmd        cmd}))))
 

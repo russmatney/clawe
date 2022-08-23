@@ -26,13 +26,11 @@
   ;;        " -e '(delete-frame)'"))
   )
 
-(defn eval-form
-  "Expects a string."
+(defn fire
+  "Expects a string, passes it to emacsclient --eval."
   [form]
   (-> ($ emacsclient --eval ~form)
       check))
-
-(def fire eval-form)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Open emacs client for passed workspace
@@ -147,9 +145,9 @@
 (comment
   (open-in-emacs-str
     {:emacs/file-path  "some-file-path"
-     :emacs/frame-name "journal"
-     }))
+     :emacs/frame-name "journal"}))
 
+;; TODO is this redundant with `emacs/open` above? the above creates a new client, maybe this name should change
 (defn open-in-emacs
   "Opens a file in the last-focused existing emacs client.
   Expects an absolute file-path."
@@ -162,5 +160,4 @@
   (def --file "/Users/russ/russmatney/clawe/src/api/emacs.clj")
 
   (open-in-emacs
-    {:emacs/file-path --file})
-  )
+    {:emacs/file-path --file}))
