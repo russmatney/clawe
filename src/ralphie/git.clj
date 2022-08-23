@@ -376,6 +376,7 @@
               dir (zsh/expand "~/" dir))
         n   (or n 10)]
     (try
+      ;; consider url-encoding the content to avoid delimiting
       (->
         ^{:out :string :dir dir}
         (process/$
@@ -386,6 +387,8 @@
           ~(str "--pretty=format:" (log-format-str)))
         process/check :out
         ((fn [s] (str "[" s "]")))
+        ;; pre-precess double quotes (maybe just move to single?)
+        (string/replace "\"" "'")
         (string/replace delimiter "\"")
         edn/read-string
         (->> (map #(assoc % :commit/directory dir))))
@@ -399,7 +402,8 @@
   (count (commits-for-dir {:dir "russmatney/clawe" :n 10 :before "2022-05-06" :after "2022-05-02"}))
   (commits-for-dir {:dir "russmatney/clawe" :n 10})
   (commits-for-dir {:dir "/Users/russ/russmatney/clawe" :n 10})
-  (commits-for-dir {:dir "/Users/russ/russmatney/dotfiles" :n 10}))
+  (commits-for-dir {:dir (zsh/expand "~/russmatney/dotfiles") :n 30})
+  )
 
 (defn ->stats-header [[commit author date]]
   {:commit/hash         (-> commit (string/split #" ") second)
