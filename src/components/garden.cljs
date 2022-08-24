@@ -7,7 +7,8 @@
    [doctor.ui.handlers :as handlers]
    [components.debug :as components.debug]
    [components.floating :as floating]
-   [components.actions :as components.actions]))
+   [components.actions :as components.actions]
+   [components.colors :as colors]))
 
 (defn status-icon [todo]
   (case (:org/status todo)
@@ -55,9 +56,12 @@
 (defn tags-list [tags]
   (when (seq tags)
     [:div
-     (for [t tags]
+     (for [[i t] (->> tags (map-indexed vector))]
        ^{:key t}
-       [:span {:class ["font-mono"]} (str ":" t)])]))
+       [:span {:class
+               (concat ["font-mono"]
+                       (colors/color-wheel-classes {:type :line :i i}))}
+        (str ":" t)])]))
 
 (defn tags-comp [item]
   [tags-list (-> item :org/tags)])

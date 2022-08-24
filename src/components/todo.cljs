@@ -5,7 +5,6 @@
    [components.garden :as components.garden]
    [components.debug :as components.debug]
    [components.actions :as components.actions]
-   [clojure.string :as string]
    [doctor.ui.handlers :as handlers]
    [dates.tick :as dates.tick]
    [uix.core.alpha :as uix]))
@@ -16,59 +15,121 @@
 
 (defn todo-cell [_opts {:todo/keys [queued-at] :as todo}]
   [:div
-   {:class ["grid" "grid-flow-row" "place-items-center"
+   {:class ["grid" "grid-flow-row"
             "gap-4"
             "border-2"
             "border-slate-600"
             "bg-slate-800"
             "font-mono"
             "w-96"
-            "text-center"
             "p-4"]}
 
-   [:div [components.garden/text-with-links (:org/name todo)]]
    [:div
-    [components.garden/tags-comp todo]
+    {:class ["grid" "grid-flow-col"]}
+    [components.actions/actions-list
+     {:actions (handlers/todo->actions todo)
+      :n       5}]
 
-    (when (seq (:org/parent-name todo))
-      [:div
-       [components.garden/text-with-links
-        (-> todo :org/parent-name (string/split #" > ") first)]])]
+    [components.debug/raw-metadata {:label [:span
+                                            {:class ["text-slate-400"]}
+                                            "raw"]} todo]]
 
+   [:div
+    {:class ["inline-flex" "items-center"]}
+    [:div
+     {:class ["text-slate-400" "pr-2"]}
+     (components.garden/status-icon todo)]
+
+    [components.garden/text-with-links (:org/name todo)]]
+
+   [components.garden/tags-comp todo]
 
    (when queued-at
      [:div
-      (str "queued: " (t/format "MMM d, h:mma"
-                                (dates.tick/add-tz
-                                  (t/instant
-                                    queued-at))))])
+      (str "Q'd: " (t/format "MMM d, h:mma"
+                             (dates.tick/add-tz
+                               (t/instant
+                                 queued-at))))])
+
+   [floating/popover
+    {:hover  true :click true
+     :offset 0
+     :anchor-comp
+     [:div
+      {:class ["cursor-pointer" "text-slate-400"]}
+      (when (seq (:org/parent-name todo))
+        [:div
+         [components.garden/text-with-links
+          (str
+            (-> todo :org/parent-name)
+            " :: "
+            (:org/short-path todo))]])]
+     :popover-comp
+     [:div
+      {:class ["p-4"
+               "bg-slate-800"
+               "border" "border-slate-900"]}
+      [components.garden/full-note todo]]}]])
+
+(defn todo-row [_opts {:todo/keys [queued-at] :as todo}]
+  [:div
+   {:class ["grid" "grid-flow-col" "grid-cols-8"
+            "gap-4"
+            "border"
+            "border-slate-600"
+            "bg-slate-800"
+            "font-mono"
+            "p-4"]}
 
    [:div
-    {:class ["grid" "grid-flow-col" "gap-2"]}
-
+    {:class ["inline-flex" "items-center" "col-span-4"]}
     [:div
-     (components.garden/status-icon todo)
-     #_(:org/status todo)]
+     {:class ["text-slate-400" "pr-4"]}
+     [components.debug/raw-metadata
+      {:label [:span
+               {:class ["text-slate-400"]}
+               (components.garden/status-icon todo)]} todo]]
 
-    [components.debug/raw-metadata {:label "raw"} todo]
+    [components.garden/text-with-links (:org/name todo)]]
 
-    [floating/popover
-     {:hover  true :click true
-      :offset 0
-      :anchor-comp
-      [:div
-       {:class ["cursor-pointer"]}
-       (:org/short-path todo)]
-      :popover-comp
-      [:div
-       {:class ["p-4"
-                "bg-slate-800"
-                "border" "border-slate-900"]}
-       [components.garden/full-note todo]]}]]
+   (when queued-at
+     [:div
+      {:class ["text-slate-400"]}
+      (t/format "E ha" (dates.tick/add-tz (t/instant queued-at)))])
 
-   [components.actions/actions-list
-    {:actions (handlers/todo->actions todo)
-     :n       5}]])
+   [:div
+    {:class ["justify-self-end"]}
+    [components.garden/tags-comp todo]]
+
+   #_[:div
+      {:class ["justify-self-end"]}
+      [floating/popover
+       {:hover  true :click true
+        :offset 0
+        :anchor-comp
+        [:div
+         {:class ["cursor-pointer" "text-slate-400"
+                  ]}
+         (when (seq (:org/parent-name todo))
+           [:div
+            [components.garden/text-with-links
+             (str
+               (-> todo :org/parent-name)
+               " :: "
+               (:org/short-path todo))]])]
+        :popover-comp
+        [:div
+         {:class ["p-4"
+                  "bg-slate-800"
+                  "border" "border-slate-900"]}
+         [components.garden/full-note todo]]}]]
+
+   [:div
+    {:class ["justify-self-end" "col-span-2"]}
+    [components.actions/actions-list
+     {:actions (handlers/todo->actions todo)
+      :n       5}]]])
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; list
@@ -94,13 +155,12 @@
             (when (< @na (count todos))
               {:action/label    "show more"
                :action/on-click (fn [_] (swap! na #(+ % step)))})]}]]]
-       [:div {:class ["grid" "grid-flow-row" "grid-cols-3"
-                      "gap-4"
-                      "place-items-center"]}
+       [:div {:class ["grid" "grid-flow-row"
+                      "w-full"
+                      "px-4"]}
         (for [[i td] (->> todos
                           (sort-by :org/parent-name >)
                           (take @na)
                           (map-indexed vector))]
           ^{:key i}
-          [:div
-           [todo-cell opts td]])]])))
+          [todo-row opts td])]])))

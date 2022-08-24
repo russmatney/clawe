@@ -25,10 +25,6 @@
           bg-color-classes)
         n (or n (count wheel))
         x (mod i (min (count wheel) n))]
-
-    (println "wheel" wheel)
-    (println "n" n)
-    (println "x" x)
     (nth wheel x nil)))
 
 (comment
@@ -37,5 +33,4 @@
   (color-wheel-classes {:type :line :i 4})
   (color-wheel-classes {:type :line :i 3 :n 8})
   (color-wheel-classes {:type :line :i 15 :n 3})
-  (color-wheel-classes {:type :line :i 0 :n 2})
-  )
+  (color-wheel-classes {:type :line :i 0 :n 2}))
