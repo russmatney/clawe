@@ -14,7 +14,8 @@
              [org-crud.api :as org-crud.api]
              [garden.db :as garden.db]]
        :cljs [[hiccup-icons.fa :as fa]
-              [components.icons :as components.icons]])))
+              [components.icons :as components.icons]
+              [components.colors :as colors]])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; db items
@@ -164,16 +165,21 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 #?(:cljs
+   (defn open-in-journal-action [item]
+     {:action/label    "open-in-emacs"
+      :action/on-click #(open-in-journal item)
+      :action/class    ["text-city-purple-500" "border-city-purple-500"]
+      :action/icon
+      [components.icons/icon-comp
+       {:class ["w-6"]
+        :src   "/assets/candy-icons/emacs.svg"}]}))
+
+#?(:cljs
    (defn todo->actions [todo]
      (let [{:keys [org/status]} todo]
        (->>
-         [{:action/label    "open-in-emacs"
-           :action/on-click #(open-in-journal todo)
-           :action/class    ["border-city-blue-400"]
-           :action/icon
-           [components.icons/icon-comp
-            {:class ["w-6"]
-             :src   "/assets/candy-icons/emacs.svg"}]}
+         [
+          (open-in-journal-action todo)
           (when-not (:org/id todo)
             {:action/label    "add-uuid"
              :action/on-click #(add-uuid todo)
@@ -234,9 +240,7 @@
 
 #?(:cljs
    (defn garden-file->actions [item]
-     [{:action/label    "open-in-emacs"
-       :action/on-click #(open-in-journal item)
-       :action/icon     fa/pencil-alt-solid}
+     [(open-in-journal-action item)
       {:action/label    "add-tag"
        :action/on-click (fn [_]
                           (let [res (js/prompt "Add tag")]
@@ -257,24 +261,31 @@
 
 #?(:cljs
    (defn ->actions [item]
-     (cond
-       ;; todos
-       (and (#{:type/garden} (:doctor/type item))
-            (:org/status item))
-       (todo->actions item)
+     (->>
+       (cond
+         ;; todos
+         (and (#{:type/garden} (:doctor/type item))
+              (:org/status item))
+         (todo->actions item)
 
-       ;; garden note
-       (#{:type/garden} (:doctor/type item))
-       (garden-file->actions item)
+         ;; garden note
+         (#{:type/garden} (:doctor/type item))
+         (garden-file->actions item)
 
-       ;; repo actions
-       (#{:type/repo} (:doctor/type item))
-       (repo->actions item)
+         ;; repo actions
+         (#{:type/repo} (:doctor/type item))
+         (repo->actions item)
 
-       :else
-       [{:action/on-click #(delete-from-db item)
-         :action/label    "delete-from-db"
-         :action/icon     fa/trash-alt-solid}])))
+         :else
+         [{:action/on-click #(delete-from-db item)
+           :action/label    "delete-from-db"
+           :action/icon     fa/trash-alt-solid}])
+       (map-indexed vector)
+       (map (fn [[i ax]]
+              (merge
+                {:action/class (colors/color-wheel-classes {:type :line :i i})}
+                ax ;; let the ax overwrite/maintain a color
+                ))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ingest buttons

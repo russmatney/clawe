@@ -209,7 +209,7 @@
                    "whitespace-nowrap"]}
           [components.garden/text-with-links (:org/name current)]]
 
-         [components.actions/actions-list (handlers/todo->actions current)]]))))
+         [components.actions/actions-list (handlers/->actions current)]]))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Topbar widget and state

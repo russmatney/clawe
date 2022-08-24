@@ -27,7 +27,7 @@
    [:div
     {:class ["grid" "grid-flow-col"]}
     [components.actions/actions-list
-     {:actions (handlers/todo->actions todo)
+     {:actions (handlers/->actions todo)
       :n       5}]
 
     [components.debug/raw-metadata {:label [:span
@@ -127,7 +127,7 @@
    [:div
     {:class ["justify-self-end" "col-span-2"]}
     [components.actions/actions-list
-     {:actions (handlers/todo->actions todo)
+     {:actions (handlers/->actions todo)
       :n       5}]]])
 
 
