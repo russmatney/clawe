@@ -64,9 +64,11 @@
        {:class ["p-4"
                 "bg-slate-800"
                 "border" "border-slate-900"]}
-       [components.garden/full-note todo]]}]
+       [components.garden/full-note todo]]}]]
 
-    [components.actions/actions-popup (handlers/todo->actions todo)]]])
+   [components.actions/actions-list
+    {:actions (handlers/todo->actions todo)
+     :n       5}]])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; list

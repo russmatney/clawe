@@ -182,20 +182,31 @@
     (when (seq todos)
       (let [queued  (->> todos (sort-by :todo/queued-at >) (into []))
             n       (uix/state 0)
-            current (get queued @n)]
+            current (get queued @n)
+            ct      (count queued)
+            ]
         [:div
-         {:class ["grid" "grid-flow-col" "place-self-center"]}
+         {:class ["flex" "place-self-center"
+                  "space-x-4"
+                  "w-[1100px]"]}
 
          [components.actions/actions-list
           {:actions
-           [(when (> @n 0)
-              {:action/label    "prev"
-               :action/on-click (fn [_] (swap! n dec))})
-            (when (< @n (dec (count queued)))
-              {:action/label    "next"
-               :action/on-click (fn [_] (swap! n inc))})]}]
+           [{:action/label    "next"
+             :action/icon     fa/chevron-up-solid
+             :action/disabled (>= @n (dec ct))
+             :action/on-click (fn [_] (swap! n inc))}
+            {:action/label    "prev"
+             :action/icon     fa/chevron-down-solid
+             :action/disabled (zero? @n)
+             :action/on-click (fn [_] (swap! n dec))}]}]
+         [:span
+          {:class ["pl-3" "font-mono"]}
+          (str (inc @n) "/" ct)]
 
-         [:div.font-mono.pr-3
+         [:div
+          {:class ["font-mono pr-3"
+                   "whitespace-nowrap"]}
           [components.garden/text-with-links (:org/name current)]]
 
          [components.actions/actions-list (handlers/todo->actions current)]]))))

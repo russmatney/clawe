@@ -13,7 +13,8 @@
              [datascript.core :as d]
              [org-crud.api :as org-crud.api]
              [garden.db :as garden.db]]
-       :cljs [[hiccup-icons.fa :as fa]])))
+       :cljs [[hiccup-icons.fa :as fa]
+              [components.icons :as components.icons]])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; db items
@@ -168,17 +169,24 @@
        (->>
          [{:action/label    "open-in-emacs"
            :action/on-click #(open-in-journal todo)
-           :action/icon     fa/pencil-alt-solid}
+           :action/class    ["border-city-blue-400"]
+           :action/icon
+           [components.icons/icon-comp
+            {:class ["w-6"]
+             :src   "/assets/candy-icons/emacs.svg"}]}
           (when-not (:org/id todo)
             {:action/label    "add-uuid"
              :action/on-click #(add-uuid todo)
-             :action/icon     fa/hashtag-solid})
+             :action/icon     fa/hashtag-solid
+             :action/priority -10}) ;; low-prority
           {:action/label    "add-tag"
            :action/on-click (fn [_]
                               (let [res (js/prompt "Add tag")]
                                 (when (seq res)
                                   (add-tag todo res))))
-           :action/icon     fa/tag-solid}
+           :action/icon     fa/tag-solid
+           ;; higher priority if missing tags
+           :action/priority (if (seq (:org/tags todo)) 0 1)}
           {:action/label    "delete-from-db"
            :action/on-click #(delete-from-db todo)
            :action/icon     fa/trash-alt-solid}
@@ -189,15 +197,20 @@
                         (:todo/queued-at todo))
             {:action/label    "queue-todo"
              :action/on-click #(queue-todo todo)
-             :action/icon     fa/tasks-solid})
+             :action/icon     fa/tasks-solid
+             :action/priority 1})
           (when (:todo/queued-at todo)
             {:action/label    "unqueue-todo"
              :action/on-click #(unqueue-todo todo)
-             :action/icon     fa/quidditch-solid})
+             :action/icon     fa/quidditch-solid
+             ;; higher priority if queued
+             :action/priority 1})
           (when-not (#{:status/in-progress} status)
             {:action/label    "start-todo"
              :action/on-click #(start-todo todo)
-             :action/icon     fa/golf-ball-solid})
+             :action/icon     fa/golf-ball-solid
+             ;; higher priority if queued
+             :action/priority (if  (:todo/queued-at todo) 1 0)})
           (when-not (#{:status/done} status)
             {:action/label    "complete-todo"
              :action/on-click #(complete-todo todo)

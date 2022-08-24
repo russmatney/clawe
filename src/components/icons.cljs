@@ -136,17 +136,32 @@
     icon  [:div {:class class} icon]
     :else text))
 
-(defn action-icon-button [{:action/keys [label icon on-click tooltip]}]
-  [:div
-   {:class    ["px-2"
-               "cursor-pointer" "hover:text-city-blue-300"
-               "rounded" "border" "border-city-blue-700"
-               "hover:border-city-blue-300"
-               "flex" "items-center"
-               "tooltip"
-               "relative"]
-    :on-click (fn [_] (on-click))}
-   [:div (if icon icon label)]
-   [:div.tooltip.tooltip-text.bottom-10.-left-3
-    {:class ["whitespace-nowrap"]}
-    (or tooltip label)]])
+(defn action-icon-button
+  ([action] (action-icon-button nil action))
+  ([{:keys [class]}
+    {:action/keys [label icon on-click tooltip disabled]
+     :as          action
+     }]
+   [:div
+    {:class
+     (concat
+       ["px-2" "py-1"
+        "rounded" "border"
+        "flex" "items-center"
+        "tooltip"
+        "relative"]
+       ;; TODO colors coming from three sources, need to choose one
+       (:action/class action)
+       class
+       (if disabled
+         ["border-slate-600" "text-slate-600"]
+         ["cursor-pointer"
+          "hover:text-city-blue-300"
+          "hover:border-city-blue-300"
+          "border-city-blue-700"])
+       )
+     :on-click (fn [_] (when (and on-click (not disabled)) (on-click)))}
+    [:div (if icon icon label)]
+    [:div.tooltip.tooltip-text.bottom-10.-left-3
+     {:class ["whitespace-nowrap"]}
+     (or tooltip label)]]))
