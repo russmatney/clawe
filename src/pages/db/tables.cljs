@@ -153,7 +153,7 @@
                    (map (fn [{:lichess.game/keys [] :as game}]
                           [[components.chess/cluster-single nil game]
                            (-> game :lichess.game/opening-name)
-                           (-> game :lichess.game/created-at (t/new-duration :millis) t/instant)
+                           (some-> game :lichess.game/created-at (t/new-duration :millis) t/instant)
                            [components.debug/raw-metadata {:label "raw"} game]
                            [actions-cell game]])))}))
 
