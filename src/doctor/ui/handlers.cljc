@@ -186,7 +186,7 @@
                                   (add-tag todo res))))
            :action/icon     fa/tag-solid
            ;; higher priority if missing tags
-           :action/priority (if (seq (:org/tags todo)) 0 1)}
+           :action/priority (if (seq (:org/tags todo)) 0 3)}
           {:action/label    "delete-from-db"
            :action/on-click #(delete-from-db todo)
            :action/icon     fa/trash-alt-solid}
@@ -214,7 +214,9 @@
           (when-not (#{:status/done} status)
             {:action/label    "complete-todo"
              :action/on-click #(complete-todo todo)
-             :action/icon     fa/check-circle-solid})
+             :action/icon     fa/check-circle-solid
+             :action/priority (if (or (:todo/queued-at todo)
+                                      (:status/in-progress todo)) 2 0)})
           (when-not (#{:status/skipped} status)
             {:action/label    "skip"
              :action/on-click #(skip-todo todo)})
