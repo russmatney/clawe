@@ -8,7 +8,8 @@
    [components.debug :as components.debug]
    [components.floating :as floating]
    [components.actions :as components.actions]
-   [components.colors :as colors]))
+   [components.colors :as colors]
+   [doctor.ui.db :as ui.db]))
 
 (defn status-icon [todo]
   (case (:org/status todo)
@@ -69,6 +70,14 @@
 (defn all-nested-tags-comp [item]
   (let [all-tags (all-nested-tags item)]
     [tags-list all-tags]))
+
+(defn all-tags [{:keys [conn]} item]
+  (println "all-tags called")
+  (println
+    (ui.db/garden-tags conn))
+  (->>
+    (ui.db/garden-tags conn)
+    (take 3)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; name/line

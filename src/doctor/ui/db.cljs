@@ -154,3 +154,14 @@
          conn)
     (map first)
     (remove (comp #{:status/cancelled :status/done} :org/status))))
+
+;; TODO write fe unit tests for this and the whole ns
+(defn garden-tags
+  ([conn] (garden-tags conn nil))
+  ([conn _opts]
+   (->>
+     (d/q '[:find ?tag
+            :where [_ :org/tags ?tag]]
+          conn)
+     (map first)
+     (into #{}))))
