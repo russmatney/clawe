@@ -8,6 +8,7 @@
   "lichess-docker"
   {:workspace/directory "~/benediktwerner/lichess-docker"},
   "org-crud" {:workspace/directory "~/russmatney/org-crud"},
+  "heroicons" {:workspace/directory "~/tailwindlabs/heroicons"},
   "lila-ws" {:workspace/directory "~/lichess-org/lila-ws"},
   "cider" {:workspace/directory "~/clojure-emacs/cider"},
   "clawe" {:workspace/directory "~/russmatney/clawe"},

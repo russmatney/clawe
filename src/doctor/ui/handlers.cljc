@@ -178,8 +178,7 @@
    (defn todo->actions [todo]
      (let [{:keys [org/status]} todo]
        (->>
-         [
-          (open-in-journal-action todo)
+         [(open-in-journal-action todo)
           (when-not (:org/id todo)
             {:action/label    "add-uuid"
              :action/on-click #(add-uuid todo)

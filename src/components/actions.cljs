@@ -18,16 +18,14 @@
 (comment
   (is-text-color-class? "text-city-blue-700")
   (is-text-color-class? "text-xl")
-  (is-border-color-class? "border-city-blue-700")
-  )
+  (is-border-color-class? "border-city-blue-700"))
 
 (defn action-icon-button
   ([action] (action-icon-button nil action))
   ([{:keys [class]}
     {:action/keys [label icon on-click tooltip disabled]
      :as          action}]
-   (let [
-         ax-class     (:action/class action)
+   (let [ax-class     (:action/class action)
          text-class   (->> (concat ax-class class ["text-city-blue-700"])
                            (filter is-text-color-class?)
                            first)
@@ -39,8 +37,7 @@
                            (remove is-border-color-class?))
          ax-class     (->> ax-class
                            (remove is-text-color-class?)
-                           (remove is-border-color-class?))
-         ]
+                           (remove is-border-color-class?))]
      [:div
       {:class
        (concat
@@ -57,8 +54,7 @@
            ["border-slate-600" "text-slate-600"]
            ["cursor-pointer"
             "hover:text-city-blue-300"
-            "hover:border-city-blue-300"])
-         )
+            "hover:border-city-blue-300"]))
        :on-click (fn [_] (when (and on-click (not disabled)) (on-click)))}
       [:div (if icon icon label)]
       [:div.tooltip.tooltip-text.bottom-10.-left-3
