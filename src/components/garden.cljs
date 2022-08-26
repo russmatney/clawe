@@ -71,10 +71,10 @@
   (let [all-tags (all-nested-tags item)]
     [tags-list all-tags]))
 
-(defn all-tags [{:keys [conn]} item]
-  (println "all-tags called")
-  (println
-    (ui.db/garden-tags conn))
+(defn all-tags [{:keys [conn]} _item]
+  #_(println "all-tags called")
+  #_(println
+      #_(ui.db/garden-tags conn))
   (->>
     (ui.db/garden-tags conn)
     (take 3)))

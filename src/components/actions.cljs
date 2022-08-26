@@ -23,7 +23,7 @@
 (defn action-icon-button
   ([action] (action-icon-button nil action))
   ([{:keys [class]}
-    {:action/keys [label icon on-click tooltip disabled]
+    {:action/keys [label icon comp on-click tooltip disabled]
      :as          action}]
    (let [ax-class     (:action/class action)
          text-class   (->> (concat ax-class class ["text-city-blue-700"])
@@ -56,7 +56,7 @@
             "hover:text-city-blue-300"
             "hover:border-city-blue-300"]))
        :on-click (fn [_] (when (and on-click (not disabled)) (on-click)))}
-      [:div (if icon icon label)]
+      [:div (or comp icon label)]
       [:div.tooltip.tooltip-text.bottom-10.-left-3
        {:class ["whitespace-nowrap"]}
        (or tooltip label)]])))

@@ -7,13 +7,15 @@
 
    [components.icons :as icons]
    [components.charts :as charts]
+
    [hooks.topbar :as hooks.topbar]
    [hooks.workspaces :as hooks.workspaces]
 
    [doctor.ui.db :as ui.db]
    [components.garden :as components.garden]
    [components.actions :as components.actions]
-   [doctor.ui.handlers :as handlers]))
+   [doctor.ui.handlers :as handlers]
+   [components.colors :as colors]))
 
 (defn skip-bar-app? [client]
   (-> client :client/window-title #{"tauri/doctor-topbar"}))
@@ -105,43 +107,47 @@
 ;; Clock/host/metadata
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn sep [] [:span.px.font-mono "|"])
+(defn sep [] [:span.px-3.font-nes.text-slate-600 "|"])
 
-(defn clock-host-metadata [{:keys [time]}
-                           {:keys [topbar/background-mode] :as metadata}]
+(defn toggle-background-mode [{:keys [topbar/background-mode] :as _metadata}]
+  (fn [_]
+    (hooks.topbar/set-background-mode
+      (if (#{:bg/dark} background-mode)
+        :bg/light :bg/dark))))
+
+(defn clock-host-metadata [{:keys [time]} metadata]
   [:div
    {:class ["grid" "grid-flow-col" "self-center" "justify-self-end"
             "place-items-center"]}
 
-   ;; bg toggle
-   [:div
-    [:button {:on-click (fn [_]
-                          (hooks.topbar/set-background-mode
-                            (if (#{:bg/dark} background-mode)
-                              :bg/light :bg/dark)))
-              :class    ["m-2" "p-2" "border"]}
-     fa/adjust-solid]]
+   [components.actions/actions-list
+    {:actions [;; bg toggle
+               {:action/on-click (toggle-background-mode metadata)
+                :action/label    "toggle"}
+
+               ;; reload
+               {:action/on-click (fn [_] (js/location.reload))
+                :action/icon     fa/newspaper}
+
+               {:action/on-click (fn [_]
+                                   ;; TODO toggle mute
+                                   )
+
+                :action/icon (if (:microphone/muted metadata) fa/microphone-slash-solid fa/microphone-solid)}]}]
 
    [sep]
 
    [:div
-    [:button {:on-click (fn [_] (js/location.reload))} "Reload"]]
-
-   [sep]
-
-   [:div
-    {:class ["font-nes"]}
+    {:class
+     (concat ["font-nes"]
+             (colors/color-wheel-classes {:type :line :i 2}))}
     (:hostname metadata)]
 
-   [sep]
-
-   [:div
-    (if (:microphone/muted metadata) fa/microphone-slash-solid fa/microphone-solid)]
    (when (:battery/status metadata)
      [sep])
-
    (when (:battery/status metadata)
      [:div
+      {:class (colors/color-wheel-classes {:type :line :i 4})}
       [:span
        (:battery/remaining-time metadata)]
       [:span
@@ -154,7 +160,8 @@
                 (filter (fn [[_ v]] (when (and v (string? v)) (string/includes? v "%")))))]
      [sep]
      [:div
-      {:class ["flex" "flex-row"]}
+      {:class (concat ["flex" "flex-row"]
+                      (colors/color-wheel-classes {:type :line :i 5}))}
       (for [[k v] pcts]
         ^{:key k}
         [:div
@@ -168,10 +175,13 @@
                     "rgb(255, 99, 132)")}]])])
 
    [sep]
-   [:div.font-mono
-    (some->> time
-             #_{:clj-kondo/ignore [:unresolved-var]}
-             (t/format (t/formatter "M/dd HH:mm")))]])
+   [:div.font-nes {:class ["flex" "flex-row" "space-x-2"]}
+    [:span
+     {:class (colors/color-wheel-classes {:type :line :i 6})}
+     (some->> time (t/format (t/formatter "M/d")))]
+    [:span
+     {:class (colors/color-wheel-classes {:type :line :i 7})}
+     (some->> time (t/format (t/formatter "h:mma")))]]])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Current task
