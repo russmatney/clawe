@@ -262,7 +262,6 @@
 
     [:div
      {:class ["flex" "flex-col" "flex-auto"
-              "min-h-screen"
               "overflow-hidden"
               "text-white"
               "py-6"]}

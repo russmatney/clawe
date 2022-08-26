@@ -5,71 +5,14 @@
    [components.garden :as components.garden]
    [components.debug :as components.debug]
    [components.actions :as components.actions]
+   [components.events :as components.events]
    [doctor.ui.handlers :as handlers]
    [dates.tick :as dates.tick]
    [uix.core.alpha :as uix]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; todo-cell
+;; todo-row
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn todo-cell [_opts {:todo/keys [queued-at] :as todo}]
-  [:div
-   {:class ["grid" "grid-flow-row"
-            "gap-4"
-            "border-2"
-            "border-slate-600"
-            "bg-slate-800"
-            "font-mono"
-            "w-96"
-            "p-4"]}
-
-   [:div
-    {:class ["grid" "grid-flow-col"]}
-    [components.actions/actions-list
-     {:actions (handlers/->actions todo)
-      :n       5}]
-
-    [components.debug/raw-metadata {:label [:span
-                                            {:class ["text-slate-400"]}
-                                            "raw"]} todo]]
-
-   [:div
-    {:class ["inline-flex" "items-center"]}
-    [:div
-     {:class ["text-slate-400" "pr-2"]}
-     (components.garden/status-icon todo)]
-
-    [components.garden/text-with-links (:org/name todo)]]
-
-   [components.garden/tags-comp todo]
-
-   (when queued-at
-     [:div
-      (str "Q'd: " (t/format "MMM d, h:mma"
-                             (dates.tick/add-tz
-                               (t/instant
-                                 queued-at))))])
-
-   [floating/popover
-    {:hover  true :click true
-     :offset 0
-     :anchor-comp
-     [:div
-      {:class ["cursor-pointer" "text-slate-400"]}
-      (when (seq (:org/parent-name todo))
-        [:div
-         [components.garden/text-with-links
-          (str
-            (-> todo :org/parent-name)
-            " :: "
-            (:org/short-path todo))]])]
-     :popover-comp
-     [:div
-      {:class ["p-4"
-               "bg-slate-800"
-               "border" "border-slate-900"]}
-      [components.garden/full-note todo]]}]])
 
 (defn todo-row [opts {:todo/keys [queued-at] :as todo}]
   [:div
@@ -163,6 +106,10 @@
             (when (< @na (count todos))
               {:action/label    "show more"
                :action/on-click (fn [_] (swap! na #(+ % step)))})]}]]]
+
+       ;; yep, a whole event cluster
+       [components.events/events-cluster nil todos]
+
        [:div {:class ["grid" "grid-flow-row"
                       "w-full"
                       "px-4"]}
