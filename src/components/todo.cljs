@@ -107,9 +107,6 @@
               {:action/label    "show more"
                :action/on-click (fn [_] (swap! na #(+ % step)))})]}]]]
 
-       ;; yep, a whole event cluster
-       [components.events/events-cluster nil todos]
-
        [:div {:class ["grid" "grid-flow-row"
                       "w-full"
                       "px-4"]}

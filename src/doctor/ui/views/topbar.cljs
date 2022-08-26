@@ -7,15 +7,16 @@
 
    [components.icons :as icons]
    [components.charts :as charts]
+   [components.garden :as components.garden]
+   [components.actions :as components.actions]
+   [components.colors :as colors]
 
    [hooks.topbar :as hooks.topbar]
    [hooks.workspaces :as hooks.workspaces]
 
    [doctor.ui.db :as ui.db]
-   [components.garden :as components.garden]
-   [components.actions :as components.actions]
    [doctor.ui.handlers :as handlers]
-   [components.colors :as colors]))
+   [doctor.ui.hooks.use-topbar :as use-topbar]))
 
 (defn skip-bar-app? [client]
   (-> client :client/window-title #{"tauri/doctor-topbar"}))
@@ -127,13 +128,12 @@
 
                ;; reload
                {:action/on-click (fn [_] (js/location.reload))
-                :action/icon     fa/newspaper}
+                :action/label    "reload"}
 
                {:action/on-click (fn [_]
                                    ;; TODO toggle mute
                                    )
-
-                :action/icon (if (:microphone/muted metadata) fa/microphone-slash-solid fa/microphone-solid)}]}]
+                :action/icon     (if (:microphone/muted metadata) fa/microphone-slash-solid fa/microphone-solid)}]}]
 
    [sep]
 
@@ -221,54 +221,12 @@
 
          [components.actions/actions-list (handlers/->actions current)]]))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Topbar widget and state
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn use-topbar-state []
-  (let [hovered-client         (uix/state nil)
-        hovered-workspace      (uix/state nil)
-        last-hovered-client    (uix/state nil)
-        last-hovered-workspace (uix/state nil)
-        topbar-above           (uix/state true)
-        toggle-above-below     (fn []
-                                 (-> (hooks.topbar/toggle-topbar-above (not @topbar-above))
-                                     (.then (fn [v] (reset! topbar-above v)))))
-        time                   (uix/state
-                                 #_{:clj-kondo/ignore [:invalid-arity]}
-                                 (t/zoned-date-time))
-        interval               (atom nil)]
-    (uix/with-effect [@interval]
-      (reset! interval (js/setInterval #(reset! time
-                                                #_{:clj-kondo/ignore [:invalid-arity]}
-                                                (t/zoned-date-time)) 1000))
-      (fn [] (js/clearInterval @interval)))
-
-    {:hovered-client         @hovered-client
-     :hovered-workspace      @hovered-workspace
-     :last-hovered-workspace @last-hovered-workspace
-     :last-hovered-client    @last-hovered-client
-     :on-hover-workspace     (fn [w]
-                               (reset! last-hovered-workspace w)
-                               (reset! hovered-workspace w)
-                               ;; (pull-above)
-                               )
-     :on-unhover-workspace   (fn [_] (reset! hovered-workspace nil))
-     :on-hover-client        (fn [c]
-                               (reset! last-hovered-client c)
-                               (reset! hovered-client c)
-                               ;; (pull-above)
-                               )
-     :on-unhover-client      (fn [_] (reset! hovered-client nil))
-     :topbar-above           @topbar-above
-     :toggle-above-below     toggle-above-below
-     :time                   @time}))
-
 (defn widget [opts]
-  (let [metadata                                      (hooks.topbar/use-topbar-metadata)
+  (let [;; TODO move metadata/workspaces into use-topbar
+        metadata                                      (hooks.topbar/use-topbar-metadata)
         {:keys [topbar/background-mode] :as metadata} @metadata
         {:keys [active-workspaces]}                   (hooks.workspaces/use-workspaces)
-        topbar-state                                  (use-topbar-state)]
+        topbar-state                                  (use-topbar/use-topbar-state)]
     [:div
      {:class ["h-screen" "overflow-hidden" "text-city-pink-200"
               (when (#{:bg/dark} background-mode) "bg-gray-700")

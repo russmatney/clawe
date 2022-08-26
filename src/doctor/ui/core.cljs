@@ -26,15 +26,17 @@
    [pages.garden :as pages.garden]
    [pages.posts :as pages.posts]
    [pages.journal :as pages.journal]
+   [hooks.db :as hooks.db]
+
    [doctor.ui.views.topbar :as views.topbar]
-   [hooks.db :as hooks.db]))
+   [doctor.ui.views.dashboard :as views.dashboard]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; routes, home
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def route-defs
-  [{:route "/" :page-name :page/home :label "Home" :comp pages.db/page}
+  [{:route "/" :page-name :page/home :label "Dashboard" :comp views.dashboard/widget}
    {:route "/db" :page-name :page/db :label "DB" :comp pages.db/page}
    {:route "/todo" :page-name :page/todos :label "Todos" :comp pages.todos/page}
    {:route "/commits" :page-name :page/commits :label "Commits" :comp pages.commits/page}
