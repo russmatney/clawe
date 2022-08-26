@@ -107,9 +107,9 @@
 ;; Reload
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn do-reload
+(defn reload
   "Write all dependent configs and restart whatever daemons."
-  ([] (do-reload nil))
+  ([] (reload nil))
   ([_]
    (log "reloading...")
 
@@ -147,32 +147,9 @@
    (clawe.doctor/update-topbar)
    (log "Reload complete")))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; restart
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn restart
-  "Maybe rebuild the clawe uberjar, then call `reload`.
-
-  Rebuild requires the unit tests to pass, but if they fail, `reload` is called anyway.
-
-  The uberjar can be manually rebuilt on the command line with:
-
-  bb -cp $(clojure -Spath) --uberjar clawe.jar -m clawe.core # rebuild clawe
-  See `build-uberjar`.
-  "
-  ([] (restart nil))
-  ([_]
-   (log "Restarting...")
-   (attempt-uberjar-rebuild)
-
-   ;; reload afterwards, pretty much no matter what
-   (log "reloading clawe...")
-   (do-reload)))
-
-(defkbd clawe-restart
+(defkbd clawe-reload
   [[:mod] "r"]
   {:binding/awm true}
   ;; TODO support just passing in a defcom
   ;; TODO consider moving keybindings into domain files?
-  (restart))
+  (reload))
