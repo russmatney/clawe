@@ -118,6 +118,7 @@
     (fn [tx]
       (try
         (ensure-timestamps tx)
+        ;; TODO support :ingested-at (or is this just tx-id)?
         (catch Exception e
           (log/warn "Error in *data-expander* db listener" e)
           tx))))

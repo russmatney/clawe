@@ -1,6 +1,7 @@
 (ns components.filter
   (:require [components.floating :as floating]
-            [uix.core.alpha :as uix]))
+            [uix.core.alpha :as uix]
+            [components.debug :as components.debug]))
 
 (defn- expand-coll-group-bys [items-grouped-by]
   (reduce
@@ -26,6 +27,7 @@
   [:div.flex.flex-row.flex-wrap
    {:class ["gap-x-3"]}
 
+   ;; TODO break this up more
    (for [[i [filter-key filter-def]] (map-indexed vector all-filter-defs)]
      (let [grouped-by-counts
            (->> items
@@ -94,7 +96,15 @@
                        :on-click #(toggle-filter-by {:filter-key filter-key :match k})}
                       (let [format-label (:format-label filter-def str)]
                         [:span.p-1.pl-2.text-xl.ml-auto (format-label k)])
-                      [:span.p-1.text-xl.w-10.text-center v]]))])])]}]]))])
+                      [:span.p-1.text-xl.w-10.text-center v]]))])])]}]]))
+
+   ;; TODO improve debug view for collections
+   [components.debug/raw-metadata {:label "filters"} items-filter-by]
+
+   (for [[i f] (->> items-filter-by
+                    (map-indexed vector))]
+     ^{:key i}
+     [:div [:pre (str f)]])])
 
 (defn- filter-match-fn
   "Builds a predicate for an item, for a grouped filter-key.

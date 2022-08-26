@@ -108,7 +108,9 @@
 ;; Clock/host/metadata
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn sep [] [:span.px-3.font-nes.text-slate-600 "|"])
+(defn sep [] [:span
+              {:class ["px-3 font-nes text-slate-600"]}
+              "|"])
 
 (defn toggle-background-mode [{:keys [topbar/background-mode] :as _metadata}]
   (fn [_]
@@ -118,22 +120,34 @@
 
 (defn clock-host-metadata [{:keys [time]} metadata]
   [:div
-   {:class ["grid" "grid-flow-col" "self-center" "justify-self-end"
-            "place-items-center"]}
+   {:class [
+            ;; "flex"
+            ;; "flex-row"
+            "grid"
+            "grid-flow-col"
+            "justify-self-end"
+            "h-full"
+            "items-center"
+            "justify-items-end"
+            ]}
 
-   [components.actions/actions-list
-    {:actions [;; bg toggle
-               {:action/on-click (toggle-background-mode metadata)
-                :action/label    "toggle"}
+   [:div
+    [components.actions/actions-list
+     {:actions [ ;; bg toggle
+                {:action/on-click (toggle-background-mode metadata)
+                 :action/label    "toggle"
+                 :action/icon     fa/address-book}
 
-               ;; reload
-               {:action/on-click (fn [_] (js/location.reload))
-                :action/label    "reload"}
+                ;; reload
+                {:action/on-click (fn [_] (js/location.reload))
+                 :action/label    "reload"
+                 :action/icon     fa/address-book}
 
-               {:action/on-click (fn [_]
-                                   ;; TODO toggle mute
-                                   )
-                :action/icon     (if (:microphone/muted metadata) fa/microphone-slash-solid fa/microphone-solid)}]}]
+                {:action/on-click (fn [_]
+                                    ;; TODO toggle mute
+                                    )
+                 :action/icon     (if (:microphone/muted metadata)
+                                    fa/microphone-slash-solid fa/microphone-solid)}]}]]
 
    [sep]
 
@@ -193,33 +207,38 @@
       (let [queued  (->> todos (sort-by :todo/queued-at >) (into []))
             n       (uix/state 0)
             current (get queued @n)
-            ct      (count queued)
-            ]
+            ct      (count queued)]
         [:div
-         {:class ["flex" "place-self-center"
+         {:class ["flex" "flex-wrap" "place-self-center"
+                  "h-full"
+                  "items-center"
                   "space-x-4"
-                  "w-[1100px]"]}
+                  ;; "w-[1100px]"
+                  ]}
 
-         [components.actions/actions-list
-          {:actions
-           [{:action/label    "next"
-             :action/icon     fa/chevron-up-solid
-             :action/disabled (>= @n (dec ct))
-             :action/on-click (fn [_] (swap! n inc))}
-            {:action/label    "prev"
-             :action/icon     fa/chevron-down-solid
-             :action/disabled (zero? @n)
-             :action/on-click (fn [_] (swap! n dec))}]}]
          [:span
           {:class ["pl-3" "font-mono"]}
           (str (inc @n) "/" ct)]
 
          [:div
-          {:class ["font-mono pr-3"
-                   "whitespace-nowrap"]}
+          {:class ["font-mono pr-3" "whitespace-nowrap"]}
           [components.garden/text-with-links (:org/name current)]]
 
-         [components.actions/actions-list (handlers/->actions current)]]))))
+         [components.actions/actions-list
+          {:actions
+           (concat
+             (when (or (not (zero? @n)) (> @n (dec ct)))
+               [{:action/label    "next"
+                 :action/icon     fa/chevron-up-solid
+                 :action/disabled (>= @n (dec ct))
+                 :action/on-click (fn [_] (swap! n inc))
+                 :action/priority 5}
+                {:action/label    "prev"
+                 :action/icon     fa/chevron-down-solid
+                 :action/disabled (zero? @n)
+                 :action/on-click (fn [_] (swap! n dec))
+                 :action/priority 5}])
+             (handlers/->actions current))}]]))))
 
 (defn widget [opts]
   (let [;; TODO move metadata/workspaces into use-topbar
@@ -232,13 +251,19 @@
               (when (#{:bg/dark} background-mode) "bg-gray-700")
               (when (#{:bg/dark} background-mode) "bg-opacity-50")]}
      [:div
-      {:class ["grid" "grid-flow-col" "h-full"]}
+      {:class ["grid" "grid-cols-7" "h-full"]}
 
       ;; workspaces
-      [workspace-list topbar-state active-workspaces]
+      [:div
+       {:class ["col-span-2"]}
+       [workspace-list topbar-state active-workspaces]]
 
       ;; current task
-      [current-task opts]
+      [:div
+       {:class ["col-span-3"]}
+       [current-task opts]]
 
       ;; clock/host/metadata
-      [clock-host-metadata topbar-state metadata]]]))
+      [:div
+       {:class ["col-span-2"]}
+       [clock-host-metadata topbar-state metadata]]]]))

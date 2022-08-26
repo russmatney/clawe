@@ -6,6 +6,7 @@
    [wing.core :as w]
 
    [components.timeline :as components.timeline]
+   [components.table :as components.table]
    [dates.tick :as dates.tick]
    [pages.db.tables :as tables]))
 
@@ -171,16 +172,25 @@
   (let [screenshots  (->> events (filter (comp #{:type/screenshot} :doctor/type)))
         commits      (->> events (filter (comp #{:type/commit} :doctor/type)))
         chess-games  (->> events (filter (comp #{:type/lichess-game} :doctor/type)))
-        garden-notes (->> events (filter (comp #{:type/garden} :doctor/type)))]
+        garden-notes (->> events (filter (comp #{:type/garden} :doctor/type)))
+        ]
     [:div
      {:class ["flex" "flex-col"]}
 
      (when (seq chess-games)
        [tables/table-for-doctor-type opts :type/lichess-game chess-games])
+
      (when (seq commits)
        [tables/table-for-doctor-type opts :type/commit commits])
+
      (when (seq screenshots)
        [tables/table-for-doctor-type opts :type/screenshot screenshots])
+
+     ;; tags table
+     (when (seq garden-notes)
+       [components.table/table (tables/garden-by-tag-table-def garden-notes)])
+
+     ;; per note
      (when (seq garden-notes)
        [tables/table-for-doctor-type opts :type/garden garden-notes])]))
 
