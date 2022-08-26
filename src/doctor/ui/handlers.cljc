@@ -204,6 +204,13 @@
              :action/on-click #(queue-todo todo)
              :action/icon     fa/tasks-solid
              :action/priority 1})
+          ;; re-queue
+          (when-not (and (#{:status/cancelled :status/done} status)
+                         (:todo/queued-at todo))
+            {:action/label    "requeue-todo"
+             :action/on-click #(queue-todo todo)
+             :action/icon     fa/circle
+             :action/priority 1})
           (when (:todo/queued-at todo)
             {:action/label    "unqueue-todo"
              :action/on-click #(unqueue-todo todo)
