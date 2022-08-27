@@ -12,7 +12,8 @@
    [components.filter :as components.filter]
    [pages.todos :as pages.todos]
    [uix.core.alpha :as uix]
-   [components.actions :as components.actions]))
+   [components.actions :as components.actions]
+   [clojure.string :as string]))
 
 (defn widget [opts]
   (let [metadata                                       (hooks.topbar/use-topbar-metadata)
@@ -45,21 +46,28 @@
            event-filter-results
            (components.filter/use-filter
              {:all-filter-defs  pages.todos/all-filter-defs
-              :default-filters  pages.todos/default-filters
-              :default-group-by pages.todos/default-group-by
+              :default-filters  #{}
+              :default-group-by :tags
               :items            recent-events})
            all-todos (ui.db/garden-todos (:conn opts))
            todo-filter-results
            (components.filter/use-filter
              {:all-filter-defs  pages.todos/all-filter-defs
-              :default-filters  pages.todos/default-filters
-              :default-group-by pages.todos/default-group-by
+              :default-filters  #{{:filter-key :short-path
+                                   :match-fn   #(some-> % (string/split #"/") first #{"daily"})
+                                   :label      "Dailies"}
+                                  {:filter-key :short-path :match "todo/journal.org"}
+                                  {:filter-key :short-path :match "todo/project.org"}
+                                  {:filter-key :status :match :status/not-started}
+                                  ;; i wanna filter out todo/queued-at too
+                                  }
+              :default-group-by :tags
               :items            all-todos})]
 
        [:div
         [:div
          [:div "Todo list"]
-         [components.todo/todo-list nil queued-todos]]
+         [components.todo/todo-list {:n 5} queued-todos]]
 
         (let [expanded (uix/state
                          ;; default to hiding all todos if some are queued
@@ -76,7 +84,7 @@
            (when @expanded
              [:div
               (:filter-grouper todo-filter-results)
-              [components.todo/todo-list nil (:filtered-items todo-filter-results)]])])
+              [components.todo/todo-list {:n 5} (:filtered-items todo-filter-results)]])])
 
         (let [expanded (uix/state nil)]
           [:div
