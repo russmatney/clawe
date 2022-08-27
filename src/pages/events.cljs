@@ -2,7 +2,7 @@
   (:require
    [components.events :as components.events]
    [doctor.ui.db :as ui.db]
-   [pages.db :as pages.db]))
+   [doctor.ui.views.ingest :as ingest]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; event page
@@ -15,6 +15,7 @@
               "min-h-screen"
               "overflow-hidden"
               "bg-yo-blue-700"]}
-     [pages.db/ingest-buttons]
+     [ingest/ingest-buttons]
+     [ingest/commit-ingest-buttons conn]
 
      [components.events/events-cluster nil events]]))

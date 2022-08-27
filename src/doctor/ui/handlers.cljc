@@ -310,21 +310,3 @@
                 {:action/class (colors/color-wheel-classes {:type :line :i i})}
                 ax ;; let the ax overwrite/maintain a color
                 ))))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; ingest buttons
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn ingest-buttons []
-  [{:label    "Ingest garden latest"
-    :on-click (fn [_] (ingest-garden))}
-   {:label    "Ingest clawe repos"
-    :on-click (fn [_] (ingest-clawe-repos))}
-   {:label    "Ingest lichess games"
-    :on-click (fn [_] (ingest-lichess-games))}
-   {:label    "Clear lichess cache"
-    :on-click (fn [_] (clear-lichess-games-cache))}
-   {:label    "Ingest screenshots"
-    :on-click (fn [_] (ingest-screenshots))}
-   {:label    "Ingest wallpapers"
-    :on-click (fn [_] (ingest-wallpapers))}])

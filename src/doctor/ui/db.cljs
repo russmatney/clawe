@@ -58,6 +58,15 @@
            (:commit/directory commit))
       first)))
 
+(defn repos [conn]
+  (when conn
+    (->>
+      (d/q '[:find (pull ?e [*])
+             :where
+             [?e :doctor/type :type/repo]]
+           conn)
+      (map first))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; screenshots
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

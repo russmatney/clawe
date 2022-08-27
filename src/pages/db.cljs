@@ -3,7 +3,7 @@
    [datascript.core :as d]
    [components.table :as components.table]
    [pages.db.tables :as tables]
-   [doctor.ui.handlers :as handlers]))
+   [doctor.ui.views.ingest :as ingest]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; db by :doctor/type
@@ -24,27 +24,6 @@
     ents-with-doctor-type))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; ingest buttons
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn ingest-buttons []
-  [:div
-   {:class ["grid" "grid-cols-6"
-            "space-x-2"
-            "p-2"]}
-   (for [{:keys [label on-click]} (handlers/ingest-buttons)]
-     ^{:key label}
-     [:button {:class    ["bg-slate-800"
-                          "p-4"
-                          "border"
-                          "border-slate-600"
-                          "rounded-xl"
-                          "font-mono"
-                          "text-white"]
-               :on-click on-click}
-      label])])
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; event page
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -57,7 +36,8 @@
               "overflow-hidden"
               "bg-yo-blue-700"]}
 
-     [ingest-buttons]
+     [ingest/ingest-buttons]
+     [ingest/commit-ingest-buttons (:conn opts)]
 
      (for [[i table-def] (->> table-defs (map-indexed vector))]
        ^{:key i}

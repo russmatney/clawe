@@ -8,7 +8,7 @@
    [doctor.ui.db :as ui.db]
    [components.todo :as components.todo]
    [components.events :as components.events]
-   [pages.db :as pages.db]
+   [doctor.ui.views.ingest :as ingest]
    [components.filter :as components.filter]
    [pages.todos :as pages.todos]
    [uix.core.alpha :as uix]
@@ -36,7 +36,8 @@
       ;; clock/host/metadata
       #_[topbar/clock-host-metadata topbar-state metadata]]
 
-     [pages.db/ingest-buttons]
+     [ingest/ingest-buttons]
+     [ingest/commit-ingest-buttons (:conn opts)]
 
      (let [queued-todos  (ui.db/queued-todos (:conn opts))
            recent-events (ui.db/events (:conn opts))
