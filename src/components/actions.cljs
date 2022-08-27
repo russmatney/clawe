@@ -25,19 +25,19 @@
   ([{:keys [class]}
     {:action/keys [label icon comp on-click tooltip disabled]
      :as          action}]
-   (let [ax-class     (:action/class action)
-         text-class   (->> (concat ax-class class ["text-city-blue-700"])
-                           (filter is-text-color-class?)
-                           first)
-         border-class (->> (concat ax-class class ["border-city-blue-700"])
-                           (filter is-border-color-class?)
-                           first)
-         class        (->> class
-                           (remove is-text-color-class?)
-                           (remove is-border-color-class?))
-         ax-class     (->> ax-class
-                           (remove is-text-color-class?)
-                           (remove is-border-color-class?))]
+   (let [ax-class           (:action/class action)
+         text-color-class   (->> (concat ax-class class ["text-city-blue-700"])
+                                 (filter is-text-color-class?)
+                                 first)
+         border-color-class (->> (concat ax-class class ["border-city-blue-700"])
+                                 (filter is-border-color-class?)
+                                 first)
+         class              (->> class
+                                 (remove is-text-color-class?)
+                                 (remove is-border-color-class?))
+         ax-class           (->> ax-class
+                                 (remove is-text-color-class?)
+                                 (remove is-border-color-class?))]
      [:div
       {:class
        (concat
@@ -45,14 +45,14 @@
           "rounded" "border"
           "flex" "items-center"
           "tooltip"
-          "relative"
-          text-class
-          border-class]
+          "relative"]
          ax-class
          class
          (if disabled
            ["border-slate-600" "text-slate-600"]
            ["cursor-pointer"
+            text-color-class
+            border-color-class
             "hover:text-city-blue-300"
             "hover:border-city-blue-300"]))
        :on-click (fn [_] (when (and on-click (not disabled)) (on-click)))}
@@ -74,7 +74,12 @@
             collapse   (fn [] (reset! n fallback-n))
             actions    (->>
                          actions
-                         (sort-by (fn [x] (:action/priority x 0)) >)
+                         (sort-by
+                           (fn [x]
+                             (if (:action/disabled x)
+                               -100 ;; disabled come last
+                               (:action/priority x 0)))
+                           >)
                          (take @n)
                          (into [])
                          ((fn [axs]
