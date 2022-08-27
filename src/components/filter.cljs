@@ -1,21 +1,8 @@
 (ns components.filter
   (:require [components.floating :as floating]
             [uix.core.alpha :as uix]
-            [components.debug :as components.debug]))
-
-(defn- expand-coll-group-bys [items-grouped-by]
-  (reduce
-    (fn [item-groups-by-label [labels items]]
-      (if (coll? labels)
-        ;; update for each label
-        (reduce
-          #(update %1 %2 concat items)
-          item-groups-by-label
-          labels)
-        ;; simple case, just passing through
-        (assoc item-groups-by-label labels items)))
-    {}
-    items-grouped-by))
+            [components.debug :as components.debug]
+            [util :as util]))
 
 (defn- filter-grouper
   "A component for displaying and selecting filters/groups.
@@ -32,7 +19,7 @@
      (let [grouped-by-counts
            (->> items
                 (group-by (:group-by filter-def))
-                expand-coll-group-bys
+                util/expand-coll-group-bys
                 (map (fn [[v xs]] [v (count xs)])))
 
            group-by-enabled? (= items-group-by filter-key)]
@@ -101,6 +88,7 @@
    ;; TODO improve debug view for collections
    [components.debug/raw-metadata {:label "filters"} items-filter-by]
 
+   ;; TODO create applied filters component for saving/revisiting saved filters
    (for [[i f] (->> items-filter-by
                     (map-indexed vector))]
      ^{:key i}
@@ -153,7 +141,7 @@
         filtered-item-groups
         (->> filtered-items
              (group-by (some-> @items-group-by all-filter-defs :group-by))
-             expand-coll-group-bys
+             util/expand-coll-group-bys
              (map (fn [[label its]] {:item-group its :label label})))]
 
     {:filter-grouper

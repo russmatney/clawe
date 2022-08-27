@@ -12,7 +12,8 @@
    [components.git :as components.git]
    [doctor.ui.db :as ui.db]
    [doctor.ui.handlers :as handlers]
-   [components.actions :as components.actions]))
+   [components.actions :as components.actions]
+   [util :as util]))
 
 (defn basic-text-popover [text]
   [:div
@@ -36,7 +37,8 @@
      :rows    (->>
                 notes
                 (group-by :org/tags)
-                ;; TODO explode counts per tag instead of tag-group, like in comp.filter
+                ;; explode counts per tag instead of tag-group, like in comp.filter
+                (util/expand-coll-group-bys)
                 (sort-by (comp count second))
                 reverse
                 (map (fn [[tags group]]
