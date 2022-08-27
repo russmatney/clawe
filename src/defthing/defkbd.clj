@@ -36,7 +36,7 @@
   Consumed when writing these bindings to external configuration files.
   "
   [{:binding/keys [command-name]}]
-  (str "clawe " command-name))
+  (str "bb --config ~/russmatney/clawe/bb.edn -x clawe.core/fire --command-name " command-name))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Rofi

@@ -1,11 +1,19 @@
 (ns clawe.core
   (:require
    [defthing.defcom :as defcom]
-   clawe.defs.bindings
-   clawe.restart
+   clawe.defs.bindings ;; include bindings for `fire` below
+   clawe.restart ;; include bindings for `fire` below
    ralphie.core ;; so we include all ralphie commands
-   
+
    [clojure.string :as string]))
+
+(defn fire [{:keys [command-name]}]
+  (defcom/run command-name))
+
+(comment
+  (fire {:command-name "uuid-on-clipboard"})
+  (fire {:command-name "uuid-on-clipboard-kbd-modctrlu"})
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; main
