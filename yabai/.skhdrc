@@ -250,7 +250,7 @@ shift + cmd - 8 : yabai -m window --space 8
 shift + cmd - 9 : yabai -m window --space 9
 shift + cmd - 0 : yabai -m window --space 0
 
-cmd - r : bb --config ~/russmatney/clawe/bb.edn -x clawe.restart/restart
+cmd - r : bb --config ~/russmatney/clawe/bb.edn -x clawe.restart/reload
 
 # emacs, term toggling
 shift + cmd - return : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key emacs
