@@ -10,7 +10,9 @@
    [components.events :as components.events]
    [pages.db :as pages.db]
    [components.filter :as components.filter]
-   [pages.todos :as pages.todos]))
+   [pages.todos :as pages.todos]
+   [uix.core.alpha :as uix]
+   [components.actions :as components.actions]))
 
 (defn widget [opts]
   (let [metadata                                      (hooks.topbar/use-topbar-metadata)
@@ -36,22 +38,59 @@
 
      [pages.db/ingest-buttons]
 
-     (let [todos         (ui.db/queued-todos (:conn opts))
+     (let [queued-todos  (ui.db/queued-todos (:conn opts))
            recent-events (ui.db/events (:conn opts))
 
-           {:keys [filtered-item-groups filtered-items filter-grouper]}
+           event-filter-results
            (components.filter/use-filter
              {:all-filter-defs  pages.todos/all-filter-defs
               :default-filters  pages.todos/default-filters
               :default-group-by pages.todos/default-group-by
               :items            recent-events})
-           recent-events filtered-items
-           ]
+           all-todos (ui.db/garden-todos (:conn opts))
+           todo-filter-results
+           (components.filter/use-filter
+             {:all-filter-defs  pages.todos/all-filter-defs
+              :default-filters  pages.todos/default-filters
+              :default-group-by pages.todos/default-group-by
+              :items            all-todos})]
+
        [:div
-        [:div "Todo list"]
-        [components.todo/todo-list nil todos]
-        [:div "Events Cluster"]
-        filter-grouper
-        #_[components.events/event-cluster nil todos]
-        ;; show filtered-item-groups?
-        [components.events/event-clusters nil recent-events]])]))
+        [:div
+         [:div "Todo list"]
+         [components.todo/todo-list nil queued-todos]]
+
+        (let [expanded (uix/state
+                         ;; default to hiding all todos if some are queued
+                         (< (count queued-todos) 2))]
+          [:div
+           [:div "All todos"]
+           [components.actions/actions-list
+            {:actions [{:action/on-click (fn [_] (swap! expanded not))
+                        :action/label    "Expand"
+                        :action/disabled @expanded}
+                       {:action/on-click (fn [_] (swap! expanded not))
+                        :action/label    "Collapse"
+                        :action/disabled (not @expanded)}]}]
+           (when @expanded
+             [:div
+              (:filter-grouper todo-filter-results)
+              [components.todo/todo-list nil (:filtered-items todo-filter-results)]])])
+
+        (let [expanded (uix/state nil)]
+          [:div
+           [:div "Events Cluster"]
+           [components.actions/actions-list
+            {:actions [{:action/on-click (fn [_] (swap! expanded not))
+                        :action/label    "Expand"
+                        :action/disabled @expanded}
+                       {:action/on-click (fn [_] (swap! expanded not))
+                        :action/label    "Collapse"
+                        :action/disabled (not @expanded)}]}]
+           (when @expanded
+             [:div
+              (:filter-grouper event-filter-results)
+              ;; show filtered-item-groups?
+              [components.events/event-clusters
+               nil
+               (:filtered-items event-filter-results)]])])])]))
