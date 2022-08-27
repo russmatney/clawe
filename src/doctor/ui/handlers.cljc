@@ -191,8 +191,7 @@
                               (let [res (js/prompt "Add tag")]
                                 (when (seq res)
                                   (add-tag todo res))))
-           :action/icon     #_ [:> HIMini/HashtagIcon {:class ["w-6" "h-6"]}]
-           fa/hashtag-solid
+           :action/icon     fa/hashtag-solid
            ;; higher priority if missing tags
            :action/priority (if (seq (:org/tags todo)) 0 3)}
           {:action/label    "delete-from-db"
@@ -254,7 +253,7 @@
                           (let [res (js/prompt "Add tag")]
                             (when (seq res)
                               (add-tag item res))))
-       :action/icon     fa/tag-solid}
+       :action/icon     fa/hashtag-solid}
       {:action/label    "purge-source-file"
        :action/on-click #(purge-org-source-file item)
        :action/icon     fa/trash-alt-solid}]))
@@ -265,7 +264,20 @@
        :action/label    "delete-from-db"
        :action/icon     fa/trash-alt-solid}
       {:action/label    "ingest-commits"
-       :action/on-click #(ingest-commits-for-repo item)}]))
+       :action/on-click #(ingest-commits-for-repo item)
+       :action/icon     [:> HIMini/ArrowDownOnSquareStackIcon {:class ["w-4" "h-6"]}]}]))
+
+#?(:cljs
+   (defn wallpaper->actions [item]
+     [{:action/label    "set-wallpaper"
+       :action/on-click #(set-wallpaper item)
+       :action/icon     [:> HIMini/PhotoIcon {:class ["w-4" "h-6"]}]}
+      {:action/label    "ingest-wallpapers"
+       :action/on-click #(ingest-wallpapers)
+       :action/icon     [:> HIMini/ArrowDownOnSquareStackIcon {:class ["w-4" "h-6"]}]}
+      {:action/on-click #(delete-from-db item)
+       :action/label    "delete-from-db"
+       :action/icon     fa/trash-alt-solid}]))
 
 #?(:cljs
    (defn ->actions [item]
@@ -283,6 +295,10 @@
          ;; repo actions
          (#{:type/repo} (:doctor/type item))
          (repo->actions item)
+
+         ;; wallpaper actions
+         (#{:type/wallpaper} (:doctor/type item))
+         (wallpaper->actions item)
 
          :else
          [{:action/on-click #(delete-from-db item)

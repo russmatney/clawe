@@ -119,5 +119,5 @@
            [:div (:label opts "Actions")])
     :popover-comp
     [:div
-     {:class ["bg-city-blue-400"]}
+     {:class ["bg-slate-800"]}
      [actions-list opts]]}])
