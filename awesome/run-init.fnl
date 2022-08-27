@@ -2,7 +2,6 @@
 
 (local awful (require "awful"))
 (local gears (require "gears"))
-(local naughty (require "naughty"))
 (local beautiful (require "beautiful"))
 (local view (require :fennelview))
 (local inspect (require :inspect))
@@ -141,7 +140,6 @@
 (local rules (require :rules))
 (local signals (require :signals))
 (local titlebars (require :titlebars))
-(local clawe (require :clawe))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; init
@@ -177,8 +175,8 @@
    (_G.set_global_keys config)
    (_G.init_root_buttons config)
 
-   ;; bar and widgets
-   (print "init bars and widgets")
+   ;; bar (systray)
+   (print "init bar")
    (_G.init_bar config)
 
    ;; signals

@@ -1,12 +1,8 @@
 (local gears (require "gears"))
 (local awful (require "awful"))
 (local beautiful (require "beautiful"))
-(local clawe (require :clawe))
-(local util (require "util"))
 
 (local bindings (require :bindings))
-
-(local workspace-rules (require :workspace-rules))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Rules
@@ -142,8 +138,7 @@
                               awful.placement.centered)
                            {:honor_padding true
                             :honor_workarea true
-                            :to_percent 0.9})))}]
-        workspace-rules.all))
+                            :to_percent 0.9})))}]))
 
 (fn init_rules []
   (set awful.rules.rules global_rules))

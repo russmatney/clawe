@@ -49,8 +49,7 @@
   (let [[mods key] key
         mods       (->> mods (map modifiers))
         key        (keyname key key)
-        cmd-str    (fn [cmd] (str (string/join " + " mods) (when (seq mods) " + ") key "\n  " cmd))
-        ]
+        cmd-str    (fn [cmd] (str (string/join " + " mods) (when (seq mods) " + ") key "\n  " cmd))]
     ;; TODO rewrite so that the bindings impls aren't aware of each other
     (cond
       (or raw-fnl awm) nil
