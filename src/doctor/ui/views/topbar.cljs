@@ -227,7 +227,7 @@
          [components.actions/actions-list
           {:actions
            (concat
-             (when (or (not (zero? @n)) (> @n (dec ct)))
+             (when (> ct 0)
                [{:action/label    "next"
                  :action/icon     fa/chevron-up-solid
                  :action/disabled (>= @n (dec ct))
