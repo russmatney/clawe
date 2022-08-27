@@ -16,7 +16,9 @@
 
    [doctor.ui.db :as ui.db]
    [doctor.ui.handlers :as handlers]
-   [doctor.ui.hooks.use-topbar :as use-topbar]))
+   [doctor.ui.hooks.use-topbar :as use-topbar]
+
+   ["@heroicons/react/20/solid" :as HIMini]))
 
 (defn skip-bar-app? [client]
   (-> client :client/window-title #{"tauri/doctor-topbar"}))
@@ -120,28 +122,28 @@
 
 (defn clock-host-metadata [{:keys [time]} metadata]
   [:div
-   {:class [
-            ;; "flex"
-            ;; "flex-row"
-            "grid"
+   {:class ["grid"
             "grid-flow-col"
             "justify-self-end"
             "h-full"
             "items-center"
-            "justify-items-end"
-            ]}
+            "justify-items-end"]}
 
    [:div
     [components.actions/actions-list
      {:actions [ ;; bg toggle
                 {:action/on-click (toggle-background-mode metadata)
                  :action/label    "toggle"
-                 :action/icon     fa/address-book}
+                 :action/icon
+
+                 (if (#{:bg/dark} (:topbar/background-mode metadata))
+                   [:> HIMini/SunIcon {:class ["w-6" "h-6"]}]
+                   [:> HIMini/MoonIcon {:class ["w-6" "h-6"]}])}
 
                 ;; reload
                 {:action/on-click (fn [_] (js/location.reload))
                  :action/label    "reload"
-                 :action/icon     fa/address-book}
+                 :action/icon     [:> HIMini/ArrowPathIcon {:class ["w-6" "h-6"]}]}
 
                 {:action/on-click (fn [_]
                                     ;; TODO toggle mute

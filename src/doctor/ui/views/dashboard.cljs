@@ -15,10 +15,10 @@
    [components.actions :as components.actions]))
 
 (defn widget [opts]
-  (let [metadata                                      (hooks.topbar/use-topbar-metadata)
-        {:keys [topbar/background-mode] :as metadata} @metadata
-        {:keys [active-workspaces]}                   (hooks.workspaces/use-workspaces)
-        topbar-state                                  (use-topbar/use-topbar-state)]
+  (let [metadata                                       (hooks.topbar/use-topbar-metadata)
+        {:keys [topbar/background-mode] :as _metadata} @metadata
+        {:keys [_active-workspaces]}                   (hooks.workspaces/use-workspaces)
+        _topbar-state                                  (use-topbar/use-topbar-state)]
     [:div
      {:class ["text-city-pink-200"
               (when (#{:bg/dark} background-mode) "bg-gray-700")
@@ -28,13 +28,13 @@
       {:class ["grid" "grid-flow-col"]}
 
       ;; workspaces
-      [topbar/workspace-list topbar-state active-workspaces]
+      #_[topbar/workspace-list topbar-state active-workspaces]
 
       ;; current task
       [topbar/current-task opts]
 
       ;; clock/host/metadata
-      [topbar/clock-host-metadata topbar-state metadata]]
+      #_[topbar/clock-host-metadata topbar-state metadata]]
 
      [pages.db/ingest-buttons]
 

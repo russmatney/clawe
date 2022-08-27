@@ -191,7 +191,8 @@
                               (let [res (js/prompt "Add tag")]
                                 (when (seq res)
                                   (add-tag todo res))))
-           :action/icon     fa/tag-solid
+           :action/icon     #_ [:> HIMini/HashtagIcon {:class ["w-6" "h-6"]}]
+           fa/hashtag-solid
            ;; higher priority if missing tags
            :action/priority (if (seq (:org/tags todo)) 0 3)}
           {:action/label    "delete-from-db"
@@ -200,29 +201,26 @@
           {:action/label    "purge-file"
            :action/on-click #(purge-org-source-file todo)
            :action/icon     fa/trash-solid}
-          {:action/label    "queue-todo"
-           :action/on-click #(queue-todo todo)
-           :action/icon     [:> HIMini/BeakerIcon {:class ["w-6" "h-6"]}]
-           :action/disabled (or (#{:status/cancelled :status/done} status)
-                                (:todo/queued-at todo))
+          {:action/label    "(un)queue-todo"
+           :action/on-click (fn [_]
+                              (if (:todo/queued-at todo)
+                                (unqueue-todo todo)
+                                (queue-todo todo)))
+           :action/icon     (if (:todo/queued-at todo)
+                              [:> HIMini/BoltSlashIcon {:class ["w-6" "h-6"]}]
+                              [:> HIMini/BoltIcon {:class ["w-6" "h-6"]}])
            :action/priority 1}
-          ;; re-queue
           {:action/label    "requeue-todo"
            :action/on-click #(queue-todo todo)
-           :action/icon     fa/circle
+           :action/icon
+           [:> HIMini/ArrowPathIcon {:class ["w-6" "h-6"]}]
            :aciton/disabled (not
                               (and (not (#{:status/cancelled :status/done} status))
                                    (:todo/queued-at todo)))
            :action/priority 1}
-          {:action/label    "unqueue-todo"
-           :action/on-click #(unqueue-todo todo)
-           :action/icon     fa/quidditch-solid
-           :action/disabled (not (:todo/queued-at todo))
-           ;; higher priority if queued
-           :action/priority 1}
           {:action/label    "start-todo"
            :action/on-click #(start-todo todo)
-           :action/icon     fa/golf-ball-solid
+           :action/icon     [:> HIMini/PlayIcon {:class ["w-4" "h-6"]}]
            :action/disabled (#{:status/in-progress} status)
            ;; higher priority if queued
            :action/priority (if  (:todo/queued-at todo) 1 0)}
@@ -234,11 +232,12 @@
                                     (:status/in-progress todo)) 2 0)}
           {:action/label    "skip"
            :action/disabled (#{:status/skipped} status)
-           :action/on-click #(skip-todo todo)}
+           :action/on-click #(skip-todo todo)
+           :action/icon     [:> HIMini/ArchiveBoxIcon {:class ["w-4" "h-6"]}]}
           {:action/label    "clear-status"
            :action/on-click #(clear-status todo)
            :action/disabled (not status)
-           :action/icon     fa/step-backward-solid}
+           :action/icon     [:> HIMini/XCircleIcon {:class ["w-4" "h-6"]}]}
           {:action/label    "cancel-todo"
            :action/on-click #(cancel-todo todo)
            :action/disabled (#{:status/cancelled} status)

@@ -153,9 +153,10 @@
            [?e :todo/queued-at ?queued-at]]
          conn)
     (map first)
-    (remove (comp #{:status/cancelled :status/done} :org/status))))
+    (remove (comp #{:status/cancelled :status/done} :org/status))
+    (sort-by :todo/queued-at >)))
 
-;; TODO write fe unit tests for this and the whole ns
+;; TODO write fe unit tests for this and this whole ns
 (defn garden-tags
   ([conn] (garden-tags conn nil))
   ([conn _opts]
