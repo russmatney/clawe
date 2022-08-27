@@ -15,7 +15,9 @@
   [{:yabai.space/keys [index label has-focus] :as space}]
   (-> space
       (assoc :workspace/index index)
-      (assoc :workspace/title label)
+      (assoc :workspace/title (if (seq label)
+                                label
+                                (str "wsp-" index)))
       (assoc :workspace/focused has-focus)))
 
 (defn clients-for-space [{:yabai.space/keys [windows]} clients]
