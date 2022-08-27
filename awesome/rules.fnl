@@ -84,7 +84,7 @@
            :ontop true
            :focusable false
            :maximized_horizontal true
-           :height 54
+           :height 40
            :y 0
            :honor_padding false
            :honor_workarea false}}

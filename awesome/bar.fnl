@@ -6,7 +6,7 @@
 
 (global
  init_bar
- (fn [bar]
+ (fn [_bar]
    (awful.screen.connect_for_each_screen
     (fn [s]
       (util.log_if_error
@@ -17,10 +17,8 @@
 
          ;; create some buffer at the top
          (set s.top-bar (awful.wibar {:position "top" :screen s
-                                      :height 40
-                                      :bg beautiful.bg_transparent
-                                      ;; :bg beautiful.bg_normal_semi
-                                      }))
+                                      :height 28
+                                      :bg beautiful.bg_transparent}))
          (s.top-bar:setup)
 
          ;; still hanging on to this systray...
