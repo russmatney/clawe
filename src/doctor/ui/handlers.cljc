@@ -15,7 +15,8 @@
              [garden.db :as garden.db]]
        :cljs [[hiccup-icons.fa :as fa]
               [components.icons :as components.icons]
-              [components.colors :as colors]])))
+              [components.colors :as colors]
+              ["@heroicons/react/20/solid" :as HIMini]])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; db items
@@ -179,11 +180,12 @@
      (let [{:keys [org/status]} todo]
        (->>
          [(open-in-journal-action todo)
-          (when-not (:org/id todo)
-            {:action/label    "add-uuid"
-             :action/on-click #(add-uuid todo)
-             :action/icon     fa/hashtag-solid
-             :action/priority -10}) ;; low-prority
+          {:action/label    "add-uuid"
+           :action/on-click #(add-uuid todo)
+           :action/icon
+           [:> HIMini/FingerPrintIcon {:class ["w-6" "h-6"]}]
+           :action/disabled (:org/id todo)
+           :action/priority -10} ;; low-prority
           {:action/label    "add-tag"
            :action/on-click (fn [_]
                               (let [res (js/prompt "Add tag")]
@@ -198,48 +200,49 @@
           {:action/label    "purge-file"
            :action/on-click #(purge-org-source-file todo)
            :action/icon     fa/trash-solid}
-          (when-not (or (#{:status/cancelled :status/done} status)
-                        (:todo/queued-at todo))
-            {:action/label    "queue-todo"
-             :action/on-click #(queue-todo todo)
-             :action/icon     fa/tasks-solid
-             :action/priority 1})
+          {:action/label    "queue-todo"
+           :action/on-click #(queue-todo todo)
+           :action/icon     [:> HIMini/BeakerIcon {:class ["w-6" "h-6"]}]
+           :action/disabled (or (#{:status/cancelled :status/done} status)
+                                (:todo/queued-at todo))
+           :action/priority 1}
           ;; re-queue
-          (when (and (not (#{:status/cancelled :status/done} status))
-                     (:todo/queued-at todo))
-            {:action/label    "requeue-todo"
-             :action/on-click #(queue-todo todo)
-             :action/icon     fa/circle
-             :action/priority 1})
-          (when (:todo/queued-at todo)
-            {:action/label    "unqueue-todo"
-             :action/on-click #(unqueue-todo todo)
-             :action/icon     fa/quidditch-solid
-             ;; higher priority if queued
-             :action/priority 1})
-          (when-not (#{:status/in-progress} status)
-            {:action/label    "start-todo"
-             :action/on-click #(start-todo todo)
-             :action/icon     fa/golf-ball-solid
-             ;; higher priority if queued
-             :action/priority (if  (:todo/queued-at todo) 1 0)})
-          (when-not (#{:status/done} status)
-            {:action/label    "complete-todo"
-             :action/on-click #(complete-todo todo)
-             :action/icon     fa/check-circle-solid
-             :action/priority (if (or (:todo/queued-at todo)
-                                      (:status/in-progress todo)) 2 0)})
-          (when-not (#{:status/skipped} status)
-            {:action/label    "skip"
-             :action/on-click #(skip-todo todo)})
-          (when status
-            {:action/label    "clear-status"
-             :action/on-click #(clear-status todo)
-             :action/icon     fa/step-backward-solid})
-          (when-not (#{:status/cancelled} status)
-            {:action/label    "cancel-todo"
-             :action/on-click #(cancel-todo todo)
-             :action/icon     fa/ban-solid})
+          {:action/label    "requeue-todo"
+           :action/on-click #(queue-todo todo)
+           :action/icon     fa/circle
+           :aciton/disabled (not
+                              (and (not (#{:status/cancelled :status/done} status))
+                                   (:todo/queued-at todo)))
+           :action/priority 1}
+          {:action/label    "unqueue-todo"
+           :action/on-click #(unqueue-todo todo)
+           :action/icon     fa/quidditch-solid
+           :action/disabled (not (:todo/queued-at todo))
+           ;; higher priority if queued
+           :action/priority 1}
+          {:action/label    "start-todo"
+           :action/on-click #(start-todo todo)
+           :action/icon     fa/golf-ball-solid
+           :action/disabled (#{:status/in-progress} status)
+           ;; higher priority if queued
+           :action/priority (if  (:todo/queued-at todo) 1 0)}
+          {:action/label    "complete-todo"
+           :action/on-click #(complete-todo todo)
+           :action/icon     fa/check-circle-solid
+           :action/disabled (#{:status/done} status)
+           :action/priority (if (or (:todo/queued-at todo)
+                                    (:status/in-progress todo)) 2 0)}
+          {:action/label    "skip"
+           :action/disabled (#{:status/skipped} status)
+           :action/on-click #(skip-todo todo)}
+          {:action/label    "clear-status"
+           :action/on-click #(clear-status todo)
+           :action/disabled (not status)
+           :action/icon     fa/step-backward-solid}
+          {:action/label    "cancel-todo"
+           :action/on-click #(cancel-todo todo)
+           :action/disabled (#{:status/cancelled} status)
+           :action/icon     fa/ban-solid}
           ]
          (remove nil?)))))
 
