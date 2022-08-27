@@ -8,6 +8,8 @@
   "lichess-docker"
   {:workspace/directory "~/benediktwerner/lichess-docker"},
   "org-crud" {:workspace/directory "~/russmatney/org-crud"},
+  "clj-kondo" {:workspace/directory "~/clj-kondo/clj-kondo"},
+  "org-roam" {:workspace/directory "~/org-roam/org-roam"},
   "heroicons" {:workspace/directory "~/tailwindlabs/heroicons"},
   "editscript" {:workspace/directory "~/juji-io/editscript"},
   "lila-ws" {:workspace/directory "~/lichess-org/lila-ws"},
@@ -16,6 +18,7 @@
   "cli" {:workspace/directory "~/babashka/cli"},
   "godot-git-plugin"
   {:workspace/directory "~/godotengine/godot-git-plugin"},
+  "tools.namespace" {:workspace/directory "~/clojure/tools.namespace"},
   "advent-of-code"
   {:workspace/directory "~/russmatney/advent-of-code"},
   "beatemup-three"

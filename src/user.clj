@@ -4,14 +4,17 @@
    [ralphie.awesome :as awm]
    [ralphie.notify :as notify]
    [wing.repl :as repl]
-   [ralphie.zsh :as zsh]))
+   [ralphie.zsh :as zsh]
+   [clj-kondo.core :as clj-kondo]
+   [loom.graph :refer [digraph]]
+   [loom.io :refer [view]]
+   ))
 
 (comment
   (repl/sync-libs!))
 
 (comment
   "yo"
-
 
   (binding
       [*data-readers*
@@ -79,5 +82,35 @@
           :text  (.. "some sub head: " "with info")})))
 
   (notify/notify "updated notification")
+
+  )
+
+(defn viz-nses [{:keys [paths]}]
+  (when-let [analysis
+             (:analysis (clj-kondo/run!
+                          {:lint      paths
+                           :config    {:analysis {:var-usages      false
+                                                  :var-definitions {:shallow true}}}
+                           :skip-lint true}))]
+    (println "analysis" analysis)
+    (let [{:keys [:namespace-definitions :namespace-usages]} analysis
+          nodes                                              (map :name namespace-definitions)
+          edges                                              (map (juxt :from :to) namespace-usages)
+          g                                                  (apply digraph (concat nodes edges))]
+      ;; install GraphViz, e.g. with brew install graphviz
+      (view g))))
+
+(defn -main [& paths]
+  (viz-nses {:paths paths}))
+
+(comment
+  (viz-nses {:paths ["~/russmatney/clawe/src"]})
+  (clj-kondo/run!
+    {:lint      ["/home/russ/russmatney/clawe/src"]
+     :config    {:analysis {:var-usages      false
+                            :var-definitions {:shallow true}}}
+     :skip-lint true
+     :cache     false
+     :debug     true})
 
   )
