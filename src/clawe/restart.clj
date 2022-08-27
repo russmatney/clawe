@@ -1,6 +1,6 @@
 (ns clawe.restart
   (:require
-   [babashka.process :refer [$ check] :as proc]
+   [babashka.process :as proc]
 
    [defthing.defcom :as defcom :refer [defcom]]
    [defthing.defkbd :refer [defkbd]]
@@ -9,7 +9,6 @@
    [ralphie.notify :as notify]
    [ralphie.tmux :as tmux]
    [ralphie.zsh :as zsh]
-   [util :as util]
 
    ;; required to put bindings in place, otherwise we write empty rc configs
    clawe.defs.bindings
@@ -34,28 +33,6 @@
   (install-zsh-tab-completion))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Build Clawe Uberjar
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn build-uberjar
-  "Rebuilds the clawe uberjar. Equivalent to:
-
-  bb -cp $(clojure -Spath) --uberjar clawe.jar -m clawe.core # rebuild clawe
-
-  on the command line."
-  []
-  (let [notif (fn [s] (notify/notify
-                        {:subject s :replaces-process "rebuilding-clawe-uberjar"}))
-        dir   (zsh/expand "~/russmatney/clawe")]
-    (notif "Clawe Uberjar: Rebuilding")
-    (let [cp (util/get-cp dir)]
-      (->
-        ^{:dir dir}
-        ($ bb -cp ~cp --uberjar clawe.jar -m clawe.core )
-        check)
-      (notif "Clawe Uberjar: Rebuild Complete"))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; check if unit tests are passing
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -78,41 +55,21 @@
         (notify/notify exit)
         [:fail out exit]))))
 
-(defn attempt-uberjar-rebuild
-  "Runs the unit tests - if they pass, rebuilds the uber jar."
-  []
-  (let [res (-> (check-unit-tests) first)]
-
-    (cond
-      (#{:fail} res)
-      (log "Unit tests failed, skipping uberjar rebuild")
-
-      (#{:success} res)
-      (do
-        ;; TODO detect if the current uberjar is out of date
-        ;; maybe using git status, or some local timestamp?
-        ;; TODO provide a force rebuild option
-        (log "Rebuilding uberjar...")
-        ;; TODO could also skip if nothing has changed
-        (try
-          (build-uberjar)
-          (catch Exception e
-            (notify/notify "Exception while rebuilding uberjar")
-            (println e))))
-
-      :else
-      (log "Strange unit tests response..."))))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Reload
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(declare reload)
+
+(defkbd clawe-reload
+  [[:mod] "r"]
+  (reload))
 
 (defn reload
   "Write all dependent configs and restart whatever daemons."
   ([] (reload nil))
   ([_]
    (log "reloading...")
-
    ;; Bindings
    (when-not (clawe.config/is-mac?)
      (log "rewriting awm bindings")
@@ -145,11 +102,6 @@
      (clawe.doctor/reload))
 
    (clawe.doctor/update-topbar)
-   (log "Reload complete")))
+   (log "Reload complete")
 
-(defkbd clawe-reload
-  [[:mod] "r"]
-  {:binding/awm true}
-  ;; TODO support just passing in a defcom
-  ;; TODO consider moving keybindings into domain files?
-  (reload))
+   (check-unit-tests)))

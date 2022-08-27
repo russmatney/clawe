@@ -57,7 +57,7 @@
   This string is:
   - set on the clawe/binding (at :binding/command-name)
   - used as the symbol/name for the binding's `defcom`
-  - used to call the keybinding via `clawe <key-string>` in `binding-cli-command`
+  - used to call the keybinding via `clawe.core/fire --command-name` in `binding-cli-command`
 
   It should have no spaces or other crazy shell-interpreted chars."
   [n key-def]
