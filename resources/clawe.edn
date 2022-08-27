@@ -27,6 +27,7 @@
   "dotfiles" {:workspace/directory "~/russmatney/dotfiles"},
   "malli" {:workspace/directory "~/metosin/malli"},
   "steam" {:workspace/directory "~"},
+  "clojuredocs" {:workspace/directory "~/zk/clojuredocs"},
   "journal" {:workspace/directory "~/todo"},
   "godot" {:workspace/directory "~/godotengine/godot"}},
  :repo-roots ["~/russmatney/*" "~/teknql/*"],
