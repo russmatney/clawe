@@ -108,6 +108,7 @@
   [all-filter-defs [filter-key filter-defs]]
   (let [->value       (-> filter-key all-filter-defs :group-by)
         exact-matches (->> filter-defs (map :match) (into #{}))
+        ;; TODO consider removing match-fns that can't be called
         pred-matches  (->> filter-defs (map :match-fn) (remove nil?))
         is-match      (->> [exact-matches]
                            (filter seq)
@@ -121,6 +122,7 @@
                (->> val (filter is-match) seq)
                (is-match val))))))))
 
+;; TODO write a set of unit tests around this
 (defn use-filter [{:keys [items default-filters default-group-by all-filter-defs]}]
   ;; TODO malli schema+validation for all-filter-defs and default-filters
   (let [items-group-by  (uix/state
@@ -150,8 +152,8 @@
        :set-group-by    #(reset! items-group-by %)
        :toggle-filter-by
        (fn [f-by]
-         (swap! items-filter-by
-                #(if (% f-by) (disj % f-by) (conj % f-by))))
+         ;; TODO filters that use funcs won't match/exclude here
+         (swap! items-filter-by #(if (% f-by) (disj % f-by) (conj % f-by))))
        :items-filter-by @items-filter-by
        :items-group-by  @items-group-by}]
      :filtered-items       filtered-items
