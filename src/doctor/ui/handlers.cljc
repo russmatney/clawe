@@ -200,11 +200,8 @@
           {:action/label    "purge-file"
            :action/on-click #(purge-org-source-file todo)
            :action/icon     fa/trash-solid}
-          {:action/label    "(un)queue-todo"
-           :action/on-click (fn [_]
-                              (if (:todo/queued-at todo)
-                                (unqueue-todo todo)
-                                (queue-todo todo)))
+          {:action/label    (if (:todo/queued-at todo) "(un)queue-todo" "queue-todo")
+           :action/on-click (fn [_] (if (:todo/queued-at todo) (unqueue-todo todo) (queue-todo todo)))
            :action/icon     (if (:todo/queued-at todo)
                               [:> HIMini/BoltSlashIcon {:class ["w-6" "h-6"]}]
                               [:> HIMini/BoltIcon {:class ["w-6" "h-6"]}])
