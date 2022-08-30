@@ -125,19 +125,16 @@
       :create-client
       (do
         (println "create" (client/strip client-or-def))
-        (notify/notify "[:create-client]" (:client/key opts "No --key"))
         (client.create/create-client client-or-def opts))
 
       :hide-client
       (do
         (println "hide" (client/strip client-or-def))
-        (notify/notify "[:hide-client]")
         (wm/hide-client client-or-def))
 
       :focus-client
       (do
         (println "focus" (client/strip client-or-def))
-        (notify/notify "[:focus-client]")
         ;; this is sometimes 'send-focus', other times 'jumbotron'
         (wm/focus-client {:float-and-center (:focus/float-and-center client-or-def true)}
                          client-or-def))
@@ -145,7 +142,6 @@
       :show-client
       (do
         (println "show" (client/strip client-or-def))
-        (notify/notify "[:show-client]")
         (wm/show-client opts client-or-def))
 
       (println "No matching action for:" action))))
@@ -159,7 +155,6 @@
    ;; could support overrides for :hide/*, :create/*, :focus/* options
    {:alias {:key :client/key}}}
   [args]
-  (notify/notify "[toggle]" (:client/key args "No --key"))
   (let [all-clients       (wm/active-clients)
         current-workspace (wm/current-workspace
                             {:prefetched-clients all-clients})
