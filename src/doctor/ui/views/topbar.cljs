@@ -69,10 +69,11 @@
    {:keys [is-last]}]
   (let [urgent      false
         clients     (->> clients (remove skip-bar-app?))
-        show-name   (or (not (seq title)) urgent focused (zero? (count clients)))
-        show-number (or is-last (not (seq title)))]
+        show-name   (or urgent focused (zero? (count clients)))
+        show-number is-last]
     [:div
-     {:class ["grid" "grid-flow-col-dense" "place-items-center"
+     {:class ["grid" "grid-flow-col" "place-items-center"
+              "space-x-2" "px-1"
               "h-full"
               "bg-yo-blue-800"
               "border" "border-city-blue-600"
@@ -97,11 +98,11 @@
                             focused "text-city-orange-400"
                             :else   "text-yo-blue-300")
                       "font-nes" "text-lg"]}
-        (:workspace/title wsp "no title")])]))
+        (or title "no title")])]))
 
 (defn workspace-list [topbar-state wspcs]
   [:div
-   {:class ["grid" "grid-flow-col" "h-full" "place-self-start"]}
+   {:class ["flex" "flex-row" "h-full" "place-self-start"]}
    (for [[i it] (->> wspcs (map-indexed vector))]
      ^{:key i}
      [workspace-cell topbar-state it {:is-last (= i (- (count wspcs) 1))}])])
@@ -122,12 +123,7 @@
 
 (defn clock-host-metadata [{:keys [time]} metadata]
   [:div
-   {:class ["grid"
-            "grid-flow-col"
-            "justify-self-end"
-            "h-full"
-            "items-center"
-            "justify-items-end"]}
+   {:class ["flex" "flex-row" "justify-end" "items-center"]}
 
    [:div
     [components.actions/actions-list
