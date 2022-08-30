@@ -142,7 +142,7 @@
 
 (defn garden-todos
   ([conn] (garden-todos conn nil))
-  ([conn {:keys [n]}]
+  ([conn {:keys [n filter-pred]}]
    (when conn
      (let [n (or n 100)]
        (->>
@@ -153,6 +153,7 @@
               conn)
          (map first)
          (sort-by :org/created-at >)
+         ((fn [todos] (if filter-pred (->> todos (filter filter-pred)) todos)))
          (take n))))))
 
 (defn queued-todos [conn]
