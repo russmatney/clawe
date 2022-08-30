@@ -6,6 +6,7 @@
    [wing.repl :as repl]
    [ralphie.zsh :as zsh]
    [clj-kondo.core :as clj-kondo]
+   [clj-kondo.main :as clj-kondo.main]
    [loom.graph :refer [digraph]]
    [loom.io :refer [view]]
    ))
@@ -105,6 +106,8 @@
 
 (comment
   (viz-nses {:paths ["~/russmatney/clawe/src"]})
+  ;; https://github.com/clj-kondo/clj-kondo/issues/226
+  ;; move to using clj-kondo/main and string args?
   (clj-kondo/run!
     {:lint      ["/home/russ/russmatney/clawe/src"]
      :config    {:analysis {:var-usages      false
@@ -113,4 +116,7 @@
      :cache     false
      :debug     true})
 
+  (clj-kondo.main/main
+    "--lint" "/home/russ/russmatney/clawe/src"
+    "--skip-lint")
   )

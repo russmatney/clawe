@@ -2,6 +2,8 @@
  :workspace/defs
  {"lila" {:workspace/directory "~/lichess-org/lila"},
   "game-assets" {:workspace/directory "~/game-assets"},
+  "godot-demo-projects"
+  {:workspace/directory "~/godotengine/godot-demo-projects"},
   "rewrite-clj" {:workspace/directory "~/clj-commons/rewrite-clj"},
   "candy-icons" {:workspace/directory "~/EliverLara/candy-icons"},
   "dino" {:workspace/directory "~/russmatney/dino"},
@@ -25,6 +27,7 @@
   {:workspace/directory "~/russmatney/beatemup-three"},
   "portal" {:workspace/directory "~/djblue/portal"},
   "instaparse" {:workspace/directory "~/Engelberg/instaparse"},
+  "dice-nine" {:workspace/directory "~/russmatney/dice-nine"},
   "fabb" {:workspace/directory "~/teknql/fabb"},
   "protomoon-two" {:workspace/directory "~/russmatney/protomoon-two"},
   "dotfiles" {:workspace/directory "~/russmatney/dotfiles"},
