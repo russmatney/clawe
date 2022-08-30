@@ -68,34 +68,42 @@
 (defn actions-list [opts-or-axs]
   (let [actions (:actions opts-or-axs opts-or-axs)]
     (when actions
-      (let [fallback-n (:n opts-or-axs 3)
-            n          (uix/state fallback-n)
-            show-all   (fn [] (reset! n (count actions)))
-            collapse   (fn [] (reset! n fallback-n))
-            actions    (->>
-                         actions
-                         (sort-by
-                           (fn [x]
-                             (if (:action/disabled x)
-                               -100 ;; disabled come last
-                               (:action/priority x 0)))
-                           >)
-                         (take @n)
-                         (into [])
-                         ((fn [axs]
-                            (conj axs
-                                  (cond
-                                    (> (dec (count actions)) @n)
-                                    {:action/label    "show all"
-                                     :action/on-click show-all
-                                     :action/icon     fa/chevron-right-solid}
+      (let [fallback-page-size (:n opts-or-axs 3)
+            page-size          (uix/state fallback-page-size)
+            showing-all        (uix/state false)
+            show-all           (fn []
+                                 (reset! page-size (count actions))
+                                 (reset! showing-all true))
+            collapse           (fn []
+                                 (reset! page-size fallback-page-size)
+                                 (reset! showing-all false))
+            actions            (->>
+                                 actions
+                                 (sort-by
+                                   (fn [x]
+                                     (if (:action/disabled x)
+                                       -100 ;; disabled come last
+                                       (:action/priority x 0)))
+                                   >)
+                                 (take @page-size)
+                                 (into [])
+                                 ((fn [axs]
+                                    (conj axs
+                                          (cond
+                                            (and (> (count actions) @page-size)
+                                                 (not @showing-all))
+                                            {:action/label    "show all"
+                                             :action/on-click show-all
+                                             :action/icon     fa/chevron-right-solid}
 
-                                    (= @n (count actions))
-                                    {:action/label    "show less"
-                                     :action/on-click collapse
-                                     :action/icon     fa/chevron-left-solid}
+                                            (and
+                                              (= @page-size (count actions))
+                                              @showing-all)
+                                            {:action/label    "show less"
+                                             :action/on-click collapse
+                                             :action/icon     fa/chevron-left-solid}
 
-                                    :else nil)))))]
+                                            :else nil)))))]
         [:div
          {:class ["inline-flex" "flex-wrap"]}
          (for [[i ax] (->> actions
