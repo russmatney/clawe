@@ -6,7 +6,10 @@
    [clojure.string :as string]
    [tick.core :as t]
    [doctor.ui.db :as ui.db]
-   [dates.tick :as dates.tick]))
+   [dates.tick :as dates.tick]
+
+   [doctor.ui.views.ingest :as ingest]
+   ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; grouping and filtering
@@ -52,12 +55,7 @@
     {:filter-key :status :match :status/in-progress}
     {:filter-key :short-path :match "todo/journal.org"}
     {:filter-key :short-path :match "todo/projects.org"}
-    {:filter-key :short-path
-     :match-fn   is-daily-fname
-     :label      "All Dailies"}
-    {:filter-key :short-path
-     :match-fn   is-workspace-fname
-     :label      "All Workspaces"}})
+    {:filter-key :short-path :match-fn is-daily-fname :label "All Dailies"}})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; page
@@ -78,6 +76,8 @@
               "overflow-hidden"
               "min-h-screen"
               "text-city-pink-200"]}
+
+     [ingest/ingest-buttons]
 
      [:div {:class ["p-4"]} filter-grouper]
 
