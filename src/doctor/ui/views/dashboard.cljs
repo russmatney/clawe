@@ -1,10 +1,5 @@
 (ns doctor.ui.views.dashboard
   (:require
-   [hooks.topbar :as hooks.topbar]
-   [hooks.workspaces :as hooks.workspaces]
-
-   [doctor.ui.hooks.use-topbar :as use-topbar]
-   [doctor.ui.views.topbar :as topbar]
    [doctor.ui.db :as ui.db]
    [components.todo :as components.todo]
    [components.events :as components.events]
@@ -15,91 +10,83 @@
    [components.actions :as components.actions]
    [clojure.string :as string]))
 
+(def all-todos-initial-filters
+  #{{:filter-key :short-path
+     :match-fn   #(some-> % (string/split #"/") first #{"daily"})
+     :label      "Dailies"}
+    {:filter-key :short-path :match "todo/journal.org"}
+    {:filter-key :short-path :match "todo/project.org"}
+    {:filter-key :status :match :status/not-started}
+    ;; i wanna filter out todo/queued-at too
+    })
+
 (defn widget [opts]
-  (let [metadata                                       (hooks.topbar/use-topbar-metadata)
-        {:keys [topbar/background-mode] :as _metadata} @metadata
-        {:keys [_active-workspaces]}                   (hooks.workspaces/use-workspaces)
-        _topbar-state                                  (use-topbar/use-topbar-state)]
-    [:div
-     {:class ["text-city-pink-200"
-              (when (#{:bg/dark} background-mode) "bg-gray-700")
-              (when (#{:bg/dark} background-mode) "bg-opacity-50")]}
+  [:div
+   {:class ["text-city-pink-200"]}
+
+   [ingest/ingest-buttons]
+   [ingest/commit-ingest-buttons (:conn opts)]
+
+   (let [queued-todos  (ui.db/queued-todos (:conn opts))
+         recent-events (ui.db/events (:conn opts))
+
+         event-filter-results
+         (components.filter/use-filter
+           {:all-filter-defs  pages.todos/all-filter-defs
+            :default-filters  #{}
+            :default-group-by :tags
+            :items            recent-events})
+         all-todos (ui.db/garden-todos
+                     (:conn opts) {:n 200 ;; TODO support fetching more
+                                   :filter-pred
+                                   (fn [{:org/keys [status]}]
+                                     (#{:status/not-started} status))})
+         todo-filter-results
+         (components.filter/use-filter
+           {:all-filter-defs  pages.todos/all-filter-defs
+            :default-filters  all-todos-initial-filters
+            :default-group-by :tags
+            :items            all-todos})]
 
      [:div
-      {:class ["grid" "grid-flow-col"]}
+      [:div
+       [:div "Todo list (" (count queued-todos) ")"]
+       [components.todo/todo-list {:n 5} queued-todos]]
 
-      ;; workspaces
-      #_[topbar/workspace-list topbar-state active-workspaces]
-
-      ;; current task
-      [topbar/current-task opts]
-
-      ;; clock/host/metadata
-      #_[topbar/clock-host-metadata topbar-state metadata]]
-
-     [ingest/ingest-buttons]
-     [ingest/commit-ingest-buttons (:conn opts)]
-
-     (let [queued-todos  (ui.db/queued-todos (:conn opts))
-           recent-events (ui.db/events (:conn opts))
-
-           event-filter-results
-           (components.filter/use-filter
-             {:all-filter-defs  pages.todos/all-filter-defs
-              :default-filters  #{}
-              :default-group-by :tags
-              :items            recent-events})
-           all-todos (ui.db/garden-todos (:conn opts))
-           todo-filter-results
-           (components.filter/use-filter
-             {:all-filter-defs  pages.todos/all-filter-defs
-              :default-filters  #{{:filter-key :short-path
-                                   :match-fn   #(some-> % (string/split #"/") first #{"daily"})
-                                   :label      "Dailies"}
-                                  {:filter-key :short-path :match "todo/journal.org"}
-                                  {:filter-key :short-path :match "todo/project.org"}
-                                  {:filter-key :status :match :status/not-started}
-                                  ;; i wanna filter out todo/queued-at too
-                                  }
-              :default-group-by :tags
-              :items            all-todos})]
-
-       [:div
+      (let [expanded (uix/state
+                       ;; default to hiding all todos if some are queued
+                       (< (count queued-todos) 2))]
         [:div
-         [:div "Todo list"]
-         [components.todo/todo-list {:n 5} queued-todos]]
+         [:div "All todos (" (count (:filtered-items todo-filter-results)) ")"
+          (count all-todos)]
+         [components.actions/actions-list
+          {:actions [{:action/on-click (fn [_] (swap! expanded not))
+                      :action/label    "Expand"
+                      :action/disabled @expanded}
+                     {:action/on-click (fn [_] (swap! expanded not))
+                      :action/label    "Collapse"
+                      :action/disabled (not @expanded)}]}]
+         (when @expanded
+           [:div
+            (:filter-grouper todo-filter-results)
+            [components.todo/todo-list
+             {:n 5}
+             (:filtered-items todo-filter-results)]])])
 
-        (let [expanded (uix/state
-                         ;; default to hiding all todos if some are queued
-                         (< (count queued-todos) 2))]
-          [:div
-           [:div "All todos"]
-           [components.actions/actions-list
-            {:actions [{:action/on-click (fn [_] (swap! expanded not))
-                        :action/label    "Expand"
-                        :action/disabled @expanded}
-                       {:action/on-click (fn [_] (swap! expanded not))
-                        :action/label    "Collapse"
-                        :action/disabled (not @expanded)}]}]
-           (when @expanded
-             [:div
-              (:filter-grouper todo-filter-results)
-              [components.todo/todo-list {:n 5} (:filtered-items todo-filter-results)]])])
-
-        (let [expanded (uix/state nil)]
-          [:div
-           [:div "Events Cluster"]
-           [components.actions/actions-list
-            {:actions [{:action/on-click (fn [_] (swap! expanded not))
-                        :action/label    "Expand"
-                        :action/disabled @expanded}
-                       {:action/on-click (fn [_] (swap! expanded not))
-                        :action/label    "Collapse"
-                        :action/disabled (not @expanded)}]}]
-           (when @expanded
-             [:div
-              (:filter-grouper event-filter-results)
-              ;; show filtered-item-groups?
-              [components.events/event-clusters
-               nil
-               (:filtered-items event-filter-results)]])])])]))
+      (let [expanded (uix/state nil)]
+        [:div
+         [:div "Events Cluster (" (count (:filtered-items event-filter-results)) ")"]
+         [components.actions/actions-list
+          {:actions [{:action/on-click (fn [_] (swap! expanded not))
+                      :action/label    "Expand"
+                      :action/disabled @expanded}
+                     {:action/on-click (fn [_] (swap! expanded not))
+                      :action/label    "Collapse"
+                      :action/disabled (not @expanded)}]}]
+         (when @expanded
+           [:div
+            (:filter-grouper event-filter-results)
+            ;; show filtered-item-groups?
+            [components.events/event-clusters
+             nil
+             (:filtered-items event-filter-results)]])])])])
