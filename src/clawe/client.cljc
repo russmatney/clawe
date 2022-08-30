@@ -118,11 +118,9 @@
 
                 ;; support optional soft title match
                 (:match/soft-title opts)
-                (when (or
-                        (string/includes? a-window-title b-window-title)
-                        (string/includes? b-window-title a-window-title))
-                  (println "successful soft-title match" a-window-title b-window-title)
-                  true)
+                (or
+                  (string/includes? a-window-title b-window-title)
+                  (string/includes? b-window-title a-window-title))
 
                 :else
                 ;; fallback to a direct comparison

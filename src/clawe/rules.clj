@@ -9,24 +9,15 @@
    [clawe.workspace :as workspace]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Correct clients
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn log
-  ([subj] (log subj nil))
-  ([subj body]
-   (notify/notify (cond-> {:notify/print?  true
-                           :notify/subject subj
-                           :notify/id      "correcting-with-rules"}
-                    body
-                    (assoc :notify/body body)))))
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; reset workspace indexes
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn- wsp-sort-key [wsp]
+(defn- wsp-sort-key
+  "Returns a sort key for workspaces.
+
+  If the workspace's directory is the home dir, it will by prefixed by a 'z',
+  so that it ends up with a higher index when sorted."
+  [wsp]
   (str (if (#{(clawe.config/home-dir)} (:workspace/directory wsp)) "z" "a") "-"
        (format "%03d" (or (:workspace/index wsp) 0))))
 
@@ -45,6 +36,12 @@
        (remove #(= (:new-index %) (:workspace/index %)))))
 
 (defn reset-workspace-indexes
+  "Re-sorts workspace indexes according to the sort key in `wsp-sort-key`,
+  which generally moves repo-workspaces down and scratchpad-indexes up.
+
+  The scratchpad indexes tend to have alternate bindings for toggling,
+  so they don't need to be taking up the useful 0-9 bindings
+  when many workspaces are open."
   ([] (reset-workspace-indexes nil))
   ([_]
    (notify/notify {:subject "Resetting workspace indexes"})
@@ -64,6 +61,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn consolidate-workspaces
+  "Updates workspaces such that there are no gaps in the indexes, and the indexes start at 1."
   ([] (consolidate-workspaces nil))
   ([_]
    (notify/notify {:subject "Consolidating not-empty workspaces"})
@@ -77,9 +75,10 @@
            (if (= index new-index)
              (prn "nothing to do")
              (do
-               (prn "swapping tags" {:title     title
-                                     :idx       index
-                                     :new-index new-index})
+               (prn "swapping workspaces"
+                    {:title     title
+                     :idx       index
+                     :new-index new-index})
                (wm/swap-workspaces-by-index index new-index)))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -106,20 +105,16 @@
        (fn [it]
          (when-let [title (:workspace/title it)]
            (try
-             (println "Deleting workspace" it)
+             (println "Deleting workspace" (workspace/strip it))
              (wm/delete-workspace it)
              (notify/notify "Deleted Workspace" title)
              (catch Exception e e
-                    (notify/notify "Error deleting tag" e))))))
+                    (notify/notify "Error deleting workspace" e))))))
      doall)))
 
-(defn correct-clients-and-workspaces
-  "Runs over all open clients, rearranging according to workspace rules.
-
-  Selects clients with callbacks to handle
-  "
-
-  ([] (correct-clients-and-workspaces nil))
+(defn return-clients-to-expected-workspaces
+  "Runs over all open clients, moving them to their expected workspace."
+  ([] (return-clients-to-expected-workspaces nil))
   ([opts]
    (let [clients    (wm/active-clients)
          workspaces (wm/active-workspaces {:prefetched-clients clients})
@@ -154,13 +149,13 @@
 
 (comment
   (clawe.config/reload-config)
-  (correct-clients-and-workspaces)
-  (correct-clients-and-workspaces {:dry-run true}))
+  (return-clients-to-expected-workspaces)
+  (return-clients-to-expected-workspaces {:dry-run true}))
 
 (defn clean-up-workspaces
   ([] (clean-up-workspaces nil))
   ([_]
-   (correct-clients-and-workspaces)
+   (return-clients-to-expected-workspaces)
    (clean-workspaces) ;; remove empty wsps
    (consolidate-workspaces) ;; move preferred indexes down
    (reset-workspace-indexes)
