@@ -59,4 +59,7 @@
                :action/on-click (fn [_] (swap! page-size #(- % step)))})
             (when (< @page-size (count rows))
               {:action/label    "show more"
-               :action/on-click (fn [_] (swap! page-size #(+ % step)))})]}]]]]]]))
+               :action/on-click (fn [_] (swap! page-size #(+ % step)))})
+            (when (< @page-size (count rows))
+              {:action/label    (str "show all (" (count rows) ")")
+               :action/on-click (fn [_] (reset! page-size (count rows)))})]}]]]]]]))

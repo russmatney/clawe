@@ -105,7 +105,10 @@
                :action/on-click (fn [_] (swap! na #(- % step)))})
             (when (< @na (count todos))
               {:action/label    "show more"
-               :action/on-click (fn [_] (swap! na #(+ % step)))})]}]]]
+               :action/on-click (fn [_] (swap! na #(+ % step)))})
+            (when (< @na (count todos))
+              {:action/label    (str "show all (" (count todos) ")")
+               :action/on-click (fn [_] (reset! na (count todos)))})]}]]]
 
        [:div {:class ["grid" "grid-flow-row"
                       "w-full"
