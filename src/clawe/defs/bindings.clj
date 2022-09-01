@@ -264,6 +264,10 @@
   [[:mod :shift] "g"]
   (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key godot"))
 
+(defkbd toggle-workspace-obs
+  [[:mod :shift] "o"]
+  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key obs"))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; cycle tags and clients
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

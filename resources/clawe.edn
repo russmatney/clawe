@@ -11,10 +11,13 @@
   {:workspace/directory "~/benediktwerner/lichess-docker"},
   "org-crud"        {:workspace/directory "~/russmatney/org-crud"},
   "clj-kondo"       {:workspace/directory "~/clj-kondo/clj-kondo"},
+  "pluggs"          {:workspace/directory "~/russmatney/pluggs"},
   "org-roam"        {:workspace/directory "~/org-roam/org-roam"},
   "heroicons"       {:workspace/directory "~/tailwindlabs/heroicons"},
   "editscript"      {:workspace/directory "~/juji-io/editscript"},
   "lila-ws"         {:workspace/directory "~/lichess-org/lila-ws"},
+  "ViewportPlus"
+  {:workspace/directory "~/NesiAwesomeneess/ViewportPlus"},
   "cider"           {:workspace/directory "~/clojure-emacs/cider"},
   "clawe"           {:workspace/directory "~/russmatney/clawe"},
   "cli"             {:workspace/directory "~/babashka/cli"},
@@ -25,6 +28,8 @@
   {:workspace/directory "~/russmatney/advent-of-code"},
   "beatemup-three"
   {:workspace/directory "~/russmatney/beatemup-three"},
+  "the-great-tree"
+  {:workspace/directory "~/dandeliondino/the-great-tree"},
   "portal"          {:workspace/directory "~/djblue/portal"},
   "instaparse"      {:workspace/directory "~/Engelberg/instaparse"},
   "dice-nine"       {:workspace/directory "~/russmatney/dice-nine"},
@@ -66,7 +71,10 @@
    :match/skip-title       true,
    :client/create          ralphie.browser/open},
   "zoom" {:client/app-names ["zoom" "zoom meeting" "slack call"]},
-  "obs"  {:client/app-names ["obs"]},
+  "obs"
+  {:client/app-names       ["obs"]
+   :client/workspace-title "obs",
+   :match/skip-title       true},
   "doctor-be"
   {:client/create
    {:create/cmd           ralphie.tmux/fire,
@@ -98,8 +106,8 @@
    :hide/type                 :hide/close,
    :focus/float-and-center    true},
   "aseprite"
-  {:client/app-names       ["aseprite"]
-   :match/skip-title       true
+  {:client/app-names       ["aseprite"],
+   :match/skip-title       true,
    :client/workspace-title "aseprite"},
   "discord"
   {:client/app-names       ["Discord"],
