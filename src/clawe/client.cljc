@@ -87,7 +87,7 @@
 
   Uses `:client/app-name`, `:client/app-names`, `:client/window-title`
 
-  Supports `:match/skip-title` and `:match/soft-title`
+  Supports `:match/skip-title`, `:match/soft-title`, `:match/use-workspace-title`
 
   `:match/*` opts can be attached to clients (in fact, they are attached
   by `wm/merge-with-client-defs`), but they are only read from `opts`.
@@ -101,8 +101,8 @@
    (let [a-app-names (->app-names a)
          b-app-names (->app-names b)
 
-         a-window-title (-> a :client/window-title)
-         b-window-title (-> b :client/window-title)]
+         a-window-title (some-> a :client/window-title string/lower-case)
+         b-window-title (some-> b :client/window-title string/lower-case)]
      (and
        (and (seq a-app-names)
             (seq b-app-names)
@@ -130,8 +130,16 @@
          (and (:current-workspace-title opts)
               (or
                 (and (:match/use-workspace-title a)
-                     (= (:current-workspace-title opts)
-                        b-window-title))
+                     (let [a-title (:current-workspace-title opts)]
+                       (if (:match/soft-title opts)
+                         (or
+                           (string/includes? a-title b-window-title)
+                           (string/includes? b-window-title a-title))
+                         (= a-title b-window-title))))
                 (and (:match/use-workspace-title b)
-                     (= (:current-workspace-title opts)
-                        a-window-title)))))))))
+                     (let [b-title (:current-workspace-title opts)]
+                       (if (:match/soft-title opts)
+                         (or
+                           (string/includes? b-title a-window-title)
+                           (string/includes? a-window-title b-title))
+                         (= b-title a-window-title)))))))))))

@@ -4,6 +4,7 @@
   "game-assets"     {:workspace/directory "~/game-assets"},
   "godot-demo-projects"
   {:workspace/directory "~/godotengine/godot-demo-projects"},
+  "ink-library"     {:workspace/directory "~/inkle/ink-library"},
   "rewrite-clj"     {:workspace/directory "~/clj-commons/rewrite-clj"},
   "candy-icons"     {:workspace/directory "~/EliverLara/candy-icons"},
   "dino"            {:workspace/directory "~/russmatney/dino"},
@@ -11,8 +12,11 @@
   {:workspace/directory "~/benediktwerner/lichess-docker"},
   "org-crud"        {:workspace/directory "~/russmatney/org-crud"},
   "clj-kondo"       {:workspace/directory "~/clj-kondo/clj-kondo"},
+  "inkgd"           {:workspace/directory "~/ephread/inkgd"},
   "pluggs"          {:workspace/directory "~/russmatney/pluggs"},
   "org-roam"        {:workspace/directory "~/org-roam/org-roam"},
+  "godot-LDtk-import"
+  {:workspace/directory "~/levigilbert/godot-LDtk-import"},
   "heroicons"       {:workspace/directory "~/tailwindlabs/heroicons"},
   "editscript"      {:workspace/directory "~/juji-io/editscript"},
   "lila-ws"         {:workspace/directory "~/lichess-org/lila-ws"},
@@ -72,7 +76,7 @@
    :client/create          ralphie.browser/open},
   "zoom" {:client/app-names ["zoom" "zoom meeting" "slack call"]},
   "obs"
-  {:client/app-names       ["obs"]
+  {:client/app-names       ["obs"],
    :client/workspace-title "obs",
    :match/skip-title       true},
   "doctor-be"
@@ -152,6 +156,7 @@
    :match/skip-title       true,
    :client/workspace-title "onepass"},
   "godot"
-  {:client/app-names       ["godot"],
-   :client/workspace-title "godot",
-   :match/skip-title       true}}}
+  {:client/app-names          ["godot"],
+   :client/workspace-title    "godot",
+   :match/soft-title          true,
+   :match/use-workspace-title true}}}
