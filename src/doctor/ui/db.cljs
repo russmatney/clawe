@@ -166,6 +166,19 @@
     (remove (comp #{:status/cancelled :status/done} :org/status))
     (sort-by :todo/queued-at >)))
 
+(defn garden-current-items [conn]
+  (->>
+    (d/q '[:find (pull ?e [*])
+           :where
+           [?e :doctor/type :type/garden]
+           ;; TODO debug this, seems like it should work
+           [?e :org/tags "current"]
+           #_[(contains? ?tags "current")]]
+         conn)
+    (map first)
+    (remove (comp #{:status/cancelled :status/done} :org/status))
+    (sort-by :todo/queued-at >)))
+
 ;; TODO write fe unit tests for this and this whole ns
 (defn garden-tags
   ([conn] (garden-tags conn nil))

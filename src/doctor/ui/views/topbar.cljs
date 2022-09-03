@@ -18,7 +18,8 @@
    [doctor.ui.handlers :as handlers]
    [doctor.ui.hooks.use-topbar :as use-topbar]
 
-   ["@heroicons/react/20/solid" :as HIMini]))
+   ["@heroicons/react/20/solid" :as HIMini]
+   [wing.core :as w]))
 
 (defn skip-bar-app? [client]
   (-> client :client/window-title #{"tauri/doctor-topbar"}))
@@ -200,9 +201,13 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn current-task [{:keys [conn]}]
-  (let [todos (ui.db/queued-todos conn)]
+  (let [todos         (ui.db/queued-todos conn)
+        current-items (ui.db/garden-current-items conn)]
     (when (seq todos)
-      (let [queued  (->> todos (sort-by :todo/queued-at >) (into []))
+      (let [queued  (->> todos
+                         (concat current-items)
+                         (w/dedupe-by :db/id)
+                         (sort-by :todo/queued-at >) (into []))
             n       (uix/state 0)
             current (get queued @n)
             ct      (count queued)]
