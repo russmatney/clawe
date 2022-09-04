@@ -264,7 +264,7 @@ cmd - s : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key spo
 cmd - e : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key aseprite
 cmd - a : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key slack
 cmd - m : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key messages
-cmd - g : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key godot
+shift + cmd - g : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key godot
 
 cmd - d : bb --config ~/russmatney/clawe/bb.edn -x clawe.rules/clean-up-workspaces
 cmd - x : bb --config ~/russmatney/clawe/bb.edn -x clawe.m-x/m-x

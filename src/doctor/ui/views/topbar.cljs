@@ -254,19 +254,13 @@
               (when (#{:bg/dark} background-mode) "bg-gray-700")
               (when (#{:bg/dark} background-mode) "bg-opacity-50")]}
      [:div
-      {:class ["grid" "grid-cols-7" "h-full"]}
+      {:class ["flex" "flex-row" "h-full" "justify-between"]}
 
       ;; workspaces
-      [:div
-       {:class ["col-span-2"]}
-       [workspace-list topbar-state active-workspaces]]
+      [workspace-list topbar-state active-workspaces]
 
       ;; current task
-      [:div
-       {:class ["col-span-3"]}
-       [current-task opts]]
+      [current-task opts]
 
       ;; clock/host/metadata
-      [:div
-       {:class ["col-span-2"]}
-       [clock-host-metadata topbar-state metadata]]]]))
+      [clock-host-metadata topbar-state metadata]]]))
