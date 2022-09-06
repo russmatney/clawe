@@ -73,12 +73,26 @@
                     (fn [def]
                       ;; does this imply that clients should carry :match opts?
                       (client/match?
-                        def ;; client-def can supply :match options
+                        ;; client-def can supply specific :match options
+                        ;; client def can 'merge' more freely (via :merge/skip-title)
+                        (if (:merge/skip-title def)
+                          (assoc def :match/skip-title true)
+                          def)
                         client def))))]
-    (if (> (count matches) 1)
+    (cond
+      (> (count matches) 1)
       (do
         (println "WARN: multiple matching defs found for client" (client/strip client) matches)
-        (first matches))
+        (merge client (some->> matches first)))
+
+      (= (count matches) 0)
+      ;; TODO this works for most cases but breaks when skipping title on emacs matches
+      ;; b/c the journal and wsp-emacs clients both match for skip-title emacs clients
+      (do
+        (println "WARN: zero matching defs found for client" (client/strip client))
+        client)
+
+      :else
       (merge client (some->> matches first)))))
 
 (defn- merge-client-defs [wsp]
