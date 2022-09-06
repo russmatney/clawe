@@ -363,8 +363,17 @@
 (comment
   (delete-tag! "slack")
   (delete-tag! "dotfiles")
-  (focus-tag! "slack")
-  )
+  (focus-tag! "slack"))
+
+(defn delete-tag-by-index!
+  "Deletes a tag at the passed index."
+  [index]
+  (fnl
+    #_{:clj-kondo/ignore [:unused-binding]}
+    (let [screen (awful.screen.focused)
+          tags   screen.tags
+          tag    (. tags ~index)]
+      (tag:delete))))
 
 (defn delete-current-tag! []
   (fnl (s.selected_tag:delete)))

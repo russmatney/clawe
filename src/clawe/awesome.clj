@@ -79,7 +79,7 @@
     (awm/drag-workspace dir))
 
   (-delete-workspace [_this workspace]
-    (awm/delete-tag! (:workspace/title workspace)))
+    (awm/delete-tag-by-index! (:workspace/index workspace)))
 
   ;; clients
 

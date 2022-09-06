@@ -6,7 +6,8 @@
    [clawe.config :as clawe.config]
    [clawe.doctor :as clawe.doctor]
    [clawe.wm :as wm]
-   [clawe.workspace :as workspace]))
+   [clawe.workspace :as workspace]
+   [clawe.client :as client]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; reset workspace indexes
@@ -89,28 +90,38 @@
   (-> client :client/window-title #{"tauri/doctor-topbar"}))
 
 (defn clean-workspaces
-  "Closes workspaces with 0 clients."
+  "Closes workspaces with 0 clients or nil titles."
   ([] (clean-workspaces nil))
-  ([_]
+  ([last]
    (notify/notify {:subject "Removing empty or title-less workspaces"})
-   (->>
-     (wm/active-workspaces {:include-clients true})
-     (filter (fn [wsp]
-               (or
-                 (-> wsp :workspace/title nil?)
-                 (->> wsp :workspace/clients
-                      (remove is-bar-app?)
-                      seq empty?))))
-     (map
-       (fn [it]
-         (when-let [title (:workspace/title it)]
-           (try
-             (println "Deleting workspace" (workspace/strip it))
-             (wm/delete-workspace it)
-             (notify/notify "Deleted Workspace" title)
-             (catch Exception e e
-                    (notify/notify "Error deleting workspace" e))))))
-     doall)))
+   (let [many-to-delete (->>
+                          (wm/active-workspaces {:include-clients true})
+                          (filter (fn [wsp]
+                                    (or
+                                      (-> wsp :workspace/title nil?)
+                                      (->> wsp :workspace/clients
+                                           (remove is-bar-app?)
+                                           seq empty?)))))
+         it             (some-> many-to-delete first)]
+     (cond
+       (and (not (nil? it)) (= last it))
+       (notify/notify "Error deleting workspaces")
+
+       it
+       (try
+         (println "Deleting workspace" (workspace/strip it))
+         (wm/delete-workspace it)
+         (notify/notify "Deleted Workspace" (:workspace/title it "no-title"))
+
+         ;; call again until there are none left?
+         (clean-workspaces)
+         (catch Exception e e
+                (notify/notify "Error deleting workspace" e)))
+
+       :else (notify/notify "Finished deleting workspaces")))))
+
+(comment
+  (clean-workspaces))
 
 (defn return-clients-to-expected-workspaces
   "Runs over all open clients, moving them to their expected workspace."
@@ -150,6 +161,10 @@
 (comment
   (clawe.config/reload-config)
   (return-clients-to-expected-workspaces)
+  (->>
+    (wm/active-clients)
+    (map client/strip)
+    (filter (comp #{"godot"} :client/app-name)))
   (return-clients-to-expected-workspaces {:dry-run true}))
 
 (defn clean-up-workspaces
