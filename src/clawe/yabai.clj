@@ -1,15 +1,16 @@
 (ns clawe.yabai
   (:require
    [clawe.wm.protocol :refer [ClaweWM]]
-   [ralphie.yabai :as yabai]))
+   [ralphie.yabai :as yabai]
+   [clojure.string :as string]))
 
 ;; TODO refactor in malli transforms?
 (defn window->clawe-client
   [{:yabai.window/keys [has-focus app title] :as window}]
   (-> window
       (assoc :client/focused has-focus)
-      (assoc :client/window-title title)
-      (assoc :client/app-name app)))
+      (assoc :client/window-title (some-> title string/lower-case))
+      (assoc :client/app-name (some-> app string/lower-case))))
 
 (defn space->clawe-workspace
   [{:yabai.space/keys [index label has-focus] :as space}]

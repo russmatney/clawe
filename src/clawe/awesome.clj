@@ -2,19 +2,20 @@
   (:require
    [clawe.wm.protocol :refer [ClaweWM]]
    [ralphie.awesome :as awm]
-   [clawe.workspace :as workspace]))
+   [clawe.workspace :as workspace]
+   [clojure.string :as string]))
 
 
 (defn awesome-client->clawe-client [client]
   (-> client
-      (assoc :client/window-title (:awesome.client/name client))
-      (assoc :client/app-name (:awesome.client/class client))
+      (assoc :client/window-title (some-> (:awesome.client/name client) string/lower-case))
+      (assoc :client/app-name (some-> (:awesome.client/class client) string/lower-case))
       (assoc :client/focused (:awesome.client/focused client))))
 
 (defn tag->wsp [tag]
   (-> tag
       (assoc :workspace/index (:awesome.tag/index tag))
-      (assoc :workspace/title (:awesome.tag/name tag))
+      (assoc :workspace/title (some-> (:awesome.tag/name tag) string/lower-case))
       ;; TODO focus/selected unit test and links to docs
       (assoc :workspace/focused (:awesome.tag/selected tag))
 

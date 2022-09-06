@@ -14,7 +14,7 @@
         (println (client/strip client)
                  (workspace/strip workspace)))
     (cond
-      (#{"Emacs"} app-name)
+      (#{"emacs"} app-name)
       (cond
         (string/includes? "journal" window-title)
         {:color "text-city-blue-400"
@@ -28,31 +28,31 @@
         {:color "text-city-blue-400"
          :src   "/assets/candy-icons/emacs.svg"})
 
-      (#{"VSCodium"} app-name)
+      (#{"vscodium"} app-name)
       {:color "text-city-green-600"
        :src   "/assets/candy-icons/vscodium.svg"}
 
-      (#{"Alacritty"} app-name)
+      (#{"alacritty"} app-name)
       {:color "text-city-green-600"
        :src   "/assets/candy-icons/Alacritty.svg"}
 
-      (#{"Spotify"} app-name)
+      (#{"spotify"} app-name)
       {:color "text-city-green-400"
        :src   "/assets/candy-icons/spotify.svg"}
 
-      (#{"Audacity"} app-name)
+      (#{"audacity"} app-name)
       {:color "text-city-green-400"
        :src   "/assets/candy-icons/audacity.svg"}
 
-      (#{"Pavucontrol"} app-name)
+      (#{"pavucontrol"} app-name)
       {:color "text-city-green-400"
        :src   "/assets/candy-icons/pavucontrol.svg"}
 
-      (#{"Messages"} app-name)
+      (#{"messages"} app-name)
       {:color "text-city-green-400"
        :src   "/assets/candy-icons/messenger.svg"}
 
-      (#{"Safari"} app-name)
+      (#{"safari"} app-name)
       {:color "text-city-green-400"
        :src   "/assets/candy-icons/browser.svg"}
 
@@ -61,23 +61,23 @@
        :src   "/assets/candy-icons/firefox.svg"}
 
       (#{"firefoxdeveloperedition"
-         "Firefox Developer Edition"} app-name)
+         "firefox developer edition"} app-name)
       {:color "text-city-green-600"
        :src   "/assets/candy-icons/firefox-nightly.svg"}
 
-      (#{"Google-chrome"} app-name)
+      (#{"google-chrome"} app-name)
       {:color "text-city-green-600"
        :src   "/assets/candy-icons/google-chrome.svg"}
 
-      (#{"DevHub"} window-title)
+      (#{"devhub"} window-title)
       {:color "text-city-green-600"
        :src   "/assets/candy-icons/github-desktop.svg"}
 
-      (string/includes? window-title "Slack call")
+      (string/includes? window-title "slack call")
       {:color "text-city-green-600"
        :src   "/assets/candy-icons/shutter.svg"}
 
-      (#{"Slack"} app-name)
+      (#{"slack"} app-name)
       {:color "text-city-green-400"
        :src   "/assets/candy-icons/slack.svg"}
 
@@ -85,11 +85,11 @@
       {:color "text-city-green-400"
        :src   "/assets/candy-icons/discord.svg"}
 
-      (#{"Rofi"} app-name)
+      (#{"rofi"} app-name)
       {:color "text-city-green-400"
        :src   "/assets/candy-icons/kmenuedit.svg"}
 
-      (#{"1Password"} app-name)
+      (#{"1password"} app-name)
       {:color "text-city-green-400"
        :src   "/assets/candy-icons/1password.svg"}
 
@@ -105,19 +105,19 @@
       {:color "text-city-blue-600"
        :icon  mdi/doctor}
 
-      (string/includes? window-title "Developer Tools")
+      (string/includes? window-title "developer tools")
       {:color "text-city-blue-600"
        :src   "/assets/candy-icons/firefox-developer-edition.svg"}
 
-      (#{"Godot"} app-name)
+      (#{"godot"} app-name)
       {:color "text-city-green-400"
        :src   "/assets/candy-icons/godot.svg"}
 
-      (#{"Aseprite"} app-name)
+      (#{"aseprite"} app-name)
       {:color "text-city-green-400"
        :src   "/assets/candy-icons/winds.svg"}
 
-      (#{"Steam"} app-name)
+      (#{"steam"} app-name)
       {:color "text-city-green-400"
        :src   "/assets/candy-icons/steam.svg"}
 
