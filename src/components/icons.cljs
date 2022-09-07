@@ -142,6 +142,14 @@
       {:color "text-city-green-400"
        :src   "/assets/candy-icons/obs.svg"}
 
+      (#{"thunar" "finder"} app-name)
+      {:color "text-city-green-400"
+       :src   "/assets/candy-icons/thunar.svg"}
+
+      (#{"nautilus"} app-name)
+      {:color "text-city-green-400"
+       :src   "/assets/candy-icons/nautilus.svg"}
+
       :else
       (do
         (println "missing icon for client" (client/strip client))
