@@ -129,17 +129,21 @@
          ;; support matching against the current workspace title, if provided
          (and (:current-workspace-title opts)
               (or
-                (and (:match/use-workspace-title a)
-                     (let [a-title (:current-workspace-title opts)]
-                       (if (:match/soft-title opts)
-                         (or
-                           (string/includes? a-title b-window-title)
-                           (string/includes? b-window-title a-title))
-                         (= a-title b-window-title))))
-                (and (:match/use-workspace-title b)
-                     (let [b-title (:current-workspace-title opts)]
-                       (if (:match/soft-title opts)
-                         (or
-                           (string/includes? b-title a-window-title)
-                           (string/includes? a-window-title b-title))
-                         (= b-title a-window-title)))))))))))
+                (and
+                  b-window-title
+                  (:match/use-workspace-title a)
+                  (let [a-title (:current-workspace-title opts)]
+                    (if (:match/soft-title opts)
+                      (or
+                        (string/includes? a-title b-window-title)
+                        (string/includes? b-window-title a-title))
+                      (= a-title b-window-title))))
+                (and
+                  a-window-title
+                  (:match/use-workspace-title b)
+                  (let [b-title (:current-workspace-title opts)]
+                    (if (:match/soft-title opts)
+                      (or
+                        (string/includes? b-title a-window-title)
+                        (string/includes? a-window-title b-title))
+                      (= b-title a-window-title)))))))))))
