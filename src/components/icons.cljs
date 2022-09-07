@@ -7,8 +7,9 @@
    [hiccup-icons.mdi :as mdi]
    [clawe.client :as client]))
 
-(defn client->icon [client _workspace]
-  (let [{:client/keys [app-name window-title]} client]
+(defn client->icon [client workspace]
+  (let [{:workspace/keys [title]}              workspace
+        {:client/keys [app-name window-title]} client]
     #_(when (and (#{"Emacs"} app-name)
                  (string/includes? "journal" window-title))
         (println (client/strip client)
@@ -23,6 +24,22 @@
         (string/includes? "garden" window-title)
         {:color "text-city-blue-400"
          :src   "/assets/candy-icons/cherrytree.svg"}
+
+        (string/includes? "dino" title)
+        {:color "text-city-blue-400"
+         :src   "/assets/candy-icons/dino.svg"}
+
+        #_ (string/includes? "pirates" title)
+        #_ {:color "text-city-blue-400"
+            :src   "/assets/candy-icons/hooks.svg"}
+
+        (string/includes? "clawe" title)
+        {:color "text-city-blue-400"
+         :src   "/assets/candy-icons/ace.svg"}
+
+        (string/includes? "dotfiles" title)
+        {:color "text-city-blue-400"
+         :src   "/assets/candy-icons/applications-development.svg"}
 
         :else
         {:color "text-city-blue-400"
@@ -115,7 +132,7 @@
 
       (#{"aseprite"} app-name)
       {:color "text-city-green-400"
-       :src   "/assets/candy-icons/winds.svg"}
+       :src   "/assets/candy-icons/aseprite.svg"}
 
       (#{"steam"} app-name)
       {:color "text-city-green-400"
