@@ -4,6 +4,7 @@
    [systemic.core :as sys :refer [defsys]]
    [datascript.core :as d]
 
+   [blog.core :as blog]
    [db.core :as db]
    [item.core :as item]))
 
@@ -152,3 +153,39 @@
                    :some/names       "paced key"}])
     nil)
   )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; blog re-render
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defsys *garden->blog*
+  :start (do
+           (sys/start! `db/*conn*)
+           (d/listen!
+             db/*conn* :garden->blog
+             (fn [tx]
+               (try
+                 (log/info "rerendering blog!")
+                 (blog/render)
+                 (catch Exception e
+                   (log/warn "Error in garden->blog db listener" e)
+                   tx)))))
+  :stop
+  (try
+    (log/debug "Removing :garden->blog db listener")
+    (d/unlisten! db/*conn* :garden->blog)
+    (catch Exception e
+      (log/debug "err removing listener" e)
+      nil)))
+
+(defn start-garden->blog-listener []
+  (sys/start! `*garden->blog*))
+
+(defn stop-garden->blog-listener []
+  (sys/stop! `*garden->blog*))
+
+(comment
+  (sys/start! `*garden->blog*)
+  (sys/stop! `*garden->blog*)
+
+  (d/db db/*conn*))
