@@ -12,12 +12,13 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn fetch-with-org-id [id]
-  (println "fetching with id" id)
   (some->>
     (db/query
       '[:find (pull ?e [*])
         :in $ ?id
-        :where [?e :org/id ?id]]
+        :where
+        [?e :org/source-file ?src-file]
+        [?e :org/id ?id]]
       (ensure-uuid id))
     ffirst))
 
@@ -31,7 +32,12 @@
 
   (db/query
     '[:find (pull ?e [*])
-      :where [?e :org/id #uuid "b3c4eedb-336e-48be-a6b5-a570f0fc9eb3"]]))
+      :where [?e :org/id #uuid "b3c4eedb-336e-48be-a6b5-a570f0fc9eb3"]])
+
+  (fetch-with-org-id "7e0158a6-3596-4dd9-8669-dce7c341bdac")
+  (db/query
+    '[:find (pull ?e [*])
+      :where [?e :org/id #uuid "7e0158a6-3596-4dd9-8669-dce7c341bdac"]]))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -40,7 +46,7 @@
 
 (defn garden-post-files []
   (->>
-    (garden.db/notes-with-tags #{"post" "posts"})
+    (garden.db/notes-with-tags #{"post" "posts" "til"})
     (map :org/source-file)
     distinct))
 
@@ -110,8 +116,10 @@
       ;; so this would be cleared
       :keep-item
       (comp seq
-            #(set/intersection #{"post" "posts"} %)
+            #(set/intersection #{"post" "posts" "til"} %)
             :org/tags)
+      :remove-item
+      (comp seq #(set/intersection #{"private"} %) :org/tags)
       :fetch-item fetch-with-org-id})))
 
 (comment
