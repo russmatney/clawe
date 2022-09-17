@@ -5,11 +5,33 @@
    [garden.db :as garden.db]
    [clojure.set :as set]
    [db.core :as db]
-   [util :refer [ensure-uuid]]))
+   [util :refer [ensure-uuid]]
+   [clojure.string :as string]
+   [org-crud.core :as org-crud]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; db helpers
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn fetch-with-db-id [id]
+  (some->>
+    (db/query
+      '[:find (pull ?e [*])
+        :in $ ?e
+        :where
+        [?e :org/source-file ?src-file]]
+      id)
+    ffirst))
+
+(comment
+  (db/query
+    '[:find (pull ?e [*])
+      :in $ ?e
+      :where [?e _ _]]
+    10402)
+  (db/query
+    '[:find (pull ?e [*])
+      :where [?e :db/id 10124]]))
 
 (defn fetch-with-org-id [id]
   (some->>
@@ -44,37 +66,52 @@
 ;; collecting posts
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn garden-post-files []
+(defn included-posts []
   (->>
     (garden.db/notes-with-tags #{"post" "posts" "til"})
     (map :org/source-file)
-    distinct))
+    distinct
+    ;; reparsing b/c the db fetching of children is odd rn
+    (map org-crud/path->nested-item)))
+
+(defn linked-db-ids [item]
+  (let [from-children (->> item :org/items (mapcat linked-db-ids))]
+    (concat (map
+              :link/id
+              (:org/links-to item))
+            from-children)))
+
+(defn linked-posts [posts]
+  (->> posts
+       (mapcat linked-db-ids)
+       ;; TODO should be reparsing these as well? (vs. using the db obj)
+       ;; these already get reparsed in path->html in quickblog, should minimize that
+       ;; TODO should be connect to all linked nodes in the graph?
+       ;; (this is just links one edge away)
+       (map fetch-with-org-id)
+       (remove nil?)))
+
+(comment
+  (->>
+    (included-posts)
+    (filter (comp #(string/includes? % "2022-09-11") :org/source-file))
+    #_(filter (comp #(string/includes? % "upcoming") :org/name))
+    #_(take 6)
+    linked-posts
+    #_count
+    ))
+
+(defn included-post-paths []
+  (let [posts        (included-posts)
+        linked-posts (linked-posts posts)]
+    (->>
+      (concat posts linked-posts)
+      (map :org/source-file)
+      distinct)))
 
 (comment
   (count
-    (garden-post-files)))
-
-(defn daily-paths []
-  (->>
-    (fs/glob (str (fs/home) "/todo/daily/") "*.org")
-    (sort-by fs/last-modified-time)
-    reverse
-    (take 10)))
-
-(defn post-paths []
-  (garden-post-files)
-  #_(->>
-      (fs/glob (str (fs/home) "/todo/garden/") "*.org")
-      (sort-by fs/last-modified-time)
-      reverse
-      (take 10)))
-
-(comment
-  (->>
-    (post-paths)
-    (map (fn [v]
-           (str (fs/last-modified-time v) " - " (str v))))
-    #_(map str)))
+    (included-post-paths)))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -87,7 +124,7 @@
 (defn blog-opts
   ([] (blog-opts blog-root))
   ([root]
-   (let [paths (post-paths)]
+   (let [paths (included-post-paths)]
      {:blog-description       "Clojure, Game Dev, and Nerd Tools"
       :blog-author            "Russell Matney"
       :post-paths             paths
