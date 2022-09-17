@@ -43,3 +43,9 @@
     (catch Exception e
       (log/debug "err removing listener" e)
       nil)))
+
+(defn start-tx->fe-listener []
+  (sys/start! `*tx->fe-db*))
+
+(defn stop-tx->fe-listener []
+  (sys/stop! `*tx->fe-db*))

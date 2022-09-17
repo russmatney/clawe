@@ -62,7 +62,7 @@
     (if-let [time ((apply some-fn wrapped-parse-attempts) time-string)]
       time
       (do
-        #?(:clj (notify/notify "Error parsing time string" time-string)
+        #?(:clj (println "Error parsing time string" time-string)
            :cljs (println "Error parsing time string" time-string))
         nil))))
 

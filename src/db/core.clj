@@ -103,6 +103,7 @@
    (sys/start! `*conn*)
    (let [on-error (:on-error opts)
          on-retry (:on-retry opts)
+         verbose? (:verbose? opts)
          txs      (->>
                     (if (map? txs) [txs] txs)
                     (map (fn [tx] (if (map? tx)
@@ -111,7 +112,8 @@
                                          (helpers/drop-unsupported-vals opts))
                                     tx)))
                     (into []))]
-     #_ (log/debug "Transacting records" (count txs))
+     (when verbose?
+       (log/debug "Transacting records" (count txs)))
      (try
        (d/transact! *conn* txs)
        (catch Exception e

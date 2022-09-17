@@ -66,11 +66,12 @@
    api.topbar/*topbar-metadata-stream*
    api.todos/*todos-stream*
    api.db/*db-stream*
-   api.db/*tx->fe-db*
+   ;; some of these should maybe be db/*conn* deps, not server deps
+   ;; api.db/*tx->fe-db*
+   ;; db.listeners/*garden->blog*
    garden.watcher/*garden-watcher*
    ;; this is also disabled in the impl
    ;; db.listeners/*garden->expo*
-   db.listeners/*garden->blog*
    db.listeners/*data-expander*
    db/*conn*]
   :start

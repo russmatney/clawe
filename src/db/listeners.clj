@@ -165,6 +165,7 @@
              db/*conn* :garden->blog
              (fn [tx]
                (try
+                 ;; TODO debouncing logic for this!!!
                  (log/info "rerendering blog!")
                  (blog/render)
                  (catch Exception e

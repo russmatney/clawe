@@ -49,10 +49,11 @@
     (some->> ks
              (map (fn [k]
                     (when-let [maybe-time (item k)]
-                      (dates.tick/add-tz
-                        (if (string? maybe-time)
-                          (dates.tick/parse-time-string maybe-time)
-                          maybe-time)))))
+                      (when-let [maybe-time
+                                 (if (string? maybe-time)
+                                   (dates.tick/parse-time-string maybe-time)
+                                   maybe-time)]
+                        (dates.tick/add-tz maybe-time)))))
              (remove nil?)
              (sort-by t/>)
              first)))

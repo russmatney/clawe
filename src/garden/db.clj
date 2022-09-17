@@ -1,10 +1,12 @@
 (ns garden.db
   (:require
    [db.core :as db]
+   [db.listeners :as db.listeners]
    [garden.core :as garden]
    [clojure.string :as string]
    [taoensso.timbre :as log]
-   [item.core :as item]))
+   [item.core :as item]
+   [api.db :as api.db]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ->db-item
@@ -161,6 +163,7 @@
                 (db/transact
                   notes
                   {:on-error -on-error-log-notes
+                   :verbose? true
                    :on-unsupported-type
                    (fn [note]
                      (log/debug "Unsupported type on note" note))
@@ -204,6 +207,14 @@
           (map :org/source-file)))))
 
 (comment
+  api.db/*tx->fe-db*
+  (api.db/start-tx->fe-listener)
+  (api.db/stop-tx->fe-listener)
+
+  db.listeners/*garden->blog*
+  (db.listeners/start-garden->blog-listener)
+  (db.listeners/stop-garden->blog-listener)
+
   (sync-garden-paths-to-db
     {:page-size 20}
     (concat
@@ -241,12 +252,14 @@
     (map first)))
 
 (comment
+  (count (fetch-db-garden-notes))
   (->>
-    (db/query '[:find (pull ?e [*])
-                :where
-                [?e :doctor/type :type/garden]
-                [?e :org/tags "dj"]])
-    (map first)))
+    (fetch-db-garden-notes)
+    (map :org/source-file)
+    dedupe
+    count
+    )
+  )
 
 (defn notes-with-tags [tags]
   (->>
