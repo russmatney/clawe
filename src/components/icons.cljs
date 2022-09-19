@@ -126,6 +126,11 @@
       {:color "text-city-blue-600"
        :src   "/assets/candy-icons/firefox-developer-edition.svg"}
 
+      (#{"xcode"} app-name)
+      {:color "text-city-green-400"
+       ;; kind of a joke, using vscode icon for xcode
+       :src "/assets/candy-icons/code.svg"}
+
       (#{"godot"} app-name)
       {:color "text-city-green-400"
        :src   "/assets/candy-icons/godot.svg"}
