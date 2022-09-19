@@ -222,7 +222,7 @@
       (garden/daily-paths 30)))
 
   (sync-garden-notes-to-db
-    {:page-size 20}
+    {:page-size 2000}
     (->>
       ;; the big one!!
       (garden/all-garden-notes-flattened)
