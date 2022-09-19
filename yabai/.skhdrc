@@ -265,6 +265,7 @@ cmd - e : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key ase
 cmd - a : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key slack
 cmd - m : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key messages
 shift + cmd - g : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key godot
+shift + cmd - x : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key xcode
 
 cmd - d : bb --config ~/russmatney/clawe/bb.edn -x clawe.rules/clean-up-workspaces
 cmd - x : bb --config ~/russmatney/clawe/bb.edn -x clawe.m-x/m-x

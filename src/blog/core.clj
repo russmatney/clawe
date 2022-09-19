@@ -176,4 +176,7 @@
 (defn watch
   ([] (watch nil))
   ([_]
-   (qb.api/watch (assoc (blog-opts) :port 1999))))
+   (qb.api/watch
+     (->
+       (blog-opts)
+       #_(assoc :port 1999)))))

@@ -424,12 +424,13 @@
     (do
       (notify/notify "i'm in my space, cozy as can be")
       (toggle-floating window)
-      (center-window window))
+      #_(center-window window))
     (if (and (:yabai.window/id window)
              space-label-or-idx)
       (->
         ^{:out :string}
-        (process/$ yabai -m window ~(:yabai.window/id window) --space ~space-label-or-idx || yabai -m space --focus recent)
+        #_(process/$ yabai -m window ~(:yabai.window/id window) --space ~space-label-or-idx || yabai -m space --focus recent)
+        (process/$ yabai -m window ~(:yabai.window/id window) --space ~space-label-or-idx)
         process/check
         :out)
       (throw (Exception. (str "Missing required move-window-to-space data"
@@ -467,7 +468,7 @@
   (when-not is-floating
     (toggle-floating window))
 
-  (center-window window))
+  #_(center-window window))
 
 (comment
   "
