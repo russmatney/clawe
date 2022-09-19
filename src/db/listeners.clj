@@ -4,7 +4,8 @@
    [systemic.core :as sys :refer [defsys]]
    [datascript.core :as d]
 
-   [blog.core :as blog]
+   ;; circular dep!!
+   #_[blog.core :as blog]
    [db.core :as db]
    [item.core :as item]))
 
@@ -167,7 +168,8 @@
                (try
                  ;; TODO debouncing logic for this!!!
                  (log/info "rerendering blog!")
-                 (blog/render)
+                 ;; circular dependency
+                 #_(blog/render)
                  (catch Exception e
                    (log/warn "Error in garden->blog db listener" e)
                    tx)))))
