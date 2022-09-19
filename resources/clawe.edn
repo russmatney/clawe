@@ -13,6 +13,7 @@
   "pirates" {:workspace/directory "~/russmatney/pirates"},
   "lichess-docker"
   {:workspace/directory "~/benediktwerner/lichess-docker"},
+  "clerk-demo" {:workspace/directory "~/nextjournal/clerk-demo"},
   "org-crud" {:workspace/directory "~/russmatney/org-crud"},
   "clj-kondo" {:workspace/directory "~/clj-kondo/clj-kondo"},
   "inkgd" {:workspace/directory "~/ephread/inkgd"},
@@ -42,6 +43,7 @@
   "instaparse" {:workspace/directory "~/Engelberg/instaparse"},
   "dice-nine" {:workspace/directory "~/russmatney/dice-nine"},
   "fabb" {:workspace/directory "~/teknql/fabb"},
+  "clerk" {:workspace/directory "~/nextjournal/clerk"},
   "protomoon-two" {:workspace/directory "~/russmatney/protomoon-two"},
   "dotfiles" {:workspace/directory "~/russmatney/dotfiles"},
   "TilePIpe" {:workspace/directory "~/aleksandrbazhin/TilePIpe"},
