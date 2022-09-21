@@ -1,6 +1,8 @@
 #+TITLE: Clawe
 #+startup: overview
 
+* required thematic clojure repo intro quote
+
 #+begin_quote Toy Story
 Buzz: This is an intergalactic emergency. I need to commandeer your vessel to Sector 12. Who's in charge here?
 
@@ -13,63 +15,142 @@ Alien #2: The claw chooses who will go and who will stay.
 Woody: This is ludicrous.
 #+end_quote
 
-Clawe (from CLojure-AWEsome) is a Clojure-centric AwesomeWM configuration.
+* Clawe is a clojure-centric window-manager, uh, -manager
+Clawe is a clojure-based approach to managing your window manager's
+configuration, and otherwise hacking scripts together on your machine.
 
-- [[https://awesomewm.org/][AwesomeWM]] provides the api and mental model for window management
-- [[https://clojure.org/][Clojure]] provides a fantastic language, an interactive repl, etc etc
-  + [[https://github.com/babashka/babashka][Babashka]] makes it reasonable to develop in a clojure repl and have a result
-    as accessible as a bash script
+** Clawe feature list
+- Dev against your environment with a clojure repl!
+  - No more write-compile-restart-loop!
+  - Instead, debug by connecting to a running clojure repl and execing the code.
+- Define your keybindings as clojure functions
+  - [[https://github.com/russmatney/clawe/blob/db7042b02ba8ed9f8dc35f98c901a8ff5d07953b/src/clawe/defs/bindings.clj][clawe.defs.bindings namespace]]
+- Configurable, toggle-able clients that can be repo-workspace aware
+  - [[https://github.com/russmatney/clawe/blob/db7042b02ba8ed9f8dc35f98c901a8ff5d07953b/src/clawe/toggle.clj][clawe.toggle namespace]]
+- [[https://github.com/davatorium/rofi][Rofi]] (or via [[https://github.com/chipsenkbeil/choose][choose]] on osx) for listing available commands
+  - [[https://github.com/russmatney/clawe/blob/db7042b02ba8ed9f8dc35f98c901a8ff5d07953b/src/clawe/m_x.clj][clawe.m-x]] and [[https://github.com/russmatney/clawe/blob/master/src/ralphie/rofi.clj][ralphie.rofi]] namespaces
+- Useful Babashka-based namespaces
+  - [[https://github.com/russmatney/clawe/blob/db7042b02ba8ed9f8dc35f98c901a8ff5d07953b/src/ralphie/browser.clj][ralphie.browser]]
+  - [[https://github.com/russmatney/clawe/blob/db7042b02ba8ed9f8dc35f98c901a8ff5d07953b/src/ralphie/clipboard.clj][ralphie.clipboard]]
+  - [[https://github.com/russmatney/clawe/blob/db7042b02ba8ed9f8dc35f98c901a8ff5d07953b/src/ralphie/emacs.clj][ralphie.emacs]]
+  - [[https://github.com/russmatney/clawe/blob/master/src/ralphie/git.clj][ralphie.git]]
+  - [[https://github.com/russmatney/clawe/blob/db7042b02ba8ed9f8dc35f98c901a8ff5d07953b/src/ralphie/notify.clj][ralphie.notify]]
+  - [[https://github.com/russmatney/clawe/blob/master/src/ralphie/screenshot.clj][ralphie.screenshot]]
+  - [[https://github.com/russmatney/clawe/blob/db7042b02ba8ed9f8dc35f98c901a8ff5d07953b/src/ralphie/tmux.clj][ralphie.tmux]]
+  - [[https://github.com/russmatney/clawe/tree/master/src/ralphie][all ralphie namespaces]]
+- [[https://github.com/russmatney/clawe/blob/db7042b02ba8ed9f8dc35f98c901a8ff5d07953b/src/ralphie/git.clj#L101][suggesting git clones based on the clipboard and current tabs]]
 
+** ~clawe.wm~ and ~clawe.wm.protocol~
+[[https://github.com/russmatney/clawe/blob/db7042b02ba8ed9f8dc35f98c901a8ff5d07953b/src/clawe/wm.clj][clawe.wm]] provides functions for working with your running clients and
+workspaces:
 
-Clawe pulls these things together to provide a reasonable feedback loop while
-working on your development environment.
+Ex:
 
-* AwesomeWM config
-This repo contains a full awesome configuration in the ~awesome/~ directory. It
-is written almost entirely in [[https://fennel-lang.org/][Fennel]], which is a clojure-y lisp that compiles to
-lua.
+- ~clawe.wm/focus-client~
+- ~clawe.wm/delete-workspace~
 
-* Monorepo
-I was breaking things out into separate repos for a bit, but have recently moved
-back to a monorepo. There are several top-level namespaces:
+These functions are implemented via a [[https://github.com/russmatney/clawe/blob/db7042b02ba8ed9f8dc35f98c901a8ff5d07953b/src/clawe/wm/protocol.clj][protocol]], which means extending the same
+behavior to other window-managers is fairly reasonable. I've implemented it for
+AwesomeWM and Yabai so far, but am interested in pursuing i3 and bspwm as well.
 
-- Ralphie - originally here: [[https://github.com/russmatney/ralphie][russmatney/ralphie]]
+- [[https://github.com/russmatney/clawe/blob/db7042b02ba8ed9f8dc35f98c901a8ff5d07953b/src/ralphie/awesome.clj][ralphie.awesome]]
+- [[https://github.com/russmatney/clawe/blob/db7042b02ba8ed9f8dc35f98c901a8ff5d07953b/src/ralphie/yabai.clj][ralphie.yabai]]
+** Babashka-based
+Much gratitude to borkdude and the clojure community at large!
 
-  Ralphie is a collection of thin layers over misc tools (e.g. i3, awesomewm,
-  emacs, tmux, screenshots, browsers). It does not attempt to handle any state,
-  and instead provides pure apis for misc tools. When we want to reach for state
-  or some other logic, we elevate the function to a clawe namespace.
+Clawe would not be possible without the boon that [[https://github.com/babashka/babashka][Babashka]] has brought to the
+clojure ecosystem. Simplicity + performance!
+*** [[https://github.com/babashka/process][process]]
+Clawe uses process everywhere, to shell out and do everything. It's the
+equivalent of ~$()~ in bash.
+*** [[https://github.com/babashka/cli][cli]]
+Nearly all of clawe's commands are executed almost exclusively as babashka cli commands:
 
-  The goal is to allow other consumers to use ralphie as an independent library,
-  without requiring clawe's typical setup and dependencies.
+#+begin_src sh
+# Toggle open/closed emacs in the current workspace's directory
+bb ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle "emacs"
+#+end_src
 
-  Ralphie's old readme is here: [[file:docs/ralphie.md][Ralphie old readme]]
+This is of course often better debugged in a clojure repl itself:
 
-- Defthing - originally here: [[https://github.com/russmatney/defthing][russmatney/defthing]]
+#+begin_src clojure
+(comment (clawe.toggle/toggle "emacs"))
+#+end_src
+** To cover in more detail
+*** ~resources/clawe.edn~
+*** sxhkd
+** Future work
+*** Break up ~clawe.edn~ usage into personal configs
+*** refactor/hone bindings implementation
+** Old methods
+*** Clawe microscripts? uberjar?
+Clawe has been through a few different iterations and experiements - at one
+point I was using carve to produce 'micro'-scripts in an effort to improve
+performance.
 
-  A macro-helper supporting data-driven collections. See the defthing [[file:docs/defthing.org][docs]] or
-  [[file:test/defthing/core_test.clj][tests]] for more.
+Later I had an uberjar flow, which required rebuilding after code changes were
+made.
 
-- Chess - originally here: [[https://github.com/russmatney/defthing][russmatney/defthing]]
+Lately I'm in favor of using the babashka/cli style - just run the scripts in
+place, call the functions directly with ~-x~. This has been great and nice to
+debug both in the repl and via the terminal. It's also simple, in that there are
+no built artifacts to worry about. I expect this method to stick!
+* Doctor, Tauri, and full-stack clojure
+~doctor~ and most of the other top-level namespaces in clawe are used in a
+full-on JVM or browser context. The above clawe features are all babashka-based,
+but with ~doctor~, we get into support for topbars, dashboards, parsing org
+files, reviewing chess games, publishing blog posts... all sorts of rabbit holes.
 
-  Pulls a list of recent games from lichess. Configured via
-  resources/config.edn or env vars.
+It may have been wise to cut clawe at the above feature set (and I did just
+that before one day throwing up my hands and combining several repos together).
 
-- Doctor
-- Expo
+Instead I've been hacking deeper features right on top of it. Keeping things in
+the same repo lowers the barrier for trying out new things, and at this point
+the clawe repo has several runtimes.
 
-* Install
-To install the uberjar for the first time:
+** Multiple runtimes
+In particular, the 'doctor' backend is jvm based, and not all of the
+clojure dependencies are babashka compatible.
 
-#+BEGIN_SRC
-# from clawe project root
-bb -cp $(clojure -Spath) --uberjar clawe.jar -m clawe.core
-# or
-bb install
-#+END_SRC
+There are 4 runtimes to be aware of.
+*** the 'bash' runtime (i.e. babashka)
+the ~clawe~ and ~ralphie~ namespaces are intended to be consumed by babashka
+commands, and should be simple, fast, and (mostly) stateless. A clawe.edn
+config file is read for most of them to work, but that should be it.
+*** the backend 'server' (doctor backend)
+A backend server process running via the jvm - the typical clojure environment,
+providing a web api and sockets for connecting to the doctor frontend.
 
-See `bb.edn` for tasks related to installing and running clawe services
+Worth noting - this server provides an nrepl for the clawe/ralphie namespaces to
+connect to, and is where most of clawe's development happens.
+*** the web frontend (doctor frontend)
+A shadow-cljs process runs the typical frontend clojurescript environment.
+*** Tauri topbar, doctor
+Tauri is used, really just for it's webview, to serve the topbar and a 'native'
+doctor web app (though I often work in a [[https://www.mozilla.org/en-US/firefox/developer/][proper dev browser]] as well.)
+** Doctor features
+With those runtime distinctions in mind...
 
+Doctor is not quite as settled as clawe and ralphie, but it is centered around
+some core features:
+
+- Topbar
+  - workspaces and their clients (current workspace, etc)
+  - queued tasks
+    (todos are parsed from org files and opted into via the doctor's components)
+- Dashboard
+  - in various views
+    - org items (parsed and crud-able via [[https://github.com/russmatney/org-crud][russmatney/org-crud]])
+    - commits from repos (parsed via ~ralphie/git~)
+    - recent screenshots
+    - recent games from [[https://lichess.org][lichess.org]]
+  - setting wallpapers
+- Sockets via [[https://github.com/teknql/plasma][teknql/plasma]]
+- Database via [[https://github.com/tonsky/datascript][tonsky/datascript]]
+
+As more doctor features/interfaces settle down, I'll update these docs with
+screenshots and usage details.
+* Rough Dev Notes
 ** local symlinking
 several local dirs are symlinked into public/assets/
 
@@ -89,41 +170,14 @@ wallpapers -> /home/russ/Dropbox/wallpapers/
 This is a quick hack to let the web apps reference images on the machine
 (avoids a local image host).
 
-* Development
-** Clojure dev
-Visit any clojure file in the repo, then ~M-x cider-jack-in-clj~, which might be
-bound to ~SPC c '~.
-
-Here's [[file:src/user.clj][src/user.clj]] and [[file:src/clawe/core.clj][src/clawe/core.clj]]
-** Logs
-AwesomeWM Logs can be viewed in the terminal with something like:
-
-#+begin_src shell
-tail -f ~/.cache/awesome/logs | bat --paging=never -l lua
-#+end_src
-
-Note that this expects you to run AwesomeWM with logging enabled, is explained
-briefly in their FAQ: https://awesomewm.org/apidoc/documentation/90-FAQ.md.html
-(search `logs`).
-
-You can also [[file:~/.cache/awesome/logs][visit this file in emacs]].
-** Expo
-
-#+begin_src sh
-# after building main-built with yarn run build
-cp public/css/main-built.css expo/public/css/main-built.css
-
-# symlinking assets
-mkdir expo/public/assets
-ln -s ~/Screenshots expo/public/assets/screenshots
-#+end_src
 ** Chessground
-manually copied the exported css and images into the project:
+I manually copied the exported css and images into the project:
+
 #+begin_src sh
 cp node_modules/chessground/assets/chessground.base.css node_modules/chessground/assets/chessground.brown.css node_modules/chessground/assets/chessground.cburnett.css public/css/.
 #+end_src
 
-* tauri conf
+** tauri conf
 
 if only json supported comments....
 
@@ -140,6 +194,13 @@ if only json supported comments....
         "transparent": true
       }
 #+end_src
-* osx
-** ubersicht
-~/Library/Application Support/Übersicht/widgets
+* Feel free to reach out
+I feel like this is kind of a crazy hack/dev environment - to me, getting to do
+wm-things in clojure and against a repl is the dream!
+
+I've been building it up for a few years now, and am happy to give a tour and
+share more context.
+
+Feel free to create an issue/discussion here, ping me on the clojurians slack,
+or pop in on one of my Twitch streams - I'd love to share more about it and show
+how it all fits together.
