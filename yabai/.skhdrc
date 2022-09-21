@@ -235,7 +235,7 @@ cmd - 8 : yabai -m space --focus 8 || yabai -m space --focus recent \
        && bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/update-topbar
 cmd - 9 : yabai -m space --focus 9 || yabai -m space --focus recent \
        && bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/update-topbar
-cmd - 0 : yabai -m space --focus 0 || yabai -m space --focus recent \
+cmd - 0 : yabai -m space --focus 10 || yabai -m space --focus recent \
        && bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/update-topbar
 
 shift + cmd - 1 : yabai -m window --space 1
