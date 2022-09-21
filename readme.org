@@ -16,8 +16,15 @@ Woody: This is ludicrous.
 #+end_quote
 
 * Clawe is a clojure-centric window-manager, uh, -manager
+It is named after the shape of your hand while trying to nail some of these key
+bindings.
+
+It started as a CLojure-AWEsomewm experiement, but now cuts off any specific WM
+via a protocol, and can run on OSX (via yabai) as well.
+
 Clawe is a clojure-based approach to managing your window manager's
-configuration, and otherwise hacking scripts together on your machine.
+configuration, and otherwise hacking scripts/automation together on your
+machine.
 
 ** Clawe feature list
 - Dev against your environment with a clojure repl!
@@ -78,10 +85,11 @@ This is of course often better debugged in a clojure repl itself:
 #+end_src
 ** To cover in more detail
 *** ~resources/clawe.edn~
-*** sxhkd
+*** sxhkd/awesome config on linux
+*** yabai/skhd config on osx
 ** Future work
 *** Break up ~clawe.edn~ usage into personal configs
-*** refactor/hone bindings implementation
+*** refactor/hone keybindings implementation
 ** Old methods
 *** Clawe microscripts? uberjar?
 Clawe has been through a few different iterations and experiements - at one
@@ -194,13 +202,13 @@ if only json supported comments....
         "transparent": true
       }
 #+end_src
-* Feel free to reach out
+* Ping me!
 I feel like this is kind of a crazy hack/dev environment - to me, getting to do
 wm-things in clojure and against a repl is the dream!
 
 I've been building it up for a few years now, and am happy to give a tour and
 share more context.
 
-Feel free to create an issue/discussion here, ping me on the clojurians slack,
-or pop in on one of my Twitch streams - I'd love to share more about it and show
-how it all fits together.
+Feel free to create an issue/discussion in this repo, ping me ~@russmatney~ on
+the clojurians slack, or pop in on [[https://www.twitch.tv/russmatney][one of my Twitch streams]] - I'd love to share
+more about it and show how it all fits together.
