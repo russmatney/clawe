@@ -9,7 +9,7 @@
   babashka/babashka                  {:mvn/version "0.8.157"}
   babashka/babashka.pods             {:mvn/version "0.1.0"}
   babashka/babashka.curl             {:mvn/version "0.1.2"}
-  babashka/process                   {:mvn/version "0.1.7"}
+  babashka/process                   {:mvn/version "0.1.8"}
   org.babashka/cli                   {:mvn/version "0.3.34"}
   babashka/fs                        {:mvn/version "0.1.6"}
   juxt/dirwatch                      {:mvn/version "0.2.5"}
@@ -64,6 +64,11 @@
 
     ;; logging
     com.taoensso/timbre {:mvn/version "5.2.1"}
+
+    ;; clerk
+    io.github.nextjournal/clerk {:mvn/version "0.10.562"}
+    ;; https://github.com/babashka/process/issues/76
+    org.graalvm.js/js           {:mvn/version "22.1.0"}
 
     ;; file-watching
     hawk/hawk {:mvn/version "0.2.11"}

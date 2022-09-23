@@ -99,7 +99,8 @@
                             focused "text-city-orange-400"
                             :else   "text-yo-blue-300")
                       "font-nes" "text-lg"]}
-        (or title "no title")])]))
+        [:span (str "[" index "]")]
+        #_(or title "no title")])]))
 
 (defn workspace-list [topbar-state wspcs]
   [:div
@@ -128,7 +129,10 @@
 
    [:div
     [components.actions/actions-list
-     {:actions [ ;; bg toggle
+     {:actions [{:action/on-click (fn [_] (hooks.topbar/rerender-notebooks))
+                 :action/label    "rerender"}
+
+                ;; bg toggle
                 {:action/on-click (toggle-background-mode metadata)
                  :action/label    "toggle"
                  :action/icon
@@ -260,7 +264,24 @@
       [workspace-list topbar-state active-workspaces]
 
       ;; current task
-      [current-task opts]
+      (let [current-workspace
+            (some->> active-workspaces
+                     (filter :workspace/focused)
+                     first)]
+        (when current-workspace
+          [:div
+           {:class ["flex" "flex-row" "space-x-4"
+                    "items-center"
+                    "mx-8"]}
+           [:span
+            {:class ["font-nes" "text-city-blue-500"]}
+            (:workspace/title current-workspace)]
+           #_[current-task opts]
+           [:span
+            {:class ["text-city-blue-500"]}
+            (-> current-workspace
+                :workspace/directory
+                (string/replace "/Users/russ" "~"))]]))
 
       ;; clock/host/metadata
       [clock-host-metadata topbar-state metadata]]]))

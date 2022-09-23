@@ -123,14 +123,16 @@
            :workspaces workspace/strip))
 
        (seq headers)
-       (map (fn [m] (select-keys m headers)))
-
-       true
-       (clojure.pprint/print-table)))))
+       (map (fn [m] (select-keys m headers)))))))
 
 (comment
   (ls {:type    :clients
        :headers (conj default-client-headers :yabai.window/space)}))
+
+(defn ls-print
+  [args]
+  (-> (ls args)
+      (clojure.pprint/print-table)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ls consumers
@@ -140,13 +142,13 @@
   {:org.babashka/cli
    {:coerce {:headers [:keyword] :all :boolean}}}
   ([] (ls-clients nil))
-  ([opts] (ls (assoc opts :type :clients))))
+  ([opts] (ls-print (assoc opts :type :clients))))
 
 (defn ls-workspaces
   {:org.babashka/cli
    {:coerce {:headers [:keyword] :all :boolean}}}
   ([] (ls-clients nil))
-  ([opts] (ls (assoc opts :type :workspaces))))
+  ([opts] (ls-print (assoc opts :type :workspaces))))
 
 (comment
   (ls-clients)

@@ -5,7 +5,8 @@
    [api.topbar :as topbar]
    [api.todos :as todos]
    [screenshots.core :as screenshots]
-   [wallpapers.core :as wallpapers]))
+   [wallpapers.core :as wallpapers]
+   [notebooks.clawe :as notebooks.clawe]))
 
 
 (defn route
@@ -24,6 +25,11 @@
       (workspaces/update-workspaces)
       (topbar/update-topbar-metadata)
       {:status 200 :body "updated topbar"})
+
+    (= uri "/notebooks/rerender")
+    (do
+      (notebooks.clawe/rerender)
+      {:status 200 :body "notebooks rerendered"})
 
     (= uri "/screenshots/update")
     (do

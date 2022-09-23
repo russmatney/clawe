@@ -9,12 +9,16 @@
    [clj-kondo.main :as clj-kondo.main]
    [loom.graph :refer [digraph]]
    [loom.io :refer [view]]
-   ))
+   [nextjournal.clerk :as clerk]))
 
 (comment
   (repl/sync-libs!))
 
 (comment
+
+  (clerk/serve! {})
+
+
   "yo"
 
   (binding

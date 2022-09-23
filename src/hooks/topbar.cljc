@@ -2,12 +2,14 @@
   (:require
    [plasma.core :refer [defhandler defstream]]
    #?@(:clj [[api.topbar]
-             [ralphie.awesome :as awm]]
+             [ralphie.awesome :as awm]
+             [notebooks.clawe :as notebooks.clawe]]
        :cljs [[plasma.uix :refer [with-rpc with-stream]]])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Topbar metadata
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 
 (defhandler get-topbar-metadata [] (api.topbar/build-topbar-metadata))
 (defstream topbar-metadata-stream [] api.topbar/*topbar-metadata-stream*)
@@ -58,3 +60,5 @@
 
 (defhandler set-background-mode [bg-mode]
   (api.topbar/set-background-mode bg-mode))
+
+(defhandler rerender-notebooks [] (notebooks.clawe/rerender))
