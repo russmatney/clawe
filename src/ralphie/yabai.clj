@@ -424,7 +424,7 @@
     (do
       (notify/notify "i'm in my space, cozy as can be")
       (toggle-floating window)
-      #_(center-window window))
+      (center-window window))
     (if (and (:yabai.window/id window)
              space-label-or-idx)
       (->
@@ -468,7 +468,7 @@
   (when-not is-floating
     (toggle-floating window))
 
-  #_(center-window window))
+  (center-window window))
 
 (comment
   "
