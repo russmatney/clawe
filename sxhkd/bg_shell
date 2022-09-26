@@ -1,9 +1,4 @@
 #! /bin/sh
 
-# perf, could skip this check if some env var is set
-if ! tmux has -t sxhkd; then
-    tmux new-session -d -s sxhkd -n sxhkd
-fi
-
 printf " (%s)&!\n" "$2" | tmux load-buffer -
 tmux paste-buffer -t sxhkd
