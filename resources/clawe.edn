@@ -89,11 +89,11 @@
    :client/workspace-title "obs",
    :match/skip-title       true},
   "xcode"
-  {:client/app-names ["xcode"],
-   :client/app-name "xcode",
+  {:client/app-names       ["xcode"],
+   :client/app-name        "xcode",
    :client/workspace-title "xcode",
-   :match/soft-title true,
-   :merge/skip-title true},
+   :match/soft-title       true,
+   :merge/skip-title       true},
   "doctor-be"
   {:client/create
    {:create/cmd           ralphie.tmux/fire,
@@ -170,12 +170,6 @@
    :client/create          "/usr/bin/gtk-launch 1password.desktop",
    :match/skip-title       true,
    :client/workspace-title "onepass"},
-  "xcode"
-  {:client/app-names       ["xcode"],
-   :client/app-name "xcode"
-   :client/workspace-title "xcode",
-   :match/soft-title       true,
-   :merge/skip-title       true,}
   "godot"
   {:client/app-names          ["godot"],
    :client/workspace-title    "godot",
