@@ -88,6 +88,12 @@
   {:client/app-names       ["obs"],
    :client/workspace-title "obs",
    :match/skip-title       true},
+  "xcode"
+  {:client/app-names ["xcode"],
+   :client/app-name "xcode",
+   :client/workspace-title "xcode",
+   :match/soft-title true,
+   :merge/skip-title true},
   "doctor-be"
   {:client/create
    {:create/cmd           ralphie.tmux/fire,
