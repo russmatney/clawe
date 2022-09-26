@@ -3,19 +3,20 @@
   (:require [clawe.debug :as debug]
             [nextjournal.clerk :as clerk]
             [clawe.config :as clawe.config]
-            [clawe.wm :as wm]
-            [babashka.fs :as fs]))
+            [clawe.wm :as wm]))
 
-^{:nextjournal.clerk/visibility {:code :hide}}
-(defn rerender []
-  ;; TODO better way to get *file* when called from elsewhere
-  ;; maybe a macro?
-  (clerk/show! (str (fs/home) "/russmatney/clawe/src/notebooks/clawe.clj")))
+^{:nextjournal.clerk/visibility {:code :hide :result :hide}}
+(def f *file*)
+^{:nextjournal.clerk/visibility {:code :hide :result :hide}}
+(defn rerender [] (clerk/show! f))
 
 ;; ### current workspace
 ^{::clerk/visibility {:code :hide}
   ::clerk/no-cache   true}
-(wm/current-workspace)
+(->>
+  (wm/current-workspace)
+  (remove (comp #(if (coll? %) (not (seq %)) (nil? %)) second))
+  (into {}))
 
 ;; ## client-defs
 ^{::clerk/visibility {:code :hide}}

@@ -6,9 +6,9 @@
 
 ;; # wallpapers
 
-#_(clerk/table
-    (->>
-      (wallpapers/all-wallpapers)
-      (map (fn [{:keys [file/web-asset-path file/file-name]}]
-             {:path web-asset-path
-              :file file-name}))))
+(clerk/table
+  (->>
+    (wallpapers/all-wallpapers)
+    (map (fn [{:keys [file/web-asset-path file/file-name]}]
+           {:path web-asset-path
+            :file file-name}))))
