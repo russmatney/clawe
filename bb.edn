@@ -1,5 +1,6 @@
 {:paths ["src" "test" "resources"]
- :deps  {babashka/fs                        {:mvn/version "0.1.6"}
+ :deps  {babashka/fs                        {:mvn/version "0.1.11"}
+         org.babashka/cli                   {:mvn/version "0.4.37"}
          metosin/malli                      {:mvn/version "0.8.9"}
          com.lambdaisland/specmonstah-malli {:mvn/version "0.0.7"}
          aero/aero                          {:mvn/version "1.1.6"}
@@ -71,7 +72,7 @@
   install-clawe {:depends [clawe-install]}
 
 
-  outdated (clojure "-M:outdated")
+  outdated (clojure "-M:full-stack-deps:outdated")
 
   dev-doctor
   {:doc "Assess the local environment for any issues"
