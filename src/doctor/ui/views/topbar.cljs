@@ -66,12 +66,11 @@
 
 (defn workspace-cell
   [topbar-state
-   {:as wsp :workspace/keys [index clients focused title]}
+   {:as wsp :workspace/keys [index clients focused]}
    {:keys [is-last]}]
   (let [urgent      false
         clients     (->> clients (remove skip-bar-app?))
-        show-name   (or urgent focused (zero? (count clients)))
-        show-number is-last]
+        show-number (or urgent focused (zero? (count clients)) is-last)]
     [:div
      {:class ["grid" "grid-flow-col" "place-items-center"
               "space-x-2" "px-1"
@@ -90,17 +89,7 @@
                             focused "text-city-orange-400"
                             :else   "text-yo-blue-300")
                       "font-nes" "text-lg"]}
-        [:span (str "[" index "]")]])
-
-     ;; name
-     (when show-name
-       [:div {:class ["transition-all"
-                      (cond urgent  "text-city-red-400"
-                            focused "text-city-orange-400"
-                            :else   "text-yo-blue-300")
-                      "font-nes" "text-lg"]}
-        [:span (str "[" index "]")]
-        #_(or title "no title")])]))
+        [:span (str "[" index "]")]])]))
 
 (defn workspace-list [topbar-state wspcs]
   [:div
