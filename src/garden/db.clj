@@ -175,10 +175,10 @@
                            half (/ size 2)]
                        (if (> size 1)
                          (do
-                           (log/info "Retrying with smaller groups." (count notes))
+                           (log/info "\n\nRetrying with smaller groups." (count notes))
                            (transact-garden-notes (->> notes (take half)))
                            (transact-garden-notes (->> notes (drop half) (take half))))
-                         (log/info "Problemmatic record:" notes))))}))))))))
+                         (log/info "\n\nProblemmatic record:" notes))))}))))))))
 
 (comment
   (let [x         [2 3 4 5 6 7 8]
@@ -228,6 +228,12 @@
       (garden/all-garden-notes-flattened)
       ;; (drop 15000)
       ))
+
+  (sync-garden-notes-to-db
+    {:page-size 20}
+    (->>
+      (garden/all-garden-notes-flattened)
+      (filter (comp #(string/includes? % "bb_cli") :org/source-file))))
 
   (sync-garden-paths-to-db
     {:page-size 20}
