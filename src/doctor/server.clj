@@ -87,13 +87,13 @@
                  {:on-open #(do #_(log/info "Client connected")
                                 (plasma.server/on-connect! *plasma-server* %))
 
-                  :on-message #(plasma.server/on-message!
-                                 *plasma-server*
-                                 (:channel %)
-                                 (:data %))
-                  :on-close   #(plasma.server/on-disconnect!
-                                 *plasma-server*
-                                 (:ws-channel %))}}
+                  :on-message       #(plasma.server/on-message!
+                                       *plasma-server*
+                                       (:channel %)
+                                       (:data %))
+                  :on-close-message #(plasma.server/on-disconnect!
+                                       *plasma-server*
+                                       (:ws-channel %))}}
 
                 ;; poor man's router
                 :else (doctor.api/route req)))
