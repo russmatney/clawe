@@ -53,18 +53,18 @@
     (def->rofi-fields def)))
 
 (defn client-def->actions [d]
-  [{:rofi/label     "Show Fields"
-    :rofi/on-select (fn [_] (show-fields d))}
+  [{:rofi/label     "Toggle Client"
+    :rofi/on-select (fn [_] (toggle/toggle d))}
    {:rofi/label     "(re)Create Client"
     :rofi/on-select (fn [_] (client.create/create-client d))}
-   {:rofi/label     "Toggle Client"
-    :rofi/on-select (fn [_] (toggle/toggle d))}
    {:rofi/label     "Hide Client"
     :rofi/on-select (fn [_] (wm/hide-client d))}
    {:rofi/label     "Show Client"
     :rofi/on-select (fn [_] (wm/show-client d))}
    {:rofi/label     "Focus Client"
-    :rofi/on-select (fn [_] (wm/focus-client d))}])
+    :rofi/on-select (fn [_] (wm/focus-client d))}
+   {:rofi/label     "Show Fields"
+    :rofi/on-select (fn [_] (show-fields d))}])
 
 (defn client-action-rofi [d]
   (rofi/rofi
@@ -78,14 +78,14 @@
                               :rofi/on-select (fn [_] (client-action-rofi d))))))))
 
 (defn wsp-def->actions [wsp]
-  [{:rofi/label     "Show Fields"
-    :rofi/on-select (fn [_] (show-fields wsp))}
-   {:rofi/label     "Open Workspace"
+  [{:rofi/label     "Open Workspace"
     :rofi/on-select (fn [_] (workspace.open/open-new-workspace wsp))}
    {:rofi/label     "Close Workspace"
     :rofi/on-select (fn [_] (wm/delete-workspace wsp))}
    {:rofi/label     "Focus Workspace"
-    :rofi/on-select (fn [_] (wm/focus-workspace wsp))}])
+    :rofi/on-select (fn [_] (wm/focus-workspace wsp))}
+   {:rofi/label     "Show Fields"
+    :rofi/on-select (fn [_] (show-fields wsp))}])
 
 (defn wsp-action-rofi [wsp]
   (rofi/rofi
