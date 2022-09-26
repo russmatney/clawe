@@ -102,8 +102,9 @@
      (spit (zsh/expand "~/.config/sxhkd/sxhkdrc") config)
      (log "SXHKD bindings rewritten.")
      ;; this can cut off running apps if they are not started properly
-     #_(-> (proc/$ systemctl --user restart sxhkd)
-           (proc/check))
+     ;; tho that should be rare
+     (-> (proc/$ systemctl --user restart sxhkd)
+         (proc/check))
      (ensure-sxhkd-tmux-session)
      (log "SXHKD bindings reset."))))
 
