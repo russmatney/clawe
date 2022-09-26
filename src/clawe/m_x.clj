@@ -101,6 +101,31 @@
                               :rofi/on-select
                               (fn [w] (wsp-action-rofi w))))))))
 
+(defn m-x-commands-fast
+  ([] (m-x-commands-fast nil))
+  ([{:keys [wsp]}]
+   (let [wsp (or wsp (wm/current-workspace))]
+     (->>
+       (concat
+         (->>
+           (git/rofi-clone-suggestions-fast)
+           (map (fn [x]
+                  (-> x
+                      (assoc :rofi/label (str "clone + create wsp: " (:rofi/label x)))
+                      (update :rofi/on-select
+                              (fn [f]
+                                ;; return a function wrapping the existing on-select
+                                (fn [arg]
+                                  (when-let [repo-id (:repo-id x)]
+                                    (workspace.open/create-workspace-def-from-path repo-id))
+                                  (f arg))))))))
+
+         (client-defs)
+         (workspace-defs)
+         ;; all defcoms
+         (->> (defcom/list-commands) (map r.core/defcom->rofi)))
+       (remove nil?)))))
+
 (defn m-x-commands
   ([] (m-x-commands nil))
   ([{:keys [wsp]}]
@@ -148,6 +173,7 @@
 
 (comment
   (m-x-commands)
+
   (->>
     (m-x-commands)
     (filter :defcom/name)
@@ -165,5 +191,16 @@
           (rofi/rofi {:require-match? true
                       :msg            "Clawe commands"})))))
 
+(defn m-x-fast
+  "Reun rofi with commands created in `m-x-commands`."
+  ([] (m-x-fast nil))
+  ([_]
+   (let [wsp (wm/current-workspace)]
+     (->> (m-x-commands-fast {:wsp wsp})
+          (rofi/rofi {:require-match? true
+                      :msg            "Clawe commands (fast)"})))))
+
 (comment
-  (m-x))
+  (m-x)
+  (m-x-fast)
+  )

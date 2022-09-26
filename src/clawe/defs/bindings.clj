@@ -19,9 +19,13 @@
 ;; rofi, launchers, command selectors
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defkbd clawe-rofi-mx
-  [[:mod] "x"]
+(defkbd clawe-rofi-mx-all
+  [[:mod :shift] "x"]
   (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.m-x/m-x"))
+
+(defkbd clawe-rofi-mx-fast
+  [[:mod] "x"]
+  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.m-x/m-x-fast"))
 
 (defkbd rofi-launcher
   [[:mod] "space"]
