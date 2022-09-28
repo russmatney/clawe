@@ -158,8 +158,11 @@
   (let [all-clients       (wm/active-clients)
         current-workspace (wm/current-workspace
                             {:prefetched-clients all-clients})
-        opts              {:prefetched-clients all-clients
-                           :current-workspace  current-workspace}]
+        current-workspace (or current-workspace
+                              ;; fallback workspace
+                              (wm/create-workspace "journal"))
+        opts {:prefetched-clients all-clients
+              :current-workspace  current-workspace}]
     (-> args
         :client/key
         (determine-toggle-action opts)
