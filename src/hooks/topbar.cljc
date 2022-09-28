@@ -3,7 +3,7 @@
    [plasma.core :refer [defhandler defstream]]
    #?@(:clj [[api.topbar]
              [ralphie.awesome :as awm]
-             [notebooks.clawe :as notebooks.clawe]]
+             [notebooks.core :as notebooks]]
        :cljs [[plasma.uix :refer [with-rpc with-stream]]])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -61,4 +61,4 @@
 (defhandler set-background-mode [bg-mode]
   (api.topbar/set-background-mode bg-mode))
 
-(defhandler rerender-notebooks [] (notebooks.clawe/rerender))
+(defhandler rerender-notebooks [] (notebooks/rerender))

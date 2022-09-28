@@ -19,7 +19,10 @@
    [doctor.config :as doctor.config]
    [doctor.api :as doctor.api]
    [garden.watcher :as garden.watcher]
-   [ralphie.notify :as notify]))
+   [ralphie.notify :as notify]
+
+   [notebooks.system :as notebooks.system]
+   ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Plasma config
@@ -73,7 +76,9 @@
    ;; this is also disabled in the impl
    ;; db.listeners/*garden->expo*
    db.listeners/*data-expander*
-   db/*conn*]
+   db/*conn*
+   notebooks.system/*clerk-server*
+   ]
   :start
   (let [port (:server/port doctor.config/*config*)]
     (log/info "Starting *server* on port" port)

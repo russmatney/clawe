@@ -5,11 +5,6 @@
             [clawe.config :as clawe.config]
             [clawe.wm :as wm]))
 
-^{:nextjournal.clerk/visibility {:code :hide :result :hide}}
-(def f *file*)
-^{:nextjournal.clerk/visibility {:code :hide :result :hide}}
-(defn rerender [] (clerk/show! f))
-
 ;; ### current workspace
 ^{::clerk/visibility {:code :hide}
   ::clerk/no-cache   true}
