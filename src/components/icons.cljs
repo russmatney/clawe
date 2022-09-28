@@ -41,6 +41,10 @@
         {:color "text-city-blue-400"
          :src   "/assets/candy-icons/applications-development.svg"}
 
+        (string/includes? "org-crud" title)
+        {:color "text-city-blue-400"
+         :src   "/assets/candy-icons/geany.svg"}
+
         :else
         {:color "text-city-blue-400"
          :src   "/assets/candy-icons/emacs.svg"})
@@ -129,7 +133,7 @@
       (#{"xcode"} app-name)
       {:color "text-city-green-400"
        ;; kind of a joke, using vscode icon for xcode
-       :src "/assets/candy-icons/code.svg"}
+       :src   "/assets/candy-icons/code.svg"}
 
       (#{"godot"} app-name)
       {:color "text-city-green-400"
