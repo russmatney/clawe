@@ -22,7 +22,28 @@
    [ralphie.notify :as notify]
 
    [notebooks.server :as notebooks.server]
+   [nextjournal.clerk.viewer :as clerk-viewer]
    ))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; clerk read/write handlers
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn eval* [form]
+  (println "\n\nCalling eval with form" form)
+  (eval form))
+
+(def clerk-read-handlers
+  ;; wrapped in an extra vector to work around transit-cljs bug
+  {"clerk/ViewerEval"
+   (fn [[expr]] (eval* expr))
+   "clerk/ViewerFn" (fn [[form]]
+                      (clerk-viewer/->viewer-fn form))})
+
+(def clerk-write-handlers
+  ;; wrapping this in an extra vector to work around likely transit-cljs bug
+  {nextjournal.clerk.viewer.ViewerEval (transit/write-handler "clerk/ViewerEval" #(vector (:form %)))
+   nextjournal.clerk.viewer.ViewerFn   (transit/write-handler "clerk/ViewerFn" #(vector (:form %)))})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Plasma config
@@ -43,11 +64,13 @@
      :transit-read-handlers
      (merge transit/default-read-handlers
             ttl/read-handlers
-            dt/read-handlers)
+            dt/read-handlers
+            clerk-read-handlers)
      :transit-write-handlers
      (merge transit/default-write-handlers
             ttl/write-handlers
-            dt/write-handlers)
+            dt/write-handlers
+            clerk-write-handlers)
      :interceptors [(plasma.interceptors/auto-require (fn [_] (sys/start!)))
                     (plasma.interceptors/load-metadata)
                     #_{:name :doctor-logging
@@ -88,7 +111,7 @@
             (fn [{:keys [uri] :as req}]
               (cond
                 ;; handle plasma requests
-                (= uri "/ws")
+                (= uri "/plasma-ws")
                 {:undertow/websocket
                  {:on-open #(do #_(log/info "Client connected")
                                 (plasma.server/on-connect! *plasma-server* %))

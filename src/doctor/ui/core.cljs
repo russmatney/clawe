@@ -101,14 +101,14 @@
 (goog-define SERVER_HOST "localhost")
 (goog-define SERVER_PORT 3334)
 
-(def ws-url (str "ws://" SERVER_HOST ":" SERVER_PORT "/ws"))
+(def plasma-ws-url (str "ws://" SERVER_HOST ":" SERVER_PORT "/plasma-ws"))
 
 (defn ^:export init
   []
   (dev-setup)
   (plasma.client/use-transport!
     (plasma.client/websocket-transport
-      ws-url
+      plasma-ws-url
       {:on-open  on-open
        :on-close on-close
        :on-error on-error
