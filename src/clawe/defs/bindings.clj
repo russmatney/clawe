@@ -258,7 +258,11 @@
 
 (defkbd toggle-workspace-doctor-todo
   [[:mod] "y"]
-  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key doctor"))
+  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key todo"))
+
+(defkbd toggle-workspace-doctor-workspace
+  [[:mod :shift] "w"]
+  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key clerk-workspace"))
 
 (defkbd toggle-workspace-doctor-clerk
   [[:mod :shift] "c"]
