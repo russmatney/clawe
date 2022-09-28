@@ -23,7 +23,9 @@
 
    [notebooks.server :as notebooks.server]
    [nextjournal.clerk.viewer :as clerk-viewer]
-   ))
+   )
+  (:import [java.io ByteArrayInputStream ByteArrayOutputStream])
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; clerk read/write handlers
@@ -45,6 +47,18 @@
   {nextjournal.clerk.viewer.ViewerEval (transit/write-handler "clerk/ViewerEval" #(vector (:form %)))
    nextjournal.clerk.viewer.ViewerFn   (transit/write-handler "clerk/ViewerFn" #(vector (:form %)))})
 
+(def transit-read-handlers
+  (merge transit/default-read-handlers
+         ttl/read-handlers
+         dt/read-handlers
+         clerk-read-handlers))
+
+(def transit-write-handlers
+  (merge transit/default-write-handlers
+         ttl/write-handlers
+         dt/write-handlers
+         clerk-write-handlers))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Plasma config
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -56,30 +70,22 @@
 (defsys *plasma-server*
   "Our plasma server bundle"
   (plasma.server/make-server
-    {:session-atom *sessions*
-     :send-fn      #(undertow.ws/send %2 %1)
-     :on-error     #(log/warn (:error %) "Error in plasma handler"
-                              (-> % :ctx :request (select-keys
-                                                    #{:event-name :fn-var :args})))
-     :transit-read-handlers
-     (merge transit/default-read-handlers
-            ttl/read-handlers
-            dt/read-handlers
-            clerk-read-handlers)
-     :transit-write-handlers
-     (merge transit/default-write-handlers
-            ttl/write-handlers
-            dt/write-handlers
-            clerk-write-handlers)
-     :interceptors [(plasma.interceptors/auto-require (fn [_] (sys/start!)))
-                    (plasma.interceptors/load-metadata)
-                    #_{:name :doctor-logging
-                       :enter
-                       (fn [ctx]
-                         (let [{:keys [fn-var args event-name]} (:request ctx)]
-                           (log/debug "\nplasma interceptor" "fn-var" fn-var "event-name" event-name)
-                           (when (seq args) (log/debug "args" args)))
-                         ctx)}]}))
+    {:session-atom           *sessions*
+     :send-fn                #(undertow.ws/send %2 %1)
+     :on-error               #(log/warn (:error %) "Error in plasma handler"
+                                        (-> % :ctx :request (select-keys
+                                                              #{:event-name :fn-var :args})))
+     :transit-read-handlers  transit-read-handlers
+     :transit-write-handlers transit-write-handlers
+     :interceptors           [(plasma.interceptors/auto-require (fn [_] (sys/start!)))
+                              (plasma.interceptors/load-metadata)
+                              #_{:name :doctor-logging
+                                 :enter
+                                 (fn [ctx]
+                                   (let [{:keys [fn-var args event-name]} (:request ctx)]
+                                     (log/debug "\nplasma interceptor" "fn-var" fn-var "event-name" event-name)
+                                     (when (seq args) (log/debug "args" args)))
+                                   ctx)}]}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Server
@@ -124,8 +130,30 @@
                                        *plasma-server*
                                        (:ws-channel %))}}
 
+                (= uri "/clerk-ws")
+                {:undertow/websocket
+                 {:on-open    #(log/info "Client connected")
+                  :on-message (fn [msg]
+                                (log/info "Message" msg)
+                                (let [_ch  (:channel msg)
+                                      data (:data msg)
+                                      deserialized-msg
+                                      (-> (transit/reader
+                                            (ByteArrayInputStream. (.getBytes data))
+                                            :json
+                                            {:handlers transit-read-handlers})
+                                          (transit/read))]
+                                  (log/info "deser msg" deserialized-msg)
+
+                                  ;; TODO send! some response to the client
+
+                                  ))
+                  :on-close-message #(log/info "Close message" %)}}
+
                 ;; poor man's router
-                :else (doctor.api/route req)))
+                :else (doctor.api/route req)
+
+                ))
             {:port             port
              :session-manager? false
              :websocket?       true})]
