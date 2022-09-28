@@ -15,13 +15,9 @@
    '(fn [files]
       (v/html
         [:div
-         "files:"
          (for [{:keys [f current]} files]
            [:div
-            {:class []}
-            [:span (str
-                     (when current "*")
-                     "f: " f)]
+            [:span (str (when current "*") "f: " f)]
 
             [:button
              {:class    ["bg-blue-700" "hover:bg-blue-700"

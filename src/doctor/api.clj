@@ -6,7 +6,7 @@
    [api.todos :as todos]
    [screenshots.core :as screenshots]
    [wallpapers.core :as wallpapers]
-   [notebooks.clawe :as notebooks.clawe]))
+   [notebooks.core :as notebooks]))
 
 
 (defn route
@@ -28,7 +28,7 @@
 
     (= uri "/notebooks/rerender")
     (do
-      (notebooks.clawe/rerender)
+      (notebooks/rerender)
       {:status 200 :body "notebooks rerendered"})
 
     (= uri "/screenshots/update")

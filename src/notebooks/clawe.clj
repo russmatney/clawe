@@ -5,7 +5,7 @@
             [clawe.config :as clawe.config]
             [clawe.wm :as wm]))
 
-;; ### current workspace
+;; ## current workspace
 ^{::clerk/visibility {:code :hide}
   ::clerk/no-cache   true}
 (->>
@@ -13,18 +13,32 @@
   (remove (comp #(if (coll? %) (not (seq %)) (nil? %)) second))
   (into {}))
 
-;; ## client-defs
-^{::clerk/visibility {:code :hide}}
-(clerk/table (clawe.config/client-defs))
-
-;; ## clients
-^{::clerk/visibility {:code :hide}}
+;; ### clients
+^{::clerk/visibility {:code :hide}
+  ::clerk/no-cache   true}
 (clerk/table (debug/ls {:type :clients}))
 
-;; ## workspace-defs
-^{::clerk/visibility {:code :hide}}
-(clerk/table (vals (clawe.config/workspace-defs-with-titles)))
+;; ### clients-all
+^{::clerk/visibility {:code :hide}
+  ::clerk/no-cache   true}
+(clerk/table (debug/ls {:type :clients
+                        :all  true}))
 
-;; ## workspaces
-^{::clerk/visibility {:code :hide}}
+;; ### workspaces
+^{::clerk/visibility {:code :hide}
+  ::clerk/no-cache   true}
 (clerk/table (debug/ls {:type :workspaces}))
+
+
+;; # defs
+
+;; ### client-defs
+^{::clerk/visibility {:code :hide}
+  ::clerk/no-cache   true
+  }
+(clerk/table (clawe.config/client-defs))
+
+;; ### workspace-defs
+^{::clerk/visibility {:code :hide}
+  ::clerk/no-cache   true}
+(clerk/table (vals (clawe.config/workspace-defs-with-titles)))

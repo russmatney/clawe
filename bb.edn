@@ -5,8 +5,8 @@
          com.lambdaisland/specmonstah-malli {:mvn/version "0.0.7"}
          aero/aero                          {:mvn/version "1.1.6"}
 
-         teknql/systemic {:local/root "../../teknql/systemic"}
-         teknql/wing     {:local/root "../../teknql/wing"}
+         teknql/systemic {:local/root "/home/russ/teknql/systemic"}
+         teknql/wing     {:local/root "/home/russ/teknql/wing"}
 
          ;; found these in specmonstah's bb.edn: https://github.com/reifyhealth/specmonstah/blob/develop/bb.edn
          org.clojure/core.specs.alpha {:mvn/version "0.2.62"}
@@ -25,7 +25,6 @@
   :enter (println "Entering:" (:name (current-task)))
   :init
   (do
-    (def expo-fe-url "http://localhost:4444")
     (def doctor-fe-url "http://localhost:3333")
     (def doctor-tauri-executable "./src-tauri/target/debug/doctor")
 
@@ -47,14 +46,16 @@
        (pp args)
        (shell opts args)))
 
-    (defn run-doctor-tauri-app [name]
-      (let [url   (str doctor-fe-url "/" name)
-            title (str "tauri/doctor-" name)
-            label name
-            cmd   (str doctor-tauri-executable " create-window"
-                       " --title " title " --label " label " --url " url)]
-        (pp (str "Running doctor tauri app: " cmd))
-        (shell {:dir (str (home-dir) "/russmatney/clawe")} cmd))))
+    (defn run-doctor-tauri-app
+      ([name] (run-doctor-tauri-app nil name))
+      ([opts name]
+       (let [url   (:url opts (str doctor-fe-url "/" name))
+             title (str "tauri/doctor-" name)
+             label name
+             cmd   (str doctor-tauri-executable " create-window"
+                        " --title " title " --label " label " --url " url)]
+         (pp (str "Running doctor tauri app: " cmd))
+         (shell {:dir (str (home-dir) "/russmatney/clawe")} cmd)))))
 
   home (pp (home-dir))
 
@@ -151,6 +152,9 @@
           :task (run-doctor-tauri-app "popup")}
   todo   {:doc  "Run the doctor todo window via tauri."
           :task (run-doctor-tauri-app "todo")}
+  clerk  {:doc  "Run the doctor clerk window via tauri."
+          ;; TODO capture/share/source of truth for this magic PORT?
+          :task (run-doctor-tauri-app {:url "http://localhost:8888"} "clerk")}
 
   restart-doctor        (do
                           (shell "systemctl --user daemon-reload")
