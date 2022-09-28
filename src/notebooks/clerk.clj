@@ -6,7 +6,14 @@
    [garden.db :as garden.db]
 
    [db.core :as db]
+
+   [notebooks.nav :as nav]
    ))
+
+^{::clerk/visibility {:code :hide}
+  ::clerk/no-cache   true
+  ::clerk/viewer     nav/nav-viewer}
+nav/nav-options
 
 ;; # Clerk Scratchpad
 

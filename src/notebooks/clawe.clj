@@ -1,9 +1,16 @@
 ^{:nextjournal.clerk/visibility {:code :hide}}
 (ns notebooks.clawe
-  (:require [clawe.debug :as debug]
-            [nextjournal.clerk :as clerk]
-            [clawe.config :as clawe.config]
-            [clawe.wm :as wm]))
+  (:require
+   [clawe.debug :as debug]
+   [nextjournal.clerk :as clerk]
+   [clawe.config :as clawe.config]
+   [clawe.wm :as wm]
+   [notebooks.nav :as nav]))
+
+^{::clerk/visibility {:code :hide}
+  ::clerk/no-cache   true
+  ::clerk/viewer     nav/nav-viewer}
+nav/nav-options
 
 ;; ## current workspace
 ^{::clerk/visibility {:code :hide}

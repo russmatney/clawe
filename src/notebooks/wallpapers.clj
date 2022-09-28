@@ -2,7 +2,13 @@
 (ns notebooks.wallpapers
   (:require
    [wallpapers.core :as wallpapers]
-   [nextjournal.clerk :as clerk]))
+   [nextjournal.clerk :as clerk]
+   [notebooks.nav :as nav]))
+
+^{::clerk/visibility {:code :hide}
+  ::clerk/no-cache   true
+  ::clerk/viewer     nav/nav-viewer}
+nav/nav-options
 
 ;; # wallpapers
 

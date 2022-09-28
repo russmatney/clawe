@@ -6,24 +6,36 @@
    [clojure.string :as string]
    [babashka.fs :as fs]))
 
+(defn ->f [path]
+  {:path path
+   :name (fs/file-name path)})
+
 ^{::clerk/visibility {:code :hide :result :hide}}
 (defn clerk-files
   []
   (try
-    (some->> (str (fs/home) "/russmatney/clawe" "/src/notebooks") fs/list-dir (map str))
-    (catch Exception e
+    (some->> (str (fs/home) "/russmatney/clawe" "/src/notebooks")
+             fs/list-dir (map str) (map ->f))
+    (catch Exception _e
       (println "nothing at *file* " *file*)
       ;; (println e)
       nil)))
 
 ^{::clerk/visibility {:code :hide :result :hide}}
 (def ^:dynamic *current-clerk-file*
-  (atom *file*))
+  (atom (->f *file*)))
+
+
+^{::clerk/visibility {:code   :hide
+                      :result :hide}}
+(defn rerender []
+  (clerk/show! (:path @*current-clerk-file*)))
 
 ^{::clerk/visibility {:code :hide :result :hide}}
 (defn set-file [f]
   (println "set file called" f)
-  (reset! *current-clerk-file* f))
+  (reset! *current-clerk-file* f)
+  (rerender))
 
 ^{::clerk/visibility {:result :hide}}
 (def port 8888)
@@ -31,7 +43,8 @@
 ^{::clerk/visibility {:result :hide :code :hide}}
 (defsys *clerk-server*
   :start (clerk/serve! {:port        port
-                        :watch-paths (clerk-files)}))
+                        :watch-paths (->> (clerk-files)
+                                          (map :path))}))
 
 (defn restart []
   (if (sys/running? `*clerk-server*)
