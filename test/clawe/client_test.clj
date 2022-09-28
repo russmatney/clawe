@@ -39,7 +39,19 @@
     (let [wsp-emacs      {:client/app-name "emacs" :client/window-title "clawe"}
           emacs-selector {:client/app-name "emacs" :match/use-workspace-title true}]
       (is (client/match? {:current-workspace-title "clawe"} emacs-selector wsp-emacs))
-      (is (not (client/match? {:current-workspace-title "journal"} emacs-selector wsp-emacs))))))
+      (is (not (client/match? {:current-workspace-title "journal"} emacs-selector wsp-emacs)))))
+
+  (testing ":match/ignore-names test"
+    (let [ff-client     {:client/app-name "firefox" :client/window-title "some long website title"}
+          ff-pip-client {:client/app-name "firefox" :client/window-title "picture-in-picture"}
+          ff-def
+          {:client/app-names       ["Safari" "firefox"]
+           :match/ignore-names     ["picture-in-picture"]
+           :client/workspace-title "web"
+           :match/skip-title       true}]
+
+      (is (client/match? ff-def ff-def ff-client))
+      (is (not (client/match? ff-def ff-def ff-pip-client))))))
 
 (deftest matching-client-defs-test
   (testing "no matching app-names, should not match"

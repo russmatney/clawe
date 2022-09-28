@@ -87,7 +87,11 @@
 
   Uses `:client/app-name`, `:client/app-names`, `:client/window-title`
 
-  Supports `:match/skip-title`, `:match/soft-title`, `:match/use-workspace-title`
+  Supports `:match/skip-title`, `:match/soft-title`, `:match/use-workspace-title`,
+  `:match/ignore-names`.
+
+  If `:match/ignore-names` matches the `:client/app-name` OR `:client/window-title`
+  of either a or b, this function returns `false`.
 
   `:match/*` opts can be attached to clients (in fact, they are attached
   by `wm/merge-with-client-defs`), but they are only read from `opts`.
@@ -102,8 +106,20 @@
          b-app-names (->app-names b)
 
          a-window-title (some-> a :client/window-title string/lower-case)
-         b-window-title (some-> b :client/window-title string/lower-case)]
+         b-window-title (some-> b :client/window-title string/lower-case)
+
+         ignore-names (some-> opts :match/ignore-names set)]
      (and
+       (not (or
+              (seq (set/intersection ignore-names a-app-names))
+              (seq (set/intersection ignore-names b-app-names))
+              (->> ignore-names
+                   (filter #(= % a-window-title))
+                   seq)
+              (->> ignore-names
+                   (filter #(= % b-window-title))
+                   seq)))
+
        (and (seq a-app-names)
             (seq b-app-names)
             (seq (set/intersection a-app-names b-app-names)))
