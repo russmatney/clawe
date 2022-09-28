@@ -104,6 +104,9 @@
                                            seq empty?)))))
          it             (some-> many-to-delete first)]
      (cond
+       (= 1 (count many-to-delete))
+       (notify/notify "Refusing to delete last workspace")
+
        (and (not (nil? it)) (= last it))
        (notify/notify "Error deleting workspaces")
 
