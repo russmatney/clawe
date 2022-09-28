@@ -416,26 +416,6 @@
       (tset _G.client.focus :ontop true)
       (tset _G.client.focus :above true))))
 
-(defn bury-all-clients []
-  (fnl
-    (let [s (awful.screen.focused)]
-      (lume.each (. s :clients)
-                 (fn [c]
-                   (tset c :floating false))))))
-
-(defn bury-floating-clients
-  "Usually combined with other awm/fnl commands for performance"
-  []
-  ^{:quiet? false}
-  (fnl
-    (each [c (awful.client.iterate (fn [c] (. c :ontop)))]
-          ;; TODO filter things to bury/not-bury?
-          (tset c :ontop false)
-          (tset c :floating false))))
-
-(comment
-  (bury-floating-clients))
-
 (defn focus-client
   "
   Focuses the client with the passed window-id.
@@ -450,13 +430,15 @@
   "
   ([window-id] (focus-client nil window-id))
   ([opts window-id]
-   (let [bury-all? (:bury-all? opts true)
+   (let [;; TODO consider bury-all alternatives, and pip/twitch-chat use-cases
+         bury-all? (:bury-all? opts false)
          float?    (:float? opts true)
          center?   (:center? opts true)]
      (when window-id
        (fnl
          (when ~bury-all?
-           (each [c (awful.client.iterate (fn [c] (. c :ontop)))]
+           (each [c (awful.client.iterate (fn [c]
+                                            (. c :ontop)))]
                  ;; TODO filter things to bury/not-bury?
                  (tset c :ontop false)
                  (tset c :floating false)))
@@ -485,8 +467,6 @@
       ))
 
   (focus-client {:center? false} (:awesome.client/window c)))
-
-(defcom bury-all-clients-cmd bury-all-clients)
 
 (defn move-client-to-tag
   "TODO create tag if it doesn't exist?"

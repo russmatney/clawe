@@ -94,7 +94,8 @@
     (awm/focus-client
       {:center?   (:float-and-center opts)
        :float?    (:float-and-center opts)
-       :bury-all? true}
+       ;; TODO consider bury-all alternatives, and pip/twitch-chat use-cases
+       :bury-all? false}
       ;; consider :client/window-id client attr
       (:awesome.client/window client)))
 
