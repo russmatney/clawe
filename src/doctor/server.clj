@@ -21,7 +21,7 @@
    [garden.watcher :as garden.watcher]
    [ralphie.notify :as notify]
 
-   [notebooks.system :as notebooks.system]
+   [notebooks.server :as notebooks.server]
    ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -77,7 +77,8 @@
    ;; db.listeners/*garden->expo*
    db.listeners/*data-expander*
    db/*conn*
-   notebooks.system/*clerk-server*
+   notebooks.server/*clerk-server*
+   notebooks.server/*clerk-workspace-server*
    ]
   :start
   (let [port (:server/port doctor.config/*config*)]

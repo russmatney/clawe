@@ -2,7 +2,7 @@
 (ns notebooks.core
   (:require
    [nextjournal.clerk :as clerk]
-   [notebooks.system :as system]
+   [notebooks.server :as server]
    [notebooks.nav :as nav]))
 
 
@@ -15,4 +15,4 @@ nav/nav-options
 
 ^{::clerk/visibility {:code :hide :result :hide}}
 (defn rerender []
-  (system/rerender))
+  (server/rerender))

@@ -2,7 +2,7 @@
 (ns notebooks.nav
   (:require
    [nextjournal.clerk :as clerk]
-   [notebooks.system :as system]
+   [notebooks.server :as server]
    [babashka.fs :as fs]) )
 
 (def nav-viewer
@@ -22,7 +22,7 @@
                          "py-2" "px-4"
                          "m-1"
                          "rounded"]
-              :on-click (fn [_] (v/clerk-eval `(system/set-file ~f)))}
+              :on-click (fn [_] (v/clerk-eval `(server/set-file ~f)))}
 
              "Set as current file"]])]))})
 
@@ -31,11 +31,11 @@
   ::clerk/viewer     nav-viewer}
 (def nav-options
   (->>
-    (system/clerk-files)
+    (server/clerk-files)
     (map (fn [f] (assoc f :current
-                        (= (:path f) (:path @system/*current-clerk-file*)))))
+                        (= (:path f) (:path @server/*current-clerk-file*)))))
     (into [])))
 
 ^{::clerk/visibility {:code :hide}
   ::clerk/no-cache   true}
-(clerk/md (str "### -> notebooks/" (fs/file-name (:path @system/*current-clerk-file*))))
+(clerk/md (str "### -> notebooks/" (fs/file-name (:path @server/*current-clerk-file*))))
