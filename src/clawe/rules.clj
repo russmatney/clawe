@@ -114,7 +114,7 @@
          (notify/notify "Deleted Workspace" (:workspace/title it "no-title"))
 
          ;; call again until there are none left?
-         (clean-workspaces)
+         (clean-workspaces it)
          (catch Exception e e
                 (notify/notify "Error deleting workspace" e)))
 
