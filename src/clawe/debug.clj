@@ -94,7 +94,6 @@
   ([{:keys [extra-headers headers strip type all sort]
      :or   {strip false all false}
      :as   opts}]
-   (println "ls opts" opts)
    (let [headers (cond
                    (seq headers) headers
                    all           nil

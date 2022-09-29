@@ -89,7 +89,7 @@
       ;; TODO this works for most cases but breaks when skipping title on emacs matches
       ;; b/c the journal and wsp-emacs clients both match for skip-title emacs clients
       (do
-        (println "WARN: zero matching defs found for client" (client/strip client))
+        #_(println "WARN: zero matching defs found for client" (client/strip client))
         client)
 
       :else
