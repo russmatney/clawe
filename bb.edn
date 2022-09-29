@@ -155,10 +155,10 @@
                    :task (run-doctor-tauri-app "todo")}
   clerk           {:doc  "Run the doctor clerk window via tauri."
                    ;; TODO capture/share/source of truth for this magic PORT?
-                   :task (run-doctor-tauri-app {:url "http://localhost:8888"} "clerk")}
+                   :task (run-doctor-tauri-app {:url "http://localhost:3334/notebooks/clawe"} "clerk")}
   clerk-workspace {:doc  "Run the doctor clerk-workspace window via tauri."
                    ;; TODO capture/share/source of truth for this magic PORT?
-                   :task (run-doctor-tauri-app {:url "http://localhost:9999"} "clerk-workspace")}
+                   :task (run-doctor-tauri-app {:url "http://localhost:3334/notebooks/wallpapers"} "clerk-workspace")}
 
   restart-doctor        (do
                           (shell "systemctl --user daemon-reload")
