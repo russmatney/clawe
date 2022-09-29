@@ -7,6 +7,7 @@
 
    [clawe.config :as clawe.config]
    [clawe.doctor :as clawe.doctor]
+   [clawe.rules :as clawe.rules]
    [clawe.wm :as wm]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -45,6 +46,7 @@
   ;; (client.create/create-client "emacs")
   ;; (client.create/create-client "terminal")
   ;; (clawe.rules/clean-up-workspaces) ;; deletes empty workspace immediately after creating it
+  (clawe.rules/sort-workspace-indexes)
   (clawe.doctor/update-topbar)
   wsp)
 
