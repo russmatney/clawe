@@ -23,29 +23,38 @@ nav/nav-options
 ;; ### clients
 ^{::clerk/visibility {:code :hide}
   ::clerk/no-cache   true}
-(clerk/table (debug/ls {:type :clients}))
+(clerk/table
+  {::clerk/width :full}
+  (debug/ls {:type :clients}))
 
 ;; ### clients-all
 ^{::clerk/visibility {:code :hide}
   ::clerk/no-cache   true}
-(clerk/table (debug/ls {:type :clients
-                        :all  true}))
+(clerk/table
+  {::clerk/width :full}
+  (debug/ls {:type :clients
+             :all  true}))
 
 ;; ### workspaces
 ^{::clerk/visibility {:code :hide}
   ::clerk/no-cache   true}
-(clerk/table (debug/ls {:type :workspaces}))
+(clerk/table
+  {::clerk/width :full}
+  (debug/ls {:type :workspaces}))
 
 
 ;; # defs
 
 ;; ### client-defs
 ^{::clerk/visibility {:code :hide}
-  ::clerk/no-cache   true
-  }
-(clerk/table (clawe.config/client-defs))
+  ::clerk/no-cache   true}
+(clerk/table
+  {::clerk/width :full}
+  (clawe.config/client-defs))
 
 ;; ### workspace-defs
 ^{::clerk/visibility {:code :hide}
   ::clerk/no-cache   true}
-(clerk/table (vals (clawe.config/workspace-defs-with-titles)))
+(clerk/table
+  {::clerk/width :full}
+  (vals (clawe.config/workspace-defs-with-titles)))

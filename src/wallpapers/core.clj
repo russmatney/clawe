@@ -78,6 +78,7 @@
                     (update :wallpaper/used-count (fnil inc 0)))))))
 
 
+;; TODO move this to ralphie
 (defn set-wallpaper
   "Depends on `feh`."
   ([w] (set-wallpaper nil w))
