@@ -19,7 +19,7 @@ nav/nav-options
     (wallpapers/all-wallpapers)
     (sort-by :wallpaper/used-count)
     reverse
-    (take 3)
+    (take 4)
     (into [])
     ))
 
@@ -61,5 +61,4 @@ nav/nav-options
 wps
 
 (comment
-  (doctor.server/broadcast! 'notebooks.wallpapers)
-  )
+  (doctor.server/broadcast! 'notebooks.wallpapers))

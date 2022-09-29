@@ -33,33 +33,35 @@
 ;; transit helpers
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn eval* [form]
-  (println "\n\nCalling eval with form" form)
-  (eval form))
+;; (defn eval* [form]
+;;   (println "\n\nCalling eval with form" form)
+;;   (eval form))
 
-(def clerk-read-handlers
-  ;; wrapped in an extra vector to work around transit-cljs bug
-  {"clerk/ViewerEval"
-   (fn [[expr]] (eval* expr))
-   "clerk/ViewerFn" (fn [[form]]
-                      (clerk-viewer/->viewer-fn form))})
+;; (def clerk-read-handlers
+;;   ;; wrapped in an extra vector to work around transit-cljs bug
+;;   {"clerk/ViewerEval"
+;;    (fn [[expr]] (eval* expr))
+;;    "clerk/ViewerFn" (fn [[form]]
+;;                       (clerk-viewer/->viewer-fn form))})
 
-(def clerk-write-handlers
-  ;; wrapping this in an extra vector to work around likely transit-cljs bug
-  {nextjournal.clerk.viewer.ViewerEval (transit/write-handler "clerk/ViewerEval" #(vector (:form %)))
-   nextjournal.clerk.viewer.ViewerFn   (transit/write-handler "clerk/ViewerFn" #(vector (:form %)))})
+;; (def clerk-write-handlers
+;;   ;; wrapping this in an extra vector to work around likely transit-cljs bug
+;;   {nextjournal.clerk.viewer.ViewerEval (transit/write-handler "clerk/ViewerEval" #(vector (:form %)))
+;;    nextjournal.clerk.viewer.ViewerFn   (transit/write-handler "clerk/ViewerFn" #(vector (:form %)))})
 
 (def transit-read-handlers
   (merge transit/default-read-handlers
          ttl/read-handlers
          dt/read-handlers
-         clerk-read-handlers))
+         ;; clerk-read-handlers
+         ))
 
 (def transit-write-handlers
   (merge transit/default-write-handlers
          ttl/write-handlers
          dt/write-handlers
-         clerk-write-handlers))
+         ;; clerk-write-handlers
+         ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; clerk helpers
@@ -69,13 +71,7 @@
   "Evaluates the notebook identified by its `ns-sym`"
   [ns-sym]
   (try
-    ;; TODO maybe need to require the ns-sym here?
-    (->
-      ns-sym
-      clerk-analyzer/ns->path
-      (str ".clj")
-      io/resource
-      clerk-eval/eval-file)
+    (-> ns-sym clerk-analyzer/ns->path (str ".clj") io/resource clerk-eval/eval-file)
     (catch Throwable e
       (println "error evaling notebook", ns-sym)
       (println e))))
@@ -85,26 +81,23 @@
   (eval-notebook 'notebooks.clawe)
   (eval-notebook 'notebooks.dice))
 
+(defn ns-sym->html [ns-sym]
+  (some-> (eval-notebook ns-sym) (clerk-view/doc->html nil)))
+
+(defn ns-sym->viewer [ns-sym]
+  (some-> (eval-notebook ns-sym) (clerk-view/doc->viewer)))
+
 (defonce !clients (atom #{}))
 
 (comment
   (reset! !clients #{}))
 
-;; Not sure this can really live in this namespace
-;; it prevents the server from requiring notebooks and might lead to a circular dep
 (defn broadcast! [notebook-sym]
-  (doseq [ch @!clients]
+  (when-let [doc (ns-sym->viewer notebook-sym)]
     (println "broadcasting notebook-sym" notebook-sym)
-    ;; TODO only send to channels viewing this doc
-    (undertow.ws/send
-      (clerk-viewer/->edn
-        {
-         ;; :remount? true
-         :doc (some->
-                (eval-notebook notebook-sym)
-                ;; (clerk-view/doc->html nil)
-                )})
-      ch)))
+    (doseq [ch @!clients]
+      ;; TODO only send to channels viewing this doc
+      (undertow.ws/send (clerk-viewer/->edn {:doc doc}) ch))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Plasma config
@@ -164,55 +157,37 @@
                 ;; handle plasma requests
                 (= uri "/plasma-ws")
                 {:undertow/websocket
-                 {:on-open #(do #_(log/info "Client connected")
-                                (plasma.server/on-connect! *plasma-server* %))
+                 {:on-open          #(plasma.server/on-connect! *plasma-server* %)
+                  :on-message       #(plasma.server/on-message! *plasma-server*
+                                                                (:channel %)
+                                                                (:data %))
+                  :on-close-message #(plasma.server/on-disconnect! *plasma-server*
+                                                                   (:ws-channel %))}}
 
-                  :on-message       #(plasma.server/on-message!
-                                       *plasma-server*
-                                       (:channel %)
-                                       (:data %))
-                  :on-close-message #(plasma.server/on-disconnect!
-                                       *plasma-server*
-                                       (:ws-channel %))}}
-
-                ;; not sure where/if this is set
                 (:websocket? req)
-                (do
-                  {:undertow/websocket
-                   {:on-open          (fn [msg] (swap! !clients conj (:channel msg)))
-                    :on-close-message (fn [msg] (swap! !clients disj (:channel msg)))
-                    :on-message
-                    (fn [msg]
-                      (let [_ch  (:channel msg)
-                            data (:data msg)]
-                        ;; TODO pretty bold - we'll want to make sure this ns is loaded
-                        (println "evaling: " data)
-                        (eval (read-string data))))}}) ;; TODO send! some response to the client?
-
-                ;; not sure this is ever hit (the prior :websocket? bool cuts it off)
-                (= uri "/_ws")
-                {:status 200 :body "connecting to websockets..."}
+                {:undertow/websocket
+                 {:on-open          (fn [msg] (swap! !clients conj (:channel msg)))
+                  :on-close-message (fn [msg] (swap! !clients disj (:channel msg)))
+                  :on-message
+                  (fn [msg]
+                    (let [data (:data msg)]
+                      ;; TODO we'll want to make sure this ns is loaded
+                      ;; note that the form from the FE can't be aliased
+                      (println "evaling: " data)
+                      (eval (read-string data))))}}
 
                 (string/starts-with? uri "/notebooks/")
                 (let [notebook-sym
                       ;; convert "/notebooks/clawe" -> 'notebooks.clawe
-                      (-> uri
-                          (string/replace-first "/" "")
-                          (string/replace-first "." "")
-                          symbol)
-                      notebook-html
-                      (some->
-                        (eval-notebook notebook-sym)
-                        (clerk-view/doc->html nil))]
+                      (-> uri (string/replace-first "/" "") (string/replace-first "/" ".") symbol)]
                   (log/info "loading notebook" notebook-sym)
                   {:status  200
                    :headers {"Content-Type" "text/html"}
-                   :body    (or notebook-html (str "No notebook (or failed to load nb) at uri: " uri))})
-
+                   :body    (or (ns-sym->html notebook-sym)
+                                (str "No notebook (or failed to load nb) at uri: " uri))})
 
                 ;; poor man's router
-                :else (doctor.api/route req)
-                ))
+                :else (doctor.api/route req)))
             {:port             port
              :session-manager? false
              :websocket?       true})]
@@ -230,6 +205,8 @@
     (sys/start! `*server*)))
 
 (comment
+  (-> "/notebooks/clawe" (string/replace-first "/" "") (string/replace-first "/" ".") symbol)
+
   (restart)
   *server*
   @sys/*registry*
