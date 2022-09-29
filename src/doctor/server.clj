@@ -22,14 +22,34 @@
    [ralphie.notify :as notify]
 
    [notebooks.server :as notebooks.server]
+   notebooks.clawe
    [nextjournal.clerk.viewer :as clerk-viewer]
-   )
-  (:import [java.io ByteArrayInputStream ByteArrayOutputStream])
-  )
+   [nextjournal.clerk.view :as clerk-view]
+   [nextjournal.clerk.eval :as clerk-eval]
+   [nextjournal.clerk.analyzer :as clerk-analyzer]
+
+   [clojure.string :as string]
+   [clojure.java.io :as io])
+  (:import [java.io ByteArrayInputStream ByteArrayOutputStream]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; clerk read/write handlers
+;; clerk helpers
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn eval-notebook
+  "Evaluates the notebook identified by its `ns-sym`"
+  [ns-sym]
+  (->
+    ns-sym
+    clerk-analyzer/ns->path
+    (str ".clj")
+    io/resource
+    clerk-eval/eval-file))
+
+(comment
+  (eval-notebook 'notebooks.clawe)
+  )
+
 
 (defn eval* [form]
   (println "\n\nCalling eval with form" form)
@@ -91,6 +111,11 @@
 ;; Server
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defonce !clients (atom #{}))
+
+(comment
+  (reset! !clients #{}))
+
 (defsys *server*
   "Doctor webserver"
   :extra-deps
@@ -130,29 +155,42 @@
                                        *plasma-server*
                                        (:ws-channel %))}}
 
-                (= uri "/clerk-ws")
+                ;; not sure where/if this is set
+                (:websocket? req)
                 {:undertow/websocket
-                 {:on-open    #(log/info "Client connected")
-                  :on-message (fn [msg]
-                                (log/info "Message" msg)
-                                (let [_ch  (:channel msg)
-                                      data (:data msg)
-                                      deserialized-msg
-                                      (-> (transit/reader
-                                            (ByteArrayInputStream. (.getBytes data))
-                                            :json
-                                            {:handlers transit-read-handlers})
-                                          (transit/read))]
-                                  (log/info "deser msg" deserialized-msg)
+                 {:on-open          (fn [msg] (swap! !clients conj (:channel msg)))
+                  :on-close-message (fn [msg] (swap! !clients disj (:channel msg)))
+                  :on-message
+                  (fn [msg]
+                    (let [_ch  (:channel msg)
+                          data (:data msg)]
+                      ;; TODO pretty bold - we'll want to make sure this ns is loaded
+                      (println "evaling: " data)
+                      (eval (read-string data))))}} ;; TODO send! some response to the client?
 
-                                  ;; TODO send! some response to the client
+                ;; clerk expects this url to be exposed
+                (= uri "/_ws")
+                (do
+                  (println "_ws" req)
+                  {:status 200 :body "connecting to websockets..."})
 
-                                  ))
-                  :on-close-message #(log/info "Close message" %)}}
+                (string/starts-with? uri "/notebooks/")
+                (let [notebook-sym  (cond
+                                      (= uri "/notebooks/clawe")     'notebooks.clawe
+                                      (= uri "/notebooks/workspace") 'notebooks.workspace
+                                      (= uri "/notebooks/agenda")    'notebooks.agenda
+                                      (= uri "/notebooks/lichess")   'notebooks.lichess
+                                      :else                          nil)
+                      notebook-html (some->
+                                      notebook-sym
+                                      eval-notebook
+                                      (clerk-view/doc->html nil))]
+                  {:status  200
+                   :headers {"Content-Type" "text/html"}
+                   :body    (or notebook-html (str "No notebook at uri: " uri))})
 
                 ;; poor man's router
                 :else (doctor.api/route req)
-
                 ))
             {:port             port
              :session-manager? false
