@@ -114,13 +114,18 @@
                     (check proc)))))))]
      (when (seq selected-label)
        ;; TODO use index-by, or just make a map
-       (let [selected-x (if maps?
-                          (->> xs
-                               (filter (fn [x]
-                                         (-> (or (:rofi/label x) (:label x))
-                                             escape-rofi-label
-                                             (string/starts-with? selected-label))))
-                               first)
+       (let [->label    (fn [x]
+                          (-> (or (:rofi/label x) (:label x)) escape-rofi-label))
+             selected-x (if maps?
+                          (let [matches
+                                (->> xs
+                                     (filter (fn [x]
+                                               (-> x ->label
+                                                   (string/starts-with? selected-label)))))]
+                            (some->> matches
+                                     ;; select the shortest match
+                                     (sort-by (comp count ->label) <)
+                                     first))
                           selected-label)]
          (if selected-x
            (if-let [on-select (or ((some-fn :rofi/on-select :on-select)
@@ -145,6 +150,10 @@
 
   (rofi {:msg "test"}
         [{:rofi/label "Kill client: Slack | news-and-articles | clojurians - Slack - slack"}])
+  (rofi
+    {:msg "message"}
+    [{:label "iiiiiii" :url "wut i did not select this"}
+     {:label "iii" :url "iii, just like you said"}])
 
   (rofi
     {:msg "message"}
