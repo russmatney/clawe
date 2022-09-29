@@ -20,11 +20,17 @@
   so that it ends up with a higher index when sorted."
   [wsp]
   (str (if (#{(clawe.config/home-dir)} (:workspace/directory wsp)) "z" "a") "-"
-       (format "%03d" (or (:workspace/index wsp) 0))))
+       (cond
+         ;; sort preferred ahead of reusing index
+         (:workspace/preferred-index wsp)
+         (format "%03d" (:workspace/preferred-index wsp))
+
+         :else
+         (format "%02d" (or (:workspace/index wsp) 0)))))
 
 (defn- workspaces-to-swap-indexes
   "Creates a sorted list of workspaces with an additional key: :new-index.
-  This is in support of the `reset-workspace-indexes` func below."
+  This is in support of the `sort-workspace-indexes` func below."
   []
   (->> (wm/active-workspaces)
        (map (fn [wsp] (assoc wsp :sort-key (wsp-sort-key wsp))))
@@ -36,26 +42,38 @@
                       (assoc wsp :new-index (+ i 1))))
        (remove #(= (:new-index %) (:workspace/index %)))))
 
-(defn reset-workspace-indexes
+(comment
+  (workspaces-to-swap-indexes)
+  )
+
+(defn sort-workspace-indexes
   "Re-sorts workspace indexes according to the sort key in `wsp-sort-key`,
   which generally moves repo-workspaces down and scratchpad-indexes up.
 
   The scratchpad indexes tend to have alternate bindings for toggling,
   so they don't need to be taking up the useful 0-9 bindings
   when many workspaces are open."
-  ([] (reset-workspace-indexes nil))
+  ([] (sort-workspace-indexes nil))
   ([_]
-   (notify/notify {:subject "Resetting workspace indexes"})
-   (loop [wsps (workspaces-to-swap-indexes)]
-     (let [wsp (some-> wsps first)]
-       (when wsp
-         (let [{:keys [new-index]} wsp
-               index               (-> wsp :workspace/title
-                                       wm/fetch-workspace :workspace/index)]
-           (when (not= new-index index)
-             (wm/swap-workspaces-by-index index new-index))
-           ;; could be optimized....
-           (recur (workspaces-to-swap-indexes))))))))
+   (notify/notify {:subject "Sorting workspaces"})
+   (loop [wsps    (workspaces-to-swap-indexes)
+          last-ct nil]
+     (if (and last-ct (#{last-ct} (count wsps)))
+       (do
+         (notify/notify {:subject "Error sorting workspaces"})
+         [:error "Sorting workspaces fail"])
+       (let [wsp (some-> wsps first)]
+         (when wsp
+           (let [{:keys [new-index]} wsp
+                 index               (-> wsp :workspace/title
+                                         wm/fetch-workspace :workspace/index)]
+             (when (not= new-index index)
+               (wm/swap-workspaces-by-index index new-index))
+             ;; could be optimized....
+             (recur (workspaces-to-swap-indexes) (count wsps)))))))))
+
+(comment
+  (sort-workspace-indexes))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; consolidate workspaces
@@ -176,5 +194,5 @@
    (return-clients-to-expected-workspaces)
    (clean-workspaces) ;; remove empty wsps
    (consolidate-workspaces) ;; move preferred indexes down
-   (reset-workspace-indexes)
-   (clawe.doctor/update-topbar))) ;; re-sort indexes (repo wsps move down)
+   (sort-workspace-indexes) ;; re-sort indexes (repo wsps move down)
+   (clawe.doctor/update-topbar)))

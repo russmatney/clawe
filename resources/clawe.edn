@@ -9,7 +9,9 @@
   "new-blog" {:workspace/directory "~/russmatney/new-blog"},
   "rewrite-clj" {:workspace/directory "~/clj-commons/rewrite-clj"},
   "candy-icons" {:workspace/directory "~/EliverLara/candy-icons"},
-  "dino" {:workspace/directory "~/russmatney/dino"},
+  "dino"
+  {:workspace/directory "~/russmatney/dino",
+   :workspace/preferred-index 2},
   "pirates" {:workspace/directory "~/russmatney/pirates"},
   "lichess-docker"
   {:workspace/directory "~/benediktwerner/lichess-docker"},
@@ -27,9 +29,13 @@
   "lila-ws" {:workspace/directory "~/lichess-org/lila-ws"},
   "ViewportPlus"
   {:workspace/directory "~/NesiAwesomeneess/ViewportPlus"},
-  "blog" {:workspace/directory "~/russmatney/blog"},
+  "blog"
+  {:workspace/directory "~/russmatney/blog",
+   :workspace/preferred-index 3},
   "cider" {:workspace/directory "~/clojure-emacs/cider"},
-  "clawe" {:workspace/directory "~/russmatney/clawe"},
+  "clawe"
+  {:workspace/directory "~/russmatney/clawe",
+   :workspace/preferred-index 2},
   "cli" {:workspace/directory "~/babashka/cli"},
   "godot-git-plugin"
   {:workspace/directory "~/godotengine/godot-git-plugin"},
@@ -46,10 +52,13 @@
   "fabb" {:workspace/directory "~/teknql/fabb"},
   "clerk" {:workspace/directory "~/nextjournal/clerk"},
   "protomoon-two" {:workspace/directory "~/russmatney/protomoon-two"},
-  "dotfiles" {:workspace/directory "~/russmatney/dotfiles"},
+  "dotfiles"
+  {:workspace/directory "~/russmatney/dotfiles",
+   :workspace/preferred-index 1},
   "TilePIpe" {:workspace/directory "~/aleksandrbazhin/TilePIpe"},
   "malli" {:workspace/directory "~/metosin/malli"},
   "steam" {:workspace/directory "~"},
+  "morphe" {:workspace/directory "~/Workiva/morphe"},
   "clojuredocs" {:workspace/directory "~/zk/clojuredocs"},
   "my_first_flutter_app"
   {:workspace/directory "~/russmatney/my_first_flutter_app"},
