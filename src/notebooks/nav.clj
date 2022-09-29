@@ -3,7 +3,13 @@
   (:require
    [nextjournal.clerk :as clerk]
    [notebooks.server :as server]
-   [babashka.fs :as fs]) )
+   [babashka.fs :as fs]))
+
+(defn nav-clicked [f]
+  (println "nav-clicked with " f)
+  (let [{:keys [path]} f]
+    ;; maybe eval?
+    (server/set-file f)))
 
 (def nav-viewer
   {:transform-fn clerk/mark-presented
@@ -19,10 +25,12 @@
             [:button
              {:class    ["bg-blue-700" "hover:bg-blue-700"
                          "text-slate-300" "font-bold"
-                         "py-2" "px-4"
-                         "m-1"
+                         "py-2" "px-4" "m-1"
                          "rounded"]
-              :on-click (fn [_] (v/clerk-eval `(server/set-file ~f)))}
+              :on-click (fn [_]
+                          (js/console.log "nav-clicked with " (clj->js f))
+                          (v/clerk-eval `(nav-clicked ~f))
+                          (js/location.replace (str "/notebooks/" name)))}
 
              "Set as current file"]])]))})
 

@@ -21,16 +21,13 @@
    [garden.watcher :as garden.watcher]
    [ralphie.notify :as notify]
 
-   [notebooks.server :as notebooks.server]
-   notebooks.clawe
    [nextjournal.clerk.viewer :as clerk-viewer]
    [nextjournal.clerk.view :as clerk-view]
    [nextjournal.clerk.eval :as clerk-eval]
    [nextjournal.clerk.analyzer :as clerk-analyzer]
 
    [clojure.string :as string]
-   [clojure.java.io :as io])
-  (:import [java.io ByteArrayInputStream ByteArrayOutputStream]))
+   [clojure.java.io :as io]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; clerk helpers
@@ -39,17 +36,21 @@
 (defn eval-notebook
   "Evaluates the notebook identified by its `ns-sym`"
   [ns-sym]
-  (->
-    ns-sym
-    clerk-analyzer/ns->path
-    (str ".clj")
-    io/resource
-    clerk-eval/eval-file))
+  (try
+    ;; TODO maybe need to require the ns-sym here?
+    (->
+      ns-sym
+      clerk-analyzer/ns->path
+      (str ".clj")
+      io/resource
+      clerk-eval/eval-file)
+    (catch Throwable e
+      (println "error evaling notebook", ns-sym)
+      (println e))))
 
 (comment
   (eval-notebook 'notebooks.clawe)
-  )
-
+  (eval-notebook 'notebooks.dice))
 
 (defn eval* [form]
   (println "\n\nCalling eval with form" form)
@@ -103,7 +104,8 @@
                                  :enter
                                  (fn [ctx]
                                    (let [{:keys [fn-var args event-name]} (:request ctx)]
-                                     (log/debug "\nplasma interceptor" "fn-var" fn-var "event-name" event-name)
+                                     (log/debug "\nplasma interceptor"
+                                                "fn-var" fn-var "event-name" event-name)
                                      (when (seq args) (log/debug "args" args)))
                                    ctx)}]}))
 
@@ -130,10 +132,7 @@
    ;; this is also disabled in the impl
    ;; db.listeners/*garden->expo*
    db.listeners/*data-expander*
-   db/*conn*
-   notebooks.server/*clerk-server*
-   notebooks.server/*clerk-workspace-server*
-   ]
+   db/*conn*]
   :start
   (let [port (:server/port doctor.config/*config*)]
     (log/info "Starting *server* on port" port)
@@ -175,19 +174,18 @@
                   {:status 200 :body "connecting to websockets..."})
 
                 (string/starts-with? uri "/notebooks/")
-                (let [notebook-sym  (cond
-                                      (= uri "/notebooks/clawe")     'notebooks.clawe
-                                      (= uri "/notebooks/workspace") 'notebooks.workspace
-                                      (= uri "/notebooks/agenda")    'notebooks.agenda
-                                      (= uri "/notebooks/lichess")   'notebooks.lichess
-                                      :else                          nil)
-                      notebook-html (some->
-                                      notebook-sym
-                                      eval-notebook
-                                      (clerk-view/doc->html nil))]
+                (let [notebook-sym
+                      ;; convert "/notebooks/clawe" -> 'notebooks.clawe
+                      (-> uri
+                          (string/replace-first "/" "")
+                          (string/replace-first "." "")
+                          symbol)
+                      notebook-html (some-> notebook-sym eval-notebook
+                                            (clerk-view/doc->html nil))]
+                  (log/info "loading notebook" notebook-sym)
                   {:status  200
                    :headers {"Content-Type" "text/html"}
-                   :body    (or notebook-html (str "No notebook at uri: " uri))})
+                   :body    (or notebook-html (str "No notebook (or failed to load nb) at uri: " uri))})
 
                 ;; poor man's router
                 :else (doctor.api/route req)
