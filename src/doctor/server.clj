@@ -30,27 +30,8 @@
    [clojure.java.io :as io]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; clerk helpers
+;; transit helpers
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn eval-notebook
-  "Evaluates the notebook identified by its `ns-sym`"
-  [ns-sym]
-  (try
-    ;; TODO maybe need to require the ns-sym here?
-    (->
-      ns-sym
-      clerk-analyzer/ns->path
-      (str ".clj")
-      io/resource
-      clerk-eval/eval-file)
-    (catch Throwable e
-      (println "error evaling notebook", ns-sym)
-      (println e))))
-
-(comment
-  (eval-notebook 'notebooks.clawe)
-  (eval-notebook 'notebooks.dice))
 
 (defn eval* [form]
   (println "\n\nCalling eval with form" form)
@@ -79,6 +60,51 @@
          ttl/write-handlers
          dt/write-handlers
          clerk-write-handlers))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; clerk helpers
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn eval-notebook
+  "Evaluates the notebook identified by its `ns-sym`"
+  [ns-sym]
+  (try
+    ;; TODO maybe need to require the ns-sym here?
+    (->
+      ns-sym
+      clerk-analyzer/ns->path
+      (str ".clj")
+      io/resource
+      clerk-eval/eval-file)
+    (catch Throwable e
+      (println "error evaling notebook", ns-sym)
+      (println e))))
+
+(comment
+  (eval-notebook 'notebooks.wallpapers)
+  (eval-notebook 'notebooks.clawe)
+  (eval-notebook 'notebooks.dice))
+
+(defonce !clients (atom #{}))
+
+(comment
+  (reset! !clients #{}))
+
+;; Not sure this can really live in this namespace
+;; it prevents the server from requiring notebooks and might lead to a circular dep
+(defn broadcast! [notebook-sym]
+  (doseq [ch @!clients]
+    (println "broadcasting notebook-sym" notebook-sym)
+    ;; TODO only send to channels viewing this doc
+    (undertow.ws/send
+      (clerk-viewer/->edn
+        {
+         ;; :remount? true
+         :doc (some->
+                (eval-notebook notebook-sym)
+                ;; (clerk-view/doc->html nil)
+                )})
+      ch)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Plasma config
@@ -112,11 +138,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Server
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defonce !clients (atom #{}))
-
-(comment
-  (reset! !clients #{}))
 
 (defsys *server*
   "Doctor webserver"
@@ -156,22 +177,21 @@
 
                 ;; not sure where/if this is set
                 (:websocket? req)
-                {:undertow/websocket
-                 {:on-open          (fn [msg] (swap! !clients conj (:channel msg)))
-                  :on-close-message (fn [msg] (swap! !clients disj (:channel msg)))
-                  :on-message
-                  (fn [msg]
-                    (let [_ch  (:channel msg)
-                          data (:data msg)]
-                      ;; TODO pretty bold - we'll want to make sure this ns is loaded
-                      (println "evaling: " data)
-                      (eval (read-string data))))}} ;; TODO send! some response to the client?
-
-                ;; clerk expects this url to be exposed
-                (= uri "/_ws")
                 (do
-                  (println "_ws" req)
-                  {:status 200 :body "connecting to websockets..."})
+                  {:undertow/websocket
+                   {:on-open          (fn [msg] (swap! !clients conj (:channel msg)))
+                    :on-close-message (fn [msg] (swap! !clients disj (:channel msg)))
+                    :on-message
+                    (fn [msg]
+                      (let [_ch  (:channel msg)
+                            data (:data msg)]
+                        ;; TODO pretty bold - we'll want to make sure this ns is loaded
+                        (println "evaling: " data)
+                        (eval (read-string data))))}}) ;; TODO send! some response to the client?
+
+                ;; not sure this is ever hit (the prior :websocket? bool cuts it off)
+                (= uri "/_ws")
+                {:status 200 :body "connecting to websockets..."}
 
                 (string/starts-with? uri "/notebooks/")
                 (let [notebook-sym
@@ -180,12 +200,15 @@
                           (string/replace-first "/" "")
                           (string/replace-first "." "")
                           symbol)
-                      notebook-html (some-> notebook-sym eval-notebook
-                                            (clerk-view/doc->html nil))]
+                      notebook-html
+                      (some->
+                        (eval-notebook notebook-sym)
+                        (clerk-view/doc->html nil))]
                   (log/info "loading notebook" notebook-sym)
                   {:status  200
                    :headers {"Content-Type" "text/html"}
                    :body    (or notebook-html (str "No notebook (or failed to load nb) at uri: " uri))})
+
 
                 ;; poor man's router
                 :else (doctor.api/route req)

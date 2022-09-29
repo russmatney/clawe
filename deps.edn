@@ -19,7 +19,8 @@
   org.clojure/tools.reader           {:mvn/version "1.3.6"}
   backtick/backtick                  {:mvn/version "0.3.4"}
   aysylu/loom                        {:mvn/version "1.0.2"}
-  russmatney/org-crud                {:local/root "../org-crud"}
+  russmatney/org-crud                {:git/url "https://github.com/russmatney/org-crud.git"
+                                      :sha     "ba770073748a0b127602dd5bde88ed5b85124241"}
   io.github.borkdude/quickblog
   {:local/root "../../borkdude/quickblog"}}
  :aliases
@@ -60,7 +61,10 @@
     com.taoensso/timbre {:mvn/version "5.2.1"}
 
     ;; clerk
-    io.github.nextjournal/clerk {:mvn/version "0.10.562"}
+    io.github.nextjournal/clerk {:sha     "3cc859cde61b763a6af202a65c56bfa14169a568"
+                                 :git/url "https://github.com/nextjournal/clerk.git"
+                                 ;; :mvn/version "0.10.562"
+                                 }
     ;; https://github.com/babashka/process/issues/76
     ;; org.graalvm.js/js           {:mvn/version "22.1.0"}
 

@@ -3,7 +3,9 @@
   (:require
    [wallpapers.core :as wallpapers]
    [nextjournal.clerk :as clerk]
-   [notebooks.nav :as nav]))
+   [notebooks.nav :as nav]
+
+   [doctor.server :as doctor.server]))
 
 ^{::clerk/visibility {:code :hide}
   ::clerk/no-cache   true
@@ -17,7 +19,9 @@ nav/nav-options
     (wallpapers/all-wallpapers)
     (sort-by :wallpaper/used-count)
     reverse
-    (into [])))
+    (take 3)
+    (into [])
+    ))
 
 ;; # wallpapers
 
@@ -55,3 +59,7 @@ nav/nav-options
 ^{::clerk/visibility {:code :hide}
   ::clerk/viewer     wp-viewer}
 wps
+
+(comment
+  (doctor.server/broadcast! 'notebooks.wallpapers)
+  )
