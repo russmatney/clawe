@@ -81,6 +81,7 @@
    :client/create ralphie.browser/open-dev},
   "web"
   {:client/app-names ["Safari" "firefox"],
+   :match/ignore-names ["picture-in-picture"],
    :client/workspace-title "web",
    :match/skip-title true,
    :client/create ralphie.browser/open},
