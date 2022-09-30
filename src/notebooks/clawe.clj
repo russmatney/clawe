@@ -58,3 +58,9 @@
 (clerk/table
   {::clerk/width :full}
   (vals (clawe.config/workspace-defs-with-titles)))
+
+
+;; ## [/clerk.clj](/notebooks/clerk)
+;; ## [/clawe.clj](/notebooks/clawe)
+;; ## [/git-commits.clj](/notebooks/git-commits)
+;; ## [/git-status.clj](/notebooks/git-status)

@@ -45,13 +45,14 @@
 (def default-notebook 'notebooks.clerk)
 
 (defn log-state []
-  (println "[CLERK] channels-by-notebook:" (->> @!channels-by-notebook
-                                                (mapcat (fn [[notebook chs]]
-                                                          (->> chs
-                                                               (map (fn [ch]
-                                                                      {:notebook     notebook
-                                                                       :chSourceAddr (str (.getSourceAddress ch))})))))
-                                                (pprint/print-table)))
+  (println "[CLERK] channels-by-notebook:"
+           (->> @!channels-by-notebook
+                (mapcat (fn [[notebook chs]]
+                          (->> chs
+                               (map (fn [ch]
+                                      {:notebook     notebook
+                                       :chSourceAddr (str (.getSourceAddress ch))})))))
+                (pprint/print-table)))
   (println "[CLERK] default-notebook:" default-notebook))
 
 (declare path->notebook-sym)
@@ -209,3 +210,9 @@ ws.onopen = () => ws.send('{:path \"' + document.location.pathname + '\"}'); ")]
   (update-open-notebooks)
   (update-open-notebooks 'notebooks.clerk)
   (update-open-notebooks 'notebooks.core))
+
+
+;; ## [/clerk.clj](/notebooks/clerk)
+;; ## [/clawe.clj](/notebooks/clawe)
+;; ## [/git-commits.clj](/notebooks/git-commits)
+;; ## [/git-status.clj](/notebooks/git-status)
