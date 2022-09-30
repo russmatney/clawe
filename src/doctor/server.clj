@@ -1,5 +1,6 @@
 (ns doctor.server
   (:require
+   [clojure.string :as string]
    [taoensso.timbre :as log]
    [systemic.core :as sys :refer [defsys]]
    [plasma.server :as plasma.server]
@@ -8,8 +9,9 @@
    [ring.adapter.undertow :as undertow]
    [ring.adapter.undertow.websocket :as undertow.ws]
    [datascript.transit :as dt]
-   [dates.transit-time-literals :as ttl]
+   [nextjournal.clerk.viewer :as clerk-viewer]
 
+   [dates.transit-time-literals :as ttl]
    [api.db :as api.db]
    [api.topbar :as api.topbar]
    [api.todos :as api.todos]
@@ -20,14 +22,6 @@
    [doctor.api :as doctor.api]
    [garden.watcher :as garden.watcher]
    [ralphie.notify :as notify]
-
-   [nextjournal.clerk.viewer :as clerk-viewer]
-   [nextjournal.clerk.view :as clerk-view]
-   [nextjournal.clerk.eval :as clerk-eval]
-   [nextjournal.clerk.analyzer :as clerk-analyzer]
-
-   [clojure.string :as string]
-   [clojure.java.io :as io]
    [notebooks.clerk :as notebooks.clerk]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -151,12 +145,12 @@
                  {:on-open
                   (fn [msg]
                     (swap! !clients conj (:channel msg))
-                    (notebooks.clerk/client-visiting-notebook msg))
+                    (notebooks.clerk/channel-visiting-notebook msg))
 
                   :on-close-message
                   (fn [msg]
                     (swap! !clients disj (:channel msg))
-                    (notebooks.clerk/client-left-notebook msg))
+                    (notebooks.clerk/channel-left-notebook msg))
 
                   :on-message
                   (fn [msg]
