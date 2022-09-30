@@ -27,7 +27,8 @@
    [nextjournal.clerk.analyzer :as clerk-analyzer]
 
    [clojure.string :as string]
-   [clojure.java.io :as io]))
+   [clojure.java.io :as io]
+   [notebooks.clerk :as notebooks.clerk]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; transit helpers
@@ -67,37 +68,18 @@
 ;; clerk helpers
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn eval-notebook
-  "Evaluates the notebook identified by its `ns-sym`"
-  [ns-sym]
-  (try
-    (-> ns-sym clerk-analyzer/ns->path (str ".clj") io/resource clerk-eval/eval-file)
-    (catch Throwable e
-      (println "error evaling notebook", ns-sym)
-      (println e))))
-
-(comment
-  (eval-notebook 'notebooks.wallpapers)
-  (eval-notebook 'notebooks.clawe)
-  (eval-notebook 'notebooks.dice))
-
-(defn ns-sym->html [ns-sym]
-  (some-> (eval-notebook ns-sym) (clerk-view/doc->html nil)))
-
-(defn ns-sym->viewer [ns-sym]
-  (some-> (eval-notebook ns-sym) (clerk-view/doc->viewer)))
-
 (defonce !clients (atom #{}))
+(comment (reset! !clients #{}))
 
-(comment
-  (reset! !clients #{}))
-
-(defn broadcast! [notebook-sym]
-  (when-let [doc (ns-sym->viewer notebook-sym)]
-    (println "broadcasting notebook-sym" notebook-sym)
+(defn broadcast!
+  "Sends an updated eval of the passed `notebook-sym` to _all_ clients."
+  [notebook-sym]
+  (println "broadcasting notebook-sym" notebook-sym)
+  (when-let [doc (notebooks.clerk/ns-sym->viewer notebook-sym)]
     (doseq [ch @!clients]
-      ;; TODO only send to channels viewing this doc
       (undertow.ws/send (clerk-viewer/->edn {:doc doc}) ch))))
+
+(comment (broadcast! 'notebooks.core))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Plasma config
@@ -166,8 +148,16 @@
 
                 (:websocket? req)
                 {:undertow/websocket
-                 {:on-open          (fn [msg] (swap! !clients conj (:channel msg)))
-                  :on-close-message (fn [msg] (swap! !clients disj (:channel msg)))
+                 {:on-open
+                  (fn [msg]
+                    (swap! !clients conj (:channel msg))
+                    (notebooks.clerk/client-visiting-notebook msg))
+
+                  :on-close-message
+                  (fn [msg]
+                    (swap! !clients disj (:channel msg))
+                    (notebooks.clerk/client-left-notebook msg))
+
                   :on-message
                   (fn [msg]
                     (let [data (:data msg)]
@@ -183,7 +173,7 @@
                   (log/info "loading notebook" notebook-sym)
                   {:status  200
                    :headers {"Content-Type" "text/html"}
-                   :body    (or (ns-sym->html notebook-sym)
+                   :body    (or (notebooks.clerk/ns-sym->html notebook-sym)
                                 (str "No notebook (or failed to load nb) at uri: " uri))})
 
                 ;; poor man's router

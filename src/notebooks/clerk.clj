@@ -1,75 +1,143 @@
-^{:nextjournal.clerk/visibility {:code :hide}}
 (ns notebooks.clerk
+  {:nextjournal.clerk/visibility {:code :hide :result :hide}
+   :nextjournal.clerk/no-queue   true}
   (:require
    [nextjournal.clerk :as clerk]
    [clawe.wm :as wm]
-   [garden.db :as garden.db]
 
    [db.core :as db]
+   [nextjournal.clerk.viewer :as clerk-viewer]
 
-   [notebooks.nav :as nav]
-   ))
+   [ring.adapter.undertow.websocket :as undertow.ws]
+   [nextjournal.clerk.analyzer :as clerk-analyzer]
+   [clojure.java.io :as io]
+   [nextjournal.clerk.eval :as clerk-eval]
+   [nextjournal.clerk.view :as clerk-view]))
 
-^{::clerk/visibility {:code :hide}
-  ::clerk/no-cache   true
-  ::clerk/viewer     nav/nav-viewer}
-nav/nav-options
+;; # Clerk notebook
 
-;; # Clerk Scratchpad
-
-^{::clerk/visibility {:code :hide}}
-(clerk/md
-  (->>
-    (range 1 7)
-    (map (fn [x]
-           (str
-             (->> (range x) (map (constantly "#")) (apply str))
-             " [ " x " ] wut up \n")))
-    (apply str)))
-
-^{::clerk/visibility {:code :hide
-                      ;; :result :hide
-                      }
-  ::clerk/no-cache   true}
+^{::clerk/no-cache true}
 (def wsp (wm/current-workspace))
 
-^{::clerk/visibility {:code :hide}}
-(clerk/md (str "## current workspace `" (:workspace/title wsp) "`"))
-
-^{::clerk/visibility {:code :hide}}
-(clerk/md (str "#### directory `" (:workspace/directory wsp) "`"))
-
-^{::clerk/visibility {:code :hide}}
+^{::clerk/visibility {:result :show}}
 (clerk/html
   [:div
-   [:h3 "directory"
+   [:h3 {:class ["text-sm" "font-mono"]}
+    (:workspace/title wsp)
     [:span
      {:class ["p-4" "font-mono"]}
      (:workspace/directory wsp)]]])
 
-;; # Recent org
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Public Api
 
-^{::clerk/visibility {:code :hide :result :hide}
-  ::clerk/no-cache   true
-  }
-(def recent-org-files
-  (->>
-    (db/query '[:find (pull ?e [*])
-                :where
-                [?e :doctor/type :type/garden]
-                [?e :org/source-file ?src]])
-    (map first)
-    (filter :org.prop/created-at)
-    (sort-by :org.prop/created-at)
-    reverse
-    (take 10)))
+(defonce !channels-by-notebook (atom {}))
+(comment (reset! !channels-by-notebook {}))
+^::clerk/no-cache
+(def default-notebook 'notebooks.clerk)
 
-^{::clerk/visibility {:code :hide}}
-(clerk/table recent-org-files)
+(defn log-state []
+  (println "channels-by-notebook" @!channels-by-notebook))
 
+(defn msg->notebook [msg]
+  ;; TODO can we get this from the msg?
+  nil)
+
+(defn client-visiting-notebook [msg]
+  (let [notebook (msg->notebook msg)]
+    (swap! !channels-by-notebook
+           #(update % notebook
+                    (fn [chs]
+                      (let [ch (:channel msg)]
+                        (if chs (conj chs ch) #{ch})))))
+    (log-state)))
+
+(defn client-left-notebook [msg]
+  (swap! !channels-by-notebook #(update % (msg->notebook msg) disj (:channel msg)))
+  (log-state))
+
+(defn list-notebooks-by-channel [] @!channels-by-notebook)
+
+(defn list-open-notebooks []
+  (keys @!channels-by-notebook))
+
+(defn clients []
+  (concat (vals @!channels-by-notebook)))
 
 (clerk/example
-  recent-org-files)
+  (list-open-notebooks)
+  (clients))
 
+^{::clerk/visibility {:result :show
+                      :code   :show}}
+(->
+  ;; here's some whacky clojure
+  (list-open-notebooks)
+  (get nil)
+  count
+  ;; > it docs itself!
+  (#(str "### status report: `" % "` channels have a 'nil' notebook"))
+  clerk/md)
 
-;; # Mind Maps
+(defn ^:dynamic *send* [channel msg]
+  (println "*send*ing msg to channel")
+  ;; TODO argument order is killing me here
+  (undertow.ws/send msg channel))
+
+(defn eval-notebook
+  "Evaluates the notebook identified by its `ns-sym`"
+  [ns-sym]
+  (try
+    (-> ns-sym clerk-analyzer/ns->path (str ".clj") io/resource clerk-eval/eval-file)
+    (catch Throwable e
+      (println "error evaling notebook", ns-sym)
+      (println e))))
+
+(comment
+  (eval-notebook 'notebooks.clerk)
+  (eval-notebook 'notebooks.core)
+  (eval-notebook 'notebooks.wallpapers)
+  (eval-notebook 'notebooks.clawe)
+  (eval-notebook 'notebooks.dice))
+
+(defn ns-sym->html [ns-sym]
+  (some-> (eval-notebook ns-sym) (clerk-view/doc->html nil)))
+
+(defn ns-sym->viewer [ns-sym]
+  (some-> (eval-notebook ns-sym) (clerk-view/doc->viewer)))
+
+(comment
+  (ns-sym->viewer 'notebooks.core)
+  )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; #### The big one - should send updates to all known clients
+
+^{::clerk/visibility {:code :show :result :show}}
+(defn update-open-notebooks
+  ([] (update-open-notebooks default-notebook))
+  ([fallback-notebook]
+   (println "\n\n[Info]: updating open notebooks/channels")
+   (println @!channels-by-notebook)
+   (->>
+     (list-notebooks-by-channel)
+     (map
+       (fn [[notebook channels]]
+         (let [upd
+               (clerk-viewer/->edn
+                 {:doc (ns-sym->viewer
+                         (or notebook fallback-notebook))})]
+           (when-not notebook
+             (println "[Warning]: nil notebook detected. using: " fallback-notebook))
+           (println "[Info]: updating " (count channels) " channels")
+           (->> channels
+                (map (fn [ch]
+                       (*send* ch upd)))
+                seq))))
+     seq)))
+
+(comment
+  (update-open-notebooks)
+  (update-open-notebooks 'notebooks.clerk)
+  (update-open-notebooks 'notebooks.core)
+  )
