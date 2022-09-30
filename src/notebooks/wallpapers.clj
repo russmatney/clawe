@@ -1,5 +1,6 @@
 (ns notebooks.wallpapers
-  {:nextjournal.clerk/visibility {:code :hide}}
+  {:nextjournal.clerk/visibility {:code :hide}
+   :nextjournal.clerk/toc true}
   (:require
    [wallpapers.core :as wallpapers]
    [nextjournal.clerk :as clerk]

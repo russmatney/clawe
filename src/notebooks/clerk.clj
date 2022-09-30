@@ -160,6 +160,9 @@ ws.onopen = () => ws.send('{:path \"' + document.location.pathname + '\"}'); ")]
 
   Evals each notebook in !channels-by-notebook,
   sending updates to each channel viewing it."
+  ;; TODO support simple name (`"wallpapers"`) and path "/notebooks/wallpapers" as input here
+  ;; TODO should probably be able to updating just the passed notebook here
+  ;; this is a pretty big hammer, tho probably useful in some cases
   ([] (update-open-notebooks default-notebook))
   ([fallback-notebook]
    (println "[Info]: updating open notebooks/channels")
