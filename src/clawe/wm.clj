@@ -247,6 +247,8 @@
    (wm.protocol/-focus-workspace *wm* opts workspace)))
 
 (defn focus-client
+  "Intended as a send-focus only - does not pull clients to the workspace.
+  (unless you are on osx ...?)."
   ([client] (focus-client
               ;; client supplies opts in single arity case
               client client))
@@ -255,6 +257,20 @@
    (let [client (cond (map? client)    client
                       (string? client) (fetch-client client))]
      (wm.protocol/-focus-client *wm* opts client))))
+
+(defn bury-client
+  ([client] (bury-client nil client))
+  ([opts client] (wm.protocol/-bury-client *wm* opts client)))
+
+(defn bury-clients
+  [clients]
+  (doseq [cli clients] (bury-client cli)))
+
+(defn bury-all-clients
+  ([] (bury-all-clients nil))
+  ([opts] (wm.protocol/-bury-all-clients *wm* opts)))
+
+(comment bury-all-clients)
 
 (declare move-client-to-workspace)
 (defn show-client
@@ -265,9 +281,18 @@
                       (string? client) (fetch-client client))]
      ;; TODO would like to focus+center first to avoid the jank on linux
      ;; but on osx, do it the other way to avoid the auto-space-switch.
-     ;; suppose we need to float and center, then switch, then focus
+     ;; suppose we need to float and center, then switch workspaces, then focus
      (move-client-to-workspace
        client (or (:current-workspace opts) (current-workspace)))
+
+     ;; TODO bring client to top instead
+     (try
+       (bury-clients (:clients (or (:current-workspace opts) (current-workspace))))
+       (catch Exception e
+         (println "[WARN]: bury-clients not impled (or some other error)")
+         (println e)
+         (println "[WARN]: bury-clients not impled (or some other error)")))
+
      (focus-client (merge {:float-and-center (:focus/float-and-center client true)} opts)
                    client))))
 
