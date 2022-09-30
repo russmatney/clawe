@@ -173,16 +173,19 @@ Depends on `brotab`."
 
 (defn open-dev
   "Opens a dev browser"
-  []
-  (if notify/is-mac?
-    (->
-      ^{:out :string}
-      (p/$ open -na "/Applications/Firefox Developer Edition.app")
-      p/check :out)
-    (->
-      (p/$ "/usr/bin/gtk-launch" "firefox-developer-edition.desktop")
-      p/check :out)))
+  ([] (open-dev nil))
+  ([{:keys [url]}]
+   (if url
+     (-> (p/$ firefox-developer-edition --new-tab ~url)
+         p/check :out)
+     (if notify/is-mac?
+       (-> ^{:out :string}
+           (p/$ open -na "/Applications/Firefox Developer Edition.app")
+           p/check :out)
+       (-> (p/$ "/usr/bin/gtk-launch" "firefox-developer-edition.desktop")
+           p/check :out)))))
 
 (comment
   (open-dev)
+  (open-dev {:url "http://localhost:3334/notebooks/clawe"})
   )
