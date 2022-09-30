@@ -5,31 +5,39 @@
    [nextjournal.clerk :as clerk]
    [clawe.wm :as wm]
 
-   [db.core :as db]
    [nextjournal.clerk.viewer :as clerk-viewer]
 
    [ring.adapter.undertow.websocket :as undertow.ws]
    [nextjournal.clerk.analyzer :as clerk-analyzer]
    [clojure.java.io :as io]
    [nextjournal.clerk.eval :as clerk-eval]
-   [nextjournal.clerk.view :as clerk-view]))
-
-;; # Clerk notebook
+   [nextjournal.clerk.view :as clerk-view]
+   [clojure.string :as string]
+   [babashka.fs :as fs]))
 
 ^{::clerk/no-cache true}
 (def wsp (wm/current-workspace))
+
+(def home (fs/home))
 
 ^{::clerk/visibility {:result :show}}
 (clerk/html
   [:div
    [:h3 {:class ["text-sm" "font-mono"]}
-    (:workspace/title wsp)
+    "current wsp"]
+   [:div
+    {:class ["flex" "flex-col"]}
     [:span
-     {:class ["p-4" "font-mono"]}
-     (:workspace/directory wsp)]]])
+     {:class ["px-4" "font-mono"]}
+     (-> wsp :workspace/title (#(str "title: " %)))]
+    [:span
+     {:class ["px-4" "font-mono"]}
+     (-> wsp
+         :workspace/directory
+         (string/replace (str (fs/home)) "~")
+         (#(str "dir: " %)))]]])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Public Api
 
 (defonce !channels-by-notebook (atom {}))
 (comment (reset! !channels-by-notebook {}))
@@ -43,7 +51,7 @@
   ;; TODO can we get this from the msg?
   nil)
 
-(defn client-visiting-notebook [msg]
+(defn channel-visiting-notebook [msg]
   (let [notebook (msg->notebook msg)]
     (swap! !channels-by-notebook
            #(update % notebook
@@ -52,32 +60,47 @@
                         (if chs (conj chs ch) #{ch})))))
     (log-state)))
 
-(defn client-left-notebook [msg]
+(defn channel-left-notebook [msg]
   (swap! !channels-by-notebook #(update % (msg->notebook msg) disj (:channel msg)))
   (log-state))
 
-(defn list-notebooks-by-channel [] @!channels-by-notebook)
+(defn notebooks-by-channel []
+  @!channels-by-notebook)
 
-(defn list-open-notebooks []
-  (keys @!channels-by-notebook))
-
-(defn clients []
+(defn channels []
   (concat (vals @!channels-by-notebook)))
 
-(clerk/example
-  (list-open-notebooks)
-  (clients))
 
-^{::clerk/visibility {:result :show
-                      :code   :show}}
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; ## health report
+
+^{::clerk/visibility {:result :show}}
 (->
-  ;; here's some whacky clojure
-  (list-open-notebooks)
+  (notebooks-by-channel)
   (get nil)
   count
-  ;; > it docs itself!
   (#(str "### status report: `" % "` channels have a 'nil' notebook"))
   clerk/md)
+
+;; notebooks:
+^{::clerk/visibility {:result :show}}
+(->>
+  (notebooks-by-channel)
+  keys
+  (map #(str "- " (or % "nil")))
+  (apply str)
+  (clerk/md))
+
+;; channels:
+^{::clerk/visibility {:result :show}}
+(->>
+  (channels)
+  (map #(str "- " (or % "nil")))
+  (apply str)
+  (clerk/md))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn ^:dynamic *send* [channel msg]
   (println "*send*ing msg to channel")
@@ -111,16 +134,18 @@
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; #### The big one - should send updates to all known clients
 
-^{::clerk/visibility {:code :show :result :show}}
 (defn update-open-notebooks
+  "The big one.
+
+  Evals each notebook in !channels-by-notebook,
+  sending updates to each channel viewing it."
   ([] (update-open-notebooks default-notebook))
   ([fallback-notebook]
    (println "\n\n[Info]: updating open notebooks/channels")
    (println @!channels-by-notebook)
    (->>
-     (list-notebooks-by-channel)
+     (notebooks-by-channel)
      (map
        (fn [[notebook channels]]
          (let [upd
