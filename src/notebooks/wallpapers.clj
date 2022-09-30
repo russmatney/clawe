@@ -3,14 +3,7 @@
   (:require
    [wallpapers.core :as wallpapers]
    [nextjournal.clerk :as clerk]
-   [notebooks.nav :as nav]
-
    [doctor.server :as doctor.server]))
-
-^{::clerk/visibility {:code :hide}
-  ::clerk/no-cache   true
-  ::clerk/viewer     nav/nav-viewer}
-nav/nav-options
 
 ^{::clerk/visibility {:code :hide :result :hide}
   ::clerk/no-cache   true}

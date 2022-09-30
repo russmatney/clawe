@@ -13,7 +13,13 @@
    [clawe.workspace.open :as workspace.open]
    [clawe.config :as clawe.config]
    [clawe.toggle :as toggle]
-   [clawe.client.create :as client.create]))
+   [clawe.client.create :as client.create]
+   [notebooks.core :as notebooks]
+   [ralphie.notify :as notify]))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; kill
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn kill-things [_wsp]
   (concat
@@ -24,6 +30,9 @@
   ;; TODO options to kill running workspaces (and clients within)
   )
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; bb tasks
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn bb-tasks-for-wsp
   ([] (bb-tasks-for-wsp (wm/current-workspace)))
@@ -41,6 +50,35 @@
                                        {:tmux.fire/cmd       (str "bb " cmd)
                                         :tmux.fire/session   (:workspace/title wsp)
                                         :tmux.fire/directory dir})))))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; clerk notebooks
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn notebook->rofi-actions [notebook]
+  (concat
+    [{:rofi/label     "Eval and broadcast update"
+      :rofi/on-select (fn [_] (notify/notify "TODO impl" notebook))}
+     {:rofi/label     "Open .clj file"
+      :rofi/on-select (fn [_] (notify/notify "TODO impl" notebook))}
+     {:rofi/label     "Open in dev browser"
+      :rofi/on-select (fn [_] (notify/notify "TODO impl" notebook))}]))
+
+(defn notebook->rofi-opt [notebook]
+  (let [label (str "notebook: " (:name notebook))]
+    (assoc notebook :rofi/label label
+           :rofi/on-select (fn [_] (rofi/rofi {:msg label}
+                                              (notebook->rofi-actions notebook))))))
+
+(defn notebook-rofi-opts []
+  (->> (notebooks/notebooks) (map notebook->rofi-opt)))
+
+(comment
+  (rofi/rofi (notebook-rofi-opts)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; client and workspace defs
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn def->rofi-fields [def]
   (->> def
@@ -104,30 +142,38 @@
                               :rofi/on-select
                               (fn [w] (wsp-action-rofi w))))))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; m-x fast
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defn m-x-commands-fast
   ([] (m-x-commands-fast nil))
-  ([{:keys [wsp]}]
-   (let [wsp (or wsp (wm/current-workspace))]
-     (->>
-       (concat
-         (->>
-           (git/rofi-clone-suggestions-fast)
-           (map (fn [x]
-                  (-> x
-                      (assoc :rofi/label (str "clone + create wsp: " (:rofi/label x)))
-                      (update :rofi/on-select
-                              (fn [f]
-                                ;; return a function wrapping the existing on-select
-                                (fn [arg]
-                                  (when-let [repo-id (:repo-id x)]
-                                    (workspace.open/create-workspace-def-from-path repo-id))
-                                  (f arg))))))))
+  ([_]
+   (->>
+     (concat
+       (->>
+         (git/rofi-clone-suggestions-fast)
+         (map (fn [x]
+                (-> x
+                    (assoc :rofi/label (str "clone + create wsp: " (:rofi/label x)))
+                    (update :rofi/on-select
+                            (fn [f]
+                              ;; return a function wrapping the existing on-select
+                              (fn [arg]
+                                (when-let [repo-id (:repo-id x)]
+                                  (workspace.open/create-workspace-def-from-path repo-id))
+                                (f arg))))))))
 
-         (client-defs)
-         (workspace-defs)
-         ;; all defcoms
-         (->> (defcom/list-commands) (map r.core/defcom->rofi)))
-       (remove nil?)))))
+       (client-defs)
+       (workspace-defs)
+       ;; all defcoms
+       (->> (defcom/list-commands) (map r.core/defcom->rofi))
+       (notebook-rofi-opts))
+     (remove nil?))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; m-x full
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn m-x-commands
   ([] (m-x-commands nil))
@@ -135,18 +181,7 @@
    (let [wsp (or wsp (wm/current-workspace))]
      (->>
        (concat
-         (->>
-           (git/rofi-clone-suggestions-fast)
-           (map (fn [x]
-                  (-> x
-                      (assoc :rofi/label (str "clone + create wsp: " (:rofi/label x)))
-                      (update :rofi/on-select
-                              (fn [f]
-                                ;; return a function wrapping the existing on-select
-                                (fn [arg]
-                                  (when-let [repo-id (:repo-id x)]
-                                    (workspace.open/create-workspace-def-from-path repo-id))
-                                  (f arg))))))))
+         (m-x-commands-fast)
 
          ;; run bb tasks for the current workspace
          (bb-tasks-for-wsp wsp)
@@ -154,14 +189,8 @@
          ;; open a known workspace
          (workspace.open/open-workspace-rofi-options)
 
-         (client-defs)
-         (workspace-defs)
-
          ;; all bindings
          (->> (defkbd/list-bindings) (map defkbd/->rofi))
-
-         ;; all defcoms
-         (->> (defcom/list-commands) (map r.core/defcom->rofi))
 
          ;; kill tmux/tags/clients
          (when-not (clawe.config/is-mac?)
@@ -185,8 +214,12 @@
     :rofi/on-select
     ((fn [f] (f)))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; public
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defn m-x
-  "Reun rofi with commands created in `m-x-commands`."
+  "Run rofi with commands created in `m-x-commands`."
   ([] (m-x nil))
   ([_]
    (let [wsp (wm/current-workspace)]
@@ -195,15 +228,13 @@
                       :msg            "Clawe commands"})))))
 
 (defn m-x-fast
-  "Reun rofi with commands created in `m-x-commands`."
+  "Run rofi with commands created in `m-x-commands-fast`."
   ([] (m-x-fast nil))
   ([_]
-   (let [wsp (wm/current-workspace)]
-     (->> (m-x-commands-fast {:wsp wsp})
-          (rofi/rofi {:require-match? true
-                      :msg            "Clawe commands (fast)"})))))
+   (->> (m-x-commands-fast)
+        (rofi/rofi {:require-match? true
+                    :msg            "Clawe commands (fast)"}))))
 
 (comment
   (m-x)
-  (m-x-fast)
-  )
+  (m-x-fast))

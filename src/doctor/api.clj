@@ -6,7 +6,7 @@
    [api.todos :as todos]
    [screenshots.core :as screenshots]
    [wallpapers.core :as wallpapers]
-   [notebooks.core :as notebooks]))
+   [notebooks.clerk :as notebooks.clerk]))
 
 
 (defn route
@@ -28,7 +28,7 @@
 
     (= uri "/notebooks/rerender")
     (do
-      (notebooks/rerender)
+      (notebooks.clerk/update-open-notebooks)
       {:status 200 :body "notebooks rerendered"})
 
     (= uri "/screenshots/update")

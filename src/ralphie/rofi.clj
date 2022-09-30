@@ -49,7 +49,12 @@
   "
   ;; TODO move opts and xs over to :rofi/prefixed keys
   ;; TODO support `:rofi/tag` and `:rofi/tags` for including search terms (like "clone")
-  ([opts] (rofi opts (:xs opts)))
+  ([opts]
+   (cond (map? opts)
+         (rofi opts (:xs opts))
+
+         (coll? opts)
+         (rofi {} opts)))
   ([{:keys [msg message on-select require-match?]} xs]
    (println "Rofi called with" (count xs) "xs.")
 

@@ -1,13 +1,6 @@
 (ns notebooks.dice
   (:require
-   [nextjournal.clerk :as clerk]
-   [notebooks.nav :as nav]
-   ))
-
-^{::clerk/visibility {:code :hide}
-  ::clerk/no-cache   true
-  ::clerk/viewer     nav/nav-viewer}
-nav/nav-options
+   [nextjournal.clerk :as clerk]))
 
 ;; My kids have [this game](https://www.ravensburger.de/produkte/spiele/mitbringspiele/nanu-23063/index.html) and we lost the dice that comes with it. It can't be too hard to make on in Clojure, can it? The dice has five colored `sides` and a joker.
 (def sides '[🟡 🟠 🟢 🔵 🃏])
