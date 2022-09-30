@@ -1,4 +1,6 @@
 (ns notebooks.journal
+  {:nextjournal.clerk/toc        true
+   :nextjournal.clerk/visibility {:code :hide}}
   (:require [babashka.fs :as fs]
             [clojure.string :as string]))
 

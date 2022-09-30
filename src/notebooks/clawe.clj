@@ -1,6 +1,6 @@
 ^{:nextjournal.clerk/visibility {:code :hide}}
 (ns notebooks.clawe
-  {:toc true}
+  {:nextjournal.clerk/toc true}
   (:require
    [clawe.debug :as debug]
    [nextjournal.clerk :as clerk]

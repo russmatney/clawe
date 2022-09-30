@@ -1,6 +1,7 @@
 (ns notebooks.clerk
   {:nextjournal.clerk/visibility {:code :hide :result :hide}
-   :nextjournal.clerk/no-queue   true}
+   :nextjournal.clerk/no-queue   true
+   :nextjournal.clerk/toc        true}
   (:require
    [nextjournal.clerk :as clerk]
    [clawe.wm :as wm]
