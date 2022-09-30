@@ -1,5 +1,6 @@
 ^{:nextjournal.clerk/visibility {:code :hide}}
 (ns notebooks.clawe
+  {:toc true}
   (:require
    [clawe.debug :as debug]
    [nextjournal.clerk :as clerk]
@@ -36,6 +37,21 @@
   {::clerk/width :full}
   (debug/ls {:type :workspaces}))
 
+;; ### tmux sessions
+
+^{::clerk/visibility {:code :hide}
+  ::clerk/no-cache   true}
+(clerk/table
+  {::clerk/width :full}
+  (debug/ls {:type :tmux}))
+
+;; ### tmux panes
+
+^{::clerk/visibility {:code :hide}
+  ::clerk/no-cache   true}
+(clerk/table
+  {::clerk/width :full}
+  (debug/ls {:type :tmux-panes}))
 
 ;; # defs
 

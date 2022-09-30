@@ -5,7 +5,8 @@
    [babashka.cli :as cli]
    [clawe.wm :as wm]
    [clawe.client :as client]
-   [clawe.workspace :as workspace]))
+   [clawe.workspace :as workspace]
+   [ralphie.tmux :as tmux]))
 
 (comment
   (cli/parse-opts
@@ -82,7 +83,16 @@
 
 (def default-workspace-sort :workspace/index)
 
+;; TODO reach for an ls multi-method/protocol here
+;; debug/ls defmethod, with :type, :strip, :default-headers, and :fetch methods
 (defn ls
+  "A general debug-helper and lister of things.
+
+  Supports passed `:xs`, but mostly intends to support context-less `:type` inputs.
+
+  Impled for types: `:clients`, `:workspaces`, `:tmux`, `:tmux-panes`.
+
+  Consumed and exposed by the clerk clawe notebook: `/notebooks/clawe.clj`. "
   {:org.babashka/cli
    {:coerce {:type          :keyword
              :headers       [:keyword]
@@ -91,7 +101,7 @@
              :all           :boolean
              :sort          :keyword}}}
   ([] (ls {:type :clients}))
-  ([{:keys [extra-headers headers strip type all sort]
+  ([{:keys [extra-headers headers strip type all sort xs]
      :or   {strip false all false}
      :as   opts}]
    (let [headers (cond
@@ -100,26 +110,33 @@
                    :else
                    (case type
                      :clients    default-client-headers
-                     :workspaces default-workspace-headers))
+                     :workspaces default-workspace-headers
+                     nil))
          headers (if (seq extra-headers)
                    (concat headers extra-headers)
                    headers)
-         sort    (or sort (case type
+         s-by    (or sort (case type
                             :clients    default-client-sort
-                            :workspaces default-workspace-sort))]
+                            :workspaces default-workspace-sort
+                            :tmux-panes #(str (:tmux.session/name %) "-" (:tmux.window/index %))
+                            nil))]
      (cond->> (case type
                 :clients (wm/active-clients)
-                :workspaces (wm/active-workspaces))
+                :workspaces (wm/active-workspaces)
+                :tmux (vals (tmux/list-sessions))
+                :tmux-panes (tmux/list-panes)
+                xs)
 
-       sort
-       (sort-by sort)
+       s-by
+       (sort-by s-by)
 
        ;; NOTE strip can remove fields that we might expect in `headers`
        (and (not all) strip)
        (map
          (case type
            :clients    client/strip
-           :workspaces workspace/strip))
+           :workspaces workspace/strip
+           identity))
 
        (seq headers)
        (map (fn [m] (select-keys m headers)))))))

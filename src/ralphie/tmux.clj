@@ -16,6 +16,7 @@
 
 
 ;; TODO sync sessions/window/panes with defs/workspaces - similar to awm tags and emacs workspaces
+;; TODO rewrite this as a malli schema
 
 (def tmux-format-keys
   "These are pulled from the tmux man-page, FORMATS section."
