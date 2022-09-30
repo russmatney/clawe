@@ -22,7 +22,8 @@
    [doctor.api :as doctor.api]
    [garden.watcher :as garden.watcher]
    [ralphie.notify :as notify]
-   [notebooks.clerk :as notebooks.clerk]))
+   [notebooks.clerk :as notebooks.clerk]
+   [clojure.edn :as edn]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; transit helpers
@@ -155,15 +156,21 @@
                   :on-message
                   (fn [msg]
                     (let [data (:data msg)]
-                      ;; TODO we'll want to make sure this ns is loaded
-                      ;; note that the form from the FE can't be aliased
-                      (println "evaling: " data)
-                      (eval (read-string data))))}}
+                      (cond
+                        (string/starts-with? data "{:path ")
+                        (let [path (-> data edn/read-string :path)]
+                          (notebooks.clerk/channel-visiting-notebook
+                            (assoc msg :path path)))
+
+                        :else
+                        (do
+                          (println "evaling: " data)
+                          ;; TODO we'll want to make sure this ns is loaded
+                          ;; note that the form from the FE can't be aliased
+                          (eval (read-string data))))))}}
 
                 (string/starts-with? uri "/notebooks/")
-                (let [notebook-sym
-                      ;; convert "/notebooks/clawe" -> 'notebooks.clawe
-                      (-> uri (string/replace-first "/" "") (string/replace-first "/" ".") symbol)]
+                (let [notebook-sym (notebooks.clerk/path->notebook-sym uri)]
                   (log/info "loading notebook" notebook-sym)
                   {:status  200
                    :headers {"Content-Type" "text/html"}

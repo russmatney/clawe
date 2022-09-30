@@ -3,18 +3,19 @@
    :nextjournal.clerk/no-queue   true
    :nextjournal.clerk/toc        true}
   (:require
-   [nextjournal.clerk :as clerk]
-   [clawe.wm :as wm]
-
-   [nextjournal.clerk.viewer :as clerk-viewer]
-
-   [ring.adapter.undertow.websocket :as undertow.ws]
-   [nextjournal.clerk.analyzer :as clerk-analyzer]
+   [babashka.fs :as fs]
    [clojure.java.io :as io]
+   [clojure.string :as string]
+   [hiccup.page :as hiccup]
+   [nextjournal.clerk :as clerk]
+   [nextjournal.clerk.analyzer :as clerk-analyzer]
    [nextjournal.clerk.eval :as clerk-eval]
    [nextjournal.clerk.view :as clerk-view]
-   [clojure.string :as string]
-   [babashka.fs :as fs]))
+   [nextjournal.clerk.viewer :as clerk-viewer]
+   [ring.adapter.undertow.websocket :as undertow.ws]
+
+   [clawe.wm :as wm]
+   [clojure.pprint :as pprint]))
 
 ^{::clerk/no-cache true}
 (def wsp (wm/current-workspace))
@@ -44,21 +45,38 @@
 (def default-notebook 'notebooks.clerk)
 
 (defn log-state []
-  (println "[clerk.clj] channels-by-notebook:" @!channels-by-notebook)
-  (println "[clerk.clj] default-notebook:" default-notebook))
+  (println "[CLERK] channels-by-notebook:" (->> @!channels-by-notebook
+                                                (mapcat (fn [[notebook chs]]
+                                                          (->> chs
+                                                               (map (fn [ch]
+                                                                      {:notebook     notebook
+                                                                       :chSourceAddr (str (.getSourceAddress ch))})))))
+                                                (pprint/print-table)))
+  (println "[CLERK] default-notebook:" default-notebook))
+
+(declare path->notebook-sym)
 
 (defn msg->notebook [msg]
-  ;; TODO get this from the msg?
-  (println "[NOTIMPLED] what notebook for this msg?" msg)
-  nil)
+  (some-> msg :path path->notebook-sym))
 
 (defn channel-visiting-notebook [msg]
   (let [notebook (msg->notebook msg)]
     (swap! !channels-by-notebook
-           #(update % notebook
-                    (fn [chs]
-                      (let [ch (:channel msg)]
-                        (if chs (conj chs ch) #{ch})))))
+           (fn [nb->chs]
+             (cond->
+                 nb->chs
+
+               true ;; always init or add
+               (update notebook (fn [chs]
+                                  (let [ch (:channel msg)]
+                                    (if chs (conj chs ch) #{ch}))))
+
+               notebook ;; if notebook had a value, remove chs from nil
+               ;; remove from nil
+               ;; TODO really, remove from anywhere else it is found,
+               ;; which will happen on every navigation
+               (update nil (fn [chs]
+                             (disj chs (:channel msg)))))))
     (log-state)))
 
 (defn channel-left-notebook [msg]
@@ -124,15 +142,40 @@
   (eval-notebook 'notebooks.clawe)
   (eval-notebook 'notebooks.dice))
 
+(defn ->html [{:keys [conn-ws?] :or {conn-ws? true}} state]
+  (hiccup/html5
+    {:class "overflow-hidden min-h-screen"}
+    [:head
+     [:meta {:charset "UTF-8"}]
+     [:meta {:name "viewport" :content "width=device-width, initial-scale=1"}]
+     (clerk-view/include-css+js)]
+    [:body.dark:bg-gray-900
+     [:div#clerk]
+     [:script "let viewer = nextjournal.clerk.sci_viewer
+let state = " (-> state clerk-viewer/->edn pr-str) "
+viewer.set_state(viewer.read_string(state))
+viewer.mount(document.getElementById('clerk'))\n"
+      (when conn-ws?
+        "const ws = new WebSocket(document.location.origin.replace(/^http/, 'ws') + '/_ws')
+ws.onmessage = msg => viewer.set_state(viewer.read_string(msg.data));
+window.ws_send = msg => ws.send(msg);
+ws.onopen = () => ws.send('{:path \"' + document.location.pathname + '\"}'); ")]]))
+
+(defn path->notebook-sym [path]
+  ;; convert "/notebooks/clawe" -> 'notebooks.clawe
+  (-> path (string/replace-first "/" "") (string/replace-first "/" ".") symbol))
+
+(defn doc->html [doc]
+  (->html {} {:doc (clerk-view/doc->viewer {} doc) :error nil}))
+
 (defn ns-sym->html [ns-sym]
-  (some-> (eval-notebook ns-sym) (clerk-view/doc->html nil)))
+  (some-> (eval-notebook ns-sym) doc->html))
 
 (defn ns-sym->viewer [ns-sym]
   (some-> (eval-notebook ns-sym) (clerk-view/doc->viewer)))
 
 (comment
-  (ns-sym->viewer 'notebooks.core)
-  )
+  (ns-sym->viewer 'notebooks.core))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
