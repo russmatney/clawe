@@ -14,8 +14,11 @@
    [clawe.config :as clawe.config]
    [clawe.toggle :as toggle]
    [clawe.client.create :as client.create]
+   [clawe.doctor :as doctor]
    [notebooks.core :as notebooks]
-   [ralphie.notify :as notify]))
+   [ralphie.notify :as notify]
+   [ralphie.browser :as browser]
+   [ralphie.emacs :as emacs]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; kill
@@ -58,11 +61,24 @@
 (defn notebook->rofi-actions [notebook]
   (concat
     [{:rofi/label     "Eval and broadcast update"
-      :rofi/on-select (fn [_] (notify/notify "TODO impl" notebook))}
-     {:rofi/label     "Open .clj file"
-      :rofi/on-select (fn [_] (notify/notify "TODO impl" notebook))}
+      :rofi/on-select (fn [_]
+                        (notify/notify "Rerendering notebook" (:name notebook))
+                        (doctor/rerender-notebook (:name notebook)))}
+     {:rofi/label     "Open .clj file in emacs"
+      :rofi/on-select (fn [_]
+                        (notify/notify "Opening in emacs" (:name notebook))
+                        (emacs/open-in-emacs {:emacs/file-path (:path notebook)}))}
+     {:rofi/label     "Open .clj file in journal-emacs (focus journal first)"
+      :rofi/on-select (fn [_]
+                        (notify/notify "Opening in emacs" (:name notebook))
+                        (wm/show-client "journal")
+                        (emacs/open-in-emacs {:emacs/file-path  (:path notebook)
+                                              :emacs/frame-name "journal"}))}
      {:rofi/label     "Open in dev browser"
-      :rofi/on-select (fn [_] (notify/notify "TODO impl" notebook))}]))
+      :rofi/on-select (fn [_]
+                        (notify/notify "Opening in dev browser" (:name notebook))
+                        (browser/open-dev
+                          {:url (str "http://localhost:3334/notebooks/" (:name notebook))}))}]))
 
 (defn notebook->rofi-opt [notebook]
   (let [label (str "notebook: " (:name notebook))]
@@ -74,7 +90,9 @@
   (->> (notebooks/notebooks) (map notebook->rofi-opt)))
 
 (comment
-  (rofi/rofi (notebook-rofi-opts)))
+  (rofi/rofi (notebook-rofi-opts))
+
+  (doctor/rerender-notebook (:name "clawe")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; client and workspace defs

@@ -131,7 +131,7 @@
          :emacs.open/file      (zsh/expand "~/russmatney/clawe/readme.org")}))
 
 (defn open-in-emacs-str [opts]
-  (let [file-path  (some opts [:emacs/file-path])
+  (let [file-path  (some opts [:emacs/file-path :path])
         frame-name (:emacs/frame-name opts)]
     (str
       "(progn "

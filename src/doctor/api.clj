@@ -6,7 +6,9 @@
    [api.todos :as todos]
    [screenshots.core :as screenshots]
    [wallpapers.core :as wallpapers]
-   [notebooks.clerk :as notebooks.clerk]))
+   [notebooks.clerk :as notebooks.clerk]
+   [clojure.string :as string]
+   [babashka.fs :as fs]))
 
 
 (defn route
@@ -26,10 +28,18 @@
       (topbar/update-topbar-metadata)
       {:status 200 :body "updated topbar"})
 
-    (= uri "/notebooks/rerender")
+    (= uri "/rerender/notebooks")
     (do
       (notebooks.clerk/update-open-notebooks)
       {:status 200 :body "notebooks rerendered"})
+
+    (string/starts-with? uri "/rerender/notebooks/")
+    (let [nb-name (fs/file-name uri)]
+      (if nb-name
+        (do
+          (notebooks.clerk/update-open-notebooks (symbol (str "notebooks." nb-name)))
+          {:status 200 :body (str nb-name " notebook rerendered")})
+        {:status 404 :body "notebook name not found"}))
 
     (= uri "/screenshots/update")
     (do
