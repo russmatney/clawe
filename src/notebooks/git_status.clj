@@ -21,7 +21,7 @@
     (map (fn [{:workspace/keys [directory] :as x}]
            (merge x (ralphie.git/status directory))))))
 
-;; ## dirty
+;; ## all dirty
 
 (clerk/table
   {::clerk/width :full}
@@ -29,6 +29,20 @@
     clawe-workspace-repos
     (filter (fn [{:git/keys [dirty? needs-pull? needs-push?]}]
               (or dirty? needs-pull? needs-push?)))))
+
+;; #### dirty + needs-push
+
+(clerk/table
+  {::clerk/width :full}
+  (->>
+    clawe-workspace-repos
+    (filter (fn [{:git/keys [dirty? needs-push?]}]
+              (and dirty? needs-push?)))))
+
+;; #### dirty only
+(clerk/table
+  {::clerk/width :full}
+  (->> clawe-workspace-repos (filter :git/dirty?)))
 
 
 ;; ## all repos
