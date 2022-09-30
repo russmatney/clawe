@@ -416,6 +416,28 @@
       (tset _G.client.focus :ontop true)
       (tset _G.client.focus :above true))))
 
+(defn bury-all-clients
+  "Buries :ontop clients."
+  []
+  ^{:quiet? false}
+  (fnl
+    (each [c (awful.client.iterate (fn [c] (. c :ontop)))]
+          ;; TODO support filter
+          (tset c :ontop false)
+          (tset c :above false)
+          (tset c :floating false))))
+
+(defn bury-client
+  "Buries :ontop clients."
+  [window]
+  ^{:quiet? false}
+  (fnl
+    (each [c (awful.client.iterate (fn [c] (= window (. c :window))))]
+          ;; TODO support filter
+          (tset c :ontop false)
+          (tset c :above false)
+          (tset c :floating false))))
+
 (defn focus-client
   "
   Focuses the client with the passed window-id.
@@ -440,13 +462,17 @@
            (each [c (awful.client.iterate (fn [c]
                                             (. c :ontop)))]
                  ;; TODO filter things to bury/not-bury?
-                 (tset c :ontop false)
                  (tset c :floating false)))
+
+         (each [c (awful.client.iterate (fn [c] (not (= (. c :ontop) ~window-id))))]
+               (tset c :ontop false)
+               (tset c :above false))
 
          (each [c (awful.client.iterate (fn [c] (= (. c :window) ~window-id)))]
 
                (when ~float?
                  (tset c :ontop true)
+                 (tset c :above true)
                  (tset c :floating true))
 
                (when ~center?
