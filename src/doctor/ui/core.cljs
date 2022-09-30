@@ -80,7 +80,8 @@
 
 (defn on-close [] (log/info "Connection with server closed"))
 (defn on-error [] (log/info "Connection with server error"))
-(defn on-open [] (log/info "Connection with server open"))
+(defn on-open []
+  (log/info "Connection with server open"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Bootstrap
@@ -106,6 +107,7 @@
 (defn ^:export init
   []
   (dev-setup)
+  ;; TODO support websockets reconnecting
   (plasma.client/use-transport!
     (plasma.client/websocket-transport
       plasma-ws-url

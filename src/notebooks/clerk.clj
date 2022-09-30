@@ -48,7 +48,8 @@
   (println "[clerk.clj] default-notebook:" default-notebook))
 
 (defn msg->notebook [msg]
-  ;; TODO can we get this from the msg?
+  ;; TODO get this from the msg?
+  (println "[NOTIMPLED] what notebook for this msg?" msg)
   nil)
 
 (defn channel-visiting-notebook [msg]
@@ -164,5 +165,4 @@
 (comment
   (update-open-notebooks)
   (update-open-notebooks 'notebooks.clerk)
-  (update-open-notebooks 'notebooks.core)
-  )
+  (update-open-notebooks 'notebooks.core))

@@ -5,27 +5,33 @@
    [nextjournal.clerk :as clerk]
    [git.core :as git]
    [notebooks.clerk :as notebooks.clerk]
-   [tick.core :as t]))
+   [tick.core :as t]
+   [clojure.string :as string]
+   [babashka.fs :as fs]))
 
 ^{::clerk/visibility {:result :hide}
   ::clerk/no-cache   true}
 (def all-commits
-  (->> (git/list-db-commits)
-       (sort-by :event/timestamp t/>)))
+  (->> (git/list-db-commits)))
 
 ;; # all commits
 
 (clerk/table
   {::clerk/width :full}
   (->> all-commits
-       (map #(select-keys % #{:commit/author-date
-                              :commit/directory
-                              :commit/short-hash
-                              :commit/subject
-                              :commit/body}))))
+       (sort-by :event/timestamp t/>)
+       (map #(select-keys
+               % #{:commit/author-date
+                   :commit/directory
+                   :commit/short-hash
+                   :commit/subject
+                   :commit/body}))
+       (map (fn [commit]
+              (update commit
+                      :commit/directory
+                      #(string/replace % (str (fs/home)) "~"))))))
 
-^{::clerk/visibility {:result :hide
-                      :code   :hide}
+^{::clerk/visibility {:result :hide :code :hide}
   ::clerk/no-cache   true}
 (comment
   (doseq

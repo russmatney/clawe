@@ -134,6 +134,7 @@
         (db/transact commits))
       (println "No commits found for opts" opts))))
 
+;; TODO malli type hints for inputs like these!
 (defn ingest-commits-for-repo [repo]
   (if-let [db-repo (fetch-repo repo)]
     (do
