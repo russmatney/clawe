@@ -20,6 +20,8 @@
   so that it ends up with a higher index when sorted."
   [wsp]
   (str (if (#{(clawe.config/home-dir)} (:workspace/directory wsp)) "z" "a") "-"
+       ;; TODO better to opt-in via sort-front/sort-back options
+       ;; case: send journal to back, bring some repos to front
        (cond
          ;; sort preferred ahead of reusing index
          (:workspace/preferred-index wsp)

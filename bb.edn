@@ -5,8 +5,8 @@
          com.lambdaisland/specmonstah-malli {:mvn/version "0.0.7"}
          aero/aero                          {:mvn/version "1.1.6"}
 
-         teknql/systemic {:local/root "/home/russ/teknql/systemic"}
-         teknql/wing     {:local/root "/home/russ/teknql/wing"}
+         teknql/systemic {:local/root "../../teknql/systemic"}
+         teknql/wing     {:local/root "../../teknql/wing"}
 
          ;; found these in specmonstah's bb.edn: https://github.com/reifyhealth/specmonstah/blob/develop/bb.edn
          org.clojure/core.specs.alpha {:mvn/version "0.2.62"}

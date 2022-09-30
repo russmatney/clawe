@@ -18,8 +18,6 @@
 ^{::clerk/no-cache true}
 (def wsp (wm/current-workspace))
 
-(def home (fs/home))
-
 ^{::clerk/visibility {:result :show}}
 (clerk/html
   [:div
@@ -45,7 +43,8 @@
 (def default-notebook 'notebooks.clerk)
 
 (defn log-state []
-  (println "channels-by-notebook" @!channels-by-notebook))
+  (println "[clerk.clj] channels-by-notebook:" @!channels-by-notebook)
+  (println "[clerk.clj] default-notebook:" default-notebook))
 
 (defn msg->notebook [msg]
   ;; TODO can we get this from the msg?

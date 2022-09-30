@@ -52,6 +52,9 @@
     {:msg (str def)}
     (def->rofi-fields def)))
 
+;; clearly a bit of a multimethod/protocol here
+;; i wonder all the ways i'm using rofi
+
 (defn client-def->actions [d]
   [{:rofi/label     "Toggle Client"
     :rofi/on-select (fn [_] (toggle/toggle d))}
