@@ -7,7 +7,10 @@
    [notebooks.clerk :as notebooks.clerk]
    [tick.core :as t]
    [clojure.string :as string]
-   [babashka.fs :as fs]))
+   [babashka.fs :as fs]
+   [notebooks.nav :as nav]))
+
+;; # Git Commits
 
 ^{::clerk/visibility {:result :hide}
   ::clerk/no-cache   true}
@@ -44,3 +47,9 @@
       {:repo/short-path dirs}))
 
   (notebooks.clerk/update-open-notebooks 'notebooks.git-commits))
+
+
+;; NOTE these do not end up in the TOC :/
+^{:nextjournal.clerk/visibility {:result :show}}
+(clerk/md
+  (nav/notebook-links))

@@ -6,7 +6,8 @@
    [clawe.debug :as debug]
    [nextjournal.clerk :as clerk]
    [clawe.config :as clawe.config]
-   [clawe.wm :as wm]))
+   [clawe.wm :as wm]
+   [notebooks.nav :as nav]))
 
 ;; ## current workspace
 (->>
@@ -59,8 +60,6 @@
   {::clerk/width :full}
   (vals (clawe.config/workspace-defs-with-titles)))
 
-
-;; ## [/clerk.clj](/notebooks/clerk)
-;; ## [/clawe.clj](/notebooks/clawe)
-;; ## [/git-commits.clj](/notebooks/git-commits)
-;; ## [/git-status.clj](/notebooks/git-status)
+^{:nextjournal.clerk/visibility {:result :show}}
+(clerk/md
+  (nav/notebook-links))
