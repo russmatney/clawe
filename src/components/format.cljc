@@ -17,8 +17,7 @@
   (s-shortener "some really long string with lots of thoughts that never end")
   (s-shortener
     {:length 20}
-    "some really long string with lots of thoughts that never end")
-  )
+    "some really long string with lots of thoughts that never end"))
 
 (defn last-modified-human [last-modified]
   (let [time-ago  (t/duration {:tick/beginning (t/instant last-modified)

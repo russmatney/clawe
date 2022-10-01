@@ -1,7 +1,7 @@
 (ns components.debug
   (:require
-   [components.floating]
-   [components.format]))
+   ;; [components.floating :as floating]
+   [components.format :as format]))
 
 (defn colls-last [m]
   (->> m
@@ -54,7 +54,7 @@
                  (and (list? v) (empty? v)) "[]"
                  (nil? v)                   "nil"
                  :else
-                 (when v (components.format/s-shortener (str v))))])
+                 (when v (format/s-shortener (str v))))])
 
             "] "]))))))
 
@@ -63,20 +63,30 @@
   ([metadata] [raw-metadata nil metadata])
   ([{:keys [label] :as opts} metadata]
    (let [label (if (= false label) nil (or label "Toggle raw metadata"))]
-     [components.floating/popover
-      {:hover true :click true
-       :anchor-comp
-       [:span.text-sm
-        {:class ["hover:text-city-pink-400" "cursor-pointer"]}
-        label]
+     [:div
+      {:class ["mt-auto" "p-4" "bg-yo-blue-700"
+               "border"
+               "border-city-blue-800"]}
+      (when metadata
+        (cond->> metadata
+          (not (:no-sort opts)) map-key-sort
+          true                  (map #(colorized-metadata opts %))))]
 
-       :popover-comp-props {:class ["max-w-7xl"]}
-       :popover-comp
-       [:div
-        {:class ["mt-auto" "p-4" "bg-yo-blue-700"
-                 "border"
-                 "border-city-blue-800"]}
-        (when metadata
-          (cond->> metadata
-            (not (:no-sort opts)) map-key-sort
-            true                  (map #(colorized-metadata opts %))))]}])))
+     ;; TODO restore popover
+     #_[floating/popover
+        {:hover true :click true
+         :anchor-comp
+         [:span.text-sm
+          {:class ["hover:text-city-pink-400" "cursor-pointer"]}
+          label]
+
+         :popover-comp-props {:class ["max-w-7xl"]}
+         :popover-comp
+         [:div
+          {:class ["mt-auto" "p-4" "bg-yo-blue-700"
+                   "border"
+                   "border-city-blue-800"]}
+          (when metadata
+            (cond->> metadata
+              (not (:no-sort opts)) map-key-sort
+              true                  (map #(colorized-metadata opts %))))]}])))
