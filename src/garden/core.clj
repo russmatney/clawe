@@ -5,7 +5,8 @@
    [ralphie.zsh :as r.zsh]
    [util]
    [dates.tick :as dates.tick]
-   [db.core :as db]))
+   [db.core :as db]
+   [wing.core :as w]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; org file paths
@@ -259,3 +260,27 @@
   (full-item {:org/id "notid"})
   (full-item {:org/id "3a89063f-ef16-4156-9858-fc941b448057"})
   (full-item {:org/id #uuid "59782969-8B9A-4C98-9AE4-2282FF0A2A1F"}))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; recently modified org
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn last-modified-org-paths []
+  (->>
+    (db/query '[:find (pull ?e [:org/source-file :file/last-modified])
+                :where
+                [?e :org/source-file ?f]])
+    (map first)
+    (remove (comp #(re-seq #"/archive/" %) :org/source-file))
+    (w/distinct-by :org/source-file)
+    (sort-by :file/last-modified)
+    reverse))
+
+(comment
+  (->>
+    (last-modified-org-paths)
+    count
+    #_(take 3)
+    )
+  )

@@ -94,10 +94,12 @@
 
 ;; ## state
 
-;; current connections
-
+;; connections
 ^{::clerk/visibility {:result :show}}
-(clerk/table (nb-ch-maps))
+(let [data (nb-ch-maps)]
+  (if (seq data)
+    (clerk/table data)
+    (clerk/md "### no current connections")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -161,22 +163,16 @@ ws.onopen = () => ws.send('{:path \"' + document.location.pathname + '\"}'); ")]
   ([] (update-open-notebooks default-notebook))
   ([fallback-notebook]
    (println "[Info]: updating open notebooks/channels")
-   (->>
-     (notebook->channels)
-     (map
-       (fn [[notebook channels]]
-         (let [upd
-               (clerk-viewer/->edn
-                 {:doc (ns-sym->viewer
-                         (or notebook fallback-notebook))})]
-           (when-not notebook
-             (println "[Warning]: nil notebook detected. using: " fallback-notebook))
-           (println "[Info]: updating" (count channels) "channels")
-           (->> channels
-                (map (fn [ch]
-                       (*send* ch upd)))
-                seq))))
-     seq)))
+   (doseq [[notebook channels] (notebook->channels)]
+     (let [upd
+           (clerk-viewer/->edn
+             {:doc (ns-sym->viewer
+                     (or notebook fallback-notebook))})]
+       (when-not notebook
+         (println "[Warning]: nil notebook detected. using: " fallback-notebook))
+       (println "[Info]: updating" (count channels) "channels")
+       (doseq [ch channels]
+         (*send* ch upd))))))
 
 (comment
   (update-open-notebooks)
@@ -184,7 +180,6 @@ ws.onopen = () => ws.send('{:path \"' + document.location.pathname + '\"}'); ")]
   (update-open-notebooks 'notebooks.core))
 
 
-;; NOTE these do not end up in the TOC :/
 ^{:nextjournal.clerk/visibility {:result :show}}
 (clerk/md
   (nav/notebook-links))
