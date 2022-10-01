@@ -15,7 +15,9 @@
    [ring.adapter.undertow.websocket :as undertow.ws]
 
    [clawe.wm :as wm]
-   [clojure.pprint :as pprint]))
+   [clojure.pprint :as pprint]
+   [wing.core :as w]
+   [notebooks.nav :as nav]))
 
 ^{::clerk/no-cache true}
 (def wsp (wm/current-workspace))
@@ -39,92 +41,67 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defonce !channels-by-notebook (atom {}))
-(comment (reset! !channels-by-notebook {}))
-^::clerk/no-cache
-(def default-notebook 'notebooks.clerk)
+(defonce !channel->notebook (atom {}))
 
-(defn log-state []
-  (println "[CLERK] channels-by-notebook:"
-           (->> @!channels-by-notebook
-                (mapcat (fn [[notebook chs]]
-                          (->> chs
-                               (map (fn [ch]
-                                      {:notebook     notebook
-                                       :chSourceAddr (str (.getSourceAddress ch))})))))
-                (pprint/print-table)))
-  (println "[CLERK] default-notebook:" default-notebook))
+(defn channels []
+  (keys @!channel->notebook))
 
-(declare path->notebook-sym)
+(defn notebook->channels []
+  (w/group-by second first #{} @!channel->notebook))
+
+(comment
+  (reset! !channel->notebook {})
+  (channels)
+  (notebook->channels))
+
+(defn ch->src-addr [ch]
+  (str (.getSourceAddress ch)))
+
+(defn nb-ch-maps []
+  (->> @!channel->notebook
+       (map (fn [[ch nb]]
+              {:notebook nb :channel (ch->src-addr ch)}))))
+
+(defn path->notebook-sym [path]
+  ;; convert "/notebooks/clawe" -> 'notebooks.clawe
+  (-> path (string/replace-first "/" "") (string/replace-first "/" ".") symbol))
 
 (defn msg->notebook [msg]
   (some-> msg :path path->notebook-sym))
 
+^::clerk/no-cache
+(def default-notebook 'notebooks.clerk)
+
+(defn log-state []
+  (println "[CLERK] channel->notebook:" (pprint/print-table (nb-ch-maps)))
+  (println "[CLERK] default-notebook:" default-notebook))
+
 (defn channel-visiting-notebook [msg]
   (let [notebook (msg->notebook msg)]
-    (swap! !channels-by-notebook
-           (fn [nb->chs]
-             (cond->
-                 nb->chs
-
-               true ;; always init or add
-               (update notebook (fn [chs]
-                                  (let [ch (:channel msg)]
-                                    (if chs (conj chs ch) #{ch}))))
-
-               notebook ;; if notebook had a value, remove chs from nil
-               ;; remove from nil
-               ;; TODO really, remove from anywhere else it is found,
-               ;; which will happen on every navigation
-               (update nil (fn [chs]
-                             (disj chs (:channel msg)))))))
+    (swap! !channel->notebook assoc (:channel msg) notebook)
     (log-state)))
 
 (defn channel-left-notebook [msg]
-  (swap! !channels-by-notebook #(update % (msg->notebook msg) disj (:channel msg)))
+  (swap! !channel->notebook dissoc (:channel msg))
   (log-state))
 
-(defn notebooks-by-channel []
-  @!channels-by-notebook)
-
-(defn channels []
-  (concat (vals @!channels-by-notebook)))
-
+(comment
+  (->>
+    {:a 2 :b 3 :c 2}
+    (w/group-by second first #{})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; ## health report
+;; ## state
+
+;; current connections
 
 ^{::clerk/visibility {:result :show}}
-(->
-  (notebooks-by-channel)
-  (get nil)
-  count
-  (#(str "### status report: `" % "` channels have a 'nil' notebook"))
-  clerk/md)
-
-;; notebooks:
-^{::clerk/visibility {:result :show}}
-(->>
-  (notebooks-by-channel)
-  keys
-  (map #(str "- " (or % "nil")))
-  (apply str)
-  (clerk/md))
-
-;; channels:
-^{::clerk/visibility {:result :show}}
-(->>
-  (channels)
-  (map #(str "- " (or % "nil")))
-  (apply str)
-  (clerk/md))
+(clerk/table (nb-ch-maps))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn ^:dynamic *send* [channel msg]
-  (println "*send*ing msg to channel")
-  ;; TODO argument order is killing me here
   (undertow.ws/send msg channel))
 
 (defn eval-notebook
@@ -162,10 +139,6 @@ ws.onmessage = msg => viewer.set_state(viewer.read_string(msg.data));
 window.ws_send = msg => ws.send(msg);
 ws.onopen = () => ws.send('{:path \"' + document.location.pathname + '\"}'); ")]]))
 
-(defn path->notebook-sym [path]
-  ;; convert "/notebooks/clawe" -> 'notebooks.clawe
-  (-> path (string/replace-first "/" "") (string/replace-first "/" ".") symbol))
-
 (defn doc->html [doc]
   (->html {} {:doc (clerk-view/doc->viewer {} doc) :error nil}))
 
@@ -187,10 +160,9 @@ ws.onopen = () => ws.send('{:path \"' + document.location.pathname + '\"}'); ")]
   sending updates to each channel viewing it."
   ([] (update-open-notebooks default-notebook))
   ([fallback-notebook]
-   (println "\n\n[Info]: updating open notebooks/channels")
-   (println @!channels-by-notebook)
+   (println "[Info]: updating open notebooks/channels")
    (->>
-     (notebooks-by-channel)
+     (notebook->channels)
      (map
        (fn [[notebook channels]]
          (let [upd
@@ -199,7 +171,7 @@ ws.onopen = () => ws.send('{:path \"' + document.location.pathname + '\"}'); ")]
                          (or notebook fallback-notebook))})]
            (when-not notebook
              (println "[Warning]: nil notebook detected. using: " fallback-notebook))
-           (println "[Info]: updating " (count channels) " channels")
+           (println "[Info]: updating" (count channels) "channels")
            (->> channels
                 (map (fn [ch]
                        (*send* ch upd)))
@@ -212,7 +184,7 @@ ws.onopen = () => ws.send('{:path \"' + document.location.pathname + '\"}'); ")]
   (update-open-notebooks 'notebooks.core))
 
 
-;; ## [/clerk.clj](/notebooks/clerk)
-;; ## [/clawe.clj](/notebooks/clawe)
-;; ## [/git-commits.clj](/notebooks/git-commits)
-;; ## [/git-status.clj](/notebooks/git-status)
+;; NOTE these do not end up in the TOC :/
+^{:nextjournal.clerk/visibility {:result :show}}
+(clerk/md
+  (nav/notebook-links))

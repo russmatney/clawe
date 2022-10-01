@@ -7,9 +7,9 @@
   "
 --
 
-# nav
-## [/core.clj](/notebooks/core)
-## [/clerk.clj](/notebooks/clerk)
-## [/clawe.clj](/notebooks/clawe)
-## [/git-commits.clj](/notebooks/git-commits)
-## [/git-status.clj](/notebooks/git-status)")
+# nav links
+## [core.clj](/notebooks/core)
+## [clerk.clj](/notebooks/clerk)
+## [clawe.clj](/notebooks/clawe)
+## [git-commits.clj](/notebooks/git-commits)
+## [git-status.clj](/notebooks/git-status)")
