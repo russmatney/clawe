@@ -1,32 +1,19 @@
 (ns notebooks.wallpapers
-  {:nextjournal.clerk/visibility {:code :hide}
+  {:nextjournal.clerk/visibility {:code :hide :result :hide}
    :nextjournal.clerk/toc true}
   (:require
    [wallpapers.core :as wallpapers]
-   [nextjournal.clerk :as clerk]
-   [doctor.server :as doctor.server]))
+   [nextjournal.clerk :as clerk]))
 
-^{::clerk/visibility {:code :hide :result :hide}
-  ::clerk/no-cache   true}
+^{::clerk/no-cache   true}
 (def wps
   (->>
     (wallpapers/all-wallpapers)
     (sort-by :wallpaper/used-count)
     reverse
     (take 4)
-    (into [])
-    ))
+    (into [])))
 
-;; # wallpapers
-
-^{::clerk/visibility {:code :hide}
-  ::clerk/no-cache   true}
-(clerk/table
-  {::clerk/width :full}
-  wps)
-
-
-^{::clerk/visibility {:code :hide :result :hide}}
 (def wp-viewer
   {:transform-fn clerk/mark-presented
    :render-fn
@@ -50,9 +37,15 @@
 
              "Set wallpaper"]])]))})
 
-^{::clerk/visibility {:code :hide}
-  ::clerk/viewer     wp-viewer}
-wps
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+{:nextjournal.clerk/visibility {:result :show}}
 
-(comment
-  (doctor.server/broadcast! 'notebooks.wallpapers))
+;; # wallpapers
+
+^{::clerk/no-cache true}
+(clerk/table
+  {::clerk/width :full}
+  wps)
+
+^{::clerk/viewer wp-viewer}
+wps

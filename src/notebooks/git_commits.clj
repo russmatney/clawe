@@ -1,6 +1,6 @@
 (ns notebooks.git-commits
   {:nextjournal.clerk/toc        true
-   :nextjournal.clerk/visibility {:code :hide}}
+   :nextjournal.clerk/visibility {:code :hide :result :hide}}
   (:require
    [nextjournal.clerk :as clerk]
    [git.core :as git]
@@ -10,14 +10,27 @@
    [babashka.fs :as fs]
    [notebooks.nav :as nav]))
 
-;; # Git Commits
-
-^{::clerk/visibility {:result :hide}
-  ::clerk/no-cache   true}
+^{::clerk/no-cache true}
 (def all-commits
   (->> (git/list-db-commits)))
 
-;; # all commits
+^{::clerk/no-cache true}
+(comment
+  (doseq
+      ;; TODO maybe opt-in to git status in :workspace/ defs?
+      [dirs ["russmatney/clawe"
+             "russmatney/org-crud"
+             "russmatney/dino"
+             "russmatney/dotfiles"]]
+    (git/ingest-commits-for-repo
+      {:repo/short-path dirs}))
+
+  (notebooks.clerk/update-open-notebooks 'notebooks.git-commits))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+{:nextjournal.clerk/visibility {:result :show}}
+
+;; # Git Commits
 
 (clerk/table
   {::clerk/width :full}
@@ -34,22 +47,6 @@
                       :commit/directory
                       #(string/replace % (str (fs/home)) "~"))))))
 
-^{::clerk/visibility {:result :hide :code :hide}
-  ::clerk/no-cache   true}
-(comment
-  (doseq
-      ;; TODO maybe opt-in to git status in :workspace/ defs?
-      [dirs ["russmatney/clawe"
-             "russmatney/org-crud"
-             "russmatney/dino"
-             "russmatney/dotfiles"]]
-    (git/ingest-commits-for-repo
-      {:repo/short-path dirs}))
-
-  (notebooks.clerk/update-open-notebooks 'notebooks.git-commits))
-
-
 ;; NOTE these do not end up in the TOC :/
-^{:nextjournal.clerk/visibility {:result :show}}
 (clerk/md
   (nav/notebook-links))

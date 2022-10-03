@@ -7,6 +7,8 @@
   "quickblog" {:workspace/directory "~/borkdude/quickblog"},
   "ink-library" {:workspace/directory "~/inkle/ink-library"},
   "new-blog" {:workspace/directory "~/russmatney/new-blog"},
+  "clerk-slideshow"
+  {:workspace/directory "~/nextjournal/clerk-slideshow"},
   "rewrite-clj" {:workspace/directory "~/clj-commons/rewrite-clj"},
   "candy-icons" {:workspace/directory "~/EliverLara/candy-icons"},
   "dino"
