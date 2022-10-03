@@ -34,18 +34,6 @@
   {::clerk/width :full}
   (debug/ls {:type :workspaces}))
 
-;; ### tmux sessions
-
-(clerk/table
-  {::clerk/width :full}
-  (debug/ls {:type :tmux}))
-
-;; ### tmux panes
-
-(clerk/table
-  {::clerk/width :full}
-  (debug/ls {:type :tmux-panes}))
-
 ;; # defs
 
 ;; ### client-defs
