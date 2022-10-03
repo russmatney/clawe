@@ -12,6 +12,7 @@
    [components.debug :as components.debug]
    [clojure.string :as string]))
 
+^{::clerk/no-cache true}
 (def todays-org-item
   (-> (garden/daily-path) org-crud/path->nested-item))
 
@@ -27,26 +28,24 @@
           #_(components.debug/raw-metadata val)
           (components.debug/colorized-metadata val)])))})
 
-^{:nextjournal.clerk/visibility {:result :show}}
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+{::clerk/visibility {:result :show}}
+
+^{::clerk/no-cache true}
 (clerk/with-viewer
   item-viewer
   (->
     todays-org-item
-    (dissoc :org/body
-            ;; :org/body-string
-            ;; :org/items
-            )))
+    (dissoc
+      ;; :org/body
+      ;; :org/body-string
+      :org/items
+      )))
 
-^{:nextjournal.clerk/visibility {:result :show}}
 (clerk/md
   (->>
-    (org-crud.markdown/item->md-lines
-      todays-org-item)
+    (org-crud.markdown/item->md-body todays-org-item)
     (string/join "\n")))
 
-
-
-
-^{:nextjournal.clerk/visibility {:result :show}}
 (clerk/md
   (nav/notebook-links))

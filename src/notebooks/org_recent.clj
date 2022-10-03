@@ -18,7 +18,7 @@
 
 (defn org-item->markdown-str [it]
   (->>
-    (org-crud.markdown/item->md-lines it)
+    (org-crud.markdown/item->md-body it)
     (string/join "\n")))
 
 ^{:nextjournal.clerk/visibility {:result :show}}
