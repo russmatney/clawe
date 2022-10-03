@@ -306,11 +306,19 @@
 
 (defkbd cycle-focus-next
   [[:mod] "Tab"]
-  (awm/awm-fnl '(awful.client.focus.byidx 1)))
+  (awm/awm-fnl '(do
+                  (awful.client.focus.byidx 1)
+                  (let [c awful.client.focus]
+                    (tset c :above true)
+                    (tset c :ontop true)))))
 
 (defkbd cycle-focus-prev
   [[:mod :shift] "Tab"]
-  (awm/awm-fnl '(awful.client.focus.byidx -1)))
+  (awm/awm-fnl '(do
+                  (awful.client.focus.byidx -1)
+                  (let [c awful.client.focus]
+                    (tset c :above true)
+                    (tset c :ontop true)))))
 
 (defkbd cycle-layout-next
   [[:mod] "e"]
