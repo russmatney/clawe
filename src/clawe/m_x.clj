@@ -137,10 +137,7 @@
                               :rofi/on-select (fn [_] (client-action-rofi d))))))))
 
 (defn wsp-def->actions [wsp]
-  [
-   {:rofi/label     "Open Workspace"
-    :rofi/on-select (fn [_] (workspace.open/open-new-workspace wsp))}
-   {:rofi/label     "Open Workspace and emacs"
+  [{:rofi/label     "Open Workspace and emacs"
     :rofi/on-select (fn [_]
                       (workspace.open/open-new-workspace wsp)
                       ;; TODO may need to handle a race-case, or pass in new wsp info to avoid it
@@ -150,6 +147,8 @@
                       (workspace.open/open-new-workspace wsp)
                       ;; TODO may need to handle a race-case, or pass in new wsp info to avoid it
                       (client.create/create-client "terminal"))}
+   {:rofi/label     "Open Workspace"
+    :rofi/on-select (fn [_] (workspace.open/open-new-workspace wsp))}
    {:rofi/label     "Close Workspace"
     :rofi/on-select (fn [_] (wm/delete-workspace wsp))}
    {:rofi/label     "Focus Workspace"
