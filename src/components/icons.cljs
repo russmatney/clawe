@@ -77,6 +77,11 @@
       {:color "text-city-green-400"
        :src   "/assets/candy-icons/browser.svg"}
 
+      (and (#{"firefox"} app-name)
+           (#{"picture-in-picture"} window-title))
+      {:color "text-city-green-400"
+       :src   "/assets/candy-icons/preferences-desktop-screensaver.svg"}
+
       (#{"firefox"} app-name)
       {:color "text-city-green-400"
        :src   "/assets/candy-icons/firefox.svg"}
