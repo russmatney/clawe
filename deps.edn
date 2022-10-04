@@ -61,7 +61,7 @@
     com.taoensso/timbre {:mvn/version "5.2.1"}
 
     ;; clerk
-    io.github.nextjournal/clerk {:sha     "3cc859cde61b763a6af202a65c56bfa14169a568"
+    io.github.nextjournal/clerk {:sha     "963662d40b5d9d6dccf5c72895771b773fc7851a"
                                  :git/url "https://github.com/nextjournal/clerk.git"
                                  ;; :mvn/version "0.10.562"
                                  }
