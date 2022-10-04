@@ -21,26 +21,6 @@
 
 (clerk/add-viewers! [my-notebooks/viewer])
 
-^{::clerk/no-cache true}
-(def wsp (wm/current-workspace))
-
-^{::clerk/visibility {:result :show}}
-(clerk/html
-  [:div
-   [:h3 {:class ["text-sm" "font-mono"]}
-    "current wsp"]
-   [:div
-    {:class ["flex" "flex-col"]}
-    [:span
-     {:class ["px-4" "font-mono"]}
-     (-> wsp :workspace/title (#(str "title: " %)))]
-    [:span
-     {:class ["px-4" "font-mono"]}
-     (-> wsp
-         :workspace/directory
-         (string/replace (str (fs/home)) "~")
-         (#(str "dir: " %)))]]])
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defonce !channel->notebook (atom {}))
@@ -94,17 +74,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; ## state
-
-;; connections
-^{::clerk/visibility {:result :show}}
-(let [data (nb-ch-maps)]
-  (if (seq data)
-    (clerk/table data)
-    (clerk/md "### no current connections")))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 (defn ^:dynamic *send* [channel msg]
   (undertow.ws/send msg channel))
 
@@ -143,8 +112,11 @@ ws.onmessage = msg => viewer.set_state(viewer.read_string(msg.data));
 window.ws_send = msg => ws.send(msg);
 ws.onopen = () => ws.send('{:path \"' + document.location.pathname + '\"}'); ")]]))
 
-(defn doc->html [doc]
-  (->html {} {:doc (clerk-view/doc->viewer {} doc) :error nil}))
+(defn doc->html [evaled-notebook]
+  (->html {} {:doc (clerk-view/doc->viewer {} evaled-notebook) :error nil}))
+
+(defn doc->static-html [evaled-notebook]
+  (->html {:conn-ws? false} {:doc (clerk-view/doc->viewer {:inline-results? true} evaled-notebook)}))
 
 (defn ns-sym->html [ns-sym]
   (some-> (eval-notebook ns-sym) doc->html))
@@ -152,19 +124,37 @@ ws.onopen = () => ws.send('{:path \"' + document.location.pathname + '\"}'); ")]
 (defn ns-sym->viewer [ns-sym]
   (some-> (eval-notebook ns-sym) (clerk-view/doc->viewer)))
 
+(defn path+ns-sym->spit-static-html [path ns-sym]
+  ;; make sure dirs exist
+  (fs/create-dirs (fs/parent path))
+  (spit path (doc->static-html (eval-notebook ns-sym))))
+
 (comment
-  (ns-sym->viewer 'notebooks.core))
+  (ns-sym->viewer 'notebooks.core)
+
+  (doc->static-html (eval-notebook 'notebooks.blog-daily))
+
+  (with-bindings
+    {^{:clj-kondo/ignore [:unresolved-namespace]}
+     #'notebooks.blog-daily/days-ago 2}
+    (->>
+      (eval-notebook 'notebooks.blog-daily)
+      :blocks
+      (take 11)
+      last
+      :result
+      :nextjournal/value
+      :nextjournal/value))
+
+  (path+ns-sym->spit-static-html "test.html" 'notebooks.blog-daily))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn update-open-notebooks
-  "The big one.
-
-  Evals each notebook in !channels-by-notebook,
-  sending updates to each channel viewing it."
+  "Evals each notebook in !channel->notebook, sending updates to each active channel."
   ;; TODO support simple name (`"wallpapers"`) and path "/notebooks/wallpapers" as input here
   ;; TODO should probably be able to updating just the passed notebook here
-  ;; this is a pretty big hammer, tho probably useful in some cases
+  ;; this is a pretty big hammer, tho probably useful for some cases
   ([] (update-open-notebooks default-notebook))
   ([fallback-notebook]
    (println "[Info]: updating open notebooks/channels")
@@ -183,3 +173,35 @@ ws.onopen = () => ws.send('{:path \"' + document.location.pathname + '\"}'); ")]
   (update-open-notebooks)
   (update-open-notebooks 'notebooks.clerk)
   (update-open-notebooks 'notebooks.core))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+{::clerk/visibility {:result :show}}
+
+^{::clerk/no-cache true}
+(def wsp (wm/current-workspace))
+
+(clerk/html
+  [:div
+   [:h3 {:class ["text-sm" "font-mono"]}
+    "current wsp"]
+   [:div
+    {:class ["flex" "flex-col"]}
+    [:span
+     {:class ["px-4" "font-mono"]}
+     (-> wsp :workspace/title (#(str "title: " %)))]
+    [:span
+     {:class ["px-4" "font-mono"]}
+     (-> wsp
+         :workspace/directory
+         (string/replace (str (fs/home)) "~")
+         (#(str "dir: " %)))]]])
+
+;; ## state
+
+;; connections
+
+(let [data (nb-ch-maps)]
+  (if (seq data)
+    (clerk/table data)
+    (clerk/md "### no current connections")))
+

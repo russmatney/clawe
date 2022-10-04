@@ -9,13 +9,34 @@
    [clojure.string :as string]
    [clojure.set :as set]
    [clojure.walk :as walk]
-   [notebooks.viewers.my-notebooks :as my-notebooks]))
+   [notebooks.clerk :as notebooks.clerk]
+   [tick.core :as t]))
 
-(clerk/add-viewers! [my-notebooks/viewer])
+(defonce ^:dynamic day (t/today))
+
+(defn export-for-day [{:keys [day]}]
+  (with-bindings {#'notebooks.blog-daily/day day}
+    (notebooks.clerk/path+ns-sym->spit-static-html
+      (str "daily/" day ".html") 'notebooks.blog-daily)))
+
+(comment
+  (export-for-day {:day (t/today)})
+  (export-for-day {:day (str (t/<< (t/today) (t/new-period 1 :days)))})
+
+  (with-bindings {#'notebooks.blog-daily/day (t/yesterday)}
+    (->>
+      (notebooks.clerk/eval-notebook 'notebooks.blog-daily)
+      :blocks
+      (take 12)
+      last
+      :result
+      :nextjournal/value
+      :nextjournal/value)))
+
 
 ^{::clerk/no-cache true}
 (def todays-org-item
-  (let [item (-> (garden/daily-path) org-crud/path->nested-item)]
+  (let [item (-> (garden/daily-path day) org-crud/path->nested-item)]
     ;; recursively remove all :private: tagged items
 
     ;; TODO pull this walk construct into a useful org-crud fn
