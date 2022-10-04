@@ -3,7 +3,6 @@
             [notebooks.core :as notebooks]
             [nextjournal.clerk :as clerk]))
 
-(def links (notebooks/notebooks))
 
 (def viewer
   {:name :clerk/notebook ;; overwrite default notebook viewer
@@ -11,7 +10,7 @@
    (fn [{:as wrapped-value :nextjournal/keys [viewers]}]
      (-> wrapped-value
          (update :nextjournal/value (partial v/process-blocks viewers))
-         (update :nextjournal/value assoc :links links)
+         (update :nextjournal/value assoc :links (notebooks/notebooks))
          clerk/mark-presented))
 
    :render-fn

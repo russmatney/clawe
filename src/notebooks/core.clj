@@ -1,14 +1,7 @@
-^{:nextjournal.clerk/visibility {:code :hide :result :hide}}
 (ns notebooks.core
   (:require
    [babashka.fs :as fs]
-   [clojure.string :as string]
-   [notebooks.viewers.my-notebooks :as my-notebooks]
-   [nextjournal.clerk :as clerk]))
-
-(clerk/add-viewers! [my-notebooks/viewer])
-
-;; # Core
+   [clojure.string :as string]))
 
 (defn ->f [path]
   (let [name (some-> path fs/file-name fs/split-ext first)]
@@ -27,4 +20,5 @@
 (defn notebooks []
   (->> this-file fs/parent fs/list-dir
        (remove fs/directory?)
+       (remove #(string/includes? % "core"))
        (map str) (map ->f)))
