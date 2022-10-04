@@ -15,15 +15,22 @@
 ;; daily
 
 (defn daily-path
-  "Returns a path for the passed day. Defaults to today."
+  "Returns a path for the passed day. Defaults to today.
+  If `day` is passed as an int, the daily path from `day` days ago is used.
+  If `day` is a string, it is assumed to be the desired `YYYY-MM-DD` file name."
   ([] (daily-path (first (dates.tick/days 1))))
   ([day]
-   (->
-     (str "~/todo/daily/" day ".org")
-     r.zsh/expand)))
+   (let [day (cond (int? day) (first (dates.tick/days (+ day 1)))
+                   :else      day)]
+     (->
+       (str "~/todo/daily/" day ".org")
+       r.zsh/expand))))
 
 (comment
-  (daily-path))
+  (daily-path)
+  (daily-path 1)
+  (daily-path 2)
+  (dates.tick/days 3))
 
 (defn daily-paths
   ([] [(daily-path)])
