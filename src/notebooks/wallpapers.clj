@@ -1,11 +1,14 @@
 (ns notebooks.wallpapers
   {:nextjournal.clerk/visibility {:code :hide :result :hide}
-   :nextjournal.clerk/toc true}
+   :nextjournal.clerk/toc        true}
   (:require
    [wallpapers.core :as wallpapers]
-   [nextjournal.clerk :as clerk]))
+   [nextjournal.clerk :as clerk]
+   [notebooks.viewers.my-notebooks :as my-notebooks]))
 
-^{::clerk/no-cache   true}
+(clerk/add-viewers! [my-notebooks/viewer])
+
+^{::clerk/no-cache true}
 (def wps
   (->>
     (wallpapers/all-wallpapers)

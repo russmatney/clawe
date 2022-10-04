@@ -1,17 +1,19 @@
 (ns notebooks.git-status
   {:nextjournal.clerk/toc        true
-   :nextjournal.clerk/visibility {:code :hide}}
+   :nextjournal.clerk/visibility {:code :hide :result :hide}}
   (:require
    [ralphie.git :as ralphie.git]
    [nextjournal.clerk :as clerk]
    [clawe.config :as clawe.config]
    [babashka.fs :as fs]
-   [ralphie.zsh :as zsh]))
+   [ralphie.zsh :as zsh]
+   [notebooks.viewers.my-notebooks :as my-notebooks]))
+
+(clerk/add-viewers! [my-notebooks/viewer])
 
 ;; NOTE fetching is not implemented yet, so :needs-pull? will never be set
 
-^{::clerk/visibility {:result :hide}
-  ::clerk/no-cache   true}
+^::clerk/no-cache
 (def clawe-workspace-repos
   (->>
     (clawe.config/workspace-defs-with-titles)
@@ -20,6 +22,8 @@
     (filter (comp fs/exists? #(str % "/.git") zsh/expand :workspace/directory))
     (map (fn [{:workspace/keys [directory] :as x}]
            (merge x (ralphie.git/status directory))))))
+
+{::clerk/visibility {:result :show}}
 
 ;; #### needs push
 (clerk/table
@@ -46,8 +50,3 @@
 (clerk/table
   {::clerk/width :full}
   clawe-workspace-repos)
-
-;; ## [/clerk.clj](/notebooks/clerk)
-;; ## [/clawe.clj](/notebooks/clawe)
-;; ## [/git-commits.clj](/notebooks/git-commits)
-;; ## [/git-status.clj](/notebooks/git-status)

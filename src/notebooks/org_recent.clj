@@ -1,13 +1,15 @@
 (ns notebooks.org-recent
   {:nextjournal.clerk/toc        true
-   :nextjournal.clerk/visibility {:code   :hide
-                                  :result :hide}}
-  (:require [garden.core :as garden]
-            [org-crud.core :as org-crud]
-            [org-crud.markdown :as org-crud.markdown]
-            [clojure.string :as string]
-            [nextjournal.clerk :as clerk]))
+   :nextjournal.clerk/visibility {:code :hide :result :hide}}
+  (:require
+   [garden.core :as garden]
+   [org-crud.core :as org-crud]
+   [org-crud.markdown :as org-crud.markdown]
+   [clojure.string :as string]
+   [nextjournal.clerk :as clerk]
+   [notebooks.viewers.my-notebooks :as my-notebooks]))
 
+(clerk/add-viewers! [my-notebooks/viewer])
 
 (def recent-org-items
   (->>
@@ -21,7 +23,9 @@
     (org-crud.markdown/item->md-body it)
     (string/join "\n")))
 
-^{:nextjournal.clerk/visibility {:result :show}}
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+{::clerk/visibility {:result :show}}
+
 (clerk/md
   (->>
     recent-org-items

@@ -1,19 +1,27 @@
 (ns notebooks.clawe
   {:nextjournal.clerk/toc        true
-   :nextjournal.clerk/visibility {:code :hide}
+   :nextjournal.clerk/visibility {:code :hide :result :hide}
    :nextjournal.clerk/no-cache   true}
   (:require
    [clawe.debug :as debug]
    [nextjournal.clerk :as clerk]
    [clawe.config :as clawe.config]
    [clawe.wm :as wm]
-   [notebooks.nav :as nav]))
+   [notebooks.viewers.my-notebooks :as my-notebooks]))
+
+(clerk/add-viewers! [my-notebooks/viewer])
+
+(def current-workspace
+  (->>
+    (wm/current-workspace)
+    (remove (comp #(if (coll? %) (not (seq %)) (nil? %)) second))
+    (into {})))
+
+{::clerk/visibility {:result :show}}
 
 ;; ## current workspace
-(->>
-  (wm/current-workspace)
-  (remove (comp #(if (coll? %) (not (seq %)) (nil? %)) second))
-  (into {}))
+
+current-workspace
 
 ;; ### clients
 
@@ -47,7 +55,3 @@
 (clerk/table
   {::clerk/width :full}
   (vals (clawe.config/workspace-defs-with-titles)))
-
-^{:nextjournal.clerk/visibility {:result :show}}
-(clerk/md
-  (nav/notebook-links))

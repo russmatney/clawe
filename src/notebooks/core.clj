@@ -2,7 +2,11 @@
 (ns notebooks.core
   (:require
    [babashka.fs :as fs]
-   [clojure.string :as string]))
+   [clojure.string :as string]
+   [notebooks.viewers.my-notebooks :as my-notebooks]
+   [nextjournal.clerk :as clerk]))
+
+(clerk/add-viewers! [my-notebooks/viewer])
 
 ;; # Core
 

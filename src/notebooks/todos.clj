@@ -1,12 +1,14 @@
 (ns notebooks.todos
-  {:nextjournal.clerk/toc true
-   :nextjournal.clerk/visibility
-   {:code :hide :result :hide}}
+  {:nextjournal.clerk/toc        true
+   :nextjournal.clerk/visibility {:code :hide :result :hide}}
   (:require
    [org-crud.markdown :as org-crud.markdown]
    [clojure.string :as string]
    [nextjournal.clerk :as clerk]
-   [db.core :as db]))
+   [db.core :as db]
+   [notebooks.viewers.my-notebooks :as my-notebooks]))
+
+(clerk/add-viewers! [my-notebooks/viewer])
 
 (def all-org-todos
   (->>

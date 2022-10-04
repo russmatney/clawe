@@ -8,7 +8,9 @@
    [tick.core :as t]
    [clojure.string :as string]
    [babashka.fs :as fs]
-   [notebooks.nav :as nav]))
+   [notebooks.viewers.my-notebooks :as my-notebooks]))
+
+(clerk/add-viewers! [my-notebooks/viewer])
 
 ^{::clerk/no-cache true}
 (def all-commits
@@ -46,7 +48,3 @@
               (update commit
                       :commit/directory
                       #(string/replace % (str (fs/home)) "~"))))))
-
-;; NOTE these do not end up in the TOC :/
-(clerk/md
-  (nav/notebook-links))

@@ -17,7 +17,9 @@
    [clawe.wm :as wm]
    [clojure.pprint :as pprint]
    [wing.core :as w]
-   [notebooks.nav :as nav]))
+   [notebooks.viewers.my-notebooks :as my-notebooks]))
+
+(clerk/add-viewers! [my-notebooks/viewer])
 
 ^{::clerk/no-cache true}
 (def wsp (wm/current-workspace))
@@ -181,8 +183,3 @@ ws.onopen = () => ws.send('{:path \"' + document.location.pathname + '\"}'); ")]
   (update-open-notebooks)
   (update-open-notebooks 'notebooks.clerk)
   (update-open-notebooks 'notebooks.core))
-
-
-^{:nextjournal.clerk/visibility {:result :show}}
-(clerk/md
-  (nav/notebook-links))

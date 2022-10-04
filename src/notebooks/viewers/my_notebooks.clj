@@ -23,7 +23,7 @@
          [:div.fixed.top-2.left-2.z-10
           [:span.text-slate-400.px-4.mx-2 "Notebooks"]
           [:div.flex.flex-col
-           (for [{:keys [uri name]} links]
+           (for [{:keys [uri name]} (->> links (sort-by :name))]
              (let [current-page? (clojure.string/includes? js/window.location.pathname uri)]
                [:div
                 {:class ["text-slate-400" "px-4 mx-2"

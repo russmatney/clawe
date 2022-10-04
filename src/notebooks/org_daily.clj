@@ -6,11 +6,12 @@
    [org-crud.core :as org-crud]
    [org-crud.markdown :as org-crud.markdown]
    [nextjournal.clerk :as clerk]
-   [notebooks.nav :as nav]
    [nextjournal.clerk.viewer :as clerk-viewer]
-
    [components.debug :as components.debug]
-   [clojure.string :as string]))
+   [clojure.string :as string]
+   [notebooks.viewers.my-notebooks :as my-notebooks]))
+
+(clerk/add-viewers! [my-notebooks/viewer])
 
 ^{::clerk/no-cache true}
 (def todays-org-item
@@ -46,6 +47,3 @@
   (->>
     (org-crud.markdown/item->md-body todays-org-item)
     (string/join "\n")))
-
-(clerk/md
-  (nav/notebook-links))
