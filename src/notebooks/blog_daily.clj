@@ -8,7 +8,10 @@
    [nextjournal.clerk :as clerk]
    [clojure.string :as string]
    [clojure.set :as set]
-   [clojure.walk :as walk]))
+   [clojure.walk :as walk]
+   [notebooks.viewers.my-notebooks :as my-notebooks]))
+
+(clerk/add-viewers! [my-notebooks/viewer])
 
 ^{::clerk/no-cache true}
 (def todays-org-item
@@ -52,13 +55,16 @@
 
 (defn md-for-items-with-tags
   [{:keys [title tags]}]
-  (clerk/md
-    (str
-      "## " title "\n"
-      (->>
-        (items-with-tags tags)
-        (mapcat org-crud.markdown/item->md-body)
-        (string/join "\n")))))
+  (let [notes
+        (->>
+          (items-with-tags tags)
+          (mapcat org-crud.markdown/item->md-body))]
+    ;; TODO don't print `nil` when there are none, you dingus
+    (when (seq notes)
+      (clerk/md
+        (str
+          "## " title "\n"
+          (->> notes (string/join "\n")))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 {::clerk/visibility {:result :show}}
