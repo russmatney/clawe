@@ -10,6 +10,7 @@
   "clerk-slideshow"
   {:workspace/directory "~/nextjournal/clerk-slideshow"},
   "rewrite-clj" {:workspace/directory "~/clj-commons/rewrite-clj"},
+  "viewers" {:workspace/directory "~/nextjournal/viewers"},
   "candy-icons" {:workspace/directory "~/EliverLara/candy-icons"},
   "dino"
   {:workspace/directory "~/russmatney/dino",
@@ -64,7 +65,8 @@
   "clojuredocs" {:workspace/directory "~/zk/clojuredocs"},
   "my_first_flutter_app"
   {:workspace/directory "~/russmatney/my_first_flutter_app"},
-  "journal" {:workspace/directory "~/todo"},
+  "journal"
+  {:workspace/directory "~/todo", :workspace/preferred-index 0},
   "godot" {:workspace/directory "~/godotengine/godot"}},
  :repo-roots ["~/russmatney/*" "~/teknql/*"],
  :client/defs
