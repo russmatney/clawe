@@ -21,6 +21,7 @@
   "clerk-demo" {:workspace/directory "~/nextjournal/clerk-demo"},
   "org-crud" {:workspace/directory "~/russmatney/org-crud"},
   "clj-kondo" {:workspace/directory "~/clj-kondo/clj-kondo"},
+  "bbin" {:workspace/directory "~/babashka/bbin"},
   "inkgd" {:workspace/directory "~/ephread/inkgd"},
   "pluggs" {:workspace/directory "~/russmatney/pluggs"},
   "org-roam" {:workspace/directory "~/org-roam/org-roam"},
@@ -55,6 +56,7 @@
   "fabb" {:workspace/directory "~/teknql/fabb"},
   "clerk" {:workspace/directory "~/nextjournal/clerk"},
   "protomoon-two" {:workspace/directory "~/russmatney/protomoon-two"},
+  "blorg" {:workspace/directory "~/eigenhombre/blorg"},
   "dotfiles"
   {:workspace/directory "~/russmatney/dotfiles",
    :workspace/preferred-index 1},
@@ -63,6 +65,7 @@
   "steam" {:workspace/directory "~"},
   "morphe" {:workspace/directory "~/Workiva/morphe"},
   "clojuredocs" {:workspace/directory "~/zk/clojuredocs"},
+  "org-blog" {:workspace/directory "~/russmatney/org-blog"},
   "my_first_flutter_app"
   {:workspace/directory "~/russmatney/my_first_flutter_app"},
   "journal"
