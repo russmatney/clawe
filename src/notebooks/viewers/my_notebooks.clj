@@ -15,7 +15,6 @@
 
    :render-fn
    '(fn [{:as _doc :keys [blocks links]}]
-      (js/console.log js/window.location.pathname)
       (.add (.-classList (js/document.querySelector "html")) "dark")
       (v/html
         [:div.flex

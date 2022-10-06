@@ -137,21 +137,7 @@ ws.onopen = () => ws.send('{:path \"' + document.location.pathname + '\"}'); ")]
   (-> (eval-notebook 'notebooks.tmux) doc->html)
   (clerk-view/doc->viewer {} (eval-notebook 'notebooks.tmux))
 
-  (doc->static-html (eval-notebook 'notebooks.blog-daily))
-
-  (with-bindings
-    {^{:clj-kondo/ignore [:unresolved-namespace]}
-     #'notebooks.blog-daily/days-ago 2}
-    (->>
-      (eval-notebook 'notebooks.blog-daily)
-      :blocks
-      (take 11)
-      last
-      :result
-      :nextjournal/value
-      :nextjournal/value))
-
-  (path+ns-sym->spit-static-html "test.html" 'notebooks.blog-daily))
+  (path+ns-sym->spit-static-html "test.html" 'notebooks.tmux))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
