@@ -90,6 +90,7 @@
   (eval-notebook 'notebooks.clerk)
   (eval-notebook 'notebooks.core)
   (eval-notebook 'notebooks.wallpapers)
+  (eval-notebook 'notebooks.tmux)
   (eval-notebook 'notebooks.clawe)
   (eval-notebook 'notebooks.dice))
 
@@ -130,7 +131,11 @@ ws.onopen = () => ws.send('{:path \"' + document.location.pathname + '\"}'); ")]
   (spit path (doc->static-html (eval-notebook ns-sym))))
 
 (comment
-  (ns-sym->viewer 'notebooks.core)
+  (ns-sym->viewer 'notebooks.tmux)
+
+  (some-> (eval-notebook 'notebooks.clerk) doc->html)
+  (-> (eval-notebook 'notebooks.tmux) doc->html)
+  (clerk-view/doc->viewer {} (eval-notebook 'notebooks.tmux))
 
   (doc->static-html (eval-notebook 'notebooks.blog-daily))
 

@@ -17,6 +17,10 @@
 
 (def this-file *file*)
 
+(comment
+  (->> *file* fs/parent fs/list-dir)
+  )
+
 (defn notebooks []
   (->> this-file fs/parent fs/list-dir
        (remove fs/directory?)

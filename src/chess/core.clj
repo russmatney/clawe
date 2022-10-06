@@ -120,7 +120,6 @@
   ([]
    (fetch-games nil))
   ([{:keys [username max opening evals analysis since until literate]}]
-   (println "Fetching lichess games")
    (when-not (sys/running? `*lichess-env*)
      (sys/start! `*lichess-env*))
    (let [max      (or max (when-not (or since until) 5))
@@ -134,10 +133,13 @@
               (when until (str "&until=" until))
               (when evals "&evals=true")
               (when literate "&literate=true")
-              (when analysis "&analysis=true"))]
+              (when analysis "&analysis=true"))
+         cached   (get @*lichess-cache endpoint+params)]
+     (if cached
+       (println "Cache hit, cutting off request")
+       (println "Fetching lichess games"))
      (->
-       (or (get @*lichess-cache endpoint+params)
-           (lichess-request endpoint+params))
+       (or cached (lichess-request endpoint+params))
        ((fn [res] (swap! *lichess-cache #(assoc % endpoint+params res)) res))
        parse-lichess-json
        (->> (map parse-game))))))
