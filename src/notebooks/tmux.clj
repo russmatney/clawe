@@ -9,7 +9,7 @@
 #_(clerk/add-viewers! [])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-::clerk/visibility {:result :show}
+{::clerk/visibility {:result :show}}
 
 ;; ### tmux sessions
 
