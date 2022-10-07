@@ -20,7 +20,7 @@
   backtick/backtick                  {:mvn/version "0.3.4"}
   aysylu/loom                        {:mvn/version "1.0.2"}
   russmatney/org-crud                {:git/url "https://github.com/russmatney/org-crud.git"
-                                      :sha     "ba770073748a0b127602dd5bde88ed5b85124241"}
+                                      :sha     "de4d19a06627da2f1a7b2cd91c0e07dea110f111"}
   io.github.borkdude/quickblog
   {:local/root "../../borkdude/quickblog"}}
  :aliases

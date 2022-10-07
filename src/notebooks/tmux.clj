@@ -6,7 +6,6 @@
    [notebooks.viewers.my-notebooks :as my-notebooks]))
 
 (clerk/add-viewers! [my-notebooks/viewer])
-#_(clerk/add-viewers! [])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 {::clerk/visibility {:result :show}}

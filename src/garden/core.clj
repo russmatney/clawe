@@ -103,18 +103,19 @@
 ;; all of these
 
 (defn all-garden-paths
-  "All of them!
+  "All of the ones i care to ingest, anyway.
 
-  Well, kind of: a few from ~/todo/ via (basic-todo-paths), all the dailies and archives,
-  the whole garden, and all the workspace-garden files.
+  - basic todo paths (journal, projects, icebox)
+  - daily/*
+  - garden/*
+  - garden/workspaces/*
   "
   []
   (concat
     (basic-todo-paths)
     (all-daily-paths)
     (workspace-paths)
-    (flat-garden-paths)
-    #_(all-monthly-archive-paths)))
+    (flat-garden-paths)))
 
 (comment
   (count
@@ -132,39 +133,6 @@
                     ;; so this removes files that don't exist
                     (filter fs/exists?))))
 
-(comment
-  (org-file-paths)
-  (org-file-paths (repo-todo-paths #{"russmatney/clawe" "russmatney/org-crud" "doesnot-exist"}))
-  (org-file-paths (daily-paths 14))
-
-  (count
-    (org-file-paths
-      (all-garden-paths))))
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; org item
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn get-last-modified
-  [item]
-  (-> item :org/source-file fs/last-modified-time str))
-
-(defn ->short-path
-  [{:org/keys [source-file]}]
-  (str (-> source-file fs/parent fs/file-name)
-       "/" (fs/file-name source-file)))
-
-;; TODO consider adding some of these to org-crud
-(defn org->garden-note
-  [{:org/keys [source-file] :org.prop/keys [title] :as item}]
-  (let [last-modified (get-last-modified item)]
-    (-> item
-        (assoc :garden/file-name (fs/file-name source-file)
-               :org/short-path (->short-path item)
-               :org.prop/title (or title (fs/file-name source-file))
-               :file/last-modified last-modified))))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; paths -> org items
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -172,8 +140,7 @@
 (defn paths->nested-garden-notes [paths]
   (->> paths
        org-file-paths
-       (map org-crud/path->nested-item)
-       (map org->garden-note)))
+       (map org-crud/path->nested-item)))
 
 (comment
   (paths->nested-garden-notes (daily-paths)))
@@ -181,8 +148,7 @@
 (defn paths->flattened-garden-notes [paths]
   (->> paths
        org-file-paths
-       (mapcat org-crud/path->flattened-items)
-       (map org->garden-note)))
+       (mapcat org-crud/path->flattened-items)))
 
 (comment
   (paths->flattened-garden-notes (daily-paths)))
@@ -197,19 +163,19 @@
   (a note per file, with nested headline as children)."
   []
   (->>
-    (org-file-paths
-      (all-garden-paths))
+    (all-garden-paths)
+    (org-file-paths)
     (map org-crud/path->nested-item)
-    (map org->garden-note)))
+    (remove nil?)))
 
 (defn all-garden-notes-flattened
   "All relevant org items from the garden, flattened (a note per headline)."
   []
   (->>
-    (org-file-paths
-      (all-garden-paths))
+    (all-garden-paths)
+    (org-file-paths)
     (mapcat org-crud/path->flattened-items)
-    (map org->garden-note)))
+    (remove nil?)))
 
 (comment
   (->>
@@ -250,9 +216,7 @@
                         first
                         :org/source-file))]
     (if source-file
-      (->
-        (org-crud/path->nested-item source-file)
-        (org->garden-note))
+      (org-crud/path->nested-item source-file)
 
       ;; TODO in this case, get the source-file from the org-roam db and ingest it
       ;; we may not have a source-file if we're requesting a full-item with some partial data
