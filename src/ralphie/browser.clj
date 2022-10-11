@@ -182,7 +182,7 @@ Depends on `brotab`."
        (-> ^{:out :string}
            (p/$ open -na "/Applications/Firefox Developer Edition.app")
            p/check :out)
-       (-> (p/$ "/usr/bin/gtk-launch" "firefox-developer-edition.desktop")
+       (-> (p/$ "/usr/bin/gtk-launch" "firefoxdeveloperedition.desktop")
            p/check :out)))))
 
 (comment
