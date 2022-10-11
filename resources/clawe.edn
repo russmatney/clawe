@@ -28,6 +28,8 @@
   "re-db" {:workspace/directory "~/mhuebert/re-db"},
   "godot-LDtk-import"
   {:workspace/directory "~/levigilbert/godot-LDtk-import"},
+  "Spicetify" {:workspace/directory "~/Comfy-Themes/Spicetify"},
+  "spicetify-cli" {:workspace/directory "~/spicetify/spicetify-cli"},
   "heroicons" {:workspace/directory "~/tailwindlabs/heroicons"},
   "editscript" {:workspace/directory "~/juji-io/editscript"},
   "lila-ws" {:workspace/directory "~/lichess-org/lila-ws"},
@@ -46,6 +48,8 @@
   "tools.namespace" {:workspace/directory "~/clojure/tools.namespace"},
   "advent-of-code"
   {:workspace/directory "~/russmatney/advent-of-code"},
+  "spicetify-themes"
+  {:workspace/directory "~/spicetify/spicetify-themes"},
   "beatemup-three"
   {:workspace/directory "~/russmatney/beatemup-three"},
   "the-great-tree"
