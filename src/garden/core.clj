@@ -20,11 +20,12 @@
   If `day` is a string, it is assumed to be the desired `YYYY-MM-DD` file name."
   ([] (daily-path (first (dates.tick/days 1))))
   ([day]
-   (let [day (cond (int? day) (first (dates.tick/days (+ day 1)))
-                   :else      day)]
-     (->
-       (str "~/todo/daily/" day ".org")
-       r.zsh/expand))))
+   (let [day  (cond (int? day) (first (dates.tick/days (+ day 1)))
+                    :else      day)
+         path (->
+                (str "~/todo/daily/" day ".org")
+                r.zsh/expand)]
+     (when (fs/exists? path) path))))
 
 (comment
   (daily-path)
@@ -34,7 +35,7 @@
 
 (defn daily-paths
   ([] [(daily-path)])
-  ([n] (->> (dates.tick/days n) (map daily-path))))
+  ([n] (->> (dates.tick/days n) (map daily-path) (remove nil?))))
 
 (comment
   (daily-paths)
