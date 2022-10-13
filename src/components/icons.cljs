@@ -29,6 +29,10 @@
         {:color "text-city-blue-400"
          :src   "/assets/candy-icons/dino.svg"}
 
+        (string/includes? "org-blog" title)
+        {:color "text-city-blue-400"
+         :src   "/assets/candy-icons/pencil.svg"}
+
         #_ (string/includes? "pirates" title)
         #_ {:color "text-city-blue-400"
             :src   "/assets/candy-icons/hooks.svg"}

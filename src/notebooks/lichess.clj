@@ -34,5 +34,4 @@
                      :commit/subject
                      :commit/body}))
        (map (fn [game]
-              game
-              ))))
+              game))))

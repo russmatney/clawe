@@ -54,6 +54,8 @@
   {:workspace/directory "~/russmatney/beatemup-three"},
   "the-great-tree"
   {:workspace/directory "~/dandeliondino/the-great-tree"},
+  "clojure-lsp" {:workspace/directory "~/clojure-lsp/clojure-lsp"},
+  "neil" {:workspace/directory "~/babashka/neil"},
   "portal" {:workspace/directory "~/djblue/portal"},
   "instaparse" {:workspace/directory "~/Engelberg/instaparse"},
   "dice-nine" {:workspace/directory "~/russmatney/dice-nine"},
