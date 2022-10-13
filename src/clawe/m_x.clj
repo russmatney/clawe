@@ -18,7 +18,23 @@
    [notebooks.core :as notebooks]
    [ralphie.notify :as notify]
    [ralphie.browser :as browser]
-   [ralphie.emacs :as emacs]))
+   [ralphie.emacs :as emacs]
+   [ralphie.clipboard :as clipboard]
+   [org-crud.markdown :as org-crud.markdown]
+   [org-crud.parse :as org-crud.parse]
+   [clojure.string :as string]))
+
+(defn clipboard-org->markdown
+  ([] (clipboard-org->markdown nil))
+  ([_]
+   (->> (clipboard/get-clip "clipboard")
+        string/split-lines
+        org-crud.parse/parse-lines
+        org-crud.markdown/item->md-body
+        (string/join "\n")
+        clipboard/set-clip)))
+
+(defcom/defcom convert-clipboard-org-to-markdown clipboard-org->markdown)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; kill

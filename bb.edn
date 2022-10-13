@@ -14,7 +14,10 @@
                                        :git/sha "1a841c4cc1d4f6dab7505a98ed2d532dd9d56b78"}
 
          io.github.borkdude/quickblog
-         {:local/root "../../borkdude/quickblog"}}
+         {:local/root "../../borkdude/quickblog"}
+
+         russmatney/org-crud {:git/url "https://github.com/russmatney/org-crud"
+                              :git/sha "3204a84f7d5a7cd625e10faf72f45babf5a0fe6d"}}
  :tasks
  {:requires ([clojure.string :as string]
              [clojure.pprint :as pprint]

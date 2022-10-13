@@ -19,8 +19,9 @@
   org.clojure/tools.reader           {:mvn/version "1.3.6"}
   backtick/backtick                  {:mvn/version "0.3.4"}
   aysylu/loom                        {:mvn/version "1.0.2"}
-  russmatney/org-crud                {:git/url "https://github.com/russmatney/org-crud.git"
-                                      :sha     "de4d19a06627da2f1a7b2cd91c0e07dea110f111"}
+
+  russmatney/org-crud {:git/url "https://github.com/russmatney/org-crud"
+                       :git/sha "3204a84f7d5a7cd625e10faf72f45babf5a0fe6d"}
   io.github.borkdude/quickblog
   {:local/root "../../borkdude/quickblog"}}
  :aliases
