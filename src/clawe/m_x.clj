@@ -158,6 +158,13 @@
                       (workspace.open/open-new-workspace wsp)
                       ;; TODO may need to handle a race-case, or pass in new wsp info to avoid it
                       (client.create/create-client "emacs"))}
+   (when (-> wsp :workspace/directory)
+     ;; TODO not relevant for every workspace
+     {:rofi/label     "Open on Github"
+      :rofi/on-select (fn [_]
+                        (let [dir      (:workspace/directory wsp)
+                              repo-url (string/replace dir "~" "https://github.com")]
+                          (browser/open {:url repo-url})))})
    {:rofi/label     "Open Workspace and terminal"
     :rofi/on-select (fn [_]
                       (workspace.open/open-new-workspace wsp)
