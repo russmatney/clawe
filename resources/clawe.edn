@@ -31,6 +31,7 @@
   "Spicetify" {:workspace/directory "~/Comfy-Themes/Spicetify"},
   "spicetify-cli" {:workspace/directory "~/spicetify/spicetify-cli"},
   "heroicons" {:workspace/directory "~/tailwindlabs/heroicons"},
+  "watch" {:workspace/directory "~/rads/watch"},
   "editscript" {:workspace/directory "~/juji-io/editscript"},
   "lila-ws" {:workspace/directory "~/lichess-org/lila-ws"},
   "ViewportPlus"

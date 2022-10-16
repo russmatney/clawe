@@ -80,7 +80,9 @@
   (determine-initial-file (zsh/expand "~/borkdude/babashka/readme.org")))
 
 (defn open
-  "Opens a new emacs client in the passed workspace.
+  "An opinionated emacs open command.
+
+  Opens a new emacs client with opts from the passed workspace.
 
   Uses the passed workspace data to direct emacs to the relevant initial file
   and named emacs workspace."
