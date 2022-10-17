@@ -22,7 +22,8 @@
    [ralphie.clipboard :as clipboard]
    [org-crud.markdown :as org-crud.markdown]
    [org-crud.parse :as org-crud.parse]
-   [clojure.string :as string]))
+   [clojure.string :as string]
+   [cheshire.core :as json]))
 
 (defn clipboard-org->markdown
   ([] (clipboard-org->markdown nil))
@@ -35,6 +36,22 @@
         clipboard/set-clip)))
 
 (defcom/defcom convert-clipboard-org-to-markdown clipboard-org->markdown)
+
+(defn clipboard-json->edn
+  ([] (clipboard-json->edn nil))
+  ([_]
+   (let [json-blob (-> (clipboard/get-clip "clipboard") (string/trim))
+         ;; for now assumes we're grabbing a partial object, so a leading
+         ;; string means we'll wrap the whole thing as an object
+         json-blob (if (re-seq #"^\"" json-blob)
+                     (str "{" json-blob "}")
+                     json-blob)]
+     (->> json-blob
+          (#(json/parse-string % true))
+          str
+          clipboard/set-clip))))
+
+(defcom/defcom convert-clipboard-json-to-edn clipboard-json->edn)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; kill
