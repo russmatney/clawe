@@ -84,9 +84,8 @@
    (do
      (shell "systemctl --no-pager --user status doctor-be doctor-fe doctor-topbar")
      (pp "TODO impl ensure local symlinks")
-     (let [tauri-doctor-executable "./src-tauri/target/debug/doctor"]
-       (when-not (fs/file-exists? tauri-doctor-executable)
-         (pp (str "Missing tauri doctor executable! " tauri-doctor-executable)))))}
+
+     (pp "TODO impl ensure `clove` is installed"))}
 
   dev-deps
   {:doc "Perform any install and build steps required for development"
@@ -98,18 +97,7 @@
 
      ;; local symlinks
      (log/info "TODO impl ensure local symlinks (ln -s ~/Screenshots public/assets/screenshots)")
-     (shelll "l public/assets")
-
-     ;; tauri
-     (shelll {:dir "./src-tauri"}
-             "cargo install tauri-cli --git https://github.com/tauri-apps/tauri"))}
-
-  tauri-dev
-  {:doc "Run tauri in dev mode, rebuilding the exec on local rust changes."
-   :task
-   (shell
-     {:dir (str (home-dir) "/russmatney/clawe/src-tauri")}
-     "cargo tauri dev")}
+     (shelll "l public/assets"))}
 
   doctor-be {:doc "Run the doctor backend."
              :task

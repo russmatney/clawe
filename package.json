@@ -7,7 +7,6 @@
     "@js-joda/core": "^5.2.0",
     "@js-joda/locale_en-us": "^4.7.0",
     "@js-joda/timezone": "^2.5.0",
-    "@tauri-apps/api": "=1.0.0-rc.5",
     "autoprefixer": "^10.4.7",
     "chess.js": "^0.13.2",
     "chessground": "^8.2.1",
@@ -29,7 +28,6 @@
   },
   "devDependencies": {
     "@heroicons/react": "^2.0.8",
-    "@tauri-apps/cli": "=1.0.0-rc.10",
     "shadow-cljs": "^2.19.0"
   }
 }

@@ -134,6 +134,11 @@ A shadow-cljs process runs the typical frontend clojurescript environment.
 *** Tauri topbar, doctor
 Tauri is used, really just for it's webview, to serve the topbar and a 'native'
 doctor web app (though I often work in a [[https://www.mozilla.org/en-US/firefox/developer/][proper dev browser]] as well.)
+
+Lately this is impled via `clove`, which wraps a Tauri app and exposes an api
+for launching transparent apps at arbitrary urls.
+
+See the [[https://github.com/russmatney/clove][clove repo]] for install instructions.
 ** Doctor features
 With those runtime distinctions in mind...
 
