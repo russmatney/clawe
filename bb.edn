@@ -29,7 +29,7 @@
   :init
   (do
     (def doctor-fe-url "http://localhost:3333")
-    (def doctor-tauri-executable "./src-tauri/target/debug/doctor")
+    (def doctor-tauri-executable "clove") ;; installed from russmatney/clove
 
     (defn env [s] (System/getenv s))
 
@@ -57,7 +57,7 @@
              label name
              cmd   (str doctor-tauri-executable " create-window"
                         " --title " title " --label " label " --url " url)]
-         (pp (str "Running doctor tauri app: " cmd))
+         (pp (str "Running clove app: " cmd))
          (shell {:dir (str (home-dir) "/russmatney/clawe")} cmd)))))
 
   home (pp (home-dir))

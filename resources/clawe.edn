@@ -77,6 +77,8 @@
   {:workspace/directory "~/russmatney/my_first_flutter_app"},
   "journal"
   {:workspace/directory "~/todo", :workspace/preferred-index 0},
+  "clove" {:workspace/directory "~/russmatney/clove"},
+  "clover" {:workspace/directory "~/russmatney/clover"},
   "godot" {:workspace/directory "~/godotengine/godot"}},
  :repo-roots ["~/russmatney/*" "~/teknql/*"],
  :client/defs
