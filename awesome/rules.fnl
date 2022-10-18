@@ -76,7 +76,7 @@
           :properties {:floating true
                        :focus false}}
 
-         {:rule {:name "tauri/doctor-topbar"}
+         {:rule {:name "tauri-doctor-topbar"}
           :properties
           {:tag "journal"
            :sticky true

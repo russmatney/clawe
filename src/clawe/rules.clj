@@ -107,7 +107,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn is-bar-app? [client]
-  (-> client :client/window-title #{"tauri/doctor-topbar"}))
+  (-> client :client/window-title #{"tauri-doctor-topbar"}))
 
 (defn clean-workspaces
   "Closes workspaces with 0 clients or nil titles."

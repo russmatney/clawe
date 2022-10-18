@@ -265,10 +265,6 @@
           view))
     (map ->namespaced-client)))
 
-(comment
-  (->> (all-clients)
-       (filter (comp #(= % "tauri/doctor-topbar") :awesome.client/name))))
-
 (defn clients-for-class [nm]
   (some->>
     (all-clients)

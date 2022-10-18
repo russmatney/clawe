@@ -22,7 +22,7 @@
    [wing.core :as w]))
 
 (defn skip-bar-app? [client]
-  (-> client :client/window-title #{"tauri/doctor-topbar"}))
+  (-> client :client/window-title #{"tauri-doctor-topbar"}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Icons

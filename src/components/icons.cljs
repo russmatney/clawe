@@ -127,9 +127,9 @@
       {:color "text-city-green-400"
        :src   "/assets/candy-icons/Zoom.svg"}
 
-      (or (#{"tauri/doctor-topbar"
-             "tauri/doctor-popup"
-             "tauri/doctor-todo"
+      (or (#{"tauri-doctor-topbar"
+             "tauri-doctor-popup"
+             "tauri-doctor-todo"
              "Tauri App"} window-title)
           (#{"doctor"} app-name))
       {:color "text-city-blue-600"

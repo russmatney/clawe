@@ -15,7 +15,7 @@
 (defn skip-bar-app? [client]
   (and
     (-> client :awesome.client/focused not)
-    (-> client :awesome.client/name #{"tauri/doctor-topbar"})))
+    (-> client :awesome.client/name #{"tauri-doctor-topbar"})))
 
 #?(:cljs
    (defn use-workspaces []

@@ -4,6 +4,7 @@
   "game-assets" {:workspace/directory "~/game-assets"},
   "godot-demo-projects"
   {:workspace/directory "~/godotengine/godot-demo-projects"},
+  "clove" {:workspace/directory "~/russmatney/clove"},
   "quickblog" {:workspace/directory "~/borkdude/quickblog"},
   "ink-library" {:workspace/directory "~/inkle/ink-library"},
   "new-blog" {:workspace/directory "~/russmatney/new-blog"},
@@ -77,7 +78,6 @@
   {:workspace/directory "~/russmatney/my_first_flutter_app"},
   "journal"
   {:workspace/directory "~/todo", :workspace/preferred-index 0},
-  "clove" {:workspace/directory "~/russmatney/clove"},
   "clover" {:workspace/directory "~/russmatney/clover"},
   "godot" {:workspace/directory "~/godotengine/godot"}},
  :repo-roots ["~/russmatney/*" "~/teknql/*"],
@@ -154,7 +154,7 @@
   "topbar"
   {:client/workspace-title "doctor",
    :client/app-names ["doctor"],
-   :client/window-title "tauri/doctor-topbar",
+   :client/window-title "clove-doctor-topbar",
    :client/create
    {:create/cmd ralphie.tmux/fire,
     :tmux.fire/cmd "bb --config ~/russmatney/clawe/bb.edn topbar",
@@ -162,7 +162,7 @@
     :tmux.fire/interrupt? true}},
   "clerk"
   {:client/app-names ["doctor"],
-   :client/window-title "tauri/doctor-clerk",
+   :client/window-title "tauri-doctor-clerk",
    :client/create
    {:create/cmd ralphie.tmux/fire,
     :tmux.fire/cmd "bb --config ~/russmatney/clawe/bb.edn clerk",
@@ -171,7 +171,7 @@
    :client/workspace-title "clerk"},
   "todo"
   {:client/app-names ["doctor"],
-   :client/window-title "tauri/doctor-todo",
+   :client/window-title "tauri-doctor-todo",
    :client/create
    {:create/cmd ralphie.tmux/fire,
     :tmux.fire/cmd "bb --config ~/russmatney/clawe/bb.edn todo",
@@ -195,7 +195,7 @@
     :tmux.fire/interrupt? true}},
   "clerk-workspace"
   {:client/app-names ["doctor"],
-   :client/window-title "tauri/doctor-clerk-workspace",
+   :client/window-title "tauri-doctor-clerk-workspace",
    :client/create
    {:create/cmd ralphie.tmux/fire,
     :tmux.fire/cmd

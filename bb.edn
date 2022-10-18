@@ -53,7 +53,7 @@
       ([name] (run-doctor-tauri-app nil name))
       ([opts name]
        (let [url   (:url opts (str doctor-fe-url "/" name))
-             title (str "tauri/doctor-" name)
+             title (str "tauri-doctor-" name)
              label name
              cmd   (str doctor-tauri-executable " create-window"
                         " --title " title " --label " label " --url " url)]
