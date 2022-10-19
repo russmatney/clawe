@@ -267,9 +267,10 @@
             (:workspace/title current-workspace)]
            #_[current-task opts]
            [:span
-            {:class ["text-city-blue-500"]}
+            {:class ["text-city-blue-500" "font-mono"]}
             (-> current-workspace
                 :workspace/directory
+                (string/replace "/home/russ" "~")
                 (string/replace "/Users/russ" "~"))]]))
 
       ;; clock/host/metadata

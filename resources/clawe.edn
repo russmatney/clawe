@@ -27,6 +27,7 @@
   "pluggs" {:workspace/directory "~/russmatney/pluggs"},
   "org-roam" {:workspace/directory "~/org-roam/org-roam"},
   "re-db" {:workspace/directory "~/mhuebert/re-db"},
+  "just" {:workspace/directory "~/casey/just"},
   "godot-LDtk-import"
   {:workspace/directory "~/levigilbert/godot-LDtk-import"},
   "Spicetify" {:workspace/directory "~/Comfy-Themes/Spicetify"},
