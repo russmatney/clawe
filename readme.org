@@ -13,6 +13,9 @@ Alien #2: The claw chooses who will go and who will stay.
 Woody: This is ludicrous.
 #+end_quote
 
+For more on Clawe beyond the below readme, check out the [[https://danger.russmatney.com/note/workspaces/clawe.html][clawe workspace garden
+file]] on my blog.
+
 * Clawe is a clojure-centric window-manager, uh, -manager
 It is named after the shape of your hand while trying to nail some of these key
 bindings.

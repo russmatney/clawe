@@ -18,5 +18,6 @@
 
 ;; ### tmux panes
 
+^::clerk/no-cache
 (clerk/table
   (debug/ls {:type :tmux-panes}))
