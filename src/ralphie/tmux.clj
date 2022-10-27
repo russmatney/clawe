@@ -12,7 +12,8 @@
    [ralphie.rofi :as rofi]
    [ralphie.sh :as r.sh]
    [ralphie.zsh :as zsh]
-   [clojure.java.shell :as sh]))
+   [clojure.java.shell :as sh]
+   [babashka.fs :as fs]))
 
 
 ;; TODO sync sessions/window/panes with defs/workspaces - similar to awm tags and emacs workspaces
@@ -203,7 +204,7 @@
     (->
       ^{:out :string}
       ($ tmux new-session -d
-         -c ~(if directory directory "~")
+         -c ~(if directory directory (fs/home))
          -s ~session-name
          -n ~(or window-name session-name))
       check
@@ -283,7 +284,9 @@
      (string? opts-or-str)
      (fire opts-or-str nil)))
   ([cmd-str opts]
-   (let [{:tmux.fire/keys [cmd session window pane interrupt?
+   (let [;; TODO default to the latest or in-context session/window/pane
+         ;; follow the emacs/open last-used behavior
+         {:tmux.fire/keys [cmd session window pane interrupt?
                            directory]} (or opts {})
 
          cmd-str (or cmd-str cmd)
