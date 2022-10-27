@@ -1,4 +1,4 @@
-(ns clawe.m-x
+(ns clawe.mx
   (:require
    [defthing.defkbd :as defkbd]
    [defthing.defcom :as defcom]
@@ -211,11 +211,11 @@
                               (fn [w] (wsp-action-rofi w))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; m-x fast
+;; mx fast
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn m-x-commands-fast
-  ([] (m-x-commands-fast nil))
+(defn mx-commands-fast
+  ([] (mx-commands-fast nil))
   ([_]
    (->>
      (concat
@@ -240,16 +240,16 @@
      (remove nil?))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; m-x full
+;; mx full
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn m-x-commands
-  ([] (m-x-commands nil))
+(defn mx-commands
+  ([] (mx-commands nil))
   ([{:keys [wsp]}]
    (let [wsp (or wsp (wm/current-workspace))]
      (->>
        (concat
-         (m-x-commands-fast)
+         (mx-commands-fast)
 
          ;; run bb tasks for the current workspace
          (bb-tasks-for-wsp wsp)
@@ -272,10 +272,10 @@
        (remove nil?)))))
 
 (comment
-  (m-x-commands)
+  (mx-commands)
 
   (->>
-    (m-x-commands)
+    (mx-commands)
     (filter :defcom/name)
     (filter (comp #(re-seq #"key" %) :defcom/name))
     (first)
@@ -286,23 +286,23 @@
 ;; public
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn m-x
-  "Run rofi with commands created in `m-x-commands`."
-  ([] (m-x nil))
+(defn mx
+  "Run rofi with commands created in `mx-commands`."
+  ([] (mx nil))
   ([_]
    (let [wsp (wm/current-workspace)]
-     (->> (m-x-commands {:wsp wsp})
+     (->> (mx-commands {:wsp wsp})
           (rofi/rofi {:require-match? true
                       :msg            "Clawe commands"})))))
 
-(defn m-x-fast
-  "Run rofi with commands created in `m-x-commands-fast`."
-  ([] (m-x-fast nil))
+(defn mx-fast
+  "Run rofi with commands created in `mx-commands-fast`."
+  ([] (mx-fast nil))
   ([_]
-   (->> (m-x-commands-fast)
+   (->> (mx-commands-fast)
         (rofi/rofi {:require-match? true
                     :msg            "Clawe commands (fast)"}))))
 
 (comment
-  (m-x)
-  (m-x-fast))
+  (mx)
+  (mx-fast))

@@ -36,7 +36,7 @@ machine.
 - Configurable, toggle-able clients that can be repo-workspace aware
   - [[https://github.com/russmatney/clawe/blob/db7042b02ba8ed9f8dc35f98c901a8ff5d07953b/src/clawe/toggle.clj][clawe.toggle namespace]]
 - [[https://github.com/davatorium/rofi][Rofi]] (or via [[https://github.com/chipsenkbeil/choose][choose]] on osx) for listing available commands
-  - [[https://github.com/russmatney/clawe/blob/db7042b02ba8ed9f8dc35f98c901a8ff5d07953b/src/clawe/m_x.clj][clawe.m-x]] and [[https://github.com/russmatney/clawe/blob/master/src/ralphie/rofi.clj][ralphie.rofi]] namespaces
+  - [[https://github.com/russmatney/clawe/blob/db7042b02ba8ed9f8dc35f98c901a8ff5d07953b/src/clawe/m_x.clj][clawe.mx]] and [[https://github.com/russmatney/clawe/blob/master/src/ralphie/rofi.clj][ralphie.rofi]] namespaces
 - Useful Babashka-based namespaces
   - [[https://github.com/russmatney/clawe/blob/db7042b02ba8ed9f8dc35f98c901a8ff5d07953b/src/ralphie/browser.clj][ralphie.browser]]
   - [[https://github.com/russmatney/clawe/blob/db7042b02ba8ed9f8dc35f98c901a8ff5d07953b/src/ralphie/clipboard.clj][ralphie.clipboard]]
