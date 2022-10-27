@@ -23,7 +23,8 @@
    [org-crud.markdown :as org-crud.markdown]
    [org-crud.parse :as org-crud.parse]
    [clojure.string :as string]
-   [cheshire.core :as json]))
+   [cheshire.core :as json]
+   [ralphie.re :as re]))
 
 (defn clipboard-org->markdown
   ([] (clipboard-org->markdown nil))
@@ -211,8 +212,41 @@
                               (fn [w] (wsp-action-rofi w))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; neil
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn add-neil-dep [{:keys [repo-id]}]
+  ;; TODO specify a dir with the current wsp?
+  (let [wsp (wm/current-workspace)]
+    (tmux/fire
+      {:tmux.fire/cmd       (str "neil add dep --lib " repo-id " --latest-tag")
+       :tmux.fire/session   (:workspace/title wsp)
+       :tmux.fire/directory (:workspace/directory wsp)})))
+
+(comment
+  (add-neil-dep {:repo-id "teknql/wing"}))
+
+(defn rofi-neil-suggestions []
+  (concat
+    (->> (clipboard/values)
+         (map (fn [v]
+                (when-let [repo-id (re/url->repo-id v)]
+                  {:repo-id        repo-id
+                   :rofi/label     (str "neil add dep " repo-id " (from clipboard)")
+                   :rofi/on-select add-neil-dep})))
+         (filter :repo-id))
+    (->> (browser/tabs)
+         (map (fn [t]
+                (when-let [repo-id (re/url->repo-id (:tab/url t))]
+                  {:repo-id        repo-id
+                   :rofi/label     (str "neil add dep " repo-id " (from open tabs)")
+                   :rofi/on-select add-neil-dep})))
+         (filter :repo-id))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; mx fast
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 
 (defn mx-commands-fast
   ([] (mx-commands-fast nil))
@@ -231,6 +265,8 @@
                                 (when-let [repo-id (:repo-id x)]
                                   (workspace.open/create-workspace-def-from-path repo-id))
                                 (f arg))))))))
+
+       (rofi-neil-suggestions)
 
        (client-defs)
        (workspace-defs)
