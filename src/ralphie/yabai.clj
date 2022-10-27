@@ -592,3 +592,37 @@ dy will become its new position. "
 
 (defcom set-new-label-for-space
   (label-space-with-user-input))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; fix topbar
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;; yabai -m window
+;;  $(yabai -m query --windows | jq '[.[] | select(.title == "tauri-doctor-topbar")][0].id')
+;; --move abs:0:1134
+;; && yabai -m window $(yabai -m query --windows | jq '[.[] | select(.title == "tauri-doctor-topbar")][0].id')
+;; --resize abs:1800:36
+
+#_{:clj-kondo/ignore [:clojure-lsp/unused-public-var]}
+(defn fix-topbar
+  ([] (fix-topbar nil))
+  ([_]
+   (println "fixing topbar")
+   (let [topbar-window (some->> (query-windows)
+                                (filter :yabai.window/title)
+                                (filter (comp #(string/includes? % "tauri-doctor-topbar") :yabai.window/title))
+                                first)]
+     (when-not topbar-window
+       (println "now topbar window found"))
+     (when topbar-window
+       (->
+         ^{:out :string}
+         (process/$ yabai -m window ~(:yabai.window/id topbar-window) --move "abs:0:1134")
+         process/check
+         :out)
+       (->
+         ^{:out :string}
+         (process/$ yabai -m window ~(:yabai.window/id topbar-window) --resize "abs:1800:36")
+         process/check
+         :out)))))
