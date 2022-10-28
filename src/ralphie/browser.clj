@@ -189,3 +189,30 @@ Depends on `brotab`."
   (open-dev)
   (open-dev {:url "http://localhost:3334/notebooks/clawe"})
   )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; reload
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn reload-tab [tab]
+  (let [tab-id (:tab/id tab)
+        url    (:tab/url tab)]
+    (->
+      ^{:out :string}
+      (p/$ bt navigate ~tab-id ~url)
+      p/check :out)))
+
+(comment
+  (->> (tabs) first))
+
+(defn reload-tabs [opts]
+  (let [to-reload
+        (->> (tabs)
+             (filter (fn [tab]
+                       (cond
+                         (:url-match opts) (string/includes? (:tab/url tab) (:url-match opts))
+                         :else             false))))]
+    (doseq [tab to-reload] (reload-tab tab))))
+
+(comment
+  (reload-tabs {:url-match "localhost:9999"}))
