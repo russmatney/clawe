@@ -9,7 +9,8 @@
    [clawe.wm :as wm]
    [notebooks.viewers.my-notebooks :as my-notebooks]))
 
-(clerk/add-viewers! [my-notebooks/viewer])
+#_(clerk/add-viewers! [my-notebooks/viewer])
+(clerk/reset-viewers! (clerk/get-default-viewers))
 
 (def current-workspace
   (->>
@@ -23,7 +24,7 @@
 
 current-workspace
 
-;; ### clients
+;; # clients
 
 (clerk/table
   {::clerk/width :full}
@@ -33,8 +34,7 @@ current-workspace
 
 (clerk/table
   {::clerk/width :full}
-  (debug/ls {:type :clients
-             :all  true}))
+  (debug/ls {:type :clients :all true}))
 
 ;; ### workspaces
 
