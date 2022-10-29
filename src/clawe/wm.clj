@@ -201,6 +201,26 @@
       first)))
 
 (comment
+  (fetch-client "twitch-chat")
+  (clawe.config/client-def "twitch-chat")
+  (clawe.config/reload-config)
+
+  (clawe.config/client-def "web")
+
+  (->>
+    (active-clients)
+    (map client/strip)
+    )
+
+  (some->>
+    (active-clients)
+    (take 3)
+    (filter (partial client/match?
+                     (clawe.config/client-def "web")))
+    first
+    )
+
+  (fetch-client "web")
   (fetch-client "journal")
   (focused-client)
   (active-clients))
@@ -263,14 +283,13 @@
   ([opts client] (wm.protocol/-bury-client *wm* opts client)))
 
 (defn bury-clients
-  [clients]
-  (doseq [cli clients] (bury-client cli)))
-
-(defn bury-all-clients
-  ([] (bury-all-clients nil))
-  ([opts] (wm.protocol/-bury-all-clients *wm* opts)))
-
-(comment bury-all-clients)
+  ([] (bury-clients (active-clients)))
+  ([clients]
+   (->>
+     clients
+     (remove :bury/ignore)
+     (map bury-client)
+     doall)))
 
 (declare move-client-to-workspace)
 (defn show-client
@@ -285,9 +304,11 @@
      (move-client-to-workspace
        client (or (:current-workspace opts) (current-workspace)))
 
-     ;; TODO bring client to top instead
      (try
-       (bury-clients (:clients (or (:current-workspace opts) (current-workspace))))
+       (bury-clients (:workspace/clients
+                      (or (:current-workspace opts)
+                          (current-workspace
+                            {:prefetched-clients (active-clients)}))))
        (catch Exception e
          (println "[WARN]: bury-clients not impled (or some other error)")
          (println e)
@@ -295,6 +316,14 @@
 
      (focus-client (merge {:float-and-center (:focus/float-and-center client true)} opts)
                    client))))
+
+(comment
+  (fetch-client "web")
+  (show-client "web")
+
+  (:workspace/clients
+   (current-workspace
+     {:prefetched-clients (active-clients)})))
 
 (defn client->workspace-title [client]
   (or (:client/workspace-title client)
