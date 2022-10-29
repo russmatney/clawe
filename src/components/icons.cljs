@@ -135,6 +135,11 @@
       {:color "text-city-blue-600"
        :icon  mdi/doctor}
 
+      (#{"clove"} app-name)
+      {:color "text-city-blue-600"
+       ;; TODO pick a better icon
+       :icon mdi/account-heart}
+
       (string/includes? window-title "developer tools")
       {:color "text-city-blue-600"
        :src   "/assets/candy-icons/firefox-developer-edition.svg"}
