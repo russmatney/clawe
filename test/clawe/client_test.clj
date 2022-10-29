@@ -94,3 +94,37 @@
           {:client/window-title "my-client" :client/app-name "some-app"}
           {:client/window-title "some-very-diff-title"
            :client/app-names    ["some-app" "app" "names"] :client/key "my-client-key"}))))
+
+(deftest matching-web-example
+  (testing "should find web in active clients"
+    (let [client-desc {:client/app-names       ["Safari" "firefox"]
+                       :match/ignore-names     ["picture-in-picture"]
+                       :client/workspace-title "web"
+                       :match/skip-title       true}
+          active-clients
+          [{:client/focused      true
+            :client/window-title "clawe"
+            :client/app-name     "emacs"}
+           {:client/focused      false
+            :client/window-title "twitch-chat"
+            :client/app-name     "clove"}
+           {:client/key             "obs"
+            :client/focused         false
+            :client/app-names       ["obs"]
+            :client/window-title    "windowed projector (source) - video capture device (v4l2)"
+            :match/skip-title       true
+            :client/app-name        "obs"
+            :client/workspace-title "obs"}
+           {:client/key             "web"
+            :client/focused         false
+            :client/app-names       ["Safari" "firefox"]
+            :client/window-title    "russmatney/clove: wrapper for tauri accepting a url on the command line — mozilla firefox"
+            :match/skip-title       true
+            :client/app-name        "firefox"
+            :client/workspace-title "web"}]
+
+          found-web (->>
+                      active-clients
+                      (filter (partial client/match? client-desc client-desc))
+                      first)]
+      (is found-web))))

@@ -197,7 +197,7 @@
     ;; TODO refactor into protocol (perf)
     (some->>
       (active-clients)
-      (filter (partial client/match? client))
+      (filter (partial client/match? client client))
       first)))
 
 (comment
