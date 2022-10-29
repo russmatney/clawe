@@ -88,6 +88,7 @@
       (= (count matches) 0)
       ;; TODO this works for most cases but breaks when skipping title on emacs matches
       ;; b/c the journal and wsp-emacs clients both match for skip-title emacs clients
+      ^{:clj-kondo/ignore [:redundant-do]}
       (do
         #_(println "WARN: zero matching defs found for client" (client/strip client))
         client)
@@ -266,18 +267,6 @@
    (sys/start! `*wm*)
    (wm.protocol/-focus-workspace *wm* opts workspace)))
 
-(defn focus-client
-  "Intended as a send-focus only - does not pull clients to the workspace.
-  (unless you are on osx ...?)."
-  ([client] (focus-client
-              ;; client supplies opts in single arity case
-              client client))
-  ([opts client]
-   (sys/start! `*wm*)
-   (let [client (cond (map? client)    client
-                      (string? client) (fetch-client client))]
-     (wm.protocol/-focus-client *wm* opts client))))
-
 (defn bury-client
   ([client] (bury-client nil client))
   ([opts client] (wm.protocol/-bury-client *wm* opts client)))
@@ -291,6 +280,30 @@
      (map bury-client)
      doall)))
 
+(defn focus-client
+  "Intended as a send-focus only - does not pull clients to the workspace.
+  (unless you are on osx ...?)."
+  ([client] (focus-client
+              ;; client supplies opts in single arity case
+              client client))
+  ([opts client]
+   (sys/start! `*wm*)
+   (let [client (cond (map? client)    client
+                      (string? client) (fetch-client client))]
+
+     (try
+       ;; maybe we want bury to be per-client configurable?
+       ;; i think it'd default to true...
+       (bury-clients (:workspace/clients
+                      (or (:current-workspace opts)
+                          (current-workspace
+                            {:prefetched-clients (active-clients)}))))
+       (catch Exception e
+         (println e)
+         (println "[WARN]: bury-clients not impled (or some other error)")))
+
+     (wm.protocol/-focus-client *wm* opts client))))
+
 (declare move-client-to-workspace)
 (defn show-client
   "Opts `:current-workspace`, `:focus/float-and-center`, `focus-client` opts"
@@ -303,16 +316,6 @@
      ;; suppose we need to float and center, then switch workspaces, then focus
      (move-client-to-workspace
        client (or (:current-workspace opts) (current-workspace)))
-
-     (try
-       (bury-clients (:workspace/clients
-                      (or (:current-workspace opts)
-                          (current-workspace
-                            {:prefetched-clients (active-clients)}))))
-       (catch Exception e
-         (println "[WARN]: bury-clients not impled (or some other error)")
-         (println e)
-         (println "[WARN]: bury-clients not impled (or some other error)")))
 
      (focus-client (merge {:float-and-center (:focus/float-and-center client true)} opts)
                    client))))
