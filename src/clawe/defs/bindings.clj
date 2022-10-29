@@ -134,12 +134,13 @@
   (do
     (let [current-window (awm/awm-fnl '(view _G.client.focus.window))
           current-client {:awesome.client/window current-window}]
+
+      ;; TODO consider burying here (focus-client used to bury things)
+
       ;; using this to take advantage of focus-client's :bury-all? option
       ;; that function could use a refactor
       ;; - maybe it's just an update-client-state function
-      (awm/focus-client {:center?   true
-                         :float?    true
-                         :bury-all? true} current-client))
+      (awm/focus-client {:float-and-center? true} current-client))
     (awm/awm-fnl
       '(let [c _G.client.focus]
          (tset c :ontop true)

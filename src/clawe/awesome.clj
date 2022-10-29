@@ -90,18 +90,12 @@
     (->> (awm/all-clients)
          (map awesome-client->clawe-client)))
 
-  (-bury-all-clients [_this _opts]
-    (awm/bury-all-clients))
-
   (-bury-client [_this _opts client]
     (awm/bury-client (:awesome.client/window client)))
 
   (-focus-client [_this opts client]
     (awm/focus-client
-      {:center?   (:float-and-center opts)
-       :float?    (:float-and-center opts)
-       ;; TODO consider bury-all alternatives, and pip/twitch-chat use-cases
-       :bury-all? false}
+      {:float-and-center? (:float-and-center opts)}
       ;; consider :client/window-id client attr
       (:awesome.client/window client)))
 
