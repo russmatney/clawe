@@ -114,17 +114,18 @@
   ([] (clean-workspaces nil))
   ([last]
    (notify/notify {:subject "Removing empty or title-less workspaces"})
-   (let [many-to-delete (->>
-                          (wm/active-workspaces {:include-clients true})
-                          (filter (fn [wsp]
-                                    (or
-                                      (-> wsp :workspace/title nil?)
-                                      (->> wsp :workspace/clients
-                                           (remove is-bar-app?)
-                                           seq empty?)))))
+   (let [wsps           (wm/active-workspaces {:include-clients true})
+         many-to-delete (->> wsps
+                             (filter (fn [wsp]
+                                       (or
+                                         (-> wsp :workspace/title nil?)
+                                         (->> wsp :workspace/clients
+                                              (remove is-bar-app?)
+                                              seq empty?)))))
          it             (some-> many-to-delete first)]
      (cond
-       (= 1 (count many-to-delete))
+       (and (= 1 (count wsps))
+            (seq many-to-delete))
        (notify/notify "Refusing to delete last workspace")
 
        (and (not (nil? it)) (= last it))
