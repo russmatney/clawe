@@ -428,7 +428,7 @@
   [window]
   ^{:quiet? false}
   (fnl
-    (each [c (awful.client.iterate (fn [c] (= window (. c :window))))]
+    (each [c (awful.client.iterate (fn [c] (= ~window (. c :window))))]
           ;; TODO support filter
           (tset c :ontop false)
           (tset c :above false)
@@ -439,8 +439,6 @@
   Focuses the client with the passed window-id.
 
   Options:
-  - :bury-all? - default: true.
-    Sets all other clients ontop and floating to false
   - :float? - default: true.
     Set this client ontop and floating to true
   - :center? - default: true.
@@ -448,30 +446,16 @@
   "
   ([window-id] (focus-client nil window-id))
   ([opts window-id]
-   (let [;; TODO consider bury-all alternatives, and pip/twitch-chat use-cases
-         bury-all? (:bury-all? opts false)
-         float?    (:float? opts true)
-         center?   (:center? opts true)]
+   (let [float-and-center? (:float-and-center? opts true)]
+     (println "opts" opts)
      (when window-id
        (fnl
-         (when ~bury-all?
-           (each [c (awful.client.iterate (fn [c]
-                                            (. c :ontop)))]
-                 ;; TODO filter things to bury/not-bury?
-                 (tset c :floating false)))
-
-         (each [c (awful.client.iterate (fn [c] (not (= (. c :ontop) ~window-id))))]
-               (tset c :ontop false)
-               (tset c :above false))
-
          (each [c (awful.client.iterate (fn [c] (= (. c :window) ~window-id)))]
 
-               (when ~float?
+               (when ~float-and-center?
                  (tset c :ontop true)
                  (tset c :above true)
-                 (tset c :floating true))
-
-               (when ~center?
+                 (tset c :floating true)
                  (awful.placement.centered c))
 
                ;; TODO set minimum height/width?
