@@ -88,6 +88,25 @@
                                         :tmux.fire/session   (:workspace/title wsp)
                                         :tmux.fire/directory dir})))))))))
 
+(defn deps-git-urls
+  ([] (deps-git-urls (wm/current-workspace)))
+  ([wsp]
+   (when-let [dir (:workspace/directory wsp)]
+     (->> (r.bb/deps dir)
+          (filter (comp :git/url second))
+          (map (fn [[lib coords]]
+                 (let [url (:git/url coords)]
+                   (assoc coords
+                          :lib lib
+                          :rofi/label (str "Open git url: " lib)
+                          :rofi/on-select
+                          (fn [_]
+                            (notify/notify (str "Opening url: " url))
+                            (browser/open url))))))))))
+
+(comment
+  (deps-git-urls))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; clerk notebooks
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -285,6 +304,9 @@
    (let [wsp (or wsp (wm/current-workspace))]
      (->>
        (concat
+         ;; open deps github page
+         (deps-git-urls wsp)
+
          (mx-commands-fast)
 
          ;; run bb tasks for the current workspace
