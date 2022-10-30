@@ -1,19 +1,19 @@
 {:client/defs
    {"aseprite"
       {:client/app-names ["aseprite"] :client/workspace-title "aseprite" :match/skip-title true}
-    "clerk" {:client/app-names ["doctor"]
+    "clerk" {:client/app-names ["clove"]
              :client/create {:create/cmd ralphie.tmux/fire
                              :tmux.fire/cmd "bb --config ~/russmatney/clawe/bb.edn clerk"
                              :tmux.fire/interrupt? true
                              :tmux.fire/session "doctor-clerk"}
              :client/window-title "tauri-doctor-clerk"
              :client/workspace-title "clerk"}
-    "clerk-workspace" {:client/app-names ["doctor"]
+    "clerk-workspace" {:client/app-names ["clove"]
                        :client/create {:create/cmd ralphie.tmux/fire
                                        :tmux.fire/cmd
                                          "bb --config ~/russmatney/clawe/bb.edn clerk-workspace"
                                        :tmux.fire/interrupt? true
-                                       :tmux.fire/session "doctor-clerk-workspace"}
+                                       :tmux.fire/session "doctor-workspace-clerk"}
                        :client/window-title "tauri-doctor-clerk-workspace"
                        :client/workspace-title "clerk-workspace"}
     "devweb" {:client/app-names ["firefoxdeveloperedition" "google-chrome"

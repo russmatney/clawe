@@ -258,9 +258,10 @@
                 first)))))
 
 (comment
-  (get-available-pane "clawe:.")
-  )
+  (get-available-pane "clawe:."))
 
+;; TODO support exact matching on sessions to prevent colliding tmux/fire commands
+;; e.g. doctor-clerk, doctor-clerk-workspace
 (defn fire
   "Aka tmux send-keys, but with handling for selecting/interrupting panes.
 
