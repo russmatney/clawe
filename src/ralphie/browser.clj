@@ -139,8 +139,9 @@ Depends on `brotab`."
   "Opens the passed url"
   ([] (open nil))
   ([opts]
-   (let [url (if (string? opts) opts
-                 (some opts [:url :browser.open/url]))]
+   (let [url (when opts
+               (if (string? opts) opts
+                   (some opts [:url :browser.open/url])))]
      (if notify/is-mac?
        (if url
          (->
