@@ -268,4 +268,5 @@ shift + cmd - g : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle -
 shift + cmd - x : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key xcode
 
 cmd - d : bb --config ~/russmatney/clawe/bb.edn -x clawe.rules/clean-up-workspaces
-cmd - x : bb --config ~/russmatney/clawe/bb.edn -x clawe.mx/mx
+cmd - x : bb --config ~/russmatney/clawe/bb.edn -x clawe.mx/mx-fast
+cmd - w : bb --config ~/russmatney/clawe/bb.edn -x clawe.mx/mx
