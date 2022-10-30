@@ -15,14 +15,15 @@
   (->f *file*)
   (some-> *file* fs/file-name fs/split-ext first))
 
-(def this-file *file*)
-
-(comment
-  (->> *file* fs/parent fs/list-dir)
-  )
+(defn project-root []
+  ;; TODO unhardcode those - not sure why *file* doesn't work :/
+  (str (fs/home) "/russmatney/clawe"))
 
 (defn notebooks []
-  (->> this-file fs/parent fs/list-dir
-       (remove fs/directory?)
-       (remove #(string/includes? % "core"))
-       (map str) (map ->f)))
+  (some->> (str (project-root) "/src/notebooks") fs/list-dir
+           (remove fs/directory?)
+           (remove (fn [path]
+                     (or
+                       (string/includes? path ".DS_Store")
+                       (string/includes? path "core"))))
+           (map str) (map ->f)))

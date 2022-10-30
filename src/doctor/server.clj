@@ -23,7 +23,11 @@
    [garden.watcher :as garden.watcher]
    [ralphie.notify :as notify]
    [notebooks.clerk :as notebooks.clerk]
-   [clojure.edn :as edn]))
+   [clojure.edn :as edn]
+   [hiccup.page :as hiccup]
+   [notebooks.core :as notebooks]
+   [babashka.fs :as fs]))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; transit helpers
@@ -172,10 +176,57 @@
                 (string/starts-with? uri "/notebooks/")
                 (let [notebook-sym (notebooks.clerk/path->notebook-sym uri)]
                   (log/info "loading notebook" notebook-sym)
+                  (let [{:keys [notebook error]}
+                        (try
+                          {:notebook
+                           (notebooks.clerk/ns-sym->html notebook-sym)}
+                          (catch Exception e
+                            (println "[CLERK] notebook build fail" notebook-sym)
+                            (println e)
+                            {:error e}))]
+                    (if notebook
+                      {:status  200
+                       :headers {"Content-Type" "text/html"}
+                       :body    notebook}
+                      {:status  200
+                       :headers {"Content-Type" "text/html"}
+                       :body
+                       (hiccup/html5
+                         [:html
+                          [:head]
+                          [:body
+                           [:div
+                            (str "No notebook or failed to load nb at uri: " uri)
+
+                            [:pre error]
+
+                            (->>
+                              (notebooks/notebooks)
+                              (map #(assoc % :ns (notebooks.clerk/path->notebook-sym (:uri %))))
+                              (map (fn [{:keys [name uri]}]
+                                     [:li
+                                      [:a {:href uri}
+                                       (str name)]]))
+                              (into [:ul]))]]])})))
+
+                (= "/" uri)
+                (let [body
+                      (hiccup/html5
+                        [:html
+                         [:head]
+                         [:body
+                          [:div
+                           (->>
+                             (notebooks/notebooks)
+                             (map #(assoc % :ns (notebooks.clerk/path->notebook-sym (:uri %))))
+                             (map (fn [{:keys [name uri]}]
+                                    [:li
+                                     [:a {:href uri}
+                                      (str name)]]))
+                             (into [:ul]))]]])]
                   {:status  200
                    :headers {"Content-Type" "text/html"}
-                   :body    (or (notebooks.clerk/ns-sym->html notebook-sym)
-                                (str "No notebook (or failed to load nb) at uri: " uri))})
+                   :body    body})
 
                 ;; poor man's router
                 :else (doctor.api/route req)))
