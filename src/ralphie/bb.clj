@@ -4,7 +4,8 @@
    [clojure.string :as string]
    [babashka.process :as process :refer [$]]
    [babashka.fs :as fs]
-   [ralphie.zsh :as zsh]))
+   [ralphie.zsh :as zsh]
+   [clojure.edn :as edn]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; run command helper
@@ -80,5 +81,31 @@
 
 (comment
   (tasks "~/russmatney/clawe")
-  (tasks "~/teknql/aave")
+  (tasks "~/teknql/aave"))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; deps
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn deps-from [path]
+  (when (fs/exists? path)
+    (let [edn (edn/read-string (slurp path))]
+      ;; TODO walk to aliases
+      (->> (:deps edn) (into #{})))))
+
+(comment
+  (deps-from (str (fs/home) "/russmatney/clawe/deps.edn"))
   )
+
+(defn deps [dir]
+  (when dir
+    (let [dir      (zsh/expand dir)
+          bb-edn   (str dir "/bb.edn")
+          deps-edn (str dir "/deps.edn")]
+      (concat
+        (deps-from bb-edn)
+        (deps-from deps-edn)))))
+
+(comment
+  (deps "~/russmatney/clawe")
+  (deps "~/teknql/aave"))
