@@ -82,14 +82,14 @@
                 :focus/float-and-center true
                 :hide/type :hide/close
                 :match/use-workspace-title true}
-    "todo" {:client/app-names ["doctor"]
+    "todo" {:client/app-names ["clove"]
             :client/create {:create/cmd ralphie.tmux/fire
                             :tmux.fire/cmd "bb --config ~/russmatney/clawe/bb.edn todo"
                             :tmux.fire/interrupt? true
                             :tmux.fire/session "doctor-todo"}
             :client/window-title "tauri-doctor-todo"
             :client/workspace-title "todo"}
-    "topbar" {:client/app-names ["doctor"]
+    "topbar" {:client/app-names ["clove"]
               :client/create {:create/cmd ralphie.tmux/fire
                               :tmux.fire/cmd "bb --config ~/russmatney/clawe/bb.edn topbar"
                               :tmux.fire/interrupt? true
