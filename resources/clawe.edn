@@ -63,11 +63,14 @@
                :client/create "/usr/bin/gtk-launch 1password.desktop"
                :client/workspace-title "onepass"
                :match/skip-title true}
+    "pavucontrol" {:client/app-names ["pavucontrol"]
+                   :client/workspace-title "spotify"
+                   :match/skip-title true}
     "slack" {:client/app-names ["Slack"]
              :client/create "slack"
              :client/workspace-title "slack"
              :match/skip-title true}
-    "spotify" {:client/app-names ["spotify" "pavucontrol"]
+    "spotify" {:client/app-names ["spotify"]
                :client/create "spotify"
                :client/workspace-title "spotify"
                :match/skip-title true}
@@ -93,8 +96,12 @@
                               :tmux.fire/session "doctor-topbar"}
               :client/window-title "clove-doctor-topbar"
               :client/workspace-title "doctor"}
+    "twitch-alerts"
+      {:bury/ignore true :client/app-names ["clove"] :client/window-title "twitch-alerts"}
     "twitch-chat"
       {:bury/ignore true :client/app-names ["clove"] :client/window-title "twitch-chat"}
+    "twitch-viewers"
+      {:bury/ignore true :client/app-names ["clove"] :client/window-title "twitch-viewers"}
     "web" {:client/app-names ["Safari" "firefox"]
            :client/create ralphie.browser/open
            :client/workspace-title "web"
