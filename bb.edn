@@ -17,7 +17,11 @@
          {:local/root "../../borkdude/quickblog"}
 
          russmatney/org-crud {:git/url "https://github.com/russmatney/org-crud"
-                              :git/sha "3204a84f7d5a7cd625e10faf72f45babf5a0fe6d"}}
+                              :git/sha "3204a84f7d5a7cd625e10faf72f45babf5a0fe6d"}
+
+         kkinnear/zprint {:git/url "https://github.com/kkinnear/zprint"
+                          :git/tag "1.2.5-alpha1"
+                          :git/sha "15ea82a"}}
  :tasks
  {:requires ([clojure.string :as string]
              [clojure.pprint :as pprint]

@@ -1,19 +1,20 @@
 (ns clawe.config
   (:require
-   [clojure.pprint :as pprint]
    [aero.core :as aero]
    [clojure.java.io :as io]
    [ralphie.zsh :as zsh]
-   [systemic.core :as sys :refer [defsys]]))
+   [systemic.core :as sys :refer [defsys]]
+   [zprint.core :as zp]
+   [clojure.string :as string]))
 
 (defn calc-is-mac? []
   (boolean (#{"darwin21"} (zsh/expand "$OSTYPE"))))
 
-(def res (io/resource "clawe.edn"))
+(def config-res (io/resource "clawe.edn"))
 
 (defn ->config []
   (->
-    (aero/read-config res)
+    (aero/read-config config-res)
     (assoc :is-mac (calc-is-mac?))
     (assoc :home-dir (zsh/expand "~"))))
 
@@ -44,7 +45,9 @@
   (sys/start! `*config*)
   (let [updated-config  (merge @*config* updated-config)
         writable-config (apply dissoc updated-config do-not-write-keys)]
-    (pprint/pprint writable-config (io/writer res))))
+    (spit config-res (-> writable-config
+                         (zp/zprint-str 100)
+                         (string/replace "," "")))))
 
 (comment
   (write-config nil))
