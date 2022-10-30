@@ -63,8 +63,7 @@
 
     ;; clerk
     io.github.nextjournal/clerk {:git/url "https://github.com/nextjournal/clerk"
-                                 :git/tag "v0.11.603"
-                                 :git/sha "078a039"}
+                                 :git/sha "214c6113ac7ed004595097093a98f12de9472c75"}
     ;; https://github.com/babashka/process/issues/76
     ;; org.graalvm.js/js           {:mvn/version "22.1.0"}
 

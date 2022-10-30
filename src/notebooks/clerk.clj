@@ -91,6 +91,7 @@
   (eval-notebook 'notebooks.core)
   (eval-notebook 'notebooks.wallpapers)
   (eval-notebook 'notebooks.tmux)
+  (eval-notebook 'notebooks.org-daily)
   (eval-notebook 'notebooks.clawe)
   (eval-notebook 'notebooks.dice))
 
@@ -100,10 +101,10 @@
     [:head
      [:meta {:charset "UTF-8"}]
      [:meta {:name "viewport" :content "width=device-width, initial-scale=1"}]
-     (clerk-view/include-css+js)]
+     (clerk-view/include-css+js state)]
     [:body.dark:bg-gray-900
      [:div#clerk]
-     [:script "let viewer = nextjournal.clerk.sci_viewer
+     [:script {:type "module"} "let viewer = nextjournal.clerk.sci_env
 let state = " (-> state clerk-viewer/->edn pr-str) "
 viewer.set_state(viewer.read_string(state))
 viewer.mount(document.getElementById('clerk'))\n"
