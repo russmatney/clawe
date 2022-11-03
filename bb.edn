@@ -1,7 +1,7 @@
 {:paths ["src" "test" "resources"]
  :deps  {babashka/fs                        {:mvn/version "0.1.11"}
-         org.babashka/cli                   {:mvn/version "0.4.37"}
-         metosin/malli                      {:mvn/version "0.8.9"}
+         org.babashka/cli                   {:mvn/version "0.5.40"}
+         metosin/malli                      {:mvn/version "0.9.2"}
          com.lambdaisland/specmonstah-malli {:mvn/version "0.0.7"}
          aero/aero                          {:mvn/version "1.1.6"}
 
@@ -17,7 +17,7 @@
          {:local/root "../../borkdude/quickblog"}
 
          russmatney/org-crud {:git/url "https://github.com/russmatney/org-crud"
-                              :git/sha "3204a84f7d5a7cd625e10faf72f45babf5a0fe6d"}
+                              :git/sha "c0351f0ed8f2c12a66749c3dcdad9b4f8b36a747"}
 
          kkinnear/zprint {:git/url "https://github.com/kkinnear/zprint"
                           :git/tag "1.2.5-alpha1"

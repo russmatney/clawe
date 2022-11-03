@@ -6,7 +6,7 @@
  {teknql/systemic                    {:local/root "../../teknql/systemic"}
   teknql/wing                        {:local/root "../../teknql/wing"}
   aero/aero                          {:mvn/version "1.1.6"}
-  babashka/babashka                  {:mvn/version "1.0.164"}
+  babashka/babashka                  {:mvn/version "1.0.165"}
   babashka/babashka.pods             {:mvn/version "0.1.0"}
   babashka/babashka.curl             {:mvn/version "0.1.2"}
   babashka/process                   {:mvn/version "0.3.11"}
@@ -24,9 +24,9 @@
                        :git/sha "c0351f0ed8f2c12a66749c3dcdad9b4f8b36a747"}
   io.github.borkdude/quickblog
   {:local/root "../../borkdude/quickblog"}
-  kkinnear/zprint {:git/url "https://github.com/kkinnear/zprint"
-                   :git/tag "1.2.5-alpha1"
-                   :git/sha "15ea82a"}}
+  kkinnear/zprint     {:git/url "https://github.com/kkinnear/zprint"
+                       :git/tag "1.2.5-alpha1"
+                       :git/sha "15ea82a"}}
  :aliases
  {:dev      {:jvm-opts ["-XX:-OmitStackTraceInFastThrow"]}
   :outdated {:extra-deps {com.github.liquidz/antq {:mvn/version "2.1.939"}}
@@ -48,7 +48,7 @@
     cider/cider-nrepl             {:mvn/version "0.28.7"}
     refactor-nrepl/refactor-nrepl {:mvn/version "3.6.0"}
 
-    clj-kondo/clj-kondo {:mvn/version "2022.10.14"}
+    clj-kondo/clj-kondo {:mvn/version "2022.11.02"}
 
     ;; db
     datascript/datascript                 {:mvn/version "1.3.15"}
@@ -66,7 +66,7 @@
 
     ;; clerk
     io.github.nextjournal/clerk {:git/url "https://github.com/nextjournal/clerk"
-                                 :git/sha "214c6113ac7ed004595097093a98f12de9472c75"}
+                                 :git/sha "46147bb859322a9e2363baf1283d4594d2e46d34"}
     ;; https://github.com/babashka/process/issues/76
     ;; org.graalvm.js/js           {:mvn/version "22.1.0"}
 
