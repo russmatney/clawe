@@ -257,9 +257,13 @@
   [[:mod] "."]
   (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key onepass"))
 
-(defkbd toggle-workspace-doctor-todo
+;; (defkbd toggle-workspace-doctor-todo
+;;   [[:mod] "y"]
+;;   (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key todo"))
+
+(defkbd toggle-workspace-doctor-focus
   [[:mod] "y"]
-  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key todo"))
+  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key focus"))
 
 (defkbd toggle-workspace-doctor-workspace
   [[:mod :shift] "w"]

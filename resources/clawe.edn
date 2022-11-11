@@ -42,6 +42,13 @@
              :focus/float-and-center true
              :hide/type :hide/close
              :match/use-workspace-title true}
+    "focus" {:client/app-names ["clove"]
+             :client/create {:create/cmd ralphie.tmux/fire
+                             :tmux.fire/cmd "bb --config ~/russmatney/clawe/bb.edn focus"
+                             :tmux.fire/interrupt? true
+                             :tmux.fire/session "doctor-focus"}
+             :client/window-title "tauri-doctor-focus"
+             :client/workspace-title "focus"}
     "godot" {:client/app-names ["godot"]
              :client/workspace-title "godot"
              :match/soft-title true

@@ -33,7 +33,7 @@
   :init
   (do
     (def doctor-fe-url "http://localhost:3333")
-    (def doctor-tauri-executable "clove") ;; installed from russmatney/clove
+    (def clove-exec "clove") ;; installed from russmatney/clove
 
     (defn env [s] (System/getenv s))
 
@@ -59,7 +59,7 @@
        (let [url   (:url opts (str doctor-fe-url "/" name))
              title (str "tauri-doctor-" name)
              label name
-             cmd   (str doctor-tauri-executable " create-window"
+             cmd   (str clove-exec " create-window"
                         " --title " title " --label " label " --url " url)]
          (pp (str "Running clove app: " cmd))
          (shell {:dir (str (home-dir) "/russmatney/clawe")} cmd)))))
@@ -148,6 +148,8 @@
                    :task (run-doctor-tauri-app "popup")}
   todo            {:doc  "Run the doctor todo window via tauri."
                    :task (run-doctor-tauri-app "todo")}
+  focus           {:doc  "Run the doctor focus window via tauri."
+                   :task (run-doctor-tauri-app "focus")}
   clerk           {:doc  "Run the doctor clerk window via tauri."
                    ;; TODO capture/share/source of truth for this magic PORT?
                    :task (run-doctor-tauri-app {:url "http://localhost:3334/notebooks/clawe"} "clerk")}
