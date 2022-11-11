@@ -42,7 +42,8 @@
              :focus/float-and-center true
              :hide/type :hide/close
              :match/use-workspace-title true}
-    "focus" {:client/app-names ["clove"]
+    "focus" {:bury/ignore true
+             :client/app-names ["clove"]
              :client/create {:create/cmd ralphie.tmux/fire
                              :tmux.fire/cmd "bb --config ~/russmatney/clawe/bb.edn focus"
                              :tmux.fire/interrupt? true
@@ -129,9 +130,11 @@
     "aave" {:workspace/directory "~/teknql/aave"}
     "advent-of-code" {:workspace/directory "~/russmatney/advent-of-code"}
     "bbin" {:workspace/directory "~/babashka/bbin"}
+    "bean-of-the-wild" {:workspace/directory "~/nagidev/bean-of-the-wild"}
     "beatemup-three" {:workspace/directory "~/russmatney/beatemup-three"}
     "blog" {:workspace/directory "~/russmatney/blog" :workspace/preferred-index 3}
     "blorg" {:workspace/directory "~/eigenhombre/blorg"}
+    "book" {:workspace/directory "~/babashka/book"}
     "candy-icons" {:workspace/directory "~/EliverLara/candy-icons"}
     "cider" {:workspace/directory "~/clojure-emacs/cider"}
     "clawe" {:workspace/directory "~/russmatney/clawe" :workspace/preferred-index 2}
@@ -151,10 +154,12 @@
     "editscript" {:workspace/directory "~/juji-io/editscript"}
     "fabb" {:workspace/directory "~/teknql/fabb"}
     "game-assets" {:workspace/directory "~/game-assets"}
+    "girouette" {:workspace/directory "~/green-coder/girouette"}
     "godot" {:workspace/directory "~/godotengine/godot"}
     "godot-LDtk-import" {:workspace/directory "~/levigilbert/godot-LDtk-import"}
     "godot-demo-projects" {:workspace/directory "~/godotengine/godot-demo-projects"}
     "godot-git-plugin" {:workspace/directory "~/godotengine/godot-git-plugin"}
+    "godot-tutorials" {:workspace/directory "~/nagidev/godot-tutorials"}
     "heroicons" {:workspace/directory "~/tailwindlabs/heroicons"}
     "ink-library" {:workspace/directory "~/inkle/ink-library"}
     "inkgd" {:workspace/directory "~/ephread/inkgd"}
@@ -165,6 +170,7 @@
     "lila" {:workspace/directory "~/lichess-org/lila"}
     "lila-ws" {:workspace/directory "~/lichess-org/lila-ws"}
     "malli" {:workspace/directory "~/metosin/malli"}
+    "mate" {:workspace/directory "~/green-coder/mate"}
     "morphe" {:workspace/directory "~/Workiva/morphe"}
     "my_first_flutter_app" {:workspace/directory "~/russmatney/my_first_flutter_app"}
     "neil" {:workspace/directory "~/babashka/neil"}
