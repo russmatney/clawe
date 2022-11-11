@@ -26,10 +26,14 @@
    [pages.garden :as pages.garden]
    [pages.posts :as pages.posts]
    [pages.journal :as pages.journal]
-   [hooks.db :as hooks.db]
+   #_[hooks.db :as hooks.db]
 
+   [doctor.ui.views.focus :as views.focus]
    [doctor.ui.views.topbar :as views.topbar]
    [doctor.ui.views.dashboard :as views.dashboard]))
+
+(comment
+  :hello)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; routes, home
@@ -50,7 +54,8 @@
    {:route "/wallpapers" :page-name :page/wallpapers :label "Wallpapers" :comp pages.wallpapers/page}
    {:route "/garden" :page-name :page/garden :label "Garden" :comp pages.garden/page}
    {:route "/posts" :page-name :page/posts :label "Posts" :comp pages.posts/page}
-   {:route "/journal" :page-name :page/journal :label "Journal" :comp pages.journal/page}])
+   {:route "/journal" :page-name :page/journal :label "Journal" :comp pages.journal/page}
+   {:route "/focus" :page-name :page/focus :label "Focus Widget" :comp views.focus/widget :comp-only true}])
 
 (def routes
   (->> route-defs
@@ -66,8 +71,10 @@
          :as   _route-def} (by-page-name page-name)
 
         ;; create fe db and pass it to every page
-        {:keys [conn]} (hooks.db/use-db)
-        opts           (assoc opts :conn conn)]
+        ;; TODO refactor frontend datastore
+        ;; {:keys [conn]} (hooks.db/use-db)
+        ;; opts           (assoc opts :conn conn)
+        ]
     (if comp
       (if comp-only
         [comp opts]
