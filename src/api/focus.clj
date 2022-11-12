@@ -3,7 +3,9 @@
             [org-crud.core :as org-crud]
             [clojure.set :as set]
             [systemic.core :as sys :refer [defsys]]
-            [manifold.stream :as s]))
+            [manifold.stream :as s]
+            [dates.tick :as dates.tick]
+            [tick.core :as t]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; domain
@@ -20,9 +22,20 @@
     :org/items
     (filter (comp seq #(set/intersection
                          #{"goal" "goals"} %) :org/tags))
-    (mapcat org-crud/nested-item->flattened-items)))
+    (mapcat org-crud/nested-item->flattened-items)
+    (map (fn [item]
+           (cond
+             (:org/closed item)
+             (assoc item
+                    :org/closed-since
+                    (-> item :org/closed
+                        dates.tick/parse-time-string
+                        dates.tick/human-time-since))
+
+             :else item)))))
 
 (comment
+
   (todays-goals))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

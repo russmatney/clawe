@@ -118,6 +118,24 @@
 ;; ago
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn duration-since [inst]
+  (t/duration
+    {:tick/beginning inst
+     :tick/end       (add-tz (t/now))}))
+
+(defn human-time-since [inst]
+  (let [since (duration-since inst)
+        days  (t/days since)
+        hours (t/hours since)
+        mins  (t/minutes since)]
+    (cond
+      (> days 1)  (str days " days")
+      (> hours 1) (str hours " hours")
+      (> mins 1)  (str mins " minutes"))))
+
+(comment
+  (duration-since (parse-time-string "2022-02-26_15:47:52-0500")))
+
 (defn an-x-ago-ms
   "Returns duration-ago as milliseconds."
   [duration]

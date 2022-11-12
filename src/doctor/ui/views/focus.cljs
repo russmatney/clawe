@@ -17,35 +17,62 @@
   (let [level (:org/level it 0)
         level (if (#{:level/root} level) 0 level)]
     [:span
-     {:class ["flex" "flex-row"]}
+     {:class
+      (concat
+        ["flex" "flex-row"]
+        (cond
+          (completed? it)   ["text-slate-800"]
+          (current? it)     ["text-city-pink-300"]
+          (not-started? it) []
+          :else             ["font-normal"])
+
+        (when (not (or (completed? it) (current? it)))
+          (case level
+            0 ["text-yo-blue-200"]
+            1 ["text-city-blue-dark-300"]
+            2 ["text-city-green-400"]
+            3 ["text-city-red-200"]
+            [])))}
+
+     ;; level ***
      [:span (->> (repeat level "*") (apply str))]
+
+     ;; todo status
      [:span
       {:class ["px-4" "whitespace-nowrap"]}
       (cond
         (completed? it)   "[X]"
         (current? it)     "[-]"
         (not-started? it) "[ ]")]
+
+     ;; name
      [:span
       {:class
        (concat (cond
                  (completed? it)   ["line-through"]
-                 (current? it)     ["font-bold"
-                                    "font-nes"]
+                 (current? it)     ["font-nes"]
                  (not-started? it) []
                  :else             ["font-normal"])
                ["whitespace-nowrap"])}
       (:org/name it)]
+
+     ;; tags
      (when (seq (:org/tags it))
        [:span
         {:class (concat (cond
-                          (completed? it)   ["line-through"]
+                          (completed? it)   []
                           (current? it)     ["font-bold"]
                           (not-started? it) []
                           :else             ["font-normal"])
                         ["pl-4"])}
         (->> (:org/tags it)
              (string/join ":")
-             (#(str ":" % ":")))])]))
+             (#(str ":" % ":")))])
+
+     (when (and (completed? it) (:org/closed-since it))
+       [:span
+        {:class ["ml-auto"]}
+        (str (:org/closed-since it) " ago")])]))
 
 (defn item-header [it]
   [:h1 {:class
@@ -53,14 +80,7 @@
           ["text-4xl"
            "py-4"
            "font-mono"]
-          (cond
-            (completed? it)   ["text-slate-800"
-                               "line-through"]
-            (current? it)     ["text-city-green-400"
-                               "font-bold"]
-            (not-started? it) ["text-city-pink-300"]
-            :else             ["text-yo-blue-200"
-                               "font-normal"]))}
+          )}
    (item-name it)])
 
 (defn widget [_opts]
