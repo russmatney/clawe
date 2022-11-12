@@ -58,17 +58,6 @@
   ([{:keys [msg message on-select require-match?]} xs]
    (println "Rofi called with" (count xs) "xs.")
 
-   ;; push any floating windows into the view
-   (when-not notify/is-mac?
-     (awm/awm-cli
-       {:quiet? true}
-       (str
-         ;; set all ontops false
-         "for c in awful.client.iterate(function (c) return c.ontop end) do\n"
-         "c.ontop = false; "
-         "c.floating = false; "
-         "end;")))
-
    (let [maps?  (-> xs first map?)
          xs     (if maps? (->> xs (map build-label)) xs)
          labels (if maps? (->> xs
