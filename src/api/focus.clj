@@ -37,7 +37,7 @@
   :stop (s/close! *focus-data-stream*))
 
 (comment
-  (sys/start! `*todos-stream*))
+  (sys/start! `*focus-data-stream*))
 
 (defn update-focus-data []
   (s/put! *focus-data-stream* (build-focus-data)))

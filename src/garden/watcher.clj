@@ -5,7 +5,9 @@
    [ralphie.zsh :as zsh]
    [taoensso.timbre :as log]
    [babashka.fs :as fs]
-   [garden.db :as garden.db]))
+   [garden.db :as garden.db]
+   [garden.core :as garden]
+   [api.focus :as api.focus]))
 
 (defn garden-dir-path []
   (fs/file (zsh/expand "~/todo")))
@@ -27,6 +29,9 @@
                           k)))
               first))))
 
+(defn should-push-focus-data? [file]
+  (= (str file) (garden/daily-path)))
+
 
 (defsys *garden-watcher*
   :start
@@ -39,7 +44,11 @@
         (log/debug "Syncing file" (str (fs/file-name (:file event))))
         (garden.db/sync-garden-paths-to-db
           {:page-size 200} ;; decent page size, fewer transactions
-          [(:file event)])))
+          [(:file event)]))
+
+      (when (should-push-focus-data? (:file event))
+        (log/debug "Pushing focus data" (str (fs/file-name (:file event))))
+        (api.focus/update-focus-data)))
     (garden-dir-path))
 
   :stop
