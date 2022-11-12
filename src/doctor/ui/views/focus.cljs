@@ -53,35 +53,55 @@
                  (current? it)     ["font-nes"]
                  (not-started? it) []
                  :else             ["font-normal"])
-               ["whitespace-nowrap"])}
+               #_["whitespace-nowrap"])}
       (:org/name it)]
 
-     ;; tags
-     (when (seq (:org/tags it))
-       [:span
-        {:class (concat (cond
-                          (completed? it)   []
-                          (current? it)     ["font-bold"]
-                          (not-started? it) []
-                          :else             ["font-normal"])
-                        ["pl-4"])}
-        (->> (:org/tags it)
-             (string/join ":")
-             (#(str ":" % ":")))])
-
+     ;; time ago
      (when (and (completed? it) (:org/closed-since it))
        [:span
-        {:class ["ml-auto"]}
-        (str (:org/closed-since it) " ago")])]))
+        {:class ["pl-4"
+                 "text-3xl"]}
+        (str "(" (:org/closed-since it) " ago)")])
+
+     [:span
+      {:class ["ml-auto"]}
+
+      ;; tags
+      (when (seq (:org/tags it))
+        [:span
+         {:class (concat (cond
+                           (completed? it)   []
+                           (current? it)     ["font-bold"]
+                           (not-started? it) []
+                           :else             ["font-normal"])
+                         ["pr-4"
+                          "text-3xl"])}
+         (->> (:org/tags it)
+              (string/join ":")
+              (#(str ":" % ":")))])]]))
 
 (defn item-header [it]
   [:h1 {:class
         (concat
           ["text-4xl"
            "py-4"
-           "font-mono"]
-          )}
+           "font-mono"])
+        }
    (item-name it)])
+
+(defn item-body [it]
+  (let [level (:org/level it 0)
+        level (if (#{:level/root} level) 0 level)]
+    (when (-> it :org/body-string seq)
+      [:div
+       {:class
+        (concat
+          ["text-3xl"
+           "text-yo-blue-200"
+           "py-4"
+           "font-mono"])
+        :style {:padding-left (str (* level 25) "px")}}
+       [:pre (:org/body-string it)]])))
 
 (defn widget [_opts]
   (let [focus-data      (use-focus/use-focus-data)
@@ -95,4 +115,6 @@
 
       (for [[i it] (->> todos (map-indexed vector))]
         ^{:key i}
-        [item-header it])]]))
+        [:div
+         [item-header it]
+         (when (current? it) [item-body it])])]]))

@@ -27,6 +27,8 @@
            (cond
              (:org/closed item)
              (assoc item
+                    ;; TODO this immediately falls out of date, heh
+                    ;; need to calc and include a timer on the FE
                     :org/closed-since
                     (-> item :org/closed
                         dates.tick/parse-time-string
