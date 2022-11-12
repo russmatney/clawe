@@ -21,6 +21,7 @@
 
   (-active-clients [this opts] "Returns all running clients.")
   (-focus-client [this opts client])
-  (-bury-client [this opts client] "Unfloats clients, pushing them into the base tiling layer")
+  (-bury-client [this opts client] "Unfloats client, pushing it into the tiling layer")
+  (-bury-clients [this opts clients] "Unfloats clients, pushing them into the tiling layer")
   (-close-client [this opts client])
   (-move-client-to-workspace [this opts client workspace]))

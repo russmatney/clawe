@@ -272,13 +272,13 @@
   ([opts client] (wm.protocol/-bury-client *wm* opts client)))
 
 (defn bury-clients
-  ([] (bury-clients (active-clients)))
-  ([clients]
+  ([] (bury-clients nil (active-clients)))
+  ([clients] (bury-clients nil clients))
+  ([opts clients]
    (->>
      clients
      (remove :bury/ignore)
-     (map bury-client)
-     doall)))
+     (wm.protocol/-bury-clients *wm* opts))))
 
 (defn focus-client
   "Intended as a send-focus only - does not pull clients to the workspace.

@@ -93,6 +93,9 @@
   (-bury-client [_this _opts client]
     (awm/bury-client (:awesome.client/window client)))
 
+  (-bury-clients [_this _opts clients]
+    (awm/bury-clients (->> clients (map :awesome.client/window))))
+
   (-focus-client [_this opts client]
     (awm/focus-client
       {:float-and-center? (:float-and-center opts)}

@@ -423,13 +423,32 @@
           (tset c :above false)
           (tset c :floating false))))
 
+(defn bury-clients
+  "Buries :ontop clients."
+  [window-ids]
+  ^{:quiet? false}
+  (fnl
+    (each [c (awful.client.iterate (fn [c] (lume.find ~(into [] window-ids) (. c :window))))]
+          (tset c :ontop false)
+          (tset c :above false)
+          (tset c :floating false))))
+
+(comment
+  (->> (all-clients)
+       (filter (comp #{"tauri-doctor-focus"} :awesome.client/name)))
+
+  (->>
+    (all-clients)
+    (filter (comp #{"clawe" "focus"} :awesome.client/tag))
+    (map :awesome.client/window)
+    (into [])
+    (bury-clients)))
+
 (defn bury-client
   "Buries :ontop clients."
   [window]
-  ^{:quiet? false}
   (fnl
     (each [c (awful.client.iterate (fn [c] (= ~window (. c :window))))]
-          ;; TODO support filter
           (tset c :ontop false)
           (tset c :above false)
           (tset c :floating false))))
