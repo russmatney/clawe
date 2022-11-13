@@ -120,11 +120,21 @@
            [item-header it]
            (when (current? it) [item-body it])]))
 
+      (when (->> todos (filter current?) seq not)
+        [:div
+         {:class ["text-bold" "text-city-pink-300" "p-4"]}
+         [:h1
+          {:class ["text-4xl" "font-nes"]}
+          "no :current: todo!"]
+         [:p
+          {:class ["text-2xl" "pt-4"]}
+          "What are ya, taking a load off? GERT BERK TER WORK!"]])
+
       (when (not (seq todos))
         [:div
          {:class ["text-bold" "text-city-pink-300" "p-4"]}
          [:h1
-          {:class ["text-4xl"]}
+          {:class ["text-4xl" "font-nes"]}
           "no todos found!"]
          [:p
           {:class ["text-2xl" "pt-4"]}
