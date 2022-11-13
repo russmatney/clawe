@@ -113,8 +113,19 @@
               "flex" "flex-col"]}
      [:div {:class ["px-4"]}
 
-      (for [[i it] (->> todos (map-indexed vector))]
-        ^{:key i}
+      (when (seq todos)
+        (for [[i it] (->> todos (map-indexed vector))]
+          ^{:key i}
+          [:div
+           [item-header it]
+           (when (current? it) [item-body it])]))
+
+      (when (not (seq todos))
         [:div
-         [item-header it]
-         (when (current? it) [item-body it])])]]))
+         {:class ["text-bold" "text-city-pink-300" "p-4"]}
+         [:h1
+          {:class ["text-4xl"]}
+          "no todos found!"]
+         [:p
+          {:class ["text-2xl" "pt-4"]}
+          "Did you forget to tag something with :goals: ?"]])]]))
