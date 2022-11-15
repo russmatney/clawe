@@ -13,6 +13,9 @@
 (defn not-started? [it]
   (-> it :org/status #{:status/not-started}))
 
+(defn skipped? [it]
+  (-> it :org/status #{:status/skipped}))
+
 (defn item-name [it]
   (let [level (:org/level it 0)
         level (if (#{:level/root} level) 0 level)]
@@ -22,7 +25,7 @@
         ["flex" "flex-row"]
         (cond
           (completed? it)   ["text-slate-800"]
-          (current? it)     ["text-city-pink-300"]
+          (skipped? it)     ["text-slate-800"]
           (not-started? it) []
           :else             ["font-normal"])
 
@@ -32,6 +35,9 @@
             1 ["text-city-blue-dark-300"]
             2 ["text-city-green-400"]
             3 ["text-city-red-200"]
+            4 ["text-city-pink-300"]
+            5 ["text-city-pink-400"]
+            6 ["text-city-pink-500"]
             [])))}
 
      ;; level ***
@@ -42,16 +48,18 @@
       {:class ["px-4" "whitespace-nowrap"]}
       (cond
         (completed? it)   "[X]"
-        (current? it)     "[-]"
-        (not-started? it) "[ ]")]
+        (skipped? it)     "SKIP"
+        (not-started? it) "[ ]"
+        (current? it)     "[-]")]
 
      ;; name
      [:span
       {:class
        (concat (cond
                  (completed? it)   ["line-through"]
-                 (current? it)     ["font-nes"]
                  (not-started? it) []
+                 (skipped? it)     ["line-through"]
+                 (current? it)     ["font-nes"]
                  :else             ["font-normal"])
                #_["whitespace-nowrap"])}
       (:org/name it)]
@@ -71,8 +79,9 @@
         [:span
          {:class (concat (cond
                            (completed? it)   []
-                           (current? it)     ["font-bold"]
                            (not-started? it) []
+                           (skipped? it)     []
+                           (current? it)     ["font-bold"]
                            :else             ["font-normal"])
                          ["pr-4"
                           "text-3xl"])}
@@ -85,8 +94,7 @@
         (concat
           ["text-4xl"
            "py-4"
-           "font-mono"])
-        }
+           "font-mono"])}
    (item-name it)])
 
 (defn item-body [it]
@@ -120,7 +128,10 @@
            [item-header it]
            (when (current? it) [item-body it])]))
 
-      (when (->> todos (filter current?) seq not)
+      (when
+          ;; this could also check commit status, dirty/unpushed commits, etc
+          (and (seq todos)
+               (->> todos (filter current?) seq not))
         [:div
          {:class ["text-bold" "text-city-pink-300" "p-4"]}
          [:h1

@@ -4,8 +4,7 @@
             [clojure.set :as set]
             [systemic.core :as sys :refer [defsys]]
             [manifold.stream :as s]
-            [dates.tick :as dates.tick]
-            [tick.core :as t]))
+            [dates.tick :as dates.tick]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; domain
