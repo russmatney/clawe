@@ -18,19 +18,23 @@
     (assoc :is-mac (calc-is-mac?))
     (assoc :home-dir (zsh/expand "~"))))
 
-(comment
-  (->config))
-
 (defsys *config*
   :start
   (atom (->config)))
 
+(declare write-config)
+
 (defn reload-config []
-  (sys/start! `*config*)
-  (reset! *config* (->config)))
+  (if (sys/running? `*config*)
+    ;; restart the system to force a re-read from the file
+    (sys/restart! `*config*)
+    (sys/start! `*config*))
+
+  ;; write out the config to force the formatting
+  (write-config nil))
 
 (comment
-  (sys/start! `*config*)
+  (sys/restart! `*config*)
   (reload-config))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
