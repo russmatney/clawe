@@ -7,7 +7,7 @@
                              :tmux.fire/interrupt? true
                              :tmux.fire/session "doctor-clerk"}
              :client/window-title "tauri-doctor-clerk"
-             :client/workspace-title "clerk"}
+             :client/workspace-title "clerk-clove"}
     "clerk-workspace" {:client/app-names ["clove"]
                        :client/create {:create/cmd ralphie.tmux/fire
                                        :tmux.fire/cmd
@@ -15,15 +15,15 @@
                                        :tmux.fire/interrupt? true
                                        :tmux.fire/session "doctor-workspace-clerk"}
                        :client/window-title "tauri-doctor-clerk-workspace"
-                       :client/workspace-title "clerk-workspace"}
+                       :client/workspace-title "clerk-clove"}
     "devweb" {:client/app-names ["firefoxdeveloperedition" "google-chrome"
                                  "firefox developer edition"]
               :client/create ralphie.browser/open-dev
-              :client/workspace-title "devweb"
+              :client/workspace-title "browsers"
               :match/skip-title true}
     "discord" {:client/app-names ["Discord"]
                :client/create "discord"
-               :client/workspace-title "discord"
+               :client/workspace-title "slack"
                :match/skip-title true}
     "doctor-be" {:client/create {:create/cmd ralphie.tmux/fire
                                  :tmux.fire/cmd "clawebb doctor-be"
@@ -49,7 +49,7 @@
                              :tmux.fire/interrupt? true
                              :tmux.fire/session "doctor-focus"}
              :client/window-title "tauri-doctor-focus"
-             :client/workspace-title "focus"}
+             :client/workspace-title "widgets"}
     "godot" {:client/app-names ["godot"]
              :client/workspace-title "godot"
              :match/soft-title true
@@ -96,23 +96,29 @@
                             :tmux.fire/interrupt? true
                             :tmux.fire/session "doctor-todo"}
             :client/window-title "tauri-doctor-todo"
-            :client/workspace-title "todo"}
+            :client/workspace-title "widgets"}
     "topbar" {:client/app-names ["clove"]
               :client/create {:create/cmd ralphie.tmux/fire
                               :tmux.fire/cmd "bb --config ~/russmatney/clawe/bb.edn topbar"
                               :tmux.fire/interrupt? true
                               :tmux.fire/session "doctor-topbar"}
               :client/window-title "clove-doctor-topbar"
-              :client/workspace-title "doctor"}
-    "twitch-alerts"
-      {:bury/ignore true :client/app-names ["clove"] :client/window-title "twitch-alerts"}
-    "twitch-chat"
-      {:bury/ignore true :client/app-names ["clove"] :client/window-title "twitch-chat"}
-    "twitch-viewers"
-      {:bury/ignore true :client/app-names ["clove"] :client/window-title "twitch-viewers"}
+              :client/workspace-title "widgets"}
+    "twitch-alerts" {:bury/ignore true
+                     :client/app-names ["clove"]
+                     :client/window-title "twitch-alerts"
+                     :client/workspace-title "widgets"}
+    "twitch-chat" {:bury/ignore true
+                   :client/app-names ["clove"]
+                   :client/window-title "twitch-chat"
+                   :client/workspace-title "widgets"}
+    "twitch-viewers" {:bury/ignore true
+                      :client/app-names ["clove"]
+                      :client/window-title "twitch-viewers"
+                      :client/workspace-title "widgets"}
     "web" {:client/app-names ["Safari" "firefox"]
            :client/create ralphie.browser/open
-           :client/workspace-title "web"
+           :client/workspace-title "browsers"
            :match/ignore-names ["picture-in-picture"]
            :match/skip-title true}
     "xcode" {:client/app-name "xcode"
