@@ -27,30 +27,31 @@
     [:span
      {:class
       (concat
-        ["flex" "flex-row"]
+        ["flex" "flex-row" "py-2 px-4" "justify-center" "items-center"]
         (cond
-          (completed? it)   ["text-slate-800"]
-          (skipped? it)     ["text-slate-800"]
+          (completed? it)   []
+          (skipped? it)     []
           (not-started? it) []
-          :else             ["font-normal"])
+          :else             [])
 
-        (when (not (completed? it))
-          (case level
-            0 ["text-yo-blue-200"]
-            1 ["text-city-blue-dark-300"]
-            2 ["text-city-green-400"]
-            3 ["text-city-red-200"]
-            4 ["text-city-pink-300"]
-            5 ["text-city-pink-400"]
-            6 ["text-city-pink-500"]
-            [])))}
+        (case level
+          0 ["text-yo-blue-200" "text-6xl"]
+          1 ["text-city-blue-dark-300" "text-6xl"]
+          2 ["text-city-green-400" "text-3xl"]
+          3 ["text-city-red-200" "text-xl"]
+          4 ["text-city-pink-300" "text-lg"]
+          5 ["text-city-pink-400" "text-lg"]
+          6 ["text-city-pink-500" "text-lg"]
+          []))}
 
      ;; level ***
-     [:span (->> (repeat level "*") (apply str))]
+     [:span
+      {:class ["px-4" "whitespace-nowrap" "font-nes"]}
+      (->> (repeat level "*") (apply str))]
 
      ;; todo status
      [:span
-      {:class ["px-4" "whitespace-nowrap"]}
+      {:class ["px-4" "whitespace-nowrap" "font-nes"]}
       (cond
         (current? it)     "[-]"
         (completed? it)   "[X]"
@@ -61,7 +62,7 @@
      [:span
       {:class
        (concat (cond
-                 (current? it)     ["font-nes"]
+                 (current? it)     ["font-bold"]
                  (completed? it)   ["line-through"]
                  (not-started? it) []
                  (skipped? it)     ["line-through"]
@@ -89,7 +90,9 @@
                            (current? it)     ["font-bold"]
                            :else             ["font-normal"])
                          ["pr-4"
-                          "text-3xl"])}
+                          "text-3xl"
+                          "font-nes"
+                          ])}
          (->> (:org/tags it)
               (string/join ":")
               (#(str ":" % ":")))])]]))
