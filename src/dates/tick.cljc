@@ -121,17 +121,19 @@
 (defn duration-since [inst]
   (t/duration
     {:tick/beginning inst
-     :tick/end       (add-tz (t/now))}))
+     :tick/end       (t/zoned-date-time)}))
 
 (defn human-time-since [inst]
-  (let [since (duration-since inst)
-        days  (t/days since)
-        hours (t/hours since)
-        mins  (t/minutes since)]
+  (let [since   (duration-since inst)
+        days    (t/days since)
+        hours   (t/hours since)
+        mins    (t/minutes since)
+        seconds (t/seconds since)]
     (cond
-      (> days 1)  (str days " days")
-      (> hours 1) (str hours " hours")
-      (> mins 1)  (str mins " minutes"))))
+      (>= days 1)    (str days " days")
+      (>= hours 1)   (str hours " hours")
+      (>= mins 1)    (str mins " minutes")
+      (>= seconds 1) (str seconds " seconds"))))
 
 (comment
   (duration-since (parse-time-string "2022-02-26_15:47:52-0500")))
