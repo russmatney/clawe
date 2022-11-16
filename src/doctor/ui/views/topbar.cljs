@@ -236,7 +236,7 @@
                  :action/priority 5}])
              (handlers/->actions current))}]]))))
 
-(defn widget [opts]
+(defn widget [_opts]
   (let [;; TODO move metadata/workspaces into use-topbar
         metadata                                      (hooks.topbar/use-topbar-metadata)
         {:keys [topbar/background-mode] :as metadata} @metadata

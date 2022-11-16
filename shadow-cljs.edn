@@ -46,38 +46,4 @@
    :tailwind/output "public/css/main-built.css"
    :tailwind/files
    {:base-path    "." ;; Path to directory housing `tailwind.config.js`
-    :tailwind.css "public/css/main.css"}}
-
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  ;; expo
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-  :expo-app
-  {:target           :browser
-   :output-dir       "expo/public/js/compiled"
-   :asset-path       "/js/compiled"
-   :modules          {:main {:init-fn expo.ui.core/init}}
-   :compiler-options {:output-feature-set :es-next
-                      :infer-externs      :auto
-                      :externs            ["datascript/externs.js"]}
-
-   :nrepl {:port 3332}
-
-   :dev
-   {:build-hooks [(teknql.tailwind/start-watch!)
-                  (doctor.build-hooks/notify-complete)]}
-
-   :release
-   {:build-hooks [(teknql.tailwind/compile-release!)]}
-
-   :devtools
-   {:http-root   "expo/public"
-    :http-port   4444
-    :loader-mode :eval
-    :after-load  expo.ui/mount-root
-    :repl-pprint true}
-
-   :tailwind/output "expo/public/css/main-built.css"
-   :tailwind/files
-   {:base-path    "." ;; Path to directory housing `tailwind.config.js`
-    :tailwind.css "expo/public/css/main.css"}}}}
+    :tailwind.css "public/css/main.css"}}}}

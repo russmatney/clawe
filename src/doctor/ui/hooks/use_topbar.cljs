@@ -17,9 +17,7 @@
         toggle-above-below     (fn []
                                  (-> (hooks.topbar/toggle-topbar-above (not @topbar-above))
                                      (.then (fn [v] (reset! topbar-above v)))))
-        time                   (uix/state
-                                 #_{:clj-kondo/ignore [:invalid-arity]}
-                                 (t/zoned-date-time))
+        time                   (uix/state (t/zoned-date-time))
         interval               (atom nil)]
     (uix/with-effect [@interval]
       (reset! interval (js/setInterval #(reset! time

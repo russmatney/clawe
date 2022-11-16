@@ -112,32 +112,14 @@
              (shelll {:dir (str (home-dir) "/russmatney/clawe")}
                      "npx shadow-cljs watch doctor-app")}
 
-  expo-be {:doc "Run the expo backend shadowcljs server."
-           :task
-           (shelll {:dir (str (home-dir) "/russmatney/clawe")}
-                   "clj -M:dev:full-stack-deps:expo-server")}
-  expo-fe {:doc "Run the expo frontend shadowcljs server."
-           :task
-           (shelll {:dir (str (home-dir) "/russmatney/clawe")}
-                   "npx shadow-cljs watch expo-app")}
-
-  expo-deploy
-  {:doc "Build and deploy expo-fe"
-   :task
-   (do
-     ;; (shelll "rm -rf expo/public/js/compiled/cljs-runtime")
-     (shelll "npx shadow-cljs release expo-app")
-     (shelll "aws s3 sync expo/public s3://danger.russmatney.com"))}
-
-
-  clawe-be          {:doc "Run the doctor and expo backends."
+  clawe-be          {:doc "Run the doctor backend."
                      :task
                      (run '-clawe-be {:parallel true})}
-  -clawe-be         {:depends [doctor-be expo-be]}
-  clawe-fe          {:doc "Run the doctor and expo frontends via shadowcljs."
+  -clawe-be         {:depends [doctor-be]}
+  clawe-fe          {:doc "Run the doctor frontend via shadowcljs."
                      :task
                      (shelll {:dir (str (home-dir) "/russmatney/clawe")}
-                             "npx shadow-cljs watch expo-app doctor-app")}
+                             "npx shadow-cljs watch doctor-app")}
   clawe-full-stack  (run '-clawe-full-stack {:parallel true})
   -clawe-full-stack {:depends [clawe-be clawe-fe]}
 
