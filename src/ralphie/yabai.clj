@@ -614,7 +614,7 @@ dy will become its new position. "
                                 (filter (comp #(string/includes? % "tauri-doctor-topbar") :yabai.window/title))
                                 first)]
      (when-not topbar-window
-       (println "now topbar window found"))
+       (println "no topbar window found"))
      (when topbar-window
        (->
          ^{:out :string}

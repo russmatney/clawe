@@ -183,6 +183,7 @@
     "new-blog" {:workspace/directory "~/russmatney/new-blog"}
     "obs" {:workspace/directory "~/russmatney/obs-recordings" :workspace/preferred-index 0}
     "org-blog" {:workspace/directory "~/russmatney/org-blog"}
+    "org-blog-content" {:workspace/directory "~/russmatney/org-blog-content"}
     "org-crud" {:workspace/directory "~/russmatney/org-crud"}
     "org-roam" {:workspace/directory "~/org-roam/org-roam"}
     "pirates" {:workspace/directory "~/russmatney/pirates"}
@@ -193,6 +194,7 @@
     "quickblog" {:workspace/directory "~/borkdude/quickblog"}
     "re-db" {:workspace/directory "~/mhuebert/re-db"}
     "rewrite-clj" {:workspace/directory "~/clj-commons/rewrite-clj"}
+    "spicetify" {:workspace/directory "~/catppuccin/spicetify"}
     "spicetify-cli" {:workspace/directory "~/spicetify/spicetify-cli"}
     "spicetify-themes" {:workspace/directory "~/spicetify/spicetify-themes"}
     "steam" {:workspace/directory "~"}

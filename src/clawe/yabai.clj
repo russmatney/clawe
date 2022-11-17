@@ -107,6 +107,12 @@
   (-close-client [_this _opts c]
     (yabai/close-window c))
 
+  (-bury-client [_this _opts _c]
+    (println "[WARN] bury-client not impled"))
+
+  (-bury-clients [_this _opts _cs]
+    (println "[WARN] bury-clients not impled"))
+
   (-move-client-to-workspace [this _opts c wsp]
     (let [workspace-title (if (string? wsp) wsp (:workspace/title wsp))
           workspace-index (when (map? wsp) (:workspace/index wsp))]
