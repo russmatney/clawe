@@ -256,7 +256,7 @@ cmd - r : bb --config ~/russmatney/clawe/bb.edn -x clawe.restart/reload
 shift + cmd - return : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key emacs
 cmd - return : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key terminal
 
-cmd - y : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key doctor
+cmd - y : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key focus
 cmd - u : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key journal
 cmd - t : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key web
 cmd - b : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key devweb
