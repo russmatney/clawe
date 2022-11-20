@@ -7,6 +7,7 @@
    [tick.core :as t]
    [dates.tick :as dates]
    [doctor.ui.localstorage :as localstorage]
+   [doctor.ui.pomodoros :as pomodoros]
    [clojure.edn :as edn]))
 
 (defn completed? [it]
@@ -119,17 +120,59 @@
         :style {:padding-left (str (* level 25) "px")}}
        [:pre (:org/body-string it)]])))
 
-(comment
-  (localstorage/remove-item! "pomodoros")
-  (edn/read-string (localstorage/get-item "pomodoros"))
-  (->
-    (edn/read-string (localstorage/get-item "pomodoros"))
-    :obj :with-now)
-  (localstorage/set-item! "pomodoros" (pr-str {:hi  :there
-                                               :obj {:with-now (t/zoned-date-time)}
-                                               })))
+(defn bar [{:keys [time]}]
+  [:div
+   {:class ["flex flex-row" "items-center"
+            "bg-city-blue-700"
+            "text-city-green-200"]}
+   [:div
+    {:class ["text-2xl" "font-nes" "pl-4"]}
+    (str
+      (t/format
+        (t/formatter "HH:mma")
+        (dates/add-tz time)))]
 
-(defn widget [_opts]
+   (let [p-state                (pomodoros/get-state)
+         {:keys [current last]} p-state]
+     [:div
+      {:class ["ml-auto" "flex" "flex-row"]}
+
+      (when last
+        (let [{:keys [started-at]} last]
+          [:div
+           {:class ["py-2" "px-4"]}
+           [:span
+            "Last started " (dates/human-time-since started-at) " ago"]]))
+
+      (when last
+        (let [{:keys [finished-at]} last]
+          [:div
+           {:class ["py-2" "px-4"]}
+           [:span
+            "Last finished " (dates/human-time-since finished-at) " ago"]]))
+
+      (when current
+        (let [{:keys [started-at]} current]
+          [:div
+           {:class ["py-2" "px-4"]}
+           "Current: "
+           (dates/human-time-since started-at)]))
+
+      ;; buttons
+      (->> (pomodoros/actions)
+           (map (fn [{:keys [on-click label]}]
+                  [:button
+                   {:class    ["cursor-pointer"
+                               "bg-city-blue-900"
+                               "text-xl"
+                               "py-2" "my-2"
+                               "px-4" "mx-4"
+                               "rounded"]
+                    :on-click on-click}
+                   label]))
+           (into [:div]))])])
+
+(defn widget [opts]
   (let [focus-data      (use-focus/use-focus-data)
         {:keys [todos]} @focus-data
 
@@ -145,74 +188,7 @@
               "min-h-screen"
               "flex" "flex-col"]}
 
-     [:div
-      {:class ["flex flex-row"
-               "bg-city-blue-700"
-               "text-city-green-200"]}
-
-      (let [p-state                (or (some-> (localstorage/get-item "pomodoros")
-                                               edn/read-string)
-                                       {})
-            {:keys [current last]} p-state]
-        [:div
-         {:class ["ml-auto" "flex" "flex-row"]}
-
-         (when last
-           (let [{:keys [started-at
-                         finished-at]} last]
-             [:div
-              {:class ["p-4"]}
-              [:span
-               "Last started " (dates/human-time-since started-at) " ago"]
-              [:span
-               "Last finished " (dates/human-time-since finished-at) " ago"]]))
-
-         (when current
-           (let [{:keys [started-at]} current]
-             [:div
-              {:class ["p-4"]}
-              "Current: "
-              (dates/human-time-since started-at)]))
-
-         ;; buttons
-         (->> [(when current
-                 {:on-click
-                  (fn [_]
-                    (localstorage/set-item! "pomodoros"
-                                            (pr-str
-                                              (assoc p-state
-                                                     :current nil
-                                                     :last (assoc current :finished-at @time)))))
-                  :label "End"})
-               (when (not current)
-                 {:on-click
-                  (fn [_]
-                    (localstorage/set-item! "pomodoros"
-                                            (pr-str
-                                              (assoc p-state
-                                                     :current
-                                                     {:started-at @time}))))
-                  :label "Start"})
-               ]
-              (remove nil?)
-              (map (fn [{:keys [on-click label]}]
-                     [:button
-                      {:class    ["cursor-pointer"
-                                  "bg-city-blue-900"
-                                  "text-xl"
-                                  "p-4" "m-4" "rounded"]
-                       :on-click on-click}
-                      label]))
-              (into [:div
-                     {:class [""]}
-                     ]))])
-
-      [:div
-       {:class ["text-2xl" "font-nes"]}
-       (str
-         (t/format
-           (t/formatter "HH:mma")
-           (dates/add-tz @time)))]]
+     [bar (assoc opts :time @time)]
 
      [:div {:class ["px-4"]}
       (when (seq todos)
