@@ -118,22 +118,30 @@
 ;; ago
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn duration-since [inst]
-  (t/duration
-    {:tick/beginning inst
-     :tick/end       (t/zoned-date-time)}))
+(defn duration-since
+  ([inst] (duration-since inst nil))
+  ([inst end]
+   (t/duration
+     {:tick/beginning inst
+      :tick/end       (or end (t/zoned-date-time))})))
 
-(defn human-time-since [inst]
-  (let [since   (duration-since inst)
-        days    (t/days since)
-        hours   (t/hours since)
-        mins    (t/minutes since)
-        seconds (t/seconds since)]
-    (cond
-      (>= days 1)    (str days " days")
-      (>= hours 1)   (str hours " hours")
-      (>= mins 1)    (str mins " minutes")
-      (>= seconds 1) (str seconds " seconds"))))
+(defn human-time-since
+  ([inst] (human-time-since inst nil))
+  ([inst end]
+   (let [since   (duration-since inst end)
+         days    (t/days since)
+         hours   (t/hours since)
+         mins    (t/minutes since)
+         seconds (t/seconds since)]
+     (cond
+       (> days 1)     (str days " days")
+       (= days 1)     (str days " day")
+       (> hours 1)    (str hours " hours")
+       (= hours 1)    (str hours " hour")
+       (> mins 1)     (str mins " minutes")
+       (= mins 1)     (str mins " minute")
+       (> seconds 1) (str seconds " seconds")
+       (= seconds 1) (str seconds " second")))))
 
 (comment
   (duration-since (parse-time-string "2022-02-26_15:47:52-0500")))

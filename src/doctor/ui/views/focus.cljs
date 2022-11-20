@@ -138,18 +138,19 @@
       {:class ["ml-auto" "flex" "flex-row"]}
 
       (when last
-        (let [{:keys [started-at]} last]
+        (let [{:keys [started-at finished-at]} last]
           [:div
            {:class ["py-2" "px-4"]}
            [:span
-            "Last started " (dates/human-time-since started-at) " ago"]]))
+            "Last: " (dates/human-time-since started-at finished-at)]]))
 
-      (when last
-        (let [{:keys [finished-at]} last]
+      (when (and last current)
+        (let [{:keys [finished-at]} last
+              {:keys [started-at]}  current]
           [:div
            {:class ["py-2" "px-4"]}
            [:span
-            "Last finished " (dates/human-time-since finished-at) " ago"]]))
+            "Break: " (dates/human-time-since finished-at started-at)]]))
 
       (when current
         (let [{:keys [started-at]} current]
