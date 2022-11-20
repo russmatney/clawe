@@ -63,6 +63,8 @@
                :match/soft-title true}
     "messages"
       {:client/app-names ["Messages"] :client/workspace-title "messages" :match/skip-title true}
+    "mindnode"
+      {:client/app-names ["MindNode"] :client/workspace-title "mindnode" :match/skip-title true}
     "obs" {:bury/ignore true
            :client/app-names ["obs"]
            :client/workspace-title "obs"
