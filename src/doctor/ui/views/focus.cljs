@@ -6,9 +6,7 @@
    [uix.core.alpha :as uix]
    [tick.core :as t]
    [dates.tick :as dates]
-   [doctor.ui.localstorage :as localstorage]
-   [doctor.ui.pomodoros :as pomodoros]
-   [clojure.edn :as edn]))
+   [doctor.ui.pomodoros :as pomodoros]))
 
 (defn completed? [it]
   (-> it :org/status #{:status/done}))
@@ -144,20 +142,26 @@
            [:span
             "Last: " (dates/human-time-since started-at finished-at)]]))
 
-      (when (and last current)
+      (when last
         (let [{:keys [finished-at]} last
-              {:keys [started-at]}  current]
+              latest                (:started-at current)]
           [:div
            {:class ["py-2" "px-4"]}
            [:span
-            "Break: " (dates/human-time-since finished-at started-at)]]))
+            "Break: " (dates/human-time-since finished-at latest)]]))
 
       (when current
-        (let [{:keys [started-at]} current]
+        (let [{:keys [started-at]} current
+              minutes              (t/minutes (dates/duration-since started-at))
+              too-long?            (> minutes 40)]
           [:div
            {:class ["py-2" "px-4"]}
            "Current: "
-           (dates/human-time-since started-at)]))
+           [:span
+            {:class (when too-long? ["text-city-pink-400" "font-nes" "font-bold"
+                                     "pl-2" "text-lg" "whitespace-nowrap"])}
+            (dates/human-time-since started-at)
+            (when too-long? "!!")]]))
 
       ;; buttons
       (->> (pomodoros/actions)
