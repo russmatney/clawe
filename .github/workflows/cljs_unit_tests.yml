@@ -1,0 +1,33 @@
+name: CLJS unit tests
+on: push
+jobs:
+  Testing:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+
+      - name: Prepare java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '8'
+
+      - name: Install clojure tools
+        uses: DeLaGuardo/setup-clojure@10.0
+        with:
+          cli: 1.11.1.1200
+
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-clj
+        with:
+          path: |
+            ~/.m2/repository
+            ~/.gitlibs
+            ~/.deps.clj
+          key: cljdeps-${{ hashFiles('deps.edn') }}
+          restore-keys: cljdeps-
+
+      - run: clojure -M:oli-test:full-stack-deps
