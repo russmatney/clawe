@@ -4,12 +4,12 @@ jobs:
   Linter:
     runs-on: ubuntu-latest
     steps:
-    - name: Setup clj-kondo
-      uses: DeLaGuardo/setup-clj-kondo@master
-      with:
-        version: '2022.09.08'
-
     - uses: actions/checkout@v3
+
+    - name: Setup clj-kondo
+      uses: DeLaGuardo/setup-clojure@10.0
+      with:
+        clj-kondo: '2022.11.02'
 
     - name: Lint
       run: clj-kondo --lint src:test --config '{:output {:pattern "::{{level}} file={{filename}},line={{row}},col={{col}}::{{message}}"}}'

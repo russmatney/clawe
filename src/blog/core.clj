@@ -1,7 +1,7 @@
 (ns blog.core
   (:require
    [babashka.fs :as fs]
-   [quickblog.api :as qb.api]
+   ;; [quickblog.api :as qb.api]
    [garden.db :as garden.db]
    [clojure.set :as set]
    [db.core :as db]
@@ -166,17 +166,17 @@
 ;; public blog api
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn render []
-  (qb.api/render (blog-opts))
-  nil)
+;; (defn render []
+;;   (qb.api/render (blog-opts))
+;;   nil)
 
-(comment
-  (render))
+;; (comment
+;;   (render))
 
-(defn watch
-  ([] (watch nil))
-  ([_]
-   (qb.api/watch
-     (->
-       (blog-opts)
-       #_(assoc :port 1999)))))
+;; (defn watch
+;;   ([] (watch nil))
+;;   ([_]
+;;    (qb.api/watch
+;;      (->
+;;        (blog-opts)
+;;        #_(assoc :port 1999)))))

@@ -1,8 +1,7 @@
 ;; tests.edn
 #kaocha/v1
 {:tests
- [
-  ;; jvm unit tests
+ [;; jvm unit tests
   {:id        :unit
    :skip-meta [:integration
                :awesomewm]}
