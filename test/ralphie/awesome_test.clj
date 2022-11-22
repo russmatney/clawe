@@ -1,4 +1,4 @@
-(ns ralphie.awesome-test
+(ns ^:awesomewm ralphie.awesome-test
   (:require
    [test-util]
    [clojure.test :refer [deftest is]]

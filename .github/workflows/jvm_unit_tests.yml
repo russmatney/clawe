@@ -1,0 +1,11 @@
+name: JVM unit tests
+on: push
+jobs:
+  Testing:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+      - name: Install clojure tools
+        uses: DeLaGuardo/setup-clojure@9.5
+      - run: ./bin/kaocha unit

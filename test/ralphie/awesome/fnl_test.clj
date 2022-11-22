@@ -1,4 +1,4 @@
-(ns ralphie.awesome.fnl-test
+(ns ^:awesomewm ralphie.awesome.fnl-test
   (:require
    [clojure.test :refer [deftest is testing]]
    [ralphie.awesome.fnl :as awm.fnl]

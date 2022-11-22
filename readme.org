@@ -213,3 +213,39 @@ share more context.
 Feel free to create an issue/discussion in this repo, ping me ~@russmatney~ on
 the clojurians slack, or pop in on [[https://www.twitch.tv/russmatney][one of my Twitch streams]] - I'd love to share
 more about it and show how it all fits together.
+
+* Dev Notes
+** Running tests
+*** Clawe Unit tests
+#+begin_src sh
+./test_runner.clj
+#+end_src
+
+Runs some babashka-based clawe unit tests.
+
+*** JVM Unit tests
+#+begin_src sh
+./bin/kaocha unit
+#+end_src
+*** CLJS tests
+Bit of a wip for the moment, but hopefully there's a one-line approach to
+running these soon.
+
+*** Clawe integration tests
+These tests exercise the window manager _in place_ - i.e. this will create and
+destory workspaces in your current environment.
+
+#+begin_src sh
+./bin/kaocha integration
+#+end_src
+
+These don't run in CI, but are a useful way to debug or ensure basic clawe usage
+isn't borked.
+
+*** AwesomeWM tests
+Expects a running awesomewm and fennel setup, which unfortunately is not well
+documented or easily created at the moment.
+
+#+begin_src sh
+./bin/kaocha awesomewm
+#+end_src

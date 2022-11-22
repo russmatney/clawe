@@ -1,27 +1,40 @@
 ;; tests.edn
 #kaocha/v1
-{:tests [{:id        :unit
-          :skip-meta [:integration]}
-         {:id         :integration
-          :focus-meta [:integration]}
-         {:id                    :unit-cljs
-          :type                  :kaocha.type/cljs
-          :test-paths            ["test"]
-          :cljs/repl-env         cljs.repl.browser/repl-env
-          ;; :cljs/repl-env     cljs.repl.node/repl-env
-          ;; :cljs/timeout 10000 ; 10 seconds, the default
-          :cljs/compiler-options {
-                                  :output-feature-set :es-next
-                                  :infer-externs      true
-                                  ;; :npm-deps           true
-                                  ;; :verbose            true
-                                  ;; :foreign-libs
-                                  ;; [{:file           "dist/index_bundle.js"
-                                  ;;   :provides       ["react" "sentry"]
-                                  ;;   :global-exports {react  React
-                                  ;;                    sentry Sentry}}]
-                                  }}]
+{:tests
+ [
+  ;; jvm unit tests
+  {:id        :unit
+   :skip-meta [:integration
+               :awesomewm]}
 
- :reporter        [kaocha.report/debug]
- :bindings        {kaocha.type.cljs/*debug* true}
- :capture-output? false}
+  ;; locally run integration tests
+  {:id         :integration
+   :focus-meta [:integration]}
+
+  ;; tests expecting an awesome-wm + fennel environment
+  {:id         :awesomewm
+   :focus-meta [:awesomewm]}
+
+  ;; cljs tests
+  {:id                    :unit-cljs
+   :type                  :kaocha.type/cljs
+   :test-paths            ["test"]
+   :cljs/repl-env         cljs.repl.browser/repl-env
+   ;; :cljs/repl-env     cljs.repl.node/repl-env
+   ;; :cljs/timeout 10000 ; 10 seconds, the default
+   :cljs/compiler-options {
+                           :output-feature-set :es-next
+                           :infer-externs      true
+                           ;; :npm-deps           true
+                           ;; :verbose            true
+                           ;; :foreign-libs
+                           ;; [{:file           "dist/index_bundle.js"
+                           ;;   :provides       ["react" "sentry"]
+                           ;;   :global-exports {react  React
+                           ;;                    sentry Sentry}}]
+                           }}]
+
+ ;; :reporter [kaocha.report/debug]
+ ;; :bindings {kaocha.type.cljs/*debug* true}
+ ;; :capture-output? false
+ }
