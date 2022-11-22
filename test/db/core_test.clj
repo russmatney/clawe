@@ -12,6 +12,9 @@
 (use-fixtures
   :once
   (fn [f]
+    (when (not (fs/exists? "dbs"))
+      (fs/create-dir "dbs"))
+
     (sys/with-system
       [db.config/*config* {:db-path "dbs/testdb.edn"}]
 
