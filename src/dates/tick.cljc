@@ -102,11 +102,13 @@
 (defn now []
   (t/zoned-date-time))
 
-(defn add-tz [inst]
-  ;; TODO this is not really right...
-  (if (t/instant inst)
-    (t/in inst "America/New_York")
-    inst))
+(defn add-tz
+  "TODO remove this, as it's apparently just a t/zoned-date-time call."
+  [inst]
+  (t/zoned-date-time inst)
+  #_(if (t/instant inst)
+      (t/zoned-date-time)
+      inst))
 
 (comment
   (t/instant? (t/inst))
