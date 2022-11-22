@@ -12,21 +12,23 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def datoms-in-first-batch 30000)
-(def datoms-per-batch 50000)
-(def n-batches 5)
+;; (def datoms-per-batch 50000)
+;; (def n-batches 5)
 ;; TODO write smarter hooks/initial load queries for grabbing specific backend data
 (defhandler get-db []
   (let [datoms      (api.db/datoms-for-frontend)
         first-batch (->> datoms (take datoms-in-first-batch))
-        rest        (->> datoms (drop datoms-in-first-batch))]
+        _rest       (->> datoms (drop datoms-in-first-batch))]
     ;; fire the rest in streamed batches
-    (future
-      (->> rest
-           (partition-all datoms-per-batch)
-           (take n-batches)
-           (map (fn [batch]
-                  (s/put! api.db/*db-stream* batch)))
-           doall))
+
+    ;; NOTE disabled for now - should move to requesting specific data
+    #_(future
+        (->> rest
+             (partition-all datoms-per-batch)
+             (take n-batches)
+             (map (fn [batch]
+                    (s/put! api.db/*db-stream* batch)))
+             doall))
     first-batch))
 
 (defstream db-stream [] api.db/*db-stream*)

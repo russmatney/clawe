@@ -26,7 +26,7 @@
    [pages.garden :as pages.garden]
    [pages.posts :as pages.posts]
    [pages.journal :as pages.journal]
-   #_[hooks.db :as hooks.db]
+   [hooks.db :as hooks.db]
 
    [doctor.ui.views.focus :as views.focus]
    [doctor.ui.views.topbar :as views.topbar]
@@ -71,9 +71,8 @@
          :as   _route-def} (by-page-name page-name)
 
         ;; create fe db and pass it to every page
-        ;; TODO refactor frontend datastore
-        ;; {:keys [conn]} (hooks.db/use-db)
-        ;; opts           (assoc opts :conn conn)
+        {:keys [conn]} (hooks.db/use-db)
+        opts           (assoc opts :conn conn)
         ]
     (if comp
       (if comp-only
