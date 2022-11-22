@@ -3,9 +3,9 @@
    [babashka.process :as process]
    [cheshire.core :as json]
    [wing.core :as w]
+   [babashka.fs :as fs]
    [defthing.defcom :refer [defcom]]
    [ralphie.notify :as notify]
-   [ralphie.zsh :as zsh]
    [clojure.string :as string]
    [clojure.edn :as edn]
    [ralphie.rofi :as rofi]))
@@ -17,7 +17,7 @@
   "Prompts for user input in a native dialog via obb."
   []
   (->
-    ^{:dir (zsh/expand "~/russmatney/clawe")
+    ^{:dir (str (fs/home) "/russmatney/clawe")
       :out :string
       :err :string}
     ;; TODO pass in dialog messages

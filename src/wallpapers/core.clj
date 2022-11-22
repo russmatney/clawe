@@ -19,7 +19,7 @@
 
 (defn local-wallpapers-file-paths []
   (->
-    (wp-dir->paths "~/Dropbox/wallpapers/**/*")
+    (wp-dir->paths (str (fs/home) "/Dropbox/wallpapers/**/*"))
     (->> (filter #(re-seq #"\.(jpg|png)$" %)))))
 
 (comment

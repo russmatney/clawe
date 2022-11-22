@@ -3,6 +3,7 @@
    [aero.core :as aero]
    [clojure.java.io :as io]
    [ralphie.zsh :as zsh]
+   [babashka.fs :as fs]
    [systemic.core :as sys :refer [defsys]]
    [zprint.core :as zp]
    [clojure.string :as string]))
@@ -16,7 +17,7 @@
   (->
     (aero/read-config config-res)
     (assoc :is-mac (calc-is-mac?))
-    (assoc :home-dir (zsh/expand "~"))))
+    (assoc :home-dir (fs/home))))
 
 (defsys *config*
   :start

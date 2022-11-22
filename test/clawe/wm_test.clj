@@ -5,7 +5,7 @@
    [clawe.wm :as wm]
    [clawe.wm.protocol :as wm.protocol]
    [clawe.workspace :as workspace]
-   [ralphie.zsh :as zsh]
+   [babashka.fs :as fs]
    [systemic.core :as sys]
    [clawe.config :as clawe.config]
    [clawe.client :as client]))
@@ -25,9 +25,6 @@
       (wait-until
         "Confirming we reverted to the og workspace" 1000
         (workspace/match? (wm/current-workspace) og-wsp)))))
-
-(defn clawe-conf [defs]
-  (atom {:client/defs defs}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; malli validation
@@ -284,8 +281,7 @@
       (is (nil? (wm/current-workspace)))))
 
   (testing "mixes and expands data from config/workspace-def"
-    (let [dir          "~/russmatney/blah"
-          expected-dir (zsh/expand dir)]
+    (let [expected-dir (str (fs/home) "/russmatney/blah")]
       (sys/with-system
         [wm/*wm* (OneWorkspaceWM.)
          clawe.config/*config*
@@ -303,8 +299,7 @@
 
 (deftest active-workspaces-test
   (testing "merges config def data"
-    (let [dir          "~/russmatney/blah"
-          expected-dir (zsh/expand dir)]
+    (let [expected-dir (str (fs/home) "/russmatney/blah")]
       (sys/with-system
         [wm/*wm* (OneWorkspaceWM.)
          clawe.config/*config*
@@ -435,8 +430,7 @@
 
 (deftest workspace-defs-test
   (testing "re-uses the map key as the title."
-    (let [dir          "~/russmatney/blah"
-          expected-dir (zsh/expand dir)]
+    (let [expected-dir (str (fs/home) "/russmatney/blah")]
       (sys/with-system
         [clawe.config/*config*
          (atom

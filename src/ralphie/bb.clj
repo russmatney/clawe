@@ -32,13 +32,12 @@
          (notify/notify error-message e))))))
 
 (comment
-  (run-proc ^{:dir (zsh/expand "~")} ($ ls))
-  (run-proc ^{:dir (zsh/expand "~")} ($ git fetch))
+  (run-proc ^{:dir (fs/home)} ($ ls))
+  (run-proc ^{:dir (fs/home)} ($ git fetch))
   (run-proc {:read-key :err}
-            ^{:dir (zsh/expand "~/dotfiles")}
+            ^{:dir (str (fs/home) "/dotfiles")}
             ($ git "fetch" --verbose))
-  (run-proc ^{:dir (zsh/expand "~/dotfiles")} ($ git status))
-  )
+  (run-proc ^{:dir (str (fs/home) "/dotfiles")} ($ git status)))
 
 
 

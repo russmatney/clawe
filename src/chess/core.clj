@@ -7,7 +7,7 @@
    [aero.core :as aero]
    [clojure.java.io :as io]
 
-   [ralphie.zsh :as zsh]
+   [babashka.fs :as fs]
    [wing.core :as w]))
 
 (defonce lichess-username (atom nil))
@@ -203,7 +203,7 @@
 (comment
 
   (def bulk-pgns
-    (-> (zsh/expand "~/Downloads/chess_com_games_2021-01-06.pgn")
+    (-> (str (fs/home) "/Downloads/chess_com_games_2021-01-06.pgn")
         slurp
         (string/split #"\n\n")
         (->>

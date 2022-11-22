@@ -8,7 +8,7 @@
    [ralphie.install :as r.install]
    [ralphie.notify :as notify]
    [ralphie.tmux :as tmux]
-   [ralphie.zsh :as zsh]
+   [babashka.fs :as fs]
 
    ;; required to put bindings in place, otherwise we write empty rc configs
    clawe.defs.bindings
@@ -39,10 +39,11 @@
 (defn check-unit-tests
   "Run the unit tests, return [:success ...] or [:fail ....]."
   []
-  (let [proc               ^{:out :string
-                             ;; TODO use clawe-dir (config?)
-                             :dir (zsh/expand "~/russmatney/clawe")
-                             } (proc/$ bb test-unit)
+  (let [proc
+        ^{:out :string
+          ;; TODO use clawe-dir (config?)
+          :dir (str (fs/home) "/russmatney/clawe")}
+        (proc/$ bb test-unit)
         {:keys [exit out]} @proc]
 
     (if (#{0} exit)

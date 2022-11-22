@@ -6,7 +6,7 @@
    [babashka.process :as proc]
    [ralphie.notify :as notify]
    [ralphie.tmux :as r.tmux]
-   [ralphie.zsh :as zsh]))
+   [babashka.fs :as fs]))
 
 (defn log [msg]
   ;; TODO consider clawe.log macro
@@ -99,7 +99,7 @@
   ([_]
    (log "SXHKD bindings resetting...")
    (let [config (raw-sxhkdrc)]
-     (spit (zsh/expand "~/.config/sxhkd/sxhkdrc") config)
+     (spit (str (fs/home) "/.config/sxhkd/sxhkdrc") config)
      (log "SXHKD bindings rewritten.")
      ;; this can cut off running apps if they are not started properly
      ;; tho that should be rare

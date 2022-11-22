@@ -2,6 +2,7 @@
   (:require
    [systemic.core :as sys :refer [defsys]]
    [ralphie.zsh :as zsh]
+   [babashka.fs :as fs]
 
    [clawe.awesome :as clawe.awesome]
    [clawe.config :as clawe.config]
@@ -35,7 +36,7 @@
 ;; workspace helpers
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def default-directory (zsh/expand "~"))
+(def default-directory (fs/home))
 (defn- ensure-directory
   "Makes sure the passed workspace has a `:workspace/directory` set.
 

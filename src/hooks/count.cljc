@@ -26,8 +26,7 @@
 #?(:clj
    (defn todo-dir-files []
      (->>
-       "~/todo"
-       r.zsh/expand
+       (str (fs/home) "/todo")
        (org-crud/dir->nested-items {:recursive? true})
        (map org->count))))
 

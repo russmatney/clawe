@@ -4,7 +4,6 @@
    [db.core :as db]
    [babashka.fs :as fs]
    [clawe.wm :as wm]
-   [ralphie.zsh :as zsh]
    [clojure.string :as string]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -20,7 +19,7 @@
     {:repo/name       repo-name
      :repo/user-name  user-name
      :repo/short-path (str user-name "/" repo-name)
-     :repo/directory  (zsh/expand "~/" user-name "/" repo-name)
+     :repo/directory  (str (fs/home) "/" user-name "/" repo-name)
      :doctor/type     :type/repo}))
 
 (defn is-git-dir? [dir]
@@ -76,10 +75,10 @@
 (comment
   (fetch-repo {:repo/short-path "russmatney/clawe"})
   (fetch-repo {:repo/short-path "notreal"})
-  (fetch-repo {:repo/directory  (zsh/expand "~/russmatney/clawe")
+  (fetch-repo {:repo/directory  (str (fs/home) "/russmatney/clawe")
                :repo/short-path "russmatney/clawe"})
   ;; ambiguous still works...
-  (fetch-repo {:repo/directory  (zsh/expand "~/teknql/fabb")
+  (fetch-repo {:repo/directory  (str (fs/home) "~/teknql/fabb")
                :repo/short-path "russmatney/clawe"}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

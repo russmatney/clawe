@@ -1,15 +1,14 @@
 (ns screenshots.core
-  (:require [babashka.process :as proc]
-            [ralphie.zsh :as zsh]
-            [clojure.string :as string]
-            [babashka.fs :as fs]
-            [dates.tick :as dates.tick]
-            [db.core :as db]))
-
+  (:require
+   [babashka.process :as proc]
+   [clojure.string :as string]
+   [babashka.fs :as fs]
+   [dates.tick :as dates.tick]
+   [db.core :as db]))
 
 
 (defn local-screenshot-file-paths []
-  (let [base-dir (zsh/expand "~/Screenshots/")]
+  (let [base-dir (str (fs/home) "/Screenshots/")]
     (->
       ^{:dir base-dir :out :string}
       (proc/$ ls)

@@ -22,9 +22,7 @@
   ([day]
    (let [day  (cond (int? day) (first (dates.tick/days (+ day 1)))
                     :else      day)
-         path (->
-                (str "~/todo/daily/" day ".org")
-                r.zsh/expand)]
+         path (str (fs/home) "/todo/daily/" day ".org")]
      (when (fs/exists? path) path))))
 
 (comment
@@ -51,9 +49,7 @@
   Defaults to this month."
   ([] (monthly-archive-path (first (dates.tick/months 1))))
   ([year-month]
-   (->
-     (str "~/todo/archive/" year-month ".org")
-     r.zsh/expand)))
+   (str (fs/home) "/todo/archive/" year-month ".org")))
 
 (comment
   (monthly-archive-path))

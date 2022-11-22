@@ -21,7 +21,7 @@
 ;; local repos
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def local-repos-root (zsh/expand "~"))
+(def local-repos-root (fs/home))
 
 (defn local-repos
   "Returns a list of absolute paths to local git repos"
