@@ -1,4 +1,4 @@
-(ns clawe.wm-test
+(ns ^:integration clawe.wm-test
   (:require
    [clojure.test :refer [deftest is testing use-fixtures] :as t]
    [test-util :refer [wait-until]]

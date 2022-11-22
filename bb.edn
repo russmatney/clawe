@@ -73,6 +73,8 @@
   {:doc  "Run clawe unit tests."
    :task (shell "./test_runner.clj")}
 
+  ;; test-kaocha {:task (let [args *command-line-args*])}
+
   clawe-install
   {:doc  "Rebuild the clawe uberjar"
    :task (let [cp (-> ^{:out :string} (p/$ clojure -A:remove-clojure -Spath) p/check :out)]

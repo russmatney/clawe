@@ -1,4 +1,4 @@
-(ns clawe.toggle-test
+(ns ^:integration clawe.toggle-test
   (:require
    [clojure.test :refer [deftest is testing use-fixtures]]
    [test-util :refer [gen-data]]

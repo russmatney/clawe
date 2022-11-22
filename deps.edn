@@ -32,15 +32,15 @@
   :outdated {:extra-deps {com.github.liquidz/antq {:mvn/version "2.1.939"}}
              :main-opts  ["-m" "antq.core"]}
 
-  ;; exclude these from uberjar builds
-  ;; :remove-clojure
-  ;; {:classpath-overrides
-  ;;  {org.clojure/clojure          nil
-  ;;   org.clojure/spec.alpha       nil
-  ;;   org.clojure/core.specs.alpha nil}}
-
   :doctor-server {:main-opts ["-m" "doctor.main"]}
-  ;; :expo-server   {:main-opts ["-m" "expo.main"]}
+
+  :kaocha {:extra-deps
+           {lambdaisland/kaocha          {:mvn/version "1.71.1119"}
+            com.lambdaisland/kaocha-cljs {:mvn/version "1.4.130"}}
+           :main-opts ["-m" "kaocha.runner"]}
+
+  :oli-test {:extra-deps {olical/cljs-test-runner {:mvn/version "3.8.0"}}
+             :main-opts  ["-m" "cljs-test-runner.main"]}
 
   :full-stack-deps
   {:extra-deps
@@ -67,8 +67,6 @@
     ;; clerk
     io.github.nextjournal/clerk {:git/url "https://github.com/nextjournal/clerk"
                                  :git/sha "46147bb859322a9e2363baf1283d4594d2e46d34"}
-    ;; https://github.com/babashka/process/issues/76
-    ;; org.graalvm.js/js           {:mvn/version "22.1.0"}
 
     ;; file-watching
     hawk/hawk {:mvn/version "0.2.11"}

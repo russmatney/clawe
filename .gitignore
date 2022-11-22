@@ -57,3 +57,6 @@ expo/public/assets/wallpapers
 expo/public/expo-db.edn
 
 .clerk
+/cljs-test-runner-out/
+/out/
+/target/

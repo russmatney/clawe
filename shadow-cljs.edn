@@ -1,11 +1,13 @@
-{:deps {:aliases
-        [:full-stack-deps]}
+{:source-paths ["src" "test"]
+ :deps         {:aliases
+                [:full-stack-deps]}
 
  :nrepl {:port 3335
          :middleware
          [cider-nrepl.plugin/middleware
           refactor-nrepl.middleware/wrap-refactor]}
 
+ :dev-http {8021 "out/test"}
  :builds
  {
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -46,4 +48,12 @@
    :tailwind/output "public/css/main-built.css"
    :tailwind/files
    {:base-path    "." ;; Path to directory housing `tailwind.config.js`
-    :tailwind.css "public/css/main.css"}}}}
+    :tailwind.css "public/css/main.css"}}
+
+  :doctor-test
+  {:target   :browser-test
+   :test-dir "out/test"}
+
+  :karma
+  {:target    :karma
+   :output-to "target/ci.js"}}}

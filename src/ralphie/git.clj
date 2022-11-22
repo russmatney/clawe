@@ -459,7 +459,7 @@
      (let [parsed-stat-lines (->> stat-lines (map (partial ->stat-line dir)) (remove nil?))]
        {:commit/lines-added   (->> parsed-stat-lines (map :git.stat/lines-added) (remove nil?) (reduce +))
         :commit/lines-removed (->> parsed-stat-lines (map :git.stat/lines-removed) (remove nil?) (reduce +))
-        :commit/files-renamed (->> parsed-stat-lines (filter :git.stat/is-rename?) count)
+        :commit/files-renamed (->> parsed-stat-lines (filter :git.stat/is-rename) count)
         :commit/stat-lines    parsed-stat-lines})
      (catch Exception e
        (println "Failed to parse ->stats with lines" dir stat-lines)
