@@ -46,11 +46,18 @@
            (->zdt-with-local "2022-04-28T23:47:51")
 
            "2022-04-28 23:47:51"
-           (->zdt-with-local "2022-04-28T23:47:51")
-
-           1650486902722
-           (->zdt-with-local "2022-04-20T16:35:02.722")}]
+           (->zdt-with-local "2022-04-28T23:47:51")}]
       (->> cases
            (map (fn [[in exp]]
                   (is (= exp (sut/parse-time-string in)))))
-           doall))))
+           doall)))
+
+  (testing "handles ints"
+    (let [res (sut/parse-time-string 1650486902722)]
+      (is (t/zone res))
+      (is (= (t/year res)
+             (t/year (->zdt-with-local "2022-04-20T16:35:02.722"))))
+      (is (= (t/month res)
+             (t/month (->zdt-with-local "2022-04-20T16:35:02.722"))))
+      (is (= (t/date res)
+             (t/date (->zdt-with-local "2022-04-20T16:35:02.722")))))))
