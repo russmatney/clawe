@@ -81,7 +81,8 @@
                 :org.prop/link-ids ;; old linking props
                 :org.prop/begin-src ;; TODO proper source block handling
                 :org.prop/end-src))
-      (log/info "Could not create fallback id for org item" item))))
+      (log/info "Could not create fallback id for org item"
+                (:org/name item)))))
 
 ;; this should not be necessary
 ;; (defn other-db-updates
@@ -178,7 +179,9 @@
                            (log/info "\n\nRetrying with smaller groups." (count notes))
                            (transact-garden-notes (->> notes (take half)))
                            (transact-garden-notes (->> notes (drop half) (take half))))
-                         (log/info "\n\nProblemmatic record:" notes))))}))))))))
+                         (log/info "\n\nProblemmatic record:" (some->>
+                                                                notes first
+                                                                :org/name)))))}))))))))
 
 (comment
   (let [x         [2 3 4 5 6 7 8]
