@@ -7,7 +7,6 @@
    [org-crud.markdown :as org-crud.markdown]
    [nextjournal.clerk :as clerk]
    [nextjournal.clerk.viewer :as clerk-viewer]
-   [components.debug :as components.debug]
    [clojure.string :as string]
    [notebooks.viewers.my-notebooks :as my-notebooks]))
 
@@ -20,14 +19,14 @@
 (def item-viewer
   {:transform-fn
    (fn [wrapped-value]
-     (let [val (clerk-viewer/->value wrapped-value)]
+     (let [_val (clerk-viewer/->value wrapped-value)]
        (clerk-viewer/html
          [:div
           {:class ["mt-auto" "p-4" "bg-slate-300"
                    "border"
                    "border-blue-800"]}
           #_(components.debug/raw-metadata val)
-          (components.debug/colorized-metadata val)])))})
+          #_(components.debug/colorized-metadata val)])))})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 {::clerk/visibility {:result :show}}
