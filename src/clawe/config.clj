@@ -17,7 +17,7 @@
   (->
     (aero/read-config config-res)
     (assoc :is-mac (calc-is-mac?))
-    (assoc :home-dir (fs/home))))
+    (assoc :home-dir (str (fs/home)))))
 
 (defsys ^:dynamic *config*
   :start

@@ -36,7 +36,7 @@
 ;; workspace helpers
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def default-directory (fs/home))
+(def default-directory (str (fs/home)))
 (defn- ensure-directory
   "Makes sure the passed workspace has a `:workspace/directory` set.
 

@@ -204,7 +204,7 @@
     (->
       ^{:out :string}
       ($ tmux new-session -d
-         -c ~(if directory directory (fs/home))
+         -c ~(if directory directory (str (fs/home)))
          -s ~session-name
          -n ~(or window-name session-name))
       check

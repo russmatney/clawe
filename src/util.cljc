@@ -2,7 +2,9 @@
   (:require
    #?@(:clj [[babashka.process :refer [$ check]]
              [clojure.java.io :as io]
-             [clojure.string :as string]])))
+             [clojure.string :as string]]))
+  (:import
+   #?@(:clj [[java.nio.file Path]])))
 
 (defn read-file
   "Parses a file in the same dir as this is called.
@@ -35,7 +37,15 @@
          (fn [[_k v]]
            (cond
              (fn? v) false
+             ;;
              :else   true)))
+       (map
+         (fn [[k v]]
+           (cond
+             #?@(:clj
+                 ;; TODO this might be more expensive than it's worth
+                 [(instance? Path v) [k (str v)]])
+             :else [k v])))
        (into {})))
 
 (defn zp
@@ -71,8 +81,7 @@
 (comment
   (ensure-uuid "hi")
   (ensure-uuid #uuid "59782969-8B9A-4C98-9AE4-2282FF0A2A1F")
-  (ensure-uuid "59782969-8B9A-4C98-9AE4-2282FF0A2A1F")
-  )
+  (ensure-uuid "59782969-8B9A-4C98-9AE4-2282FF0A2A1F"))
 
 (defn expand-coll-group-bys
   "Expands a cardinality-many group-by result.
