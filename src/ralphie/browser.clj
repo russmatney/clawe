@@ -135,6 +135,8 @@ Depends on `brotab`."
 ;; Open
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(def osx-default-browser-app "/Applications/Firefox.app")
+
 (defn open
   "Opens the passed url"
   ([] (open nil))
@@ -150,7 +152,7 @@ Depends on `brotab`."
            p/check :out)
          (->
            ^{:out :string}
-           (p/$ open -a "/Applications/Safari.app")
+           (p/$ open -a ~osx-default-browser-app)
            p/check :out))
 
        (if url
