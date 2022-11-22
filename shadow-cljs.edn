@@ -1,6 +1,5 @@
-{:source-paths ["src" "test"]
- :deps         {:aliases
-                [:full-stack-deps]}
+{:deps {:aliases
+        [:full-stack-deps]}
 
  :nrepl {:port 3335
          :middleware

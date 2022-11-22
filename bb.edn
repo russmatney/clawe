@@ -66,10 +66,19 @@
 
   clj-kondo      (shell "clj-kondo --lint src")
   clj-kondo-test (shell "clj-kondo --lint test")
+  clj-kondo-all  (shell "clj-kondo --lint src:test")
 
   test-unit
-  {:doc  "Run clawe unit tests."
+  {:doc  "Run bb unit tests."
    :task (shell "./test_runner.clj")}
+
+  test-jvm-unit
+  {:doc  "Run jvm unit tests."
+   :task (shell "./bin/kaocha unit")}
+
+  test-cljs-unit
+  {:doc  "Run cljs unit tests."
+   :task (clojure "-M:oli-test:full-stack-deps")}
 
   ;; test-kaocha {:task (let [args *command-line-args*])}
 
