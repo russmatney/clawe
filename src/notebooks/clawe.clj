@@ -7,7 +7,7 @@
    [nextjournal.clerk :as clerk]
    [clawe.config :as clawe.config]
    [clawe.wm :as wm]
-   [notebooks.viewers.my-notebooks :as my-notebooks]))
+   #_[notebooks.viewers.my-notebooks :as my-notebooks]))
 
 #_(clerk/add-viewers! [my-notebooks/viewer])
 (clerk/reset-viewers! (clerk/get-default-viewers))

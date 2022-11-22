@@ -17,7 +17,9 @@
            (str "/" fname)
            slurp
            string/split-lines
-           (#(map string/trim %)))]))
+           (#(map string/trim %)))]
+      :cljs
+      [(println "No cljs impl for read-file: " fname)]))
 
 (defn partition-by-newlines [lines]
   (->> lines
@@ -39,8 +41,8 @@
 (defn zp
   "Zero Pad numbers - takes a number and the length to pad to as arguments"
   [n c]
-  #?@(:clj
-      [(format (str "%0" c "d") n)]))
+  #?@(:clj [(format (str "%0" c "d") n)]
+      :cljs [(println "No cljs impl for zp: " n c)]))
 
 (comment
   (zp 5 3)) ;; => "005"
@@ -51,7 +53,8 @@
   #?@(:clj
       [(-> ^{:dir dir}
            ($ clojure -Spath)
-           check :out slurp)]))
+           check :out slurp)]
+      :cljs [(println "No cljs impl for get-cp: " dir)]))
 
 (defn ensure-uuid [id]
   (cond

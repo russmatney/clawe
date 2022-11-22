@@ -17,7 +17,7 @@
 (comment
   (active-workspaces))
 
-(defsys *workspaces-stream*
+(defsys ^:dynamic *workspaces-stream*
   :start (s/stream)
   :stop (s/close! *workspaces-stream*))
 

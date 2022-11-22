@@ -24,8 +24,7 @@
     (let [commits (sut/commits-for-dir {:dir "russmatney/clawe" :n 10})]
       (doall
         (for [commit commits]
-          (do
-            (is (:commit/subject commit)))))))
+          (is (:commit/subject commit))))))
 
   (testing "commits parse authors"
     (let [commits (sut/commits-for-dir {:dir "russmatney/clawe" :n 10})]

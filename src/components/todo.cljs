@@ -5,7 +5,6 @@
    [components.garden :as components.garden]
    [components.debug :as components.debug]
    [components.actions :as components.actions]
-   [components.events :as components.events]
    [doctor.ui.handlers :as handlers]
    [dates.tick :as dates.tick]
    [uix.core.alpha :as uix]))

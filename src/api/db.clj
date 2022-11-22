@@ -10,7 +10,7 @@
 (defn datoms-for-frontend []
   (d/datoms @db/*conn* :eavt))
 
-(defsys *db-stream*
+(defsys ^:dynamic *db-stream*
   :start (s/stream 100000)
   :stop (s/close! *db-stream*))
 
@@ -22,7 +22,7 @@
 (defn update-stream [txs]
   (s/put! *db-stream* txs))
 
-(defsys *tx->fe-db*
+(defsys ^:dynamic *tx->fe-db*
   :start (do
            (log/info "Adding :tx->fe-db db listener")
            (sys/start! `db/*conn*)

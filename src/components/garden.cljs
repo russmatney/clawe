@@ -180,14 +180,15 @@
 
 (defn org-body-text [opts item]
   (when (-> item :org/body seq)
-    (let [lines (->> item :org/body
-                     (map-indexed vector)
-                     (reduce
-                       (fn [lines [i {:keys [text]}]]
-                         (cond
-                           (#{""} text)
-                           (concat lines [])))
-                       []))]
+    (let [;; TODO what's this calc doing?
+          _lines (->> item :org/body
+                      (map-indexed vector)
+                      (reduce
+                        (fn [lines [_i {:keys [text]}]]
+                          (cond
+                            (#{""} text)
+                            (concat lines [])))
+                        []))]
       [:div
        {:class ["flex" "flex-col"]}
        (for [[i line] (->> item :org/body (map-indexed vector))]

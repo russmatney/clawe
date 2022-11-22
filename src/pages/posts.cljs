@@ -1,6 +1,5 @@
 (ns pages.posts
   (:require
-   [wing.core :as w]
    [wing.uix.router :as router]
    [uix.core.alpha :as uix]
    [clojure.string :as string]
@@ -33,6 +32,10 @@
         {:class ["justify-self-end"
                  "font-mono" "text-gray-500"]}
         (components.format/last-modified-human last-modified)])]))
+
+(defn toggle [s val]
+  ((if (contains? s val)
+     disj conj) s val))
 
 (defn page [{:keys [conn]}]
   (let [selected-item-name (router/use-route-parameters [:query :item-name])
@@ -70,7 +73,7 @@
          [post-link
           {:on-select    (fn [_]
                            ;; TODO set slugs in query params
-                           (swap! open-posts (fn [op] (w/toggle op it)))
+                           (swap! open-posts (fn [op] (toggle op it)))
                            (reset! last-selected it)
                            (reset! selected-item-name (:org/name it)))
            :is-selected? (@open-posts it)}

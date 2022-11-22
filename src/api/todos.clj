@@ -140,7 +140,7 @@
     (filter :db/id)
     (count)))
 
-(defsys *todos-stream*
+(defsys ^:dynamic *todos-stream*
   :start (s/stream)
   :stop (s/close! *todos-stream*))
 

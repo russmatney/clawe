@@ -2,7 +2,6 @@
   (:require
    [juxt.dirwatch :as dirwatch]
    [systemic.core :as sys :refer [defsys]]
-   [ralphie.zsh :as zsh]
    [taoensso.timbre :as log]
    [babashka.fs :as fs]
    [garden.db :as garden.db]
@@ -33,7 +32,7 @@
   (= (str file) (garden/daily-path)))
 
 
-(defsys *garden-watcher*
+(defsys ^:dynamic *garden-watcher*
   :start
   (log/info "Starting *garden-watcher*")
   (dirwatch/watch-dir

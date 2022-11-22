@@ -15,7 +15,7 @@
 
 (defn ->config [] (aero/read-config (io/resource "secret.edn")) )
 
-(defsys *lichess-env*
+(defsys ^:dynamic *lichess-env*
   :start
   (let [{:lichess/keys [username token]} (->config)]
     {:lichess/username username

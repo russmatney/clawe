@@ -103,7 +103,7 @@
   ([] (ls {:type :clients}))
   ([{:keys [extra-headers headers strip type all sort xs]
      :or   {strip false all false}
-     :as   opts}]
+     :as   _opts}]
    (let [headers (cond
                    (seq headers) headers
                    all           nil

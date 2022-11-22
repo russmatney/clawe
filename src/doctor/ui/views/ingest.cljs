@@ -46,7 +46,7 @@
 
 (defn ingest-buttons
   ([] [ingest-buttons nil])
-  ([opts]
+  ([_opts]
    [:div
     {:class ["grid" "grid-cols-6"
              "space-x-2"

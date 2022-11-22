@@ -18,7 +18,7 @@
 ;; window manager sys
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defsys *wm*
+(defsys ^:dynamic *wm*
   :extra-deps
   [clawe.config/*config*]
   :start

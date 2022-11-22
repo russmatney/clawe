@@ -99,7 +99,7 @@
 ;; systemic
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defsys *topbar-metadata-stream*
+(defsys ^:dynamic *topbar-metadata-stream*
   :start (s/stream)
   :stop (s/close! *topbar-metadata-stream*))
 

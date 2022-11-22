@@ -76,13 +76,13 @@
          (->> tmux-format-keys
               (filter (comp selected-formats first))
               (map (fn [[key fmt-key]]
-                     (str key " \"#{" fmt-key "}\"")
-                     (str key " " (if (re-seq #"^\?" fmt-key)
-                                    ;; `?` prefix implies we want a boolean
-                                    ;; may one day want something for ints/indexes
-                                    ;; this lets edn/read-string read a bool
-                                    (str "#{" fmt-key ",true,false}")
-                                    (str "\"#{" fmt-key "}\"")))))
+                     (str key " "
+                          (if (re-seq #"^\?" fmt-key)
+                            ;; `?` prefix implies we want a boolean
+                            ;; may one day want something for ints/indexes
+                            ;; this lets edn/read-string read a bool
+                            (str "#{" fmt-key ",true,false}")
+                            (str "\"#{" fmt-key "}\"")))))
               (string/join " "))]
      (str "{" format-syms-and-keys "}"))))
 

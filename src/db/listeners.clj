@@ -13,7 +13,7 @@
 ;; expo consumer
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defsys *garden->expo*
+(defsys ^:dynamic *garden->expo*
   :start (do
            (sys/start! `db/*conn*)
            (d/listen!
@@ -111,7 +111,7 @@
 
   )
 
-(defsys *data-expander*
+(defsys ^:dynamic *data-expander*
   :start
   (log/info "Adding *data-expander* db listener")
   (sys/start! `db/*conn*)
@@ -159,7 +159,7 @@
 ;; blog re-render
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defsys *garden->blog*
+(defsys ^:dynamic *garden->blog*
   :start (do
            (sys/start! `db/*conn*)
            (d/listen!

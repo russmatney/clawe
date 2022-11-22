@@ -11,7 +11,7 @@
 (comment
   (->config))
 
-(defsys *config* (->config))
+(defsys ^:dynamic *config* (->config))
 
 (defn expo-db-path []
   (sys/start! `*config*)

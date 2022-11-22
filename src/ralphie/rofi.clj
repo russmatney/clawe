@@ -2,7 +2,6 @@
   (:require
    [babashka.process :refer [$ check]]
    [clojure.string :as string]
-   [ralphie.awesome :as awm]
    [ralphie.notify :as notify]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

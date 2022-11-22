@@ -46,7 +46,7 @@
 (defn build-focus-data []
   {:todos (todays-goals)})
 
-(defsys *focus-data-stream*
+(defsys ^:dynamic *focus-data-stream*
   :start (s/stream)
   :stop (s/close! *focus-data-stream*))
 

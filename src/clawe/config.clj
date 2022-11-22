@@ -19,7 +19,7 @@
     (assoc :is-mac (calc-is-mac?))
     (assoc :home-dir (fs/home))))
 
-(defsys *config*
+(defsys ^:dynamic *config*
   :start
   (atom (->config)))
 

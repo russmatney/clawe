@@ -4,7 +4,6 @@
    #?@(:clj [[systemic.core :refer [defsys] :as sys]
              [manifold.stream :as s]
              [org-crud.core :as org-crud]
-             [ralphie.zsh :as r.zsh]
              [babashka.fs :as fs]
              [util]]
        :cljs [[wing.core :as w]
@@ -49,7 +48,7 @@
                         (assoc it :count/sort (str "item-count-" (util/zp i 3)))))))))
 
 #?(:clj
-   (defsys *counts-stream*
+   (defsys ^:dynamic *counts-stream*
      :start (s/stream)
      :stop (s/close! *counts-stream*)))
 

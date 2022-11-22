@@ -3,7 +3,6 @@
    [clojure.string :as string]
    [tick.core :as t]
    [uix.core.alpha :as uix]
-   [wing.core :as w]
 
    [components.timeline :as components.timeline]
    [components.table :as components.table]
@@ -255,6 +254,11 @@
 ;; Full cluster component
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn toggle [s val]
+  ((if (contains? s val)
+     disj
+     conj) s val))
+
 (defn events-cluster [_opts items]
   (let [items          (->> items (filter :event/timestamp))
         all-item-dates (->> items
@@ -279,7 +283,7 @@
      [:div
       {:class ["pb-8" "px-6"]}
       [components.timeline/day-picker
-       {:on-date-click       #(swap! selected-dates (fn [ds] (w/toggle ds %)))
+       {:on-date-click       #(swap! selected-dates (fn [ds] (toggle ds %)))
         :date-has-data?      all-item-dates
         :selected-dates      @selected-dates
         :popover-anchor-comp [:button {:class ["w-3" "h-3" "rounded" "bg-city-pink-400"]}]

@@ -26,8 +26,7 @@
    [notebooks.clerk :as notebooks.clerk]
    [clojure.edn :as edn]
    [hiccup.page :as hiccup]
-   [notebooks.core :as notebooks]
-   [babashka.fs :as fs]))
+   [notebooks.core :as notebooks]))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -85,11 +84,11 @@
 ;; Plasma config
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defsys *sessions*
+(defsys ^:dynamic *sessions*
   "Plasma sessions"
   (atom {}))
 
-(defsys *plasma-server*
+(defsys ^:dynamic *plasma-server*
   "Our plasma server bundle"
   (plasma.server/make-server
     {:session-atom           *sessions*
@@ -114,7 +113,7 @@
 ;; Server
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defsys *server*
+(defsys ^:dynamic *server*
   "Doctor webserver"
   :extra-deps
   [api.workspaces/*workspaces-stream*

@@ -1,6 +1,5 @@
 (ns dates.tick
   (:require
-   #?@(:clj [[ralphie.notify :as notify]])
    [clojure.string :as string]
    [tick.core :as t]))
 

@@ -9,7 +9,7 @@
    [doctor.config :as config])
   (:gen-class))
 
-(defsys *nrepl*
+(defsys ^:dynamic *nrepl*
   :closure
   (let [nrepl-val (atom nil)
         port      (:nrepl/port config/*config*)]

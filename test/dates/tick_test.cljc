@@ -5,8 +5,7 @@
    [time-literals.data-readers]
    [time-literals.read-write]
    [tick.timezone]
-   [tick.locale-en-us]
-   [tick.core :as t]))
+   [tick.locale-en-us]))
 
 (deftest parse-time-string-test
   (testing "basic cases"

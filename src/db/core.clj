@@ -35,7 +35,7 @@
 
 (declare write-db-to-file)
 
-(defsys *conn*
+(defsys ^:dynamic *conn*
   :start
   (let [conn (d/conn-from-db (db-from-file))]
     (d/listen! conn :db-backup-writer (fn [_] (write-db-to-file)))

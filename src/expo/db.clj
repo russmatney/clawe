@@ -61,7 +61,7 @@
 
 (declare write-db-to-file)
 
-(defsys *conn*
+(defsys ^:dynamic *conn*
   :start (let [raw-db (read-db-from-file)
                conn   (-> (or raw-db (d/empty-db db-schema)) (d/conn-from-db))]
            (d/listen! conn :db-writer (fn [_] (write-db-to-file)))

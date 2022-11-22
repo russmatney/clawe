@@ -363,6 +363,7 @@
 
 (defn delete-tag-by-index!
   "Deletes a tag at the passed index."
+  #_{:clj-kondo/ignore [:unused-binding]}
   [index]
   (fnl
     #_{:clj-kondo/ignore [:unused-binding]}
