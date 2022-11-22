@@ -9,7 +9,7 @@
    [ring.adapter.undertow :as undertow]
    [ring.adapter.undertow.websocket :as undertow.ws]
    [datascript.transit :as dt]
-   [nextjournal.clerk.viewer :as clerk-viewer]
+   #_[nextjournal.clerk.viewer :as clerk-viewer]
 
    [dates.transit-time-literals :as ttl]
    [api.db :as api.db]
@@ -23,10 +23,10 @@
    [doctor.api :as doctor.api]
    [garden.watcher :as garden.watcher]
    [ralphie.notify :as notify]
-   [notebooks.clerk :as notebooks.clerk]
    [clojure.edn :as edn]
    [hiccup.page :as hiccup]
-   [notebooks.core :as notebooks]))
+   #_[notebooks.clerk :as notebooks.clerk]
+   #_[notebooks.core :as notebooks]))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -74,9 +74,9 @@
   "Sends an updated eval of the passed `notebook-sym` to _all_ clients."
   [notebook-sym]
   (println "broadcasting notebook-sym" notebook-sym)
-  (when-let [doc (notebooks.clerk/ns-sym->viewer notebook-sym)]
-    (doseq [ch @!clients]
-      (undertow.ws/send (clerk-viewer/->edn {:doc doc}) ch))))
+  (when-let [_doc nil #_ (notebooks.clerk/ns-sym->viewer notebook-sym)]
+    (doseq [_ch @!clients]
+      #_(undertow.ws/send (clerk-viewer/->edn {:doc doc}) ch))))
 
 (comment (broadcast! 'notebooks.core))
 
@@ -151,21 +151,21 @@
                  {:on-open
                   (fn [msg]
                     (swap! !clients conj (:channel msg))
-                    (notebooks.clerk/channel-visiting-notebook msg))
+                    #_(notebooks.clerk/channel-visiting-notebook msg))
 
                   :on-close-message
                   (fn [msg]
                     (swap! !clients disj (:channel msg))
-                    (notebooks.clerk/channel-left-notebook msg))
+                    #_(notebooks.clerk/channel-left-notebook msg))
 
                   :on-message
                   (fn [msg]
                     (let [data (:data msg)]
                       (cond
                         (string/starts-with? data "{:path ")
-                        (let [path (-> data edn/read-string :path)]
-                          (notebooks.clerk/channel-visiting-notebook
-                            (assoc msg :path path)))
+                        (let [_path (-> data edn/read-string :path)]
+                          #_(notebooks.clerk/channel-visiting-notebook
+                              (assoc msg :path path)))
 
                         :else
                         (do
@@ -175,40 +175,41 @@
                           (eval (read-string data))))))}}
 
                 (string/starts-with? uri "/notebooks/")
-                (let [notebook-sym (notebooks.clerk/path->notebook-sym uri)]
-                  (log/info "loading notebook" notebook-sym)
-                  (let [{:keys [notebook error]}
-                        (try
-                          {:notebook
-                           (notebooks.clerk/ns-sym->html notebook-sym)}
-                          (catch Exception e
-                            (println "[CLERK] notebook build fail" notebook-sym)
-                            (println e)
-                            {:error e}))]
-                    (if notebook
-                      {:status  200
-                       :headers {"Content-Type" "text/html"}
-                       :body    notebook}
-                      {:status  200
-                       :headers {"Content-Type" "text/html"}
-                       :body
-                       (hiccup/html5
-                         [:html
-                          [:head]
-                          [:body
-                           [:div
-                            (str "No notebook or failed to load nb at uri: " uri)
+                (let [notebook-sym nil #_ (notebooks.clerk/path->notebook-sym uri)]
+                  (when notebook-sym
+                    (log/info "loading notebook" notebook-sym)
+                    (let [{:keys [notebook error]}
+                          (try
+                            {:notebook nil
+                             #_        (notebooks.clerk/ns-sym->html notebook-sym)}
+                            (catch Exception e
+                              (println "[CLERK] notebook build fail" notebook-sym)
+                              (println e)
+                              {:error e}))]
+                      (if notebook
+                        {:status  200
+                         :headers {"Content-Type" "text/html"}
+                         :body    notebook}
+                        {:status  200
+                         :headers {"Content-Type" "text/html"}
+                         :body
+                         (hiccup/html5
+                           [:html
+                            [:head]
+                            [:body
+                             [:div
+                              (str "No notebook or failed to load nb at uri: " uri)
 
-                            [:pre error]
+                              [:pre error]
 
-                            (->>
-                              (notebooks/notebooks)
-                              (map #(assoc % :ns (notebooks.clerk/path->notebook-sym (:uri %))))
-                              (map (fn [{:keys [name uri]}]
-                                     [:li
-                                      [:a {:href uri}
-                                       (str name)]]))
-                              (into [:ul]))]]])})))
+                              #_(->>
+                                  (notebooks/notebooks)
+                                  (map #(assoc % :ns (notebooks.clerk/path->notebook-sym (:uri %))))
+                                  (map (fn [{:keys [name uri]}]
+                                         [:li
+                                          [:a {:href uri}
+                                           (str name)]]))
+                                  (into [:ul]))]]])}))))
 
                 (= "/" uri)
                 (let [body
@@ -217,14 +218,14 @@
                          [:head]
                          [:body
                           [:div
-                           (->>
-                             (notebooks/notebooks)
-                             (map #(assoc % :ns (notebooks.clerk/path->notebook-sym (:uri %))))
-                             (map (fn [{:keys [name uri]}]
-                                    [:li
-                                     [:a {:href uri}
-                                      (str name)]]))
-                             (into [:ul]))]]])]
+                           #_(->>
+                               (notebooks/notebooks)
+                               (map #(assoc % :ns (notebooks.clerk/path->notebook-sym (:uri %))))
+                               (map (fn [{:keys [name uri]}]
+                                      [:li
+                                       [:a {:href uri}
+                                        (str name)]]))
+                               (into [:ul]))]]])]
                   {:status  200
                    :headers {"Content-Type" "text/html"}
                    :body    body})

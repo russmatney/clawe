@@ -15,7 +15,7 @@
    [clawe.toggle :as toggle]
    [clawe.client.create :as client.create]
    [clawe.doctor :as doctor]
-   [notebooks.core :as notebooks]
+   #_[notebooks.core :as notebooks]
    [ralphie.notify :as notify]
    [ralphie.browser :as browser]
    [ralphie.emacs :as emacs]
@@ -140,7 +140,8 @@
                                               (notebook->rofi-actions notebook))))))
 
 (defn notebook-rofi-opts []
-  (->> (notebooks/notebooks) (map notebook->rofi-opt)))
+  []
+  #_(->> (notebooks/notebooks) (map notebook->rofi-opt)))
 
 (comment
   (rofi/rofi (notebook-rofi-opts))
