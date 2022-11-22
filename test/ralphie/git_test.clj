@@ -1,4 +1,4 @@
-(ns ralphie.git-test
+(ns ^:integration ralphie.git-test
   (:require
    [clojure.test :refer [deftest is testing]]
    [ralphie.git :as sut]))
