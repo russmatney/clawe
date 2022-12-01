@@ -67,7 +67,7 @@
                  (skipped? it)     ["line-through"]
                  :else             ["font-normal"])
                #_["whitespace-nowrap"])}
-      (:org/name it)]
+      (:org/name-string it)]
 
      ;; time ago
      (when (and (completed? it) (:org/closed-since it))
