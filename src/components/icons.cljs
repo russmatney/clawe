@@ -33,6 +33,14 @@
         {:color "text-city-blue-400"
          :src   "/assets/candy-icons/pencil.svg"}
 
+        (string/includes? "advent-of-code" title)
+        {:color "text-city-blue-400"
+         :src   "/assets/candy-icons/terraria.svg"}
+
+        (string/includes? "clove" title)
+        {:color "text-city-blue-400"
+         :src   "/assets/candy-icons/kruler.svg"}
+
         #_ (string/includes? "pirates" title)
         #_ {:color "text-city-blue-400"
             :src   "/assets/candy-icons/hooks.svg"}
@@ -138,7 +146,7 @@
       (#{"clove"} app-name)
       {:color "text-city-blue-600"
        ;; TODO pick a better icon
-       :icon mdi/account-heart}
+       :icon  mdi/account-heart}
 
       (string/includes? window-title "developer tools")
       {:color "text-city-blue-600"
