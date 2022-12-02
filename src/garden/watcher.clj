@@ -9,7 +9,7 @@
    [api.focus :as api.focus]))
 
 (defn garden-dir-path []
-  (fs/file (str (fs/home) "~/todo")))
+  (fs/file (str (fs/home) "/todo")))
 
 (def should-sync-match-strs
   {:daily     #"/todo/daily/"
