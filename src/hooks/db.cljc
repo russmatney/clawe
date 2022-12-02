@@ -1,8 +1,7 @@
 (ns hooks.db
   (:require
    [plasma.core :refer [defhandler defstream]]
-   #?@(:clj [[manifold.stream :as s]
-             [api.db :as api.db]]
+   #?@(:clj [[api.db :as api.db]]
        :cljs [[datascript.core :as d]
               [plasma.uix :as plasma.uix :refer [with-rpc with-stream]]
               [db.schema :refer [schema]]])))
