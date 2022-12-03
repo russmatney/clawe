@@ -118,6 +118,19 @@
         :style {:padding-left (str (* level 25) "px")}}
        [:pre (:org/body-string it)]])))
 
+(defn button [opts label]
+  [:button
+   (merge
+     {:class ["cursor-pointer"
+              "bg-city-blue-900"
+              "text-city-green-200"
+              "text-xl"
+              "py-2" "my-2"
+              "px-4" "mx-4"
+              "rounded"]}
+     opts)
+   label])
+
 (defn bar [{:keys [time]}]
   [:div
    {:class ["flex flex-row" "items-center"
@@ -166,23 +179,27 @@
       ;; buttons
       (->> (pomodoros/actions)
            (map (fn [{:keys [on-click label]}]
-                  [:button
-                   {:class    ["cursor-pointer"
-                               "bg-city-blue-900"
-                               "text-xl"
-                               "py-2" "my-2"
-                               "px-4" "mx-4"
-                               "rounded"]
-                    :on-click on-click}
-                   label]))
+                  [button {:on-click on-click} label]))
            (into [:div]))])])
+
+(defn toggles
+  [{:keys [hide-completed toggle-hide-completed
+           only-current toggle-only-current]}]
+  [:div
+   {:class ["px-4"]}
+   [button {:on-click (fn [_] (toggle-hide-completed))}
+    (if hide-completed "Show completed" "Hide completed")]
+   [button {:on-click (fn [_] (toggle-only-current))}
+    (if only-current "Show all" "Show only current")]])
 
 (defn widget [opts]
   (let [focus-data      (use-focus/use-focus-data)
         {:keys [todos]} @focus-data
 
-        time     (uix/state (t/zoned-date-time))
-        interval (atom nil)]
+        time           (uix/state (t/zoned-date-time))
+        interval       (atom nil)
+        hide-completed (uix/state nil)
+        only-current   (uix/state nil)]
     (uix/with-effect [@interval]
       (reset! interval (js/setInterval #(reset! time (t/zoned-date-time)) 1000))
       (fn [] (js/clearInterval @interval)))
@@ -195,9 +212,17 @@
 
      [bar (assoc opts :time @time)]
 
+     [toggles {:toggle-hide-completed (fn [] (swap! hide-completed not))
+               :hide-completed        @hide-completed
+               :toggle-only-current   (fn [] (swap! only-current not))
+               :only-current          @only-current}]
+
      [:div {:class ["px-4"]}
       (when (seq todos)
-        (for [[i it] (->> todos (map-indexed vector))]
+        (for [[i it] (cond->> todos
+                       @hide-completed (remove completed?)
+                       @only-current   (filter current?)
+                       true            (map-indexed vector))]
           ^{:key i}
           [:div
            [item-header it]
