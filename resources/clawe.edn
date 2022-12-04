@@ -136,6 +136,7 @@
     "TilePIpe" {:workspace/directory "~/aleksandrbazhin/TilePIpe"}
     "ViewportPlus" {:workspace/directory "~/NesiAwesomeneess/ViewportPlus"}
     "aave" {:workspace/directory "~/teknql/aave"}
+    "advent-of-babashka-template" {:workspace/directory "~/borkdude/advent-of-babashka-template"}
     "advent-of-code" {:workspace/directory "~/russmatney/advent-of-code"}
     "advent-of-godot" {:workspace/directory "~/russmatney/advent-of-godot"}
     "bbin" {:workspace/directory "~/babashka/bbin"}
