@@ -14,6 +14,12 @@
 (defn current? [it]
   (seq (set/intersection #{"current"} (:org/tags it))))
 
+(defn has-tag? [it tag]
+  (seq (set/intersection #{tag} (:org/tags it))))
+
+(defn has-tags? [it tags]
+  (seq (set/intersection tags (:org/tags it))))
+
 (defn not-started? [it]
   (-> it :org/status #{:status/not-started}))
 
@@ -195,9 +201,14 @@
     (if only-current "Show all" "Show only current")]])
 
 (defn widget [opts]
+  ;; TODO the 'current' usage in this widget could be a 'tag' based feature
+  ;; i.e. based on arbitrary tags, e.g. if that's our mode right now
   (let [focus-data      (use-focus/use-focus-data)
         {:keys [todos]} @focus-data
         current         (some->> todos (filter current?) seq)
+        love            (some->> todos (filter #(has-tag? % "love")))
+        cool            (some->> todos (filter #(has-tags? % #{"cool" "fun"})))
+        til             (some->> todos (filter #(has-tags? % #{"til"})))
 
         time           (uix/state (t/zoned-date-time))
         interval       (atom nil)
@@ -215,23 +226,62 @@
 
      [bar (assoc opts :time @time)]
 
-     ;; TODO rewrite as actions-based api
-     [toggles {:toggle-hide-completed (fn [] (swap! hide-completed not))
-               :hide-completed        @hide-completed
-               :toggle-only-current   (fn [] (swap! only-current not))
-               :only-current          @only-current}]
+     [:div
+      {:class ["flex" "flex-row" "items-center" "py-2"]}
 
-     (when current
-       [:div
-        {:class ["ml-auto"
-                 "text-4xl"
-                 "text-city-green-200"
-                 "px-8"
-                 "pb-4"]}
-        (->> current
-             (mapcat (comp reverse :org/parent-names))
-             (into #{})
-             (string/join " - "))])
+      ;; TODO rewrite as actions-based api
+      [toggles {:toggle-hide-completed (fn [] (swap! hide-completed not))
+                :hide-completed        @hide-completed
+                :toggle-only-current   (fn [] (swap! only-current not))
+                :only-current          @only-current}]
+
+      (when (and current @only-current)
+        [:div
+         {:class ["ml-auto"
+                  "text-4xl"
+                  "text-city-green-200"
+                  "px-8"
+                  "pb-4"]}
+         (->> current
+              (mapcat (comp reverse :org/parent-names))
+              (into #{})
+              (string/join " - "))])]
+
+     [:div
+      {:class ["px-4"]}
+      (when (seq til)
+        (for [[i it] (cond->> til
+                       @hide-completed (remove completed?)
+                       @only-current   (filter current?)
+                       true            (map-indexed vector))]
+          ^{:key i}
+          [:div
+           [item-header it]
+           (when (current? it) [item-body it])]))]
+
+     [:div
+      {:class ["px-4"]}
+      (when (seq cool)
+        (for [[i it] (cond->> cool
+                       @hide-completed (remove completed?)
+                       @only-current   (filter current?)
+                       true            (map-indexed vector))]
+          ^{:key i}
+          [:div
+           [item-header it]
+           (when (current? it) [item-body it])]))]
+
+     [:div
+      {:class ["px-4"]}
+      (when (seq love)
+        (for [[i it] (cond->> love
+                       @hide-completed (remove completed?)
+                       @only-current   (filter current?)
+                       true            (map-indexed vector))]
+          ^{:key i}
+          [:div
+           [item-header it]
+           (when (current? it) [item-body it])]))]
 
      [:div {:class ["px-4"]}
       (when (seq todos)
