@@ -183,6 +183,8 @@
            (into [:div]))])])
 
 (defn toggles
+  ;; TODO rewrite as actions-based api (duh)
+  ;; conditionally hide only-current when there is none
   [{:keys [hide-completed toggle-hide-completed
            only-current toggle-only-current]}]
   [:div
@@ -195,11 +197,12 @@
 (defn widget [opts]
   (let [focus-data      (use-focus/use-focus-data)
         {:keys [todos]} @focus-data
+        current         (some->> todos (filter current?) first)
 
         time           (uix/state (t/zoned-date-time))
         interval       (atom nil)
         hide-completed (uix/state nil)
-        only-current   (uix/state nil)]
+        only-current   (uix/state (if current true nil))]
     (uix/with-effect [@interval]
       (reset! interval (js/setInterval #(reset! time (t/zoned-date-time)) 1000))
       (fn [] (js/clearInterval @interval)))
@@ -212,10 +215,20 @@
 
      [bar (assoc opts :time @time)]
 
+     ;; TODO rewrite as actions-based api
      [toggles {:toggle-hide-completed (fn [] (swap! hide-completed not))
                :hide-completed        @hide-completed
                :toggle-only-current   (fn [] (swap! only-current not))
                :only-current          @only-current}]
+
+     (when current
+       [:div
+        {:class ["ml-auto"
+                 "text-4xl"
+                 "text-city-green-200"
+                 "px-8"
+                 "pb-4"]}
+        (->> current :org/parent-names reverse (string/join " - "))])
 
      [:div {:class ["px-4"]}
       (when (seq todos)
