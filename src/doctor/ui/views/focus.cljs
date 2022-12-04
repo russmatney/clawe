@@ -247,9 +247,9 @@
               (into #{})
               (string/join " - "))])]
 
-     [:div
-      {:class ["px-4"]}
-      (when (seq til)
+     (when (seq til)
+       [:div
+        {:class ["px-4"]}
         (for [[i it] (cond->> til
                        @hide-completed (remove completed?)
                        @only-current   (filter current?)
@@ -257,11 +257,12 @@
           ^{:key i}
           [:div
            [item-header it]
-           (when (current? it) [item-body it])]))]
+           (when (current? it) [item-body it])])
+        [:hr]])
 
-     [:div
-      {:class ["px-4"]}
-      (when (seq cool)
+     (when (seq cool)
+       [:div
+        {:class ["px-4"]}
         (for [[i it] (cond->> cool
                        @hide-completed (remove completed?)
                        @only-current   (filter current?)
@@ -269,22 +270,33 @@
           ^{:key i}
           [:div
            [item-header it]
-           (when (current? it) [item-body it])]))]
+           (when (current? it) [item-body it])])
+        [:hr]])
 
-     [:div
-      {:class ["px-4"]}
-      (when (seq love)
-        (for [[i it] (cond->> love
-                       @hide-completed (remove completed?)
-                       @only-current   (filter current?)
-                       true            (map-indexed vector))]
-          ^{:key i}
-          [:div
-           [item-header it]
-           (when (current? it) [item-body it])]))]
+     (when (seq love)
+       [:div
+        {:class ["px-4"
+                 "ml-auto"
+                 "text-4xl"
+                 "text-city-green-200"]}
+        "love"])
 
-     [:div {:class ["px-4"]}
-      (when (seq todos)
+     (when (seq love)
+       (for [[i it] (cond->> love
+                      @hide-completed (remove completed?)
+                      @only-current   (filter current?)
+                      true            (map-indexed vector))]
+         ^{:key i}
+         [:div
+          {:class ["px-4"]}
+          [item-header it]
+          (when (current? it) [item-body it])]))
+
+     (when (seq love)
+       [:hr])
+
+     (when (seq todos)
+       [:div {:class ["px-4"]}
         (for [[i it] (cond->> todos
                        @hide-completed (remove completed?)
                        @only-current   (filter current?)
@@ -292,27 +304,28 @@
           ^{:key i}
           [:div
            [item-header it]
-           (when (current? it) [item-body it])]))
+           (when (current? it) [item-body it])])
 
-      (when
-          ;; this could also check commit status, dirty/unpushed commits, etc
-          (and (seq todos)
-               (->> todos (filter current?) seq not))
-        [:div
-         {:class ["text-bold" "text-city-pink-300" "p-4"]}
-         [:h1
-          {:class ["text-4xl" "font-nes"]}
-          "no :current: todo!"]
-         [:p
-          {:class ["text-2xl" "pt-4"]}
-          "What are ya, taking a load off? GERT BERK TER WORK!"]])
+        [:hr]])
 
-      (when (not (seq todos))
-        [:div
-         {:class ["text-bold" "text-city-pink-300" "p-4"]}
-         [:h1
-          {:class ["text-4xl" "font-nes"]}
-          "no todos found!"]
-         [:p
-          {:class ["text-2xl" "pt-4"]}
-          "Did you forget to tag something with :goals: ?"]])]]))
+     (when
+         ;; this could also check commit status, dirty/unpushed commits, etc
+         (and (seq todos)
+              (->> todos (filter current?) seq not))
+       [:div
+        {:class ["text-bold" "text-city-pink-300" "p-4"]}
+        [:h1
+         {:class ["text-4xl" "font-nes"]}
+         "no :current: todo!"]
+        [:p
+         {:class ["text-2xl" "pt-4"]}
+         "What are ya, taking a load off? GERT BERK TER WORK!"]])
+     (when (not (seq todos))
+       [:div
+        {:class ["text-bold" "text-city-pink-300" "p-4"]}
+        [:h1
+         {:class ["text-4xl" "font-nes"]}
+         "no todos found!"]
+        [:p
+         {:class ["text-2xl" "pt-4"]}
+         "Did you forget to tag something with :goals: ?"]])]))
