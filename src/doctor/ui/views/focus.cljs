@@ -197,7 +197,7 @@
 (defn widget [opts]
   (let [focus-data      (use-focus/use-focus-data)
         {:keys [todos]} @focus-data
-        current         (some->> todos (filter current?) first)
+        current         (some->> todos (filter current?) seq)
 
         time           (uix/state (t/zoned-date-time))
         interval       (atom nil)
@@ -228,7 +228,10 @@
                  "text-city-green-200"
                  "px-8"
                  "pb-4"]}
-        (->> current :org/parent-names reverse (string/join " - "))])
+        (->> current
+             (mapcat (comp reverse :org/parent-names))
+             (into #{})
+             (string/join " - "))])
 
      [:div {:class ["px-4"]}
       (when (seq todos)
