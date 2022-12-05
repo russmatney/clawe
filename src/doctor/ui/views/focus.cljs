@@ -146,7 +146,7 @@
     {:class ["text-2xl" "font-nes" "pl-4"]}
     (str
       (t/format
-        (t/formatter "HH:mma")
+        (t/formatter "h:mma")
         (dates/add-tz time)))]
 
    (let [p-state                (pomodoros/get-state)

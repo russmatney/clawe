@@ -135,12 +135,15 @@
          mins    (t/minutes since)
          seconds (t/seconds since)]
      (cond
-       (> days 1)     (str days " days")
-       (= days 1)     (str days " day")
-       (> hours 1)    (str hours " hours")
-       (= hours 1)    (str hours " hour")
-       (> mins 1)     (str mins " minutes")
-       (= mins 1)     (str mins " minute")
+       (> days 1)    (str days " days")
+       (= days 1)    (str days " day")
+       (> hours 1)   (let [mins (- mins (* hours 60))]
+                       (str hours ":" mins " hours"))
+       (= hours 1)   (let [mins (- mins 60)]
+                       (str hours ":" mins " hour"))
+       (> mins 1)    (str mins " minutes")
+       (= mins 1)    (let [secs (- seconds 60)]
+                       (str mins ":" secs " minute"))
        (> seconds 1) (str seconds " seconds")
        (= seconds 1) (str seconds " second")))))
 
