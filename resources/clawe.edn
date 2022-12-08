@@ -49,7 +49,8 @@
                              :tmux.fire/interrupt? true
                              :tmux.fire/session "doctor-focus"}
              :client/window-title "tauri-doctor-focus"
-             :client/workspace-title "widgets"}
+             :client/workspace-title "widgets"
+             :focus/float-and-center false}
     "godot" {:client/app-names ["godot"]
              :client/workspace-title "godot"
              :match/soft-title true
