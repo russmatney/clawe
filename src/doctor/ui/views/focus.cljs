@@ -328,4 +328,4 @@
          "no todos found!"]
         [:p
          {:class ["text-2xl" "pt-4"]}
-         "Did you forget to tag something with :goals: ?"]])]))
+         "Did you forget to tag something with :goals: or :focus: ?"]])]))

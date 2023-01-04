@@ -13,14 +13,15 @@
 (defn todays-org-item []
   (org-crud/path->nested-item (garden/daily-path)))
 
+(def opt-in-tags #{"goal" "goals" "focus"})
+
 (defn todays-goals
   "Top level items tagged 'goal' or 'goals'"
   []
   (->>
     (todays-org-item)
     :org/items
-    (filter (comp seq #(set/intersection
-                         #{"goal" "goals"} %) :org/tags))
+    (filter (comp seq #(set/intersection opt-in-tags %) :org/tags))
     (mapcat org-crud/nested-item->flattened-items)
     (map (fn [item]
            (cond
@@ -36,7 +37,6 @@
              :else item)))))
 
 (comment
-
   (todays-goals))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
