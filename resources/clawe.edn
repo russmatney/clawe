@@ -205,5 +205,6 @@
     "steam" {:workspace/directory "~"}
     "the-great-tree" {:workspace/directory "~/dandeliondino/the-great-tree"}
     "tools.namespace" {:workspace/directory "~/clojure/tools.namespace"}
+    "topgrade" {:workspace/directory "~/topgrade-rs/topgrade"}
     "viewers" {:workspace/directory "~/nextjournal/viewers"}
     "watch" {:workspace/directory "~/rads/watch"}}}
