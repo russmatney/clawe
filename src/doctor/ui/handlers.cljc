@@ -160,6 +160,32 @@
   (org-crud.api/update! item {:org/tags tag})
   :ok)
 
+(defhandler increase-priority [todo]
+  (let [priority
+        (if (contains? #{"A" "B" "C" nil} (:org/priority todo))
+          (case (:org/priority todo)
+            "A" "A"
+            "B" "A"
+            "C" "B"
+            nil "C")
+          (do
+            (println "inc-pri - unexpected priority found, overwriting:" (:org/priority todo))
+            "C"))]
+    (org-crud.api/update! todo {:org/priority priority})
+    :ok))
+
+(defhandler decrease-priority [todo]
+  (let [priority
+        (if (contains? #{"A" "B" "C"} (:org/priority todo))
+          (case (:org/priority todo)
+            "A" "B"
+            "B" "C"
+            "C" nil)
+          (do
+            (println "dec-pri - unexpected priority found, overwriting:" (:org/priority todo))
+            nil))]
+    (org-crud.api/update! todo {:org/priority priority})
+    :ok))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; action lists
@@ -196,18 +222,23 @@
            :action/priority (if (seq (:org/tags todo)) 0 3)}
           {:action/label    "delete-from-db"
            :action/on-click #(delete-from-db todo)
-           :action/icon     fa/trash-alt-solid}
+           :action/icon     fa/trash-alt-solid
+           :action/disabled (not (:db/id todo))}
           {:action/label    "purge-file"
            :action/on-click #(purge-org-source-file todo)
-           :action/icon     fa/trash-solid}
+           :action/icon     fa/trash-solid
+           :action/disabled (not (:db/id todo))
+           }
           {:action/label    (if (:todo/queued-at todo) "(un)queue-todo" "queue-todo")
            :action/on-click (fn [_] (if (:todo/queued-at todo) (unqueue-todo todo) (queue-todo todo)))
            :action/icon     (if (:todo/queued-at todo)
                               [:> HIMini/BoltSlashIcon {:class ["w-6" "h-6"]}]
                               [:> HIMini/BoltIcon {:class ["w-6" "h-6"]}])
+           :action/disabled (not (:db/id todo))
            :action/priority 1}
           {:action/label    "requeue-todo"
            :action/on-click #(queue-todo todo)
+           :action/disabled (not (:db/id todo))
            :action/icon
            [:> HIMini/ArrowPathIcon {:class ["w-6" "h-6"]}]
            :aciton/disabled (not
@@ -238,6 +269,14 @@
            :action/on-click #(cancel-todo todo)
            :action/disabled (#{:status/cancelled} status)
            :action/icon     fa/ban-solid}
+          {:action/label    "increase-priority"
+           :action/on-click #(increase-priority todo)
+           :action/disabled (not status)
+           :action/icon     fa/chevron-circle-up-solid}
+          {:action/label    "decrease-priority"
+           :action/on-click #(decrease-priority todo)
+           :action/disabled (not status)
+           :action/icon     fa/chevron-circle-down-solid}
           ]
          (remove nil?)))))
 
@@ -277,33 +316,40 @@
        :action/icon     fa/trash-alt-solid}]))
 
 #?(:cljs
-   (defn ->actions [item]
-     (->>
-       (cond
-         ;; todos
-         (and (#{:type/garden} (:doctor/type item))
-              (:org/status item))
-         (todo->actions item)
+   (defn ->actions
+     ([item] (->actions item nil))
+     ([item actions]
+      (->>
+        (cond
+          (seq actions)
+          actions
 
-         ;; garden note
-         (#{:type/garden} (:doctor/type item))
-         (garden-file->actions item)
+          ;; todos
+          (and (#{:type/garden} (:doctor/type item))
+               (:org/status item))
+          (todo->actions item)
 
-         ;; repo actions
-         (#{:type/repo} (:doctor/type item))
-         (repo->actions item)
+          ;; garden note
+          (#{:type/garden} (:doctor/type item))
+          (garden-file->actions item)
 
-         ;; wallpaper actions
-         (#{:type/wallpaper} (:doctor/type item))
-         (wallpaper->actions item)
+          ;; repo actions
+          (#{:type/repo} (:doctor/type item))
+          (repo->actions item)
 
-         :else
-         [{:action/on-click #(delete-from-db item)
-           :action/label    "delete-from-db"
-           :action/icon     fa/trash-alt-solid}])
-       (map-indexed vector)
-       (map (fn [[i ax]]
-              (merge
-                {:action/class (colors/color-wheel-classes {:type :line :i i})}
-                ax ;; let the ax overwrite/maintain a color
-                ))))))
+          ;; wallpaper actions
+          (#{:type/wallpaper} (:doctor/type item))
+          (wallpaper->actions item)
+
+          (:db/id item)
+          [{:action/on-click #(delete-from-db item)
+            :action/label    "delete-from-db"
+            :action/icon     fa/trash-alt-solid}]
+
+          :else [])
+        (map-indexed vector)
+        (map (fn [[i ax]]
+               (merge
+                 {:action/class (colors/color-wheel-classes {:type :line :i i})}
+                 ax ;; let the ax overwrite/maintain a color
+                 )))))))

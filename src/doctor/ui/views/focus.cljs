@@ -8,7 +8,7 @@
    [dates.tick :as dates]
    [doctor.ui.pomodoros :as pomodoros]
    [components.actions :as components.actions]
-   [hiccup-icons.fa :as fa]))
+   [doctor.ui.handlers :as handlers]))
 
 (defn completed? [it]
   (-> it :org/status #{:status/done}))
@@ -120,12 +120,7 @@
                    "font-mono"])}
            (item-name it)]
     :actions
-    [{:action/label    "Add tag"
-      :action/on-click (fn []
-                         (let [new-tag (js/prompt "Add tag" "current")]
-                           (when (seq new-tag)
-                             (use-focus/add-tag it new-tag))))
-      :action/icon     fa/hashtag-solid}]}])
+    (handlers/->actions it (handlers/todo->actions it))}])
 
 (defn item-body [it]
   (let [level (:org/level it 0)
@@ -134,7 +129,7 @@
       [:div
        {:class
         (concat
-          ["text-3xl"
+          ["text-xl"
            "text-yo-blue-200"
            "py-4"
            "font-mono"])
@@ -317,6 +312,8 @@
         (for [[i it] (cond->> todos
                        @hide-completed (remove completed?)
                        @only-current   (filter current?)
+                       true            (sort-by :org/priority)
+                       true            (reverse)
                        true            (map-indexed vector))]
           ^{:key i}
           [:div
