@@ -42,8 +42,8 @@
           :else             [])
 
         (case level
-          0 ["text-yo-blue-200" "text-6xl"]
-          1 ["text-city-blue-dark-300" "text-6xl"]
+          0 ["text-yo-blue-200" "text-3xl"]
+          1 ["text-city-blue-dark-300" "text-3xl"]
           2 ["text-city-green-400" "text-3xl"]
           3 ["text-city-red-200" "text-xl"]
           4 ["text-city-pink-300" "text-lg"]
@@ -115,7 +115,7 @@
   [components.actions/actions-popup
    {:comp [:h1 {:class
                 (concat
-                  ["text-4xl"
+                  ["text-3xl"
                    "py-4"
                    "font-mono"])}
            (item-name it)]

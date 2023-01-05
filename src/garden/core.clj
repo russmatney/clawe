@@ -71,7 +71,9 @@
 ;; todos
 
 (defn basic-todo-paths []
-  (-> "~/todo/{journal,projects,icebox}.org" r.zsh/expand-many))
+  (-> "~/todo/{journal,projects}.org" r.zsh/expand-many)
+  ;; (-> "~/todo/{journal,projects,icebox}.org" r.zsh/expand-many)
+  )
 
 (defn repo-todo-paths [repo-ids]
   (->> repo-ids

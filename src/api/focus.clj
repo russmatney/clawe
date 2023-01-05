@@ -12,18 +12,29 @@
 ;; domain
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn todays-org-item []
-  (org-crud/path->nested-item (garden/daily-path)))
+(defn todays-org-items []
+  (->>
+    (concat
+      (garden/daily-paths 7)
+      (garden/basic-todo-paths)
+      ;; TODO n recently modified
+      )
+    (map org-crud/path->nested-item)))
 
 (def opt-in-tags #{"goal" "goals" "focus"})
 
 (defn todays-goals
-  "Top level items tagged 'goal' or 'goals'"
+  "Top level items tagged 'focus' or 'goals'"
   []
   (->>
-    (todays-org-item)
-    :org/items
-    (filter (comp seq #(set/intersection opt-in-tags %) :org/tags))
+    (todays-org-items)
+    (mapcat :org/items)
+    (filter (fn [it]
+              (or
+                ;; include any todos
+                (:org/status it)
+                ;; or any child of an opt-in tag
+                ((comp seq #(set/intersection opt-in-tags %) :org/tags) it))))
     (mapcat org-crud/nested-item->flattened-items)
     (map (fn [item]
            (cond
