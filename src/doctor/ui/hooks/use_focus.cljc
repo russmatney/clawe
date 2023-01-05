@@ -7,6 +7,9 @@
 (defhandler get-focus-data [] (api.focus/build-focus-data))
 (defstream focus-data-stream [] api.focus/*focus-data-stream*)
 
+(defhandler add-tag [item tag] (api.focus/add-tag item tag))
+(defhandler remove-tag [item tag] (api.focus/remove-tag item tag))
+
 #?(:cljs
    (defn use-focus-data []
      (let [focus-data  (plasma.uix/state [])

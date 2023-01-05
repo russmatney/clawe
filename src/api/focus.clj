@@ -1,10 +1,12 @@
 (ns api.focus
   (:require [garden.core :as garden]
             [org-crud.core :as org-crud]
+            [org-crud.update :as org-crud.update]
             [clojure.set :as set]
             [systemic.core :as sys :refer [defsys]]
             [manifold.stream :as s]
-            [dates.tick :as dates.tick]))
+            [dates.tick :as dates.tick]
+            [clojure.string :as string]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; domain
@@ -55,3 +57,20 @@
 
 (defn update-focus-data []
   (s/put! *focus-data-stream* (build-focus-data)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; tag crud
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn add-tag [item tag]
+  (org-crud.update/update! item {:org/tags tag}))
+
+(defn remove-tag [item tag]
+  (org-crud.update/update! item {:org/tags [:remove tag]}))
+
+(comment
+  (->>
+    (todays-goals)
+    (filter (comp #(string/includes? % "pluggs movement demo") :org/name))
+    first
+    (#(add-tag % "pluggs"))))

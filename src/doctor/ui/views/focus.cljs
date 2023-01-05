@@ -88,27 +88,44 @@
       ;; tags
       (when (seq (:org/tags it))
         [:span
-         {:class (concat (cond
-                           (completed? it)   []
-                           (not-started? it) []
-                           (skipped? it)     []
-                           (current? it)     ["font-bold"]
-                           :else             ["font-normal"])
-                         ["pr-4"
-                          "text-3xl"
-                          "font-nes"
-                          ])}
-         (->> (:org/tags it)
-              (string/join ":")
-              (#(str ":" % ":")))])]]))
+         {:class
+          (concat (cond
+                    (completed? it)   []
+                    (not-started? it) []
+                    (skipped? it)     []
+                    (current? it)     ["font-bold"]
+                    :else             ["font-normal"])
+                  ["pr-4"
+                   "text-3xl"
+                   "font-nes"
+                   ])}
+
+         [:span ":"
+          (for [t (:org/tags it)]
+            ^{:key t}
+            [:span
+             ;; TODO popover/tooltip on hover
+             {:class    ["cursor-pointer"]
+              :on-click (fn [_ev] (use-focus/remove-tag it t))}
+             t ":"])]])]]))
 
 (defn item-header [it]
-  [:h1 {:class
-        (concat
-          ["text-4xl"
-           "py-4"
-           "font-mono"])}
-   (item-name it)])
+  (let [hovering? (uix/state nil)]
+    [:h1 {:on-mouse-enter (fn [_] (println "mse enter")
+                            (reset! hovering? true))
+          :on-mouse-leave (fn [_] (println "mse leave")
+                             (reset! hovering? false))
+          :class
+          (concat
+            ["text-4xl"
+             "py-4"
+             "font-mono"])}
+     (item-name it)
+     (when @hovering?
+       [:span
+        {:class
+         ["float"]}
+        "button"])]))
 
 (defn item-body [it]
   (let [level (:org/level it 0)
