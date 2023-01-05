@@ -6,7 +6,9 @@
    [uix.core.alpha :as uix]
    [tick.core :as t]
    [dates.tick :as dates]
-   [doctor.ui.pomodoros :as pomodoros]))
+   [doctor.ui.pomodoros :as pomodoros]
+   [components.actions :as components.actions]
+   [hiccup-icons.fa :as fa]))
 
 (defn completed? [it]
   (-> it :org/status #{:status/done}))
@@ -110,22 +112,20 @@
              t ":"])]])]]))
 
 (defn item-header [it]
-  (let [hovering? (uix/state nil)]
-    [:h1 {:on-mouse-enter (fn [_] (println "mse enter")
-                            (reset! hovering? true))
-          :on-mouse-leave (fn [_] (println "mse leave")
-                             (reset! hovering? false))
-          :class
-          (concat
-            ["text-4xl"
-             "py-4"
-             "font-mono"])}
-     (item-name it)
-     (when @hovering?
-       [:span
-        {:class
-         ["float"]}
-        "button"])]))
+  [components.actions/actions-popup
+   {:comp [:h1 {:class
+                (concat
+                  ["text-4xl"
+                   "py-4"
+                   "font-mono"])}
+           (item-name it)]
+    :actions
+    [{:action/label    "Add tag"
+      :action/on-click (fn []
+                         (let [new-tag (js/prompt "Add tag" "current")]
+                           (when (seq new-tag)
+                             (use-focus/add-tag it new-tag))))
+      :action/icon     fa/hashtag-solid}]}])
 
 (defn item-body [it]
   (let [level (:org/level it 0)
