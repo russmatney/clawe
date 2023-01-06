@@ -11,7 +11,8 @@
    [components.colors :as colors]
    [components.filter :as components.filter]
    [components.garden :as components.garden]
-   [pages.todos :as pages.todos]))
+   [pages.todos :as pages.todos]
+   [components.debug :as components.debug]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; preds
@@ -142,6 +143,16 @@
      (map-indexed (fn [i sp] ^{:key i} [:span sp])))])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; item-id-hash
+
+(defn item-id-hash [it]
+  (when (:org/id it)
+    [:div
+     {:class ["flex" "text-sm" "font-nes"
+              "text-city-red-300" "ml-2"]}
+     (->> it :org/id str (take 4) (apply str))]))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; current item header
 
 (defn item-header [it]
@@ -149,9 +160,10 @@
    {:class ["flex" "flex-col" "px-4"
             "text-city-green-400" "text-xl"]}
 
-   [:div {:class ["flex" "flex-row"]}
+   [:div {:class ["flex" "flex-row" "items-center"]}
     [level it]
     [todo-status it]
+    [item-id-hash it]
     [:div {:class ["ml-auto"]}
      [tags-list it]]
     [priority-label it]]
@@ -200,6 +212,7 @@
 
     [level it]
     [todo-status it]
+    [item-id-hash it]
     [:div {:class ["ml-auto"]}
      [tags-list it]]
     [priority-label it]]
@@ -224,9 +237,13 @@
 
    ;; bottom meta
    [:div
-    {:class ["flex" "flex-row" "text-sm"
+    {:class ["flex" "flex-row"
+             "items-center"
+             "text-sm"
              "mt-auto"
              "pb-2"]}
+
+    [components.debug/raw-metadata {:label "RAW"} it]
 
     ;; actions list
     [:span
