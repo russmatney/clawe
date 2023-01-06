@@ -57,13 +57,14 @@
       (->> (repeat level "*") (apply str))]
 
      ;; todo status
-     [:span
-      {:class ["px-4" "whitespace-nowrap" "font-nes"]}
-      (cond
-        (current? it)     "[-]"
-        (completed? it)   "[X]"
-        (skipped? it)     "SKIP"
-        (not-started? it) "[ ]")]
+     (when (:org/status it)
+       [:span
+        {:class ["px-4" "whitespace-nowrap" "font-nes"]}
+        (cond
+          (current? it)     "[-]"
+          (completed? it)   "[X]"
+          (skipped? it)     "SKIP"
+          (not-started? it) "[ ]")])
 
      ;; name
      [:span
@@ -75,7 +76,9 @@
                  (skipped? it)     ["line-through"]
                  :else             ["font-normal"])
                #_["whitespace-nowrap"])}
-      (str "#" (:org/priority it) " " (:org/name-string it))]
+      (str (when (:org/priority it)
+             (str "#" (:org/priority it) " "))
+           (:org/name-string it))]
 
      ;; time ago
      (when (and (completed? it) (:org/closed-since it))
