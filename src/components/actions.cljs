@@ -42,13 +42,13 @@
       {:class
        (concat
          ["px-2" "py-1"
-          "w-9"
           "rounded" "border"
           "flex"
           "justify-center"
           "items-center"
           "tooltip"
           "relative"]
+         (when icon ["w-9" "h-9"])
          ax-class
          class
          (if disabled
