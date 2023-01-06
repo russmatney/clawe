@@ -36,6 +36,7 @@
                 ;; or any child of an opt-in tag
                 ((comp seq #(set/intersection opt-in-tags %) :org/tags) it))))
     (mapcat org-crud/nested-item->flattened-items)
+    (filter :org/status)
     (map (fn [item]
            (cond
              (:org/closed item)
