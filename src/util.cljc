@@ -2,7 +2,9 @@
   (:require
    #?@(:clj [[babashka.process :refer [$ check]]
              [clojure.java.io :as io]
-             [clojure.string :as string]]))
+             [clojure.string :as string]]
+       :cljs [[goog.string :as gstring]
+              [goog.string.format]]))
   (:import
    #?@(:clj [[java.nio.file Path]])))
 
@@ -52,7 +54,7 @@
   "Zero Pad numbers - takes a number and the length to pad to as arguments"
   [n c]
   #?@(:clj [(format (str "%0" c "d") n)]
-      :cljs [(println "No cljs impl for zp: " n c)]))
+      :cljs [(gstring/format (str "%0" c "d") n)]))
 
 (comment
   (zp 5 3)) ;; => "005"
