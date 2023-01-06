@@ -31,7 +31,7 @@
   (cider-preferred-build-tool . shadow-cljs)
   (cider-jack-in-default . shadow-cljs)
   (cider-default-cljs-repl . shadow)
-  (cider-shadow-watched-builds . '(":doctor-app" ":doctor-test"))
+  (cider-shadow-watched-builds . (":doctor-app" ":doctor-test"))
   ;; (cider-shadow-default-options . ":doctor-app")
   (cider-shadow-default-options . ":doctor-app")
   (cider-shadow-cljs-global-options . "-A:full-stack-deps:dev")
