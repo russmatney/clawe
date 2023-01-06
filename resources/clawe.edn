@@ -164,6 +164,7 @@
     "dotfiles" {:workspace/directory "~/russmatney/dotfiles" :workspace/preferred-index 1}
     "editscript" {:workspace/directory "~/juji-io/editscript"}
     "fabb" {:workspace/directory "~/teknql/fabb"}
+    "fishgame-godot" {:workspace/directory "~/heroiclabs/fishgame-godot"}
     "game-assets" {:workspace/directory "~/game-assets"}
     "girouette" {:workspace/directory "~/green-coder/girouette"}
     "godot" {:workspace/directory "~/godotengine/godot"}
