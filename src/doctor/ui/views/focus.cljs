@@ -2,7 +2,6 @@
   (:require
    [doctor.ui.hooks.use-focus :as use-focus]
    [clojure.set :as set]
-   [clojure.string :as string]
    [uix.core.alpha :as uix]
    [tick.core :as t]
    [dates.tick :as dates]
@@ -11,8 +10,20 @@
    [doctor.ui.handlers :as handlers]
    [components.colors :as colors]))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; preds
+
 (defn completed? [it]
   (-> it :org/status #{:status/done}))
+
+(defn not-started? [it]
+  (-> it :org/status #{:status/not-started}))
+
+(defn skipped? [it]
+  (-> it :org/status #{:status/skipped}))
+
+(defn in-progress? [it]
+  (-> it :org/status #{:status/in-progress}))
 
 (defn current? [it]
   (seq (set/intersection #{"current"} (:org/tags it))))
@@ -23,181 +34,175 @@
 (defn has-tags? [it tags]
   (seq (set/intersection tags (:org/tags it))))
 
-(defn not-started? [it]
-  (-> it :org/status #{:status/not-started}))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; level
 
-(defn skipped? [it]
-  (-> it :org/status #{:status/skipped}))
-
-(defn item-name [it]
+(defn level [it]
   (let [level (:org/level it 0)
         level (if (#{:level/root} level) 0 level)]
+    [:div
+     {:class ["whitespace-nowrap" "font-nes"]}
+     (->> (repeat level "*") (apply str))]))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; todo status
+
+(defn todo-status [it]
+  (when (:org/status it)
+    (let [hovering? (uix/state nil)]
+      [:span
+       {:class          ["ml-2" "whitespace-nowrap" "font-nes"
+                         "cursor-pointer"
+                         "hover:opacity-50"]
+        :on-mouse-enter (fn [_] (reset! hovering? true))
+        :on-mouse-leave (fn [_] (reset! hovering? false))
+        :on-click       (fn [_]
+                          (handlers/update-todo
+                            it (let [status (cond
+                                              (completed? it)   :status/not-started
+                                              (skipped? it)     :status/not-started
+                                              (current? it)     :status/done
+                                              (in-progress? it) :status/done
+                                              (not-started? it) :status/in-progress)]
+                                 (cond-> {:org/status status}
+                                   (#{:status/in-progress} status) (assoc :org/tags "current")
+                                   (#{:status/done} status)        (assoc :org/tags [:remove "current"])))))}
+       (cond
+         (and (completed? it) (not @hovering?))   "[X]"
+         (and (completed? it) @hovering?)         "[ ]"
+         (and (skipped? it) (not @hovering?))     "SKIP"
+         (and (skipped? it) @hovering?)           "[ ]"
+         (and (current? it) (not @hovering?))     "[-]"
+         (and (current? it) @hovering?)           "[X]"
+         (and (in-progress? it) (not @hovering?)) "[-]"
+         (and (in-progress? it) @hovering?)       "[X]"
+         (and (not-started? it) (not @hovering?)) "[ ]"
+         (and (not-started? it) @hovering?)       "[-]")])))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; tags-list
+
+(defn tags-list [it]
+  (when (seq (:org/tags it))
+    [:span
+     {:class ["text-md" "font-mono"
+              "px-2"
+              "flex" "flex-row" "flex-wrap"]}
+     ":"
+     (for [[i t] (->> it :org/tags (map-indexed vector))]
+       ^{:key t}
+       [:span
+        [:span
+         {:class
+          (concat ["cursor-pointer" "hover:line-through"]
+                  (colors/color-wheel-classes {:type :line :i (+ 2 i)}))
+          :on-click (fn [_ev] (use-focus/remove-tag it t))}
+         t]
+        ":"])]))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; priority-label
+
+(defn priority-label [it]
+  (when (:org/priority it)
     [:span
      {:class
       (concat
-        ["flex" "flex-row" "py-2" "justify-center" "items-center"]
-        (cond
-          (completed? it)   []
-          (skipped? it)     []
-          (not-started? it) []
-          :else             [])
+        ["whitespace-nowrap" "font-nes"]
+        (let [pri (:org/priority it)]
+          (cond
+            (completed? it) ["text-city-blue-dark-400"]
+            (skipped? it)   ["text-city-blue-dark-400"]
+            (#{"A"} pri)    ["text-city-red-400"]
+            (#{"B"} pri)    ["text-city-pink-400"]
+            (#{"C"} pri)    ["text-city-green-400"])))}
+     (str "#" (:org/priority it) " ")]))
 
-        (case level
-          0 ["text-yo-blue-200" "text-xl"]
-          1 ["text-city-blue-dark-300" "text-xl"]
-          2 ["text-city-green-400" "text-xl"]
-          3 ["text-city-red-200" "text-xl"]
-          4 ["text-city-pink-300" "text-lg"]
-          5 ["text-city-pink-400" "text-lg"]
-          6 ["text-city-pink-500" "text-lg"]
-          []))}
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; parent-names
 
-     ;; level ***
-     [:span
-      {:class ["px-4" "whitespace-nowrap" "font-nes"]}
-      (->> (repeat level "*") (apply str))]
+(defn parent-names [it]
+  [:span
+   (->>
+     (:org/parent-names it)
+     reverse
+     (map-indexed
+       (fn [i nm]
+         [:span {:class
+                 (concat
+                   (colors/color-wheel-classes {:type :line :i i})
+                   )}
+          " " nm]))
+     #_reverse
+     (interpose [:span
+                 {:class ["text-city-blue-dark-200"]}
+                 " > "]))])
 
-     ;; todo status
-     (when (:org/status it)
-       [:span
-        {:class ["px-4" "whitespace-nowrap" "font-nes"]}
-        (cond
-          (current? it)     "[-]"
-          (completed? it)   "[X]"
-          (skipped? it)     "SKIP"
-          (not-started? it) "[ ]")])
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; current item header
 
-     ;; name
-     [:span
-      {:class
-       (concat (cond
-                 (current? it)     ["font-bold"]
-                 (completed? it)   ["line-through"]
-                 (not-started? it) []
-                 (skipped? it)     ["line-through"]
-                 :else             ["font-normal"])
-               #_["whitespace-nowrap"])}
-      (str (when (:org/priority it)
-             (str "#" (:org/priority it) " "))
-           (:org/name-string it))]
+(defn item-header [it]
+  [:div
+   {:class ["flex" "flex-col" "px-4"
+            "text-city-green-400" "text-xl"]}
 
-     ;; time ago
-     (when (and (completed? it) (:org/closed-since it))
-       [:span
-        {:class ["pl-4"
-                 "text-3xl"]}
-        (str "(" (:org/closed-since it) " ago)")])
+   [:div {:class ["flex" "flex-row"]}
+    [level it]
+    [todo-status it]
+    [:div {:class ["ml-auto"]}
+     [tags-list it]]
+    [priority-label it]]
 
-     [:span
-      {:class ["ml-auto"]}
+   [:div {:class ["flex" "flex-row"]}
+    [:div {:class ["font-nes"]}
+     (:org/name-string it)]]])
 
-      ;; tags
-      (when (seq (:org/tags it))
-        [:span
-         {:class
-          (concat (cond
-                    (completed? it)   []
-                    (not-started? it) []
-                    (skipped? it)     []
-                    (current? it)     ["font-bold"]
-                    :else             ["font-normal"])
-                  ["pr-4"
-                   "text-3xl"
-                   "font-nes"
-                   ])}
+(defn item-body [it]
+  (let [level (:org/level it 0)
+        level (if (#{:level/root} level) 0 level)]
+    (when (-> it :org/body-string seq)
+      [:div
+       {:class ["text-xl" "p-4"]}
+       [:div
+        {:class ["text-yo-blue-200" "font-mono"]
+         :style {:padding-left (str (* level 25) "px")}}
+        ;; TODO proper render of body string
+        ;; TODO include sub todos
+        [:pre (:org/body-string it)]]
 
-         [:span ":"
-          (for [t (:org/tags it)]
-            ^{:key t}
-            [:span
-             ;; TODO popover/tooltip on hover
-             {:class    ["cursor-pointer"]
-              :on-click (fn [_ev] (use-focus/remove-tag it t))}
-             t ":"])]])]]))
+       [:div {:class ["pt-4"]}
+        [parent-names it]]])))
 
 (defn item-card [it]
-  (let [level     (:org/level it 0)
-        level     (if (#{:level/root} level) 0 level)
-        hovering? (uix/state nil)]
+  (let [hovering? (uix/state nil)]
     [:div
-     {:on-mouse-enter (fn [_] (reset! hovering? true))
+     {
+      :on-mouse-enter (fn [_] (reset! hovering? true))
       :on-mouse-leave (fn [_] (reset! hovering? false))
       :class
       (concat
         ["flex" "flex-col"
          "py-2" "px-3"
          "m-1"
-         "bg-yo-blue-700"
          "rounded-lg"
-         "w-96"]
+         "w-96"
+         "text-lg"
+         "bg-yo-blue-700"]
         (cond
-          (completed? it)   []
-          (skipped? it)     []
-          (not-started? it) []
-          :else             [])
-
-        ["text-city-blue-dark-300" "text-lg"]
-
-        #_(case level
-            0 ["text-yo-blue-200"]
-            1 ["text-city-blue-dark-300"]
-            2 ["text-city-green-400"]
-            3 ["text-city-red-200"]
-            4 ["text-city-pink-300"]
-            5 ["text-city-pink-400"]
-            6 ["text-city-pink-500"]
-            []))}
+          (completed? it) ["text-city-blue-dark-400"]
+          (skipped? it)   ["text-city-blue-dark-600"]
+          ;; (not-started? it) []
+          :else           ["text-city-blue-dark-200"]))}
 
      ;; top meta
      [:div
       {:class ["flex" "flex-row" "w-full" "items-center"]}
 
-      ;; level ***
-      [:span
-       {:class ["whitespace-nowrap" "font-nes"]}
-       (->> (repeat level "*") (apply str))]
-
-      ;; todo status
-      (when (:org/status it)
-        [:span
-         {:class ["ml-2" "whitespace-nowrap" "font-nes"]}
-         (cond
-           (current? it)     "[-]"
-           (completed? it)   "[X]"
-           (skipped? it)     "SKIP"
-           (not-started? it) "[ ]")])
-
-      ;; tags
-      (when (seq (:org/tags it))
-        [:span
-         {:class ["text-md" "font-mono"
-                  "px-2"
-                  "flex" "flex-row" "flex-wrap"]}
-         ":"
-         (for [[i t] (->> it :org/tags (map-indexed vector))]
-           ^{:key t}
-           [:span
-            ;; TODO popover/tooltip on hover
-            [:span
-             {:class
-              (concat ["cursor-pointer"
-                       "hover:line-through"]
-                      (colors/color-wheel-classes {:type :line :i i}))
-              :on-click (fn [_ev] (use-focus/remove-tag it t))}
-             t]
-            ":"])])
-
-      (when (:org/priority it)
-        [:span
-         {:class
-          (concat
-            ["whitespace-nowrap" "font-nes" "ml-auto"]
-            (let [pri (:org/priority it)]
-              (cond
-                (#{"A"} pri) ["text-city-red-400"]
-                (#{"B"} pri) ["text-city-pink-400"]
-                (#{"C"} pri) ["text-city-green-400"])))}
-         (str "#" (:org/priority it) " ")])]
+      [level it]
+      [todo-status it]
+      [:div {:class ["ml-auto"]}
+       [tags-list it]]
+      [priority-label it]]
 
      ;; middle content
      [:div
@@ -206,11 +211,7 @@
       ;; name
       [:span
        [:span
-        {:class
-         (concat
-           (cond
-             (completed? it) ["line-through"]
-             (skipped? it)   ["line-through"]))}
+        {:class (when (or (completed? it) (skipped? it)) ["line-through"])}
         (:org/name-string it)]]
 
       ;; time ago
@@ -219,19 +220,7 @@
          {:class ["font-mono"]}
          (str (:org/closed-since it) " ago")])
 
-      [:span
-       (->>
-         (:org/parent-names it)
-         reverse
-         (map-indexed
-           (fn [i nm]
-             [:span {:class
-                     (concat
-                       (colors/color-wheel-classes {:type :line :i i})
-                       )}
-              " " nm]))
-         #_reverse
-         (interpose [:span " > "]))]]
+      [parent-names it]]
 
      ;; bottom meta
      [:div
@@ -247,29 +236,6 @@
            (handlers/->actions it (handlers/todo->actions it))
            :nowrap        true
            :hide-disabled true}]])]]))
-
-(defn item-header [it]
-  [components.actions/actions-popup
-   {:comp [:div {:class
-                 (concat
-                   ["py-2" "font-mono"])}
-           [item-name it]]
-    :actions
-    (handlers/->actions it (handlers/todo->actions it))}])
-
-(defn item-body [it]
-  (let [level (:org/level it 0)
-        level (if (#{:level/root} level) 0 level)]
-    (when (-> it :org/body-string seq)
-      [:div
-       {:class
-        (concat
-          ["text-xl"
-           "text-yo-blue-200"
-           "py-4"
-           "font-mono"])
-        :style {:padding-left (str (* level 25) "px")}}
-       [:pre (:org/body-string it)]])))
 
 (defn button [opts label]
   [:button
@@ -346,9 +312,20 @@
    [button {:on-click (fn [_] (toggle-only-current))}
     (if only-current "Show all" "Show only current")]])
 
+(defn sort-by-priority [its]
+  (->> its
+       (sort-by (comp (fn [p]
+                        (if p
+                          (.charCodeAt p)
+                          ;; some high val
+                          1000))
+                      :org/priority)
+                <)))
+
 (defn widget [opts]
   ;; TODO the 'current' usage in this widget could be a 'tag' based feature
-  ;; i.e. based on arbitrary tags, e.g. if that's our mode right now
+  ;; i.e. based on arbitrary tags, e.g. if that's our 'mode' right now
+  ;; i.e. 'current' is an execution mode - another mode might be pre or post execution
   (let [focus-data      (use-focus/use-focus-data)
         {:keys [todos]} @focus-data
         current         (some->> todos (filter current?) seq)
@@ -376,19 +353,14 @@
       [toggles {:toggle-hide-completed (fn [] (swap! hide-completed not))
                 :hide-completed        @hide-completed
                 :toggle-only-current   (fn [] (swap! only-current not))
-                :only-current          @only-current}]
+                :only-current          @only-current}]]
 
-      (when (and current @only-current)
-        [:div
-         {:class ["ml-auto"
-                  "text-4xl"
-                  "text-city-green-200"
-                  "px-8"
-                  "pb-4"]}
-         (->> current
-              (mapcat (comp reverse :org/parent-names))
-              (into #{})
-              (string/join " - "))])]
+     (when current
+       (for [[i c] (->> current (sort-by-priority) (map-indexed vector))]
+         ^{:key i}
+         [:div
+          [item-header c]
+          [item-body c]]))
 
      ;; TODO group by priority?
      (when (seq todos)
@@ -401,13 +373,7 @@
         (for [[i it] (cond->> todos
                        @hide-completed (remove completed?)
                        @only-current   (filter current?)
-                       true            (sort-by (comp (fn [p]
-                                                        (if p
-                                                          (.charCodeAt p)
-                                                          ;; some high val
-                                                          1000))
-                                                      :org/priority)
-                                                <)
+                       true            sort-by-priority
                        true            (map-indexed vector))]
           ^{:key i}
           [item-card it])])
@@ -432,4 +398,4 @@
          "no todos found!"]
         [:p
          {:class ["text-2xl" "pt-4"]}
-         "Did you forget to tag something with :goals: or :focus: ?"]])]))
+         ""]])]))

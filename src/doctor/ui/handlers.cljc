@@ -133,6 +133,10 @@
     (org-crud.api/update! item {:org/id (random-uuid)}))
   :ok)
 
+(defhandler update-todo [todo up]
+  (org-crud.api/update! todo up)
+  :ok)
+
 (defhandler cancel-todo [todo]
   (org-crud.api/update! todo {:org/status :status/cancelled})
   :ok)
