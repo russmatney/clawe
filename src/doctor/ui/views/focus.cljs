@@ -161,22 +161,21 @@
      (:org/name-string it)]]])
 
 (defn item-body [it]
-  (when (-> it :org/body-string seq)
-    [:div
-     {:class ["text-xl" "p-4" "flex" "flex-col"]}
-     [:div
-      {:class ["text-yo-blue-200" "font-mono"]}
-      ;; TODO include sub todos
-      #_[:pre (:org/body-string it)]
-      [components.garden/org-body it]]
+  [:div
+   {:class ["text-xl" "p-4" "flex" "flex-col"]}
+   [:div
+    {:class ["text-yo-blue-200" "font-mono"]}
+    ;; TODO include sub todos
+    #_[:pre (:org/body-string it)]
+    [components.garden/org-body it]]
 
-     [:div {:class ["py-4" "flex" "flex-row" "justify-between"]}
-      [parent-names it]
-      [components.actions/actions-list
-       {:actions
-        (handlers/->actions it (handlers/todo->actions it))
-        :nowrap        true
-        :hide-disabled true}]]]))
+   [:div {:class ["py-4" "flex" "flex-row" "justify-between"]}
+    [parent-names it]
+    [components.actions/actions-list
+     {:actions
+      (handlers/->actions it (handlers/todo->actions it))
+      :nowrap        true
+      :hide-disabled true}]]])
 
 (defn item-card [it]
   [:div
@@ -251,6 +250,9 @@
      opts)
    label])
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; bar
+
 (defn bar [{:keys [time]}]
   [:div
    {:class ["flex flex-row" "items-center"
@@ -302,6 +304,9 @@
                   [button {:on-click on-click} label]))
            (into [:div]))])])
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; page toggles
+
 (defn toggles
   ;; TODO rewrite as actions-based api (duh)
   ;; conditionally hide only-current when there is none
@@ -312,6 +317,9 @@
     (if hide-completed "Show completed" "Hide completed")]
    [button {:on-click (fn [_] (toggle-only-current))}
     (if only-current "Show all" "Show only current")]])
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; sort todos
 
 (defn ->comparable-int [p]
   (cond
@@ -344,6 +352,83 @@
          ;; lower number means earlier in the order
          <)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; item todo cards
+
+(defn item-todo-cards [{:keys [org/items]}]
+  (let [todos (->> items (filter :org/status) seq)]
+    (when todos
+      [:div
+       {:class ["flex" "flex-row" "flex-wrap" "justify-around"]}
+       (for [[i td] (->> todos sort-todos (map-indexed vector))]
+         ^{:key i}
+         [:div
+          [item-card td]])])))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; current stack
+
+(defn current-stack
+  ([current] [current-stack nil current])
+  ([{:keys [todos]} current]
+   (let [todos (or todos [])]
+     [:div
+      (when current
+        (for [[i c] (->> current sort-todos (map-indexed vector))]
+          ^{:key i}
+          [:div
+           {:class ["bg-city-blue-800"]}
+           [:hr {:class ["border-city-blue-900" "pb-4"]}]
+           [item-header c]
+           [item-todo-cards c]
+           [item-body c]]))
+
+      (when
+          ;; this could also check commit status, dirty/unpushed commits, etc
+          (and (seq todos)
+               (->> todos (filter current?) seq not))
+        [:div
+         {:class ["text-bold" "text-city-pink-300" "p-4"]}
+         [:h1
+          {:class ["text-4xl" "font-nes"]}
+          "no :current: todo!"]
+         [:p
+          {:class ["text-2xl" "pt-4"]}
+          "What are ya, taking a load off? GERT BERK TER WORK!"]])])))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; filter-grouper config
+
+(defn filter-grouper-config [{:keys [todos]}]
+  {:items            todos
+   :all-filter-defs  pages.todos/all-filter-defs
+   :default-filters  #{{:filter-key :status :match :status/not-started}
+                       {:filter-key :status :match :status/in-progress}}
+   :default-group-by :priority
+
+   ;; TODO support this, and include :presets as another filter
+   :preset-filter-groups
+   {:default
+    {:filters
+     #{{:filter-key :status :match :status/not-started}
+       {:filter-key :status :match :status/in-progress}}
+     :group-by :priority}
+
+    :today
+    {:filters
+     #{{:filter-key :short-path :match :daily/today}}
+     :group-by :priority}
+
+    :last-three-days
+    {:filters
+     #{{:filter-key :short-path :match :daily/today}
+       {:filter-key :short-path :match :daily/yesterday}
+       {:filter-key :short-path :match :daily/days-ago-3}}
+     :group-by :short-path}}})
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; main widget
+
 (defn widget [opts]
   ;; TODO the 'current' usage in this widget could be a 'tag' based feature
   ;; i.e. based on arbitrary tags, e.g. if that's our 'mode' right now
@@ -351,11 +436,7 @@
   (let [focus-data           (use-focus/use-focus-data)
         {:keys [todos]}      @focus-data
         filter-todos-results (components.filter/use-filter
-                               {:all-filter-defs  pages.todos/all-filter-defs
-                                :default-filters  #{{:filter-key :status :match :status/not-started}
-                                                    {:filter-key :status :match :status/in-progress}}
-                                :default-group-by :priority
-                                :items            todos})
+                               (filter-grouper-config {:todos todos}))
         current              (some->> todos (filter current?) seq)
 
         time           (uix/state (t/zoned-date-time))
@@ -383,27 +464,7 @@
                 :toggle-only-current   (fn [] (swap! only-current not))
                 :only-current          @only-current}]]
 
-     (when current
-       (for [[i c] (->> current sort-todos (map-indexed vector))]
-         ^{:key i}
-         [:div
-          {:class ["bg-city-blue-800"]}
-          [:hr {:class ["border-city-blue-900" "pb-4"]}]
-          [item-header c]
-          [item-body c]]))
-
-     (when
-         ;; this could also check commit status, dirty/unpushed commits, etc
-         (and (seq todos)
-              (->> todos (filter current?) seq not))
-       [:div
-        {:class ["text-bold" "text-city-pink-300" "p-4"]}
-        [:h1
-         {:class ["text-4xl" "font-nes"]}
-         "no :current: todo!"]
-        [:p
-         {:class ["text-2xl" "pt-4"]}
-         "What are ya, taking a load off? GERT BERK TER WORK!"]])
+     [current-stack current]
 
      [:hr {:class ["mb-6" "border-city-blue-900"]}]
      [:div
