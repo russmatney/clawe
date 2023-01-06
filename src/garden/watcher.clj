@@ -29,7 +29,7 @@
               first))))
 
 (defn should-push-focus-data? [file]
-  (= (str file) (garden/daily-path)))
+  (contains? (into #{} (garden/daily-paths 7)) (str file)))
 
 
 (defsys ^:dynamic *garden-watcher*
