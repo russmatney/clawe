@@ -8,7 +8,8 @@
    [dates.tick :as dates]
    [doctor.ui.pomodoros :as pomodoros]
    [components.actions :as components.actions]
-   [doctor.ui.handlers :as handlers]))
+   [doctor.ui.handlers :as handlers]
+   [components.colors :as colors]))
 
 (defn completed? [it]
   (-> it :org/status #{:status/done}))
@@ -125,9 +126,9 @@
       (concat
         ["flex" "flex-col"
          "py-2" "px-3"
+         "m-1"
          "bg-yo-blue-700"
          "rounded-lg"
-         "my-1" "mx-1"
          "w-96"]
         (cond
           (completed? it)   []
@@ -135,15 +136,17 @@
           (not-started? it) []
           :else             [])
 
-        (case level
-          0 ["text-yo-blue-200" "text-lg"]
-          1 ["text-city-blue-dark-300" "text-lg"]
-          2 ["text-city-green-400" "text-lg"]
-          3 ["text-city-red-200" "text-lg"]
-          4 ["text-city-pink-300" "text-lg"]
-          5 ["text-city-pink-400" "text-lg"]
-          6 ["text-city-pink-500" "text-lg"]
-          []))}
+        ["text-city-blue-dark-300" "text-lg"]
+
+        #_(case level
+            0 ["text-yo-blue-200"]
+            1 ["text-city-blue-dark-300"]
+            2 ["text-city-green-400"]
+            3 ["text-city-red-200"]
+            4 ["text-city-pink-300"]
+            5 ["text-city-pink-400"]
+            6 ["text-city-pink-500"]
+            []))}
 
      ;; top meta
      [:div
@@ -167,26 +170,38 @@
       ;; tags
       (when (seq (:org/tags it))
         [:span
-         {:class ["text-sm" "font-nes"
+         {:class ["text-md" "font-mono"
                   "px-2"
                   "flex" "flex-row" "flex-wrap"]}
          ":"
-         (for [t (:org/tags it)]
+         (for [[i t] (->> it :org/tags (map-indexed vector))]
            ^{:key t}
            [:span
             ;; TODO popover/tooltip on hover
-            {:class    ["cursor-pointer"]
-             :on-click (fn [_ev] (use-focus/remove-tag it t))}
-            t ":"])])
+            [:span
+             {:class
+              (concat ["cursor-pointer"
+                       "hover:line-through"]
+                      (colors/color-wheel-classes {:type :line :i i}))
+              :on-click (fn [_ev] (use-focus/remove-tag it t))}
+             t]
+            ":"])])
 
       (when (:org/priority it)
         [:span
-         {:class ["whitespace-nowrap" "font-nes" "ml-auto"]}
+         {:class
+          (concat
+            ["whitespace-nowrap" "font-nes" "ml-auto"]
+            (let [pri (:org/priority it)]
+              (cond
+                (#{"A"} pri) ["text-city-red-400"]
+                (#{"B"} pri) ["text-city-pink-400"]
+                (#{"C"} pri) ["text-city-green-400"])))}
          (str "#" (:org/priority it) " ")])]
 
      ;; middle content
      [:div
-      {:class ["flex" "flex-row" "pb-2"]}
+      {:class ["flex" "flex-col" "pb-2"]}
 
       ;; name
       [:span
@@ -194,24 +209,29 @@
         {:class
          (concat
            (cond
-             (current? it)     ["font-bold"]
-             (completed? it)   ["line-through"]
-             (not-started? it) []
-             (skipped? it)     ["line-through"]
-             :else             ["font-normal"]))}
-        (str
-          (->>
-            (concat
-              [(:org/name-string it)]
-              (:org/parent-names it))
-            (string/join " > ")))]
+             (completed? it) ["line-through"]
+             (skipped? it)   ["line-through"]))}
+        (:org/name-string it)]]
 
-       ;; time ago
-       (when (and (completed? it) (:org/closed-since it))
-         [:span
-          {:class ["ml-auto"]}
-          (str " (" (:org/closed-since it) " ago)")])]]
+      ;; time ago
+      (when (and (completed? it) (:org/closed-since it))
+        [:span
+         {:class ["font-mono"]}
+         (str (:org/closed-since it) " ago")])
 
+      [:span
+       (->>
+         (:org/parent-names it)
+         reverse
+         (map-indexed
+           (fn [i nm]
+             [:span {:class
+                     (concat
+                       (colors/color-wheel-classes {:type :line :i i})
+                       )}
+              " " nm]))
+         #_reverse
+         (interpose [:span " > "]))]]
 
      ;; bottom meta
      [:div
@@ -336,7 +356,7 @@
         time           (uix/state (t/zoned-date-time))
         interval       (atom nil)
         hide-completed (uix/state nil)
-        only-current   (uix/state (if current true nil))]
+        only-current   (uix/state nil #_(if current true nil))]
     (uix/with-effect [@interval]
       (reset! interval (js/setInterval #(reset! time (t/zoned-date-time)) 1000))
       (fn [] (js/clearInterval @interval)))
@@ -373,7 +393,11 @@
      ;; TODO group by priority?
      (when (seq todos)
        [:div
-        {:class ["flex" "flex-row" "flex-wrap" "justify-center"]}
+        {:class
+         ["flex" "flex-row" "flex-wrap" "justify-center"]
+         ;; ["grid" "grid-flow-cols" "auto-col-max"]
+         ;; ["columns-1" "md:columns-2" "lg:columns-3"]
+         }
         (for [[i it] (cond->> todos
                        @hide-completed (remove completed?)
                        @only-current   (filter current?)
@@ -386,11 +410,7 @@
                                                 <)
                        true            (map-indexed vector))]
           ^{:key i}
-          [:div
-           [item-card it]
-           (when (current? it) [item-body it])])
-
-        [:hr]])
+          [item-card it])])
 
      (when
          ;; this could also check commit status, dirty/unpushed commits, etc
