@@ -128,7 +128,7 @@
        (d/transact db/*conn*))
   :ok)
 
-(defhandler add-uuid [item]
+(defhandler ensure-uuid [item]
   (when-not (:org/id item)
     (org-crud.api/update! item {:org/id (random-uuid)}))
   :ok)
@@ -137,31 +137,47 @@
   (org-crud.api/update! todo up)
   :ok)
 
+(defn todo-set-new-status [it status]
+  ;; TODO queue-todo as well - maybe just write to both places and cross your fingers
+  ;; this, but needs the updated data as well?
+  ;; (-> todo
+  ;;     (assoc :todo/queued-at (System/currentTimeMillis))
+  ;;     db/transact)
+  (update-todo
+    it (cond-> {:org/status status}
+         (#{:status/in-progress} status) (assoc :org/tags "current")
+         (#{:status/done} status)        (assoc :org/tags [:remove "current"])
+         (not (:org/id it))              (assoc :org/id (random-uuid)))))
+
 (defhandler cancel-todo [todo]
-  (org-crud.api/update! todo {:org/status :status/cancelled})
+  (todo-set-new-status todo :status/cancelled)
   :ok)
 
 (defhandler complete-todo [todo]
-  (org-crud.api/update! todo {:org/status :status/done})
+  (todo-set-new-status todo :status/done)
   :ok)
 
 (defhandler start-todo [todo]
-  (org-crud.api/update! todo {:org/status :status/in-progress})
+  (todo-set-new-status todo :status/in-progress)
   :ok)
 
 (defhandler skip-todo [todo]
-  (org-crud.api/update! todo {:org/status :status/skipped})
+  (todo-set-new-status todo :status/skipped)
   :ok)
 
 (defhandler clear-status [todo]
   ;; when an item shouldn't be a todo
-  ;; TODO support! (doesn't work yet)
+  ;; TODO test, may not work yet
   ;; org-crud doesn't support it, and the db doesn't auto-retract attrs yet
   (org-crud.api/update! todo {:org/status nil})
   :ok)
 
 (defhandler add-tag [item tag]
-  (org-crud.api/update! item {:org/tags tag})
+  (org-crud.api/update! item
+                        (cond->
+                            {:org/tags tag}
+                          (not (:org/id item))
+                          (assoc :org/id (random-uuid))))
   :ok)
 
 (defhandler increase-priority [todo]
@@ -175,7 +191,11 @@
           (do
             (println "inc-pri - unexpected priority found, overwriting:" (:org/priority todo))
             "C"))]
-    (org-crud.api/update! todo {:org/priority priority})
+    (org-crud.api/update! todo
+                          (cond->
+                              {:org/priority priority}
+                            (not (:org/id todo))
+                            (assoc :org/id (random-uuid))))
     :ok))
 
 (defhandler decrease-priority [todo]
@@ -188,7 +208,11 @@
           (do
             (println "dec-pri - unexpected priority found, overwriting:" (:org/priority todo))
             nil))]
-    (org-crud.api/update! todo {:org/priority priority})
+    (org-crud.api/update! todo
+                          (cond->
+                              {:org/priority priority}
+                            (not (:org/id todo))
+                            (assoc :org/id (random-uuid))))
     :ok))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -209,14 +233,19 @@
    (defn todo->actions [todo]
      (let [{:keys [org/status]} todo]
        (->>
-         [(assoc (open-in-journal-action todo)
+         [;; open in emacs
+          (assoc (open-in-journal-action todo)
                  :action/priority -10)
-          {:action/label    "add-uuid"
-           :action/on-click #(add-uuid todo)
+
+          ;; ensure uuid
+          {:action/label    "ensure-uuid"
+           :action/on-click #(ensure-uuid todo)
            :action/icon
            [:> HIMini/FingerPrintIcon {:class ["w-6" "h-6"]}]
            :action/disabled (:org/id todo)
            :action/priority -10} ;; low-prority
+
+          ;; priority
           {:action/label    "increase-priority"
            :action/on-click #(increase-priority todo)
            :action/disabled (or (not status)
@@ -230,10 +259,18 @@
            :action/icon     fa/chevron-circle-down-solid
            :action/priority 1}
 
-          ;; TODO consider starting a pomodoro here if not is started
-          {:action/label    "add-tag-current"
-           :action/on-click (fn [_] (add-tag todo "current"))
-           :action/icon     #_fa/hashtag-solid
+          ;; start-todo
+          {:action/label       "start-todo"
+           :action/description "
+- Adds 'current' tag
+- sets :status/in-progress
+- ensures uuid
+;; TODO queue it
+;; TODO ensure pomodoro
+;; TODO offer/suggest/M-x to change-mode
+"
+           :action/on-click    (fn [_] (start-todo todo))
+           :action/icon        #_fa/hashtag-solid
            [:> HIMini/PlayIcon {:class ["w-4" "h-6"]}]
            ;; disabled if already tagged current or already completed/skipped
            :action/disabled
@@ -241,7 +278,9 @@
                (#{:status/done :status/cancelled :status/skipped}
                  status))
            ;; higher priority if priority set
-           :action/priority (if (:org/priority todo) 3 0)}
+           :action/priority    (if (:org/priority todo) 3 0)}
+
+          ;; add-tag
           {:action/label    "add-tag"
            :action/on-click (fn [_]
                               (let [res (js/prompt "Add tag")]
@@ -250,6 +289,8 @@
            :action/icon     fa/hashtag-solid
            ;; higher priority if missing tags
            :action/priority (if (seq (:org/tags todo)) 0 1)}
+
+          ;; db-only commands: delete-from-db, purge-file (for reingestion)
           {:action/label    "delete-from-db"
            :action/on-click #(delete-from-db todo)
            :action/icon     fa/trash-alt-solid
@@ -258,47 +299,54 @@
            :action/on-click #(purge-org-source-file todo)
            :action/icon     fa/trash-solid
            :action/disabled (not (:db/id todo))}
+
+          ;; queue toggle
           {:action/label    (if (:todo/queued-at todo) "(un)queue-todo" "queue-todo")
-           :action/on-click (fn [_] (if (:todo/queued-at todo) (unqueue-todo todo) (queue-todo todo)))
+           :action/on-click (fn [_] (if (:todo/queued-at todo)
+                                      (unqueue-todo todo)
+                                      (queue-todo todo)))
            :action/icon     (if (:todo/queued-at todo)
                               [:> HIMini/BoltSlashIcon {:class ["w-6" "h-6"]}]
                               [:> HIMini/BoltIcon {:class ["w-6" "h-6"]}])
-           :action/disabled (not (:db/id todo))
+           :action/disabled (not (:org/id todo))
            :action/priority 1}
+
+          ;; requeue
           {:action/label    "requeue-todo"
            :action/on-click #(queue-todo todo)
-           :action/disabled (not (:db/id todo))
            :action/icon
            [:> HIMini/ArrowPathIcon {:class ["w-6" "h-6"]}]
-           :aciton/disabled (not
-                              (and (not (#{:status/cancelled :status/done} status))
-                                   (:todo/queued-at todo)))
+           :action/disabled
+           (not
+             (and (not (#{:status/cancelled :status/done} status))
+                  (:todo/queued-at todo)))
            :action/priority 1}
-          ;; {:action/label    "start-todo"
-          ;;  :action/on-click #(start-todo todo)
-          ;;  :action/icon     [:> HIMini/PlayIcon {:class ["w-4" "h-6"]}]
-          ;;  :action/disabled (#{:status/in-progress} status)
-          ;;  ;; higher priority if queued
-          ;;  :action/priority (if  (:todo/queued-at todo) 1 0)}
+
+          ;; finish todo
           {:action/label    "mark-complete"
            :action/on-click #(complete-todo todo)
            :action/icon     fa/check-circle-solid
            :action/disabled (#{:status/done} status)
            :action/priority (if (or (:todo/queued-at todo)
                                     (:status/in-progress todo)) 2 0)}
+
+          ;; mark-skipped
           {:action/label    "mark-skipped"
            :action/disabled (#{:status/skipped} status)
            :action/on-click #(skip-todo todo)
            :action/icon     [:> HIMini/ArchiveBoxIcon {:class ["w-4" "h-6"]}]}
+
+          ;; mark-cancelled
           {:action/label    "mark-cancelled"
            :action/on-click #(cancel-todo todo)
            :action/disabled (#{:status/cancelled} status)
            :action/icon     fa/ban-solid}
+
+          ;; mark not-a-todo (clear todo status)
           {:action/label    "clear-todo-status"
            :action/on-click #(clear-status todo)
            :action/disabled (not status)
-           :action/icon     [:> HIMini/XCircleIcon {:class ["w-4" "h-6"]}]}
-          ]
+           :action/icon     [:> HIMini/XCircleIcon {:class ["w-4" "h-6"]}]}]
          (remove nil?)))))
 
 

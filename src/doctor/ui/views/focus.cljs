@@ -59,17 +59,16 @@
                          "hover:opacity-50"]
         :on-mouse-enter (fn [_] (reset! hovering? true))
         :on-mouse-leave (fn [_] (reset! hovering? false))
-        :on-click       (fn [_]
-                          (handlers/update-todo
-                            it (let [status (cond
-                                              (completed? it)   :status/not-started
-                                              (skipped? it)     :status/not-started
-                                              (current? it)     :status/done
-                                              (in-progress? it) :status/done
-                                              (not-started? it) :status/in-progress)]
-                                 (cond-> {:org/status status}
-                                   (#{:status/in-progress} status) (assoc :org/tags "current")
-                                   (#{:status/done} status)        (assoc :org/tags [:remove "current"])))))}
+        :on-click
+        (fn [_]
+          ;; TODO refactor this logic into...something?
+          (handlers/todo-set-new-status
+            it (cond
+                 (completed? it)   :status/not-started
+                 (skipped? it)     :status/not-started
+                 (current? it)     :status/done
+                 (in-progress? it) :status/done
+                 (not-started? it) :status/in-progress)))}
        (cond
          (and (completed? it) (not @hovering?))   "[X]"
          (and (completed? it) @hovering?)         "[ ]"
