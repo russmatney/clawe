@@ -1,7 +1,8 @@
 (ns dates.tick
   (:require
    [clojure.string :as string]
-   [tick.core :as t]))
+   [tick.core :as t]
+   [util :as util]))
 
 (def date-formats-with-zone
   [:iso-zoned-date-time
@@ -138,16 +139,17 @@
        (> days 1)    (str days " days")
        (= days 1)    (str days " day")
        (> hours 1)   (let [mins (- mins (* hours 60))]
-                       (str hours ":" mins " hours"))
+                       (str hours ":" (util/zp mins 2) " hours"))
        (= hours 1)   (let [mins (- mins 60)]
-                       (str hours ":" mins " hour"))
+                       (str hours ":" (util/zp mins 2) " hour"))
        (> mins 1)    (str mins " minutes")
        (= mins 1)    (let [secs (- seconds 60)]
-                       (str mins ":" secs " minute"))
+                       (str mins ":" (util/zp secs 2) " minute"))
        (> seconds 1) (str seconds " seconds")
        (= seconds 1) (str seconds " second")))))
 
 (comment
+  (util/zp 5 2)
   (duration-since (parse-time-string "2022-02-26_15:47:52-0500")))
 
 (defn an-x-ago-ms
