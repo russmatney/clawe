@@ -174,68 +174,64 @@
         [parent-names it]]])))
 
 (defn item-card [it]
-  (let [hovering? (uix/state nil)]
-    [:div
-     {
-      :on-mouse-enter (fn [_] (reset! hovering? true))
-      :on-mouse-leave (fn [_] (reset! hovering? false))
-      :class
-      (concat
-        ["flex" "flex-col"
-         "py-2" "px-3"
-         "m-1"
-         "rounded-lg"
-         "w-96"
-         "text-lg"
-         "bg-yo-blue-700"]
-        (cond
-          (completed? it) ["text-city-blue-dark-400"]
-          (skipped? it)   ["text-city-blue-dark-600"]
-          ;; (not-started? it) []
-          :else           ["text-city-blue-dark-200"]))}
+  [:div
+   {:class
+    (concat
+      ["flex" "flex-col"
+       "py-2" "px-3"
+       "m-1"
+       "rounded-lg"
+       "w-96"
+       "text-lg"
+       "bg-yo-blue-700"]
+      (cond
+        (completed? it) ["text-city-blue-dark-400"]
+        (skipped? it)   ["text-city-blue-dark-600"]
+        ;; (not-started? it) []
+        :else           ["text-city-blue-dark-200"]))}
 
-     ;; top meta
-     [:div
-      {:class ["flex" "flex-row" "w-full" "items-center"]}
+   ;; top meta
+   [:div
+    {:class ["flex" "flex-row" "w-full" "items-center"]}
 
-      [level it]
-      [todo-status it]
-      [:div {:class ["ml-auto"]}
-       [tags-list it]]
-      [priority-label it]]
+    [level it]
+    [todo-status it]
+    [:div {:class ["ml-auto"]}
+     [tags-list it]]
+    [priority-label it]]
 
-     ;; middle content
-     [:div
-      {:class ["flex" "flex-col" "pb-2"]}
+   ;; middle content
+   [:div
+    {:class ["flex" "flex-col" "pb-2"]}
 
-      ;; name
+    ;; name
+    [:span
+     [:span
+      {:class (when (or (completed? it) (skipped? it)) ["line-through"])}
+      (:org/name-string it)]]
+
+    ;; time ago
+    (when (and (completed? it) (:org/closed-since it))
       [:span
-       [:span
-        {:class (when (or (completed? it) (skipped? it)) ["line-through"])}
-        (:org/name-string it)]]
+       {:class ["font-mono"]}
+       (str (:org/closed-since it) " ago")])
 
-      ;; time ago
-      (when (and (completed? it) (:org/closed-since it))
-        [:span
-         {:class ["font-mono"]}
-         (str (:org/closed-since it) " ago")])
+    [parent-names it]]
 
-      [parent-names it]]
+   ;; bottom meta
+   [:div
+    {:class ["flex" "flex-row" "text-sm"
+             "mt-auto"
+             "pb-2"]}
 
-     ;; bottom meta
-     [:div
-      {:class ["flex" "flex-row" "text-sm"
-               "pb-2"]}
-
-      (when @hovering?
-        ;; actions list
-        [:span
-         {:class ["ml-auto"]}
-         [components.actions/actions-list
-          {:actions
-           (handlers/->actions it (handlers/todo->actions it))
-           :nowrap        true
-           :hide-disabled true}]])]]))
+    ;; actions list
+    [:span
+     {:class ["ml-auto"]}
+     [components.actions/actions-list
+      {:actions
+       (handlers/->actions it (handlers/todo->actions it))
+       :nowrap        true
+       :hide-disabled true}]]]])
 
 (defn button [opts label]
   [:button
@@ -366,7 +362,7 @@
      (when (seq todos)
        [:div
         {:class
-         ["flex" "flex-row" "flex-wrap" "justify-center"]
+         ["flex" "flex-row" "flex-wrap" "justify-around"]
          ;; ["grid" "grid-flow-cols" "auto-col-max"]
          ;; ["columns-1" "md:columns-2" "lg:columns-3"]
          }
