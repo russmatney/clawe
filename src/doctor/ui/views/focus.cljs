@@ -131,7 +131,6 @@
      reverse
      (map-indexed
        (fn [i nm]
-         ^{:key i}
          [:span {:class
                  (concat
                    (colors/color-wheel-classes {:type :line :i i}))}
@@ -139,7 +138,9 @@
      #_reverse
      (interpose [:span
                  {:class ["text-city-blue-dark-200"]}
-                 " > "]))])
+                 " > "])
+     ;; kind of garbage, but :shrug:
+     (map-indexed (fn [i sp] ^{:key i} [:span sp])))])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; current item header
