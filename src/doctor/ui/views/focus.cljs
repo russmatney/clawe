@@ -170,8 +170,15 @@
         ;; TODO include sub todos
         [:pre (:org/body-string it)]]
 
-       [:div {:class ["pt-4"]}
-        [parent-names it]]])))
+       [:div {:class ["py-4" "flex"]}
+        [parent-names it]
+        [:span
+         {:class ["ml-auto"]}
+         [components.actions/actions-list
+          {:actions
+           (handlers/->actions it (handlers/todo->actions it))
+           :nowrap        true
+           :hide-disabled true}]]]])))
 
 (defn item-card [it]
   [:div
