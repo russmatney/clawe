@@ -356,15 +356,20 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; item todo cards
 
-(defn item-todo-cards [{:keys [org/items]}]
-  (let [todos (->> items (filter :org/status) seq)]
-    (when todos
-      [:div
-       {:class ["flex" "flex-row" "flex-wrap" "justify-around"]}
-       (for [[i td] (->> todos sort-todos (map-indexed vector))]
-         ^{:key i}
-         [:div
-          [item-card td]])])))
+(defn item-todo-cards
+  ([item] [item-todo-cards nil item])
+  ([{:keys [filter-by]} {:keys [org/items]}]
+   (let [todos (->> items (filter :org/status) seq)]
+     (when todos
+       [:div
+        {:class ["flex" "flex-row" "flex-wrap" "justify-around"]}
+        (for [[i td] (cond->> todos
+                       filter-by (filter filter-by)
+                       true      sort-todos
+                       true      (map-indexed vector))]
+          ^{:key i}
+          [:div
+           [item-card td]])]))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; current stack
@@ -381,7 +386,10 @@
            {:class ["bg-city-blue-800"]}
            [:hr {:class ["border-city-blue-900" "pb-4"]}]
            [item-header c]
-           [item-todo-cards c]
+           [item-todo-cards {:filter-by (comp not #{:status/skipped
+                                                    :status/done}
+                                              :org/status)}
+            c]
            [item-body c]]))
 
       (when
