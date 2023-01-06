@@ -34,7 +34,7 @@
     [:span
      {:class
       (concat
-        ["flex" "flex-row" "py-2 px-4" "justify-center" "items-center"]
+        ["flex" "flex-row" "py-2" "justify-center" "items-center"]
         (cond
           (completed? it)   []
           (skipped? it)     []
@@ -42,9 +42,9 @@
           :else             [])
 
         (case level
-          0 ["text-yo-blue-200" "text-3xl"]
-          1 ["text-city-blue-dark-300" "text-3xl"]
-          2 ["text-city-green-400" "text-3xl"]
+          0 ["text-yo-blue-200" "text-xl"]
+          1 ["text-city-blue-dark-300" "text-xl"]
+          2 ["text-city-green-400" "text-xl"]
           3 ["text-city-red-200" "text-xl"]
           4 ["text-city-pink-300" "text-lg"]
           5 ["text-city-pink-400" "text-lg"]
@@ -114,14 +114,137 @@
               :on-click (fn [_ev] (use-focus/remove-tag it t))}
              t ":"])]])]]))
 
+(defn item-card [it]
+  (let [level     (:org/level it 0)
+        level     (if (#{:level/root} level) 0 level)
+        hovering? (uix/state nil)]
+    [:div
+     {:on-mouse-enter (fn [_] (reset! hovering? true))
+      :on-mouse-leave (fn [_] (reset! hovering? false))
+      :class
+      (concat
+        ["flex" "flex-col"
+         "py-2" "px-3"
+         "bg-yo-blue-700"
+         "rounded-lg"
+         "my-1" "mx-1"
+         "w-96"]
+        (cond
+          (completed? it)   []
+          (skipped? it)     []
+          (not-started? it) []
+          :else             [])
+
+        (case level
+          0 ["text-yo-blue-200" "text-lg"]
+          1 ["text-city-blue-dark-300" "text-lg"]
+          2 ["text-city-green-400" "text-lg"]
+          3 ["text-city-red-200" "text-lg"]
+          4 ["text-city-pink-300" "text-lg"]
+          5 ["text-city-pink-400" "text-lg"]
+          6 ["text-city-pink-500" "text-lg"]
+          []))}
+
+     ;; top meta
+     [:div
+      {:class ["flex" "flex-row"
+               "w-full"
+               "justify-center" "items-center"]}
+
+      ;; level ***
+      [:span
+       {:class ["whitespace-nowrap" "font-nes"]}
+       (->> (repeat level "*") (apply str))]
+
+      ;; todo status
+      (when (:org/status it)
+        [:span
+         {:class ["ml-2" "whitespace-nowrap" "font-nes"]}
+         (cond
+           (current? it)     "[-]"
+           (completed? it)   "[X]"
+           (skipped? it)     "SKIP"
+           (not-started? it) "[ ]")])
+
+      [:span
+       {:class ["ml-auto"]}
+
+       ;; tags
+       (when (seq (:org/tags it))
+         [:span
+          {:class
+           (concat (cond
+                     (completed? it)   []
+                     (not-started? it) []
+                     (skipped? it)     []
+                     (current? it)     ["font-bold"]
+                     :else             ["font-normal"])
+                   ["text-sm" "font-nes"])}
+
+          [:span ":"
+           (for [t (:org/tags it)]
+             ^{:key t}
+             [:span
+              ;; TODO popover/tooltip on hover
+              {:class    ["cursor-pointer"]
+               :on-click (fn [_ev] (use-focus/remove-tag it t))}
+              t ":"])]])]
+
+      (when (:org/priority it)
+        [:span
+         {:class ["whitespace-nowrap" "font-nes" "ml-auto"]}
+         (str "#" (:org/priority it) " ")])]
+
+     ;; middle content
+     [:div
+      {:class ["flex" "flex-row" "pb-2"]}
+
+      ;; name
+      [:span
+       [:span
+        {:class
+         (concat
+           (cond
+             (current? it)     ["font-bold"]
+             (completed? it)   ["line-through"]
+             (not-started? it) []
+             (skipped? it)     ["line-through"]
+             :else             ["font-normal"]))}
+        (str
+          (->>
+            (concat
+              [(:org/name-string it)]
+              (:org/parent-names it))
+            (string/join " > ")))]
+
+       ;; time ago
+       (when (and (completed? it) (:org/closed-since it))
+         [:span
+          {:class ["ml-auto"]}
+          (str " (" (:org/closed-since it) " ago)")])]]
+
+
+     ;; bottom meta
+     [:div
+      {:class ["flex" "flex-row" "text-sm"
+               "pb-2"]}
+
+      (when @hovering?
+        ;; actions list
+        [:span
+         {:class ["ml-auto"]}
+         [components.actions/actions-list
+          {:actions
+           (handlers/->actions it (handlers/todo->actions it))
+           :nowrap        true
+           :hide-disabled true}]])]]))
+
 (defn item-header [it]
   [components.actions/actions-popup
-   {:comp [:h1 {:class
-                (concat
-                  ["text-3xl"
-                   "py-4"
-                   "font-mono"])}
-           (item-name it)]
+   {:comp [:div {:class
+                 (concat
+                   ["py-2" "font-mono"])}
+           [item-name it]]
     :actions
     (handlers/->actions it (handlers/todo->actions it))}])
 
@@ -209,7 +332,6 @@
   [{:keys [hide-completed toggle-hide-completed
            only-current toggle-only-current]}]
   [:div
-   {:class ["px-4"]}
    [button {:on-click (fn [_] (toggle-hide-completed))}
     (if hide-completed "Show completed" "Hide completed")]
    [button {:on-click (fn [_] (toggle-only-current))}
@@ -221,9 +343,6 @@
   (let [focus-data      (use-focus/use-focus-data)
         {:keys [todos]} @focus-data
         current         (some->> todos (filter current?) seq)
-        love            (some->> todos (filter #(has-tag? % "love")))
-        cool            (some->> todos (filter #(has-tags? % #{"cool" "fun"})))
-        til             (some->> todos (filter #(has-tags? % #{"til"})))
 
         time           (uix/state (t/zoned-date-time))
         interval       (atom nil)
@@ -262,57 +381,10 @@
               (into #{})
               (string/join " - "))])]
 
-     (when (seq til)
-       [:div
-        {:class ["px-4"]}
-        (for [[i it] (cond->> til
-                       @hide-completed (remove completed?)
-                       @only-current   (filter current?)
-                       true            (map-indexed vector))]
-          ^{:key i}
-          [:div
-           [item-header it]
-           (when (current? it) [item-body it])])
-        [:hr]])
-
-     (when (seq cool)
-       [:div
-        {:class ["px-4"]}
-        (for [[i it] (cond->> cool
-                       @hide-completed (remove completed?)
-                       @only-current   (filter current?)
-                       true            (map-indexed vector))]
-          ^{:key i}
-          [:div
-           [item-header it]
-           (when (current? it) [item-body it])])
-        [:hr]])
-
-     (when (seq love)
-       [:div
-        {:class ["px-4"
-                 "ml-auto"
-                 "text-4xl"
-                 "text-city-green-200"]}
-        "love"])
-
-     (when (seq love)
-       (for [[i it] (cond->> love
-                      @hide-completed (remove completed?)
-                      @only-current   (filter current?)
-                      true            (map-indexed vector))]
-         ^{:key i}
-         [:div
-          {:class ["px-4"]}
-          [item-header it]
-          (when (current? it) [item-body it])]))
-
-     (when (seq love)
-       [:hr])
-
      ;; TODO group by priority?
      (when (seq todos)
-       [:div {:class ["px-4"]}
+       [:div
+        {:class ["flex" "flex-row" "flex-wrap" "justify-center"]}
         (for [[i it] (cond->> todos
                        @hide-completed (remove completed?)
                        @only-current   (filter current?)
@@ -326,7 +398,7 @@
                        true            (map-indexed vector))]
           ^{:key i}
           [:div
-           [item-header it]
+           [item-card it]
            (when (current? it) [item-body it])])
 
         [:hr]])

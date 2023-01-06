@@ -42,8 +42,11 @@
       {:class
        (concat
          ["px-2" "py-1"
+          "w-9"
           "rounded" "border"
-          "flex" "items-center"
+          "flex"
+          "justify-center"
+          "items-center"
           "tooltip"
           "relative"]
          ax-class
@@ -55,6 +58,7 @@
             border-color-class
             "hover:text-city-blue-300"
             "hover:border-city-blue-300"]))
+       ;; :style    {:min-width "34px"}
        :on-click (fn [_] (when (and on-click (not disabled)) (on-click)))}
       [:div (or comp icon label)]
       [:div.tooltip.tooltip-text.bottom-10.-left-3
@@ -78,7 +82,9 @@
                                  (reset! page-size fallback-page-size)
                                  (reset! showing-all false))
             actions            (->>
-                                 actions
+                                 (cond->> actions
+                                   (:hide-disabled opts-or-axs)
+                                   (remove :action/disabled))
                                  (sort-by
                                    (fn [x]
                                      (if (:action/disabled x)
@@ -105,7 +111,9 @@
 
                                             :else nil)))))]
         [:div
-         {:class ["inline-flex" "flex-wrap"]}
+         {:class ["inline-flex"
+                  (when (or (not (:nowrap opts-or-axs)) @showing-all)
+                    "flex-wrap")]}
          (for [[i ax] (->> actions
                            (remove nil?)
                            (map-indexed vector))]
