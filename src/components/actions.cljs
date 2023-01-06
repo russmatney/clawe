@@ -58,11 +58,17 @@
             border-color-class
             "hover:text-city-blue-300"
             "hover:border-city-blue-300"]))
-       ;; :style    {:min-width "34px"}
        :on-click (fn [_] (when (and on-click (not disabled)) (on-click)))}
       [:div (or comp icon label)]
-      [:div.tooltip.tooltip-text.bottom-10.-left-3
-       {:class ["whitespace-nowrap"]}
+      [:div
+       {:class ["tooltip"
+                "tooltip-text"
+                "bottom-10"
+                ;; TODO get wise about where to put this tooltip
+                ;; this prevents width overflow if the actions list is near the right edge
+                ;; but otherwise it looks weird
+                "-left-20"
+                "whitespace-nowrap"]}
        (or tooltip label)]])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

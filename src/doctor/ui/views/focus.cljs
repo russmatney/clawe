@@ -8,7 +8,8 @@
    [doctor.ui.pomodoros :as pomodoros]
    [components.actions :as components.actions]
    [doctor.ui.handlers :as handlers]
-   [components.colors :as colors]))
+   [components.colors :as colors]
+   [components.garden :as components.garden]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; preds
@@ -128,10 +129,10 @@
      reverse
      (map-indexed
        (fn [i nm]
+         ^{:key i}
          [:span {:class
                  (concat
-                   (colors/color-wheel-classes {:type :line :i i})
-                   )}
+                   (colors/color-wheel-classes {:type :line :i i}))}
           " " nm]))
      #_reverse
      (interpose [:span
@@ -158,27 +159,22 @@
      (:org/name-string it)]]])
 
 (defn item-body [it]
-  (let [level (:org/level it 0)
-        level (if (#{:level/root} level) 0 level)]
-    (when (-> it :org/body-string seq)
-      [:div
-       {:class ["text-xl" "p-4"]}
-       [:div
-        {:class ["text-yo-blue-200" "font-mono"]
-         :style {:padding-left (str (* level 25) "px")}}
-        ;; TODO proper render of body string
-        ;; TODO include sub todos
-        [:pre (:org/body-string it)]]
+  (when (-> it :org/body-string seq)
+    [:div
+     {:class ["text-xl" "p-4" "flex" "flex-col"]}
+     [:div
+      {:class ["text-yo-blue-200" "font-mono"]}
+      ;; TODO include sub todos
+      #_[:pre (:org/body-string it)]
+      [components.garden/org-body it]]
 
-       [:div {:class ["py-4" "flex"]}
-        [parent-names it]
-        [:span
-         {:class ["ml-auto"]}
-         [components.actions/actions-list
-          {:actions
-           (handlers/->actions it (handlers/todo->actions it))
-           :nowrap        true
-           :hide-disabled true}]]]])))
+     [:div {:class ["py-4" "flex" "flex-row" "justify-between"]}
+      [parent-names it]
+      [components.actions/actions-list
+       {:actions
+        (handlers/->actions it (handlers/todo->actions it))
+        :nowrap        true
+        :hide-disabled true}]]]))
 
 (defn item-card [it]
   [:div
@@ -362,6 +358,8 @@
        (for [[i c] (->> current (sort-by-priority) (map-indexed vector))]
          ^{:key i}
          [:div
+          {:class ["bg-city-blue-800"]}
+          [:hr {:class ["border-city-blue-900" "pb-4"]}]
           [item-header c]
           [item-body c]]))
 
@@ -369,9 +367,12 @@
      (when (seq todos)
        [:div
         {:class
-         ["flex" "flex-row" "flex-wrap" "justify-around"]
-         ;; ["grid" "grid-flow-cols" "auto-col-max"]
-         ;; ["columns-1" "md:columns-2" "lg:columns-3"]
+         (concat
+           ["pt-6"]
+           ["flex" "flex-row" "flex-wrap" "justify-around"]
+           ;; ["grid" "grid-flow-cols" "auto-col-max"]
+           ;; ["columns-1" "md:columns-2" "lg:columns-3"]
+           )
          }
         (for [[i it] (cond->> todos
                        @hide-completed (remove completed?)
