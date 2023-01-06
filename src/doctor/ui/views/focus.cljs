@@ -147,9 +147,7 @@
 
      ;; top meta
      [:div
-      {:class ["flex" "flex-row"
-               "w-full"
-               "justify-center" "items-center"]}
+      {:class ["flex" "flex-row" "w-full" "items-center"]}
 
       ;; level ***
       [:span
@@ -166,29 +164,20 @@
            (skipped? it)     "SKIP"
            (not-started? it) "[ ]")])
 
-      [:span
-       {:class ["ml-auto"]}
-
-       ;; tags
-       (when (seq (:org/tags it))
-         [:span
-          {:class
-           (concat (cond
-                     (completed? it)   []
-                     (not-started? it) []
-                     (skipped? it)     []
-                     (current? it)     ["font-bold"]
-                     :else             ["font-normal"])
-                   ["text-sm" "font-nes"])}
-
-          [:span ":"
-           (for [t (:org/tags it)]
-             ^{:key t}
-             [:span
-              ;; TODO popover/tooltip on hover
-              {:class    ["cursor-pointer"]
-               :on-click (fn [_ev] (use-focus/remove-tag it t))}
-              t ":"])]])]
+      ;; tags
+      (when (seq (:org/tags it))
+        [:span
+         {:class ["text-sm" "font-nes"
+                  "px-2"
+                  "flex" "flex-row" "flex-wrap"]}
+         ":"
+         (for [t (:org/tags it)]
+           ^{:key t}
+           [:span
+            ;; TODO popover/tooltip on hover
+            {:class    ["cursor-pointer"]
+             :on-click (fn [_ev] (use-focus/remove-tag it t))}
+            t ":"])])
 
       (when (:org/priority it)
         [:span
