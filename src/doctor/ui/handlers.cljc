@@ -193,7 +193,7 @@
 
 #?(:cljs
    (defn open-in-journal-action [item]
-     {:action/label    "open-in-emacs"
+     {:action/label    "open-in-journal"
       :action/on-click #(open-in-journal item)
       :action/class    ["text-city-purple-500" "border-city-purple-500"]
       :action/icon
@@ -205,13 +205,39 @@
    (defn todo->actions [todo]
      (let [{:keys [org/status]} todo]
        (->>
-         [(open-in-journal-action todo)
+         [(assoc (open-in-journal-action todo)
+                 :action/priority -10)
           {:action/label    "add-uuid"
            :action/on-click #(add-uuid todo)
            :action/icon
            [:> HIMini/FingerPrintIcon {:class ["w-6" "h-6"]}]
            :action/disabled (:org/id todo)
            :action/priority -10} ;; low-prority
+          {:action/label    "increase-priority"
+           :action/on-click #(increase-priority todo)
+           :action/disabled (or (not status)
+                                (#{"A"} (:org/priority todo)))
+           :action/icon     fa/chevron-circle-up-solid
+           :action/priority 1}
+          {:action/label    "decrease-priority"
+           :action/on-click #(decrease-priority todo)
+           :action/disabled (or (not status)
+                                (not (:org/priority todo)))
+           :action/icon     fa/chevron-circle-down-solid
+           :action/priority 1}
+
+          ;; TODO consider starting a pomodoro here if not is started
+          {:action/label    "add-tag-current"
+           :action/on-click (fn [_] (add-tag todo "current"))
+           :action/icon     #_fa/hashtag-solid
+           [:> HIMini/PlayIcon {:class ["w-4" "h-6"]}]
+           ;; disabled if already tagged current or already completed/skipped
+           :action/disabled
+           (or ((:org/tags todo) "current")
+               (#{:status/done :status/cancelled :status/skipped}
+                 status))
+           ;; higher priority if priority set
+           :action/priority (if (:org/priority todo) 3 0)}
           {:action/label    "add-tag"
            :action/on-click (fn [_]
                               (let [res (js/prompt "Add tag")]
@@ -219,7 +245,7 @@
                                   (add-tag todo res))))
            :action/icon     fa/hashtag-solid
            ;; higher priority if missing tags
-           :action/priority (if (seq (:org/tags todo)) 0 3)}
+           :action/priority (if (seq (:org/tags todo)) 0 1)}
           {:action/label    "delete-from-db"
            :action/on-click #(delete-from-db todo)
            :action/icon     fa/trash-alt-solid
@@ -227,8 +253,7 @@
           {:action/label    "purge-file"
            :action/on-click #(purge-org-source-file todo)
            :action/icon     fa/trash-solid
-           :action/disabled (not (:db/id todo))
-           }
+           :action/disabled (not (:db/id todo))}
           {:action/label    (if (:todo/queued-at todo) "(un)queue-todo" "queue-todo")
            :action/on-click (fn [_] (if (:todo/queued-at todo) (unqueue-todo todo) (queue-todo todo)))
            :action/icon     (if (:todo/queued-at todo)
@@ -245,38 +270,30 @@
                               (and (not (#{:status/cancelled :status/done} status))
                                    (:todo/queued-at todo)))
            :action/priority 1}
-          {:action/label    "start-todo"
-           :action/on-click #(start-todo todo)
-           :action/icon     [:> HIMini/PlayIcon {:class ["w-4" "h-6"]}]
-           :action/disabled (#{:status/in-progress} status)
-           ;; higher priority if queued
-           :action/priority (if  (:todo/queued-at todo) 1 0)}
-          {:action/label    "complete-todo"
+          ;; {:action/label    "start-todo"
+          ;;  :action/on-click #(start-todo todo)
+          ;;  :action/icon     [:> HIMini/PlayIcon {:class ["w-4" "h-6"]}]
+          ;;  :action/disabled (#{:status/in-progress} status)
+          ;;  ;; higher priority if queued
+          ;;  :action/priority (if  (:todo/queued-at todo) 1 0)}
+          {:action/label    "mark-complete"
            :action/on-click #(complete-todo todo)
            :action/icon     fa/check-circle-solid
            :action/disabled (#{:status/done} status)
            :action/priority (if (or (:todo/queued-at todo)
                                     (:status/in-progress todo)) 2 0)}
-          {:action/label    "skip"
+          {:action/label    "mark-skipped"
            :action/disabled (#{:status/skipped} status)
            :action/on-click #(skip-todo todo)
            :action/icon     [:> HIMini/ArchiveBoxIcon {:class ["w-4" "h-6"]}]}
-          {:action/label    "clear-status"
-           :action/on-click #(clear-status todo)
-           :action/disabled (not status)
-           :action/icon     [:> HIMini/XCircleIcon {:class ["w-4" "h-6"]}]}
-          {:action/label    "cancel-todo"
+          {:action/label    "mark-cancelled"
            :action/on-click #(cancel-todo todo)
            :action/disabled (#{:status/cancelled} status)
            :action/icon     fa/ban-solid}
-          {:action/label    "increase-priority"
-           :action/on-click #(increase-priority todo)
+          {:action/label    "clear-todo-status"
+           :action/on-click #(clear-status todo)
            :action/disabled (not status)
-           :action/icon     fa/chevron-circle-up-solid}
-          {:action/label    "decrease-priority"
-           :action/on-click #(decrease-priority todo)
-           :action/disabled (not status)
-           :action/icon     fa/chevron-circle-down-solid}
+           :action/icon     [:> HIMini/XCircleIcon {:class ["w-4" "h-6"]}]}
           ]
          (remove nil?)))))
 
