@@ -75,7 +75,7 @@
                  (skipped? it)     ["line-through"]
                  :else             ["font-normal"])
                #_["whitespace-nowrap"])}
-      (:org/name-string it)]
+      (str "#" (:org/priority it) " " (:org/name-string it))]
 
      ;; time ago
      (when (and (completed? it) (:org/closed-since it))
@@ -307,13 +307,19 @@
      (when (seq love)
        [:hr])
 
+     ;; TODO group by priority?
      (when (seq todos)
        [:div {:class ["px-4"]}
         (for [[i it] (cond->> todos
                        @hide-completed (remove completed?)
                        @only-current   (filter current?)
-                       true            (sort-by :org/priority)
-                       true            (reverse)
+                       true            (sort-by (comp (fn [p]
+                                                        (if p
+                                                          (.charCodeAt p)
+                                                          ;; some high val
+                                                          1000))
+                                                      :org/priority)
+                                                <)
                        true            (map-indexed vector))]
           ^{:key i}
           [:div

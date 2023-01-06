@@ -23,7 +23,7 @@
   aysylu/loom                        {:mvn/version "1.0.2"}
 
   russmatney/org-crud {:git/url "https://github.com/russmatney/org-crud"
-                       :git/sha "3e3c096262bdbd873823d2d4558b78b10cc2fc56"}
+                       :git/sha "fd081dea812265b8c30bf4b16cff7523eb397f1f"}
   kkinnear/zprint     {:git/url "https://github.com/kkinnear/zprint"
                        :git/tag "1.2.5-alpha1"
                        :git/sha "15ea82a"}}
