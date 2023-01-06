@@ -392,6 +392,19 @@
           [item-header c]
           [item-body c]]))
 
+     (when
+         ;; this could also check commit status, dirty/unpushed commits, etc
+         (and (seq todos)
+              (->> todos (filter current?) seq not))
+       [:div
+        {:class ["text-bold" "text-city-pink-300" "p-4"]}
+        [:h1
+         {:class ["text-4xl" "font-nes"]}
+         "no :current: todo!"]
+        [:p
+         {:class ["text-2xl" "pt-4"]}
+         "What are ya, taking a load off? GERT BERK TER WORK!"]])
+
      [:hr {:class ["mb-6" "border-city-blue-900"]}]
      [:div
       {:class ["px-6"
@@ -447,18 +460,6 @@
               ^{:key i}
               [item-card it])]])])
 
-     (when
-         ;; this could also check commit status, dirty/unpushed commits, etc
-         (and (seq todos)
-              (->> todos (filter current?) seq not))
-       [:div
-        {:class ["text-bold" "text-city-pink-300" "p-4"]}
-        [:h1
-         {:class ["text-4xl" "font-nes"]}
-         "no :current: todo!"]
-        [:p
-         {:class ["text-2xl" "pt-4"]}
-         "What are ya, taking a load off? GERT BERK TER WORK!"]])
      (when (not (seq todos))
        [:div
         {:class ["text-bold" "text-city-pink-300" "p-4"]}
