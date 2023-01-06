@@ -125,6 +125,7 @@
 ;; TODO write a set of unit tests around this
 (defn use-filter [{:keys [items default-filters default-group-by all-filter-defs]}]
   ;; TODO malli schema+validation for all-filter-defs and default-filters
+  ;; TODO local storage read/write for each filter-grouper (are they serializable?)
   (let [items-group-by  (uix/state
                           (or default-group-by
                               (some->> all-filter-defs first first)))
@@ -157,4 +158,6 @@
        :items-filter-by @items-filter-by
        :items-group-by  @items-group-by}]
      :filtered-items       filtered-items
-     :filtered-item-groups filtered-item-groups}))
+     :filtered-item-groups filtered-item-groups
+     :items-group-by       @items-group-by
+     :items-filter-by      @items-filter-by}))

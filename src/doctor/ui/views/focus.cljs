@@ -9,7 +9,9 @@
    [components.actions :as components.actions]
    [doctor.ui.handlers :as handlers]
    [components.colors :as colors]
-   [components.garden :as components.garden]))
+   [components.filter :as components.filter]
+   [components.garden :as components.garden]
+   [pages.todos :as pages.todos]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; preds
@@ -311,23 +313,50 @@
    [button {:on-click (fn [_] (toggle-only-current))}
     (if only-current "Show all" "Show only current")]])
 
-(defn sort-by-priority [its]
+(defn ->comparable-int [p]
+  (cond
+    (and p (string? p)) (.charCodeAt p)
+    (int? p)            p
+    (keyword? p)        (->comparable-int (name p))
+    ;; some high val
+    :else               1000))
+
+(defn sort-todos [its]
   (->> its
-       (sort-by (comp (fn [p]
-                        (if p
-                          (.charCodeAt p)
-                          ;; some high val
-                          1000))
-                      :org/priority)
-                <)))
+       (sort-by
+         (fn [it]
+           (cond->
+               0
+             ;; move finished to back
+             (or (completed? it)
+                 (skipped? it)) (+ 1000)
+
+             ;; sort by priority
+             (:org/priority it)
+             (+ (->comparable-int (:org/priority it)))
+
+             (not (:org/priority it))
+             (+ 100)
+
+             ;; move current to front
+             (or (current? it)
+                 (in-progress? it)) (- 100)))
+         ;; lower number means earlier in the order
+         <)))
 
 (defn widget [opts]
   ;; TODO the 'current' usage in this widget could be a 'tag' based feature
   ;; i.e. based on arbitrary tags, e.g. if that's our 'mode' right now
   ;; i.e. 'current' is an execution mode - another mode might be pre or post execution
-  (let [focus-data      (use-focus/use-focus-data)
-        {:keys [todos]} @focus-data
-        current         (some->> todos (filter current?) seq)
+  (let [focus-data           (use-focus/use-focus-data)
+        {:keys [todos]}      @focus-data
+        filter-todos-results (components.filter/use-filter
+                               {:all-filter-defs  pages.todos/all-filter-defs
+                                :default-filters  #{{:filter-key :status :match :status/not-started}
+                                                    {:filter-key :status :match :status/in-progress}}
+                                :default-group-by :priority
+                                :items            todos})
+        current              (some->> todos (filter current?) seq)
 
         time           (uix/state (t/zoned-date-time))
         interval       (atom nil)
@@ -355,7 +384,7 @@
                 :only-current          @only-current}]]
 
      (when current
-       (for [[i c] (->> current (sort-by-priority) (map-indexed vector))]
+       (for [[i c] (->> current sort-todos (map-indexed vector))]
          ^{:key i}
          [:div
           {:class ["bg-city-blue-800"]}
@@ -363,24 +392,60 @@
           [item-header c]
           [item-body c]]))
 
-     ;; TODO group by priority?
-     (when (seq todos)
-       [:div
-        {:class
-         (concat
-           ["pt-6"]
-           ["flex" "flex-row" "flex-wrap" "justify-around"]
-           ;; ["grid" "grid-flow-cols" "auto-col-max"]
-           ;; ["columns-1" "md:columns-2" "lg:columns-3"]
-           )
-         }
-        (for [[i it] (cond->> todos
-                       @hide-completed (remove completed?)
-                       @only-current   (filter current?)
-                       true            sort-by-priority
-                       true            (map-indexed vector))]
+     [:hr {:class ["mb-6" "border-city-blue-900"]}]
+     [:div
+      {:class ["px-6"
+               "text-city-blue-400"]}
+      (:filter-grouper filter-todos-results)]
+
+     (when (seq (:filtered-items filter-todos-results))
+       [:div {:class ["pt-6"]}
+        (for [[i {:keys [item-group label]}]
+              (->> (:filtered-item-groups filter-todos-results)
+                   (sort-by (comp ->comparable-int :label) <)
+                   (map-indexed vector))]
           ^{:key i}
-          [item-card it])])
+          [:div
+           {:class ["flex" "flex-col"]}
+           [:div
+            [:hr {:class ["mt-6" "border-city-blue-900"]}]
+            [:div
+             {:class ["p-6"]}
+             (cond
+               (#{:priority} (:items-group-by filter-todos-results))
+               (if label
+                 [priority-label {:org/priority label}]
+                 [:span
+                  {:class ["font-nes" "text-city-blue-400"]}
+                  "No Priority"])
+
+               (#{:tags} (:items-group-by filter-todos-results))
+               (if label
+                 [tags-list {:org/tags #{label}}]
+                 [:span
+                  {:class ["font-nes" "text-city-blue-400"]}
+                  "No tags"])
+
+               (#{:short-path} (:items-group-by filter-todos-results))
+               [:span
+                {:class ["font-nes" "text-city-blue-400"]}
+                [pages.todos/path->basename label]]
+
+               :else
+               [:span
+                {:class ["font-nes" "text-city-blue-400"]}
+                (or (str label) "None")])]]
+
+           [:div
+            {:class ["flex" "flex-row" "flex-wrap" "justify-around"]}
+
+            (for [[i it] (cond->> item-group
+                           @hide-completed (remove completed?)
+                           @only-current   (filter current?)
+                           true            sort-todos
+                           true            (map-indexed vector))]
+              ^{:key i}
+              [item-card it])]])])
 
      (when
          ;; this could also check commit status, dirty/unpushed commits, etc

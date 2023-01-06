@@ -16,30 +16,35 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn is-daily-fname [fname]
-  (some-> fname (string/split #"/") first #{"daily"}))
+  (some-> fname (string/includes? "daily")))
 
 (defn is-workspace-fname [fname]
-  (some-> fname (string/split #"/") first #{"workspaces"}))
+  (some-> fname (string/includes? "workspaces")))
+
+(defn path->basename [fname]
+  (some-> fname (string/split #"/") reverse first
+          (string/replace #".org" "")
+          (->> (take 10) (apply str))))
 
 (def all-filter-defs
   {:short-path {:label            "File"
-                :group-by         :org/short-path
+                :group-by         (fn [it]
+                                    (or (:org/short-path it) (:org/source-file it)))
                 :group-filters-by (fn [fname]
-                                    (some-> fname (string/split #"/") first))
+                                    (some-> fname (string/split #"/") reverse (->> (drop 1) first)))
                 :filter-options   [{:label    "All Dailies"
                                     :match-fn is-daily-fname}
                                    {:label    "All Workspaces"
                                     :match-fn is-workspace-fname}]
-                :format-label     (fn [fname]
-                                    (some-> fname (string/split #"/") second
-                                            (string/replace #".org" "")
-                                            (->>
-                                              (take 10)
-                                              (apply str))))}
+                :format-label     path->basename}
    :tags       {:label    "Tags"
-                :group-by :org/tags}
+                :group-by :org/tags
+                ;; TODO show untagged as well
+                }
    :status     {:label    "Status"
                 :group-by :org/status}
+   :priority   {:label    "Priority"
+                :group-by :org/priority}
    :scheduled  {:label        "Scheduled"
                 :group-by     :org/scheduled
                 :format-label (fn [d] (if d
