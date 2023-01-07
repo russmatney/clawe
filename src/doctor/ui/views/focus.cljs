@@ -374,8 +374,13 @@
 
 (defn item-todo-cards
   ([item] [item-todo-cards nil item])
-  ([{:keys [filter-by]} {:keys [org/items]}]
-   (let [todos (->> items (filter :org/status) seq)]
+  ([{:keys [filter-by]} {:keys [org/items] :as item}]
+   (let [todos (->> item
+                    (tree-seq (comp seq :org/items) :org/items)
+                    (remove nil?)
+                    (remove #(#{item} %))
+                    (filter :org/status)
+                    seq)]
      (when todos
        [:div
         {:class ["flex" "flex-row" "flex-wrap" "justify-around"]}
