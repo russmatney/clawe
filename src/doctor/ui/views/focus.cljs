@@ -32,11 +32,11 @@
 (defn current? [it]
   (seq (set/intersection #{"current"} (:org/tags it))))
 
-(defn has-tag? [it tag]
-  (seq (set/intersection #{tag} (:org/tags it))))
+;; (defn has-tag? [it tag]
+;;   (seq (set/intersection #{tag} (:org/tags it))))
 
-(defn has-tags? [it tags]
-  (seq (set/intersection tags (:org/tags it))))
+;; (defn has-tags? [it tags]
+;;   (seq (set/intersection tags (:org/tags it))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; level
@@ -124,23 +124,42 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; parent-names
 
-(defn parent-names [it]
+(defn breadcrumbs [bcrumbs]
   [:span
+   {:class ["flex" "flex-row"]}
    (->>
-     (:org/parent-names it)
+     bcrumbs
      reverse
      (map-indexed
        (fn [i nm]
-         [:span {:class
-                 (concat
-                   (colors/color-wheel-classes {:type :line :i i}))}
+         [:span {:class (colors/color-wheel-classes {:type :line :i i})}
           " " nm]))
-     #_reverse
      (interpose [:span
-                 {:class ["text-city-blue-dark-200"]}
+                 {:class ["text-city-blue-dark-200" "px-4"]}
                  " > "])
      ;; kind of garbage, but :shrug:
-     (map-indexed (fn [i sp] ^{:key i} [:span sp])))])
+     (map-indexed (fn [i sp] ^{:key i}
+                    [:span sp])))])
+
+(defn parent-names
+  ([it] (parent-names nil it))
+  ([{:keys [header?]} it]
+   (let [p-names      (-> it :org/parent-names)
+         p-name       (-> p-names first)
+         rest-p-names (-> p-names rest)]
+     (if-not header?
+       [breadcrumbs p-names]
+       [:div
+        {:class ["flex" "flex-col"]}
+        [breadcrumbs rest-p-names]
+        [:span
+         {:class ["font-nes" "text-3xl" "p-3"
+                  "text-city-green-400"]}
+         p-name]
+        [:div
+         {:class ["flex" "flex-"]}]
+        ])
+     )))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; item-id-hash
@@ -189,70 +208,73 @@
       :nowrap        true
       :hide-disabled true}]]])
 
-(defn item-card [it]
-  [:div
-   {:class
-    (concat
-      ["flex" "flex-col"
-       "py-2" "px-3"
-       "m-1"
-       "rounded-lg"
-       "w-96"
-       "text-lg"
-       "bg-yo-blue-700"]
-      (cond
-        (completed? it) ["text-city-blue-dark-400"]
-        (skipped? it)   ["text-city-blue-dark-600"]
-        ;; (not-started? it) []
-        :else           ["text-city-blue-dark-200"]))}
-
-   ;; top meta
+(defn item-card
+  ([it] (item-card nil it))
+  ([{:keys [hide-parent-names?]} it]
    [:div
-    {:class ["flex" "flex-row" "w-full" "items-center"]}
+    {:class
+     (concat
+       ["flex" "flex-col"
+        "py-2" "px-3"
+        "m-1"
+        "rounded-lg"
+        "w-96"
+        "text-lg"
+        "bg-yo-blue-700"]
+       (cond
+         (completed? it) ["text-city-blue-dark-400"]
+         (skipped? it)   ["text-city-blue-dark-600"]
+         ;; (not-started? it) []
+         :else           ["text-city-blue-dark-200"]))}
 
-    [level it]
-    [todo-status it]
-    [item-id-hash it]
-    [:div {:class ["ml-auto"]}
-     [tags-list it]]
-    [priority-label it]]
+    ;; top meta
+    [:div
+     {:class ["flex" "flex-row" "w-full" "items-center"]}
 
-   ;; middle content
-   [:div
-    {:class ["flex" "flex-col" "pb-2"]}
+     [level it]
+     [todo-status it]
+     [item-id-hash it]
+     [:div {:class ["ml-auto"]}
+      [tags-list it]]
+     [priority-label it]]
 
-    ;; name
-    [:span
+    ;; middle content
+    [:div
+     {:class ["flex" "flex-col" "pb-2"]}
+
+     ;; name
      [:span
-      {:class (when (or (completed? it) (skipped? it)) ["line-through"])}
-      (:org/name-string it)]]
-
-    ;; time ago
-    (when (and (completed? it) (:org/closed-since it))
       [:span
-       {:class ["font-mono"]}
-       (str (:org/closed-since it) " ago")])
+       {:class (when (or (completed? it) (skipped? it)) ["line-through"])}
+       (:org/name-string it)]]
 
-    [parent-names it]]
+     ;; time ago
+     (when (and (completed? it) (:org/closed-since it))
+       [:span
+        {:class ["font-mono"]}
+        (str (:org/closed-since it) " ago")])
 
-   ;; bottom meta
-   [:div
-    {:class ["flex" "flex-row"
-             "items-center"
-             "text-sm"
-             "mt-auto"
-             "pb-2"]}
+     (when-not hide-parent-names?
+       [parent-names it])]
 
-    [components.debug/raw-metadata {:label "RAW"} it]
+    ;; bottom meta
+    [:div
+     {:class ["flex" "flex-row"
+              "items-center"
+              "text-sm"
+              "mt-auto"
+              "pb-2"]}
 
-    ;; actions list
-    [:span
-     {:class ["ml-auto"]}
-     [components.actions/actions-list
-      {:actions
-       (handlers/->actions it (handlers/todo->actions it))
-       :nowrap        true
-       :hide-disabled true}]]]])
+     [components.debug/raw-metadata {:label "RAW"} it]
+
+     ;; actions list
+     [:span
+      {:class ["ml-auto"]}
+      [components.actions/actions-list
+       {:actions
+        (handlers/->actions it (handlers/todo->actions it))
+        :nowrap        true
+        :hide-disabled true}]]]]))
 
 (defn button [opts label]
   [:button
@@ -374,23 +396,32 @@
 
 (defn item-todo-cards
   ([item] [item-todo-cards nil item])
-  ([{:keys [filter-by]} {:keys [org/items] :as item}]
-   (let [todos (->> item
-                    (tree-seq (comp seq :org/items) :org/items)
-                    (remove nil?)
-                    (remove #(#{item} %))
-                    (filter :org/status)
-                    seq)]
-     (when todos
-       [:div
-        {:class ["flex" "flex-row" "flex-wrap" "justify-around"]}
-        (for [[i td] (cond->> todos
-                       filter-by (filter filter-by)
-                       true      sort-todos
-                       true      (map-indexed vector))]
-          ^{:key i}
-          [:div
-           [item-card td]])]))))
+  ([{:keys [filter-by]} item]
+   (let [todos  (->> item
+                     (tree-seq (comp seq :org/items) :org/items)
+                     (remove nil?)
+                     (remove #(#{item} %))
+                     (filter :org/status)
+                     seq)
+         todos  (if filter-by (filter filter-by todos) todos)
+         groups (group-by (fn [it] (-> it :org/parent-names str)) todos)]
+     [:div {:class ["flex" "flex-col"]}
+
+      (for [[pnames grouped-todos] groups]
+        ^{:key (str pnames)}
+        [:div {:class ["flex" "flex-col"]}
+         [:div {:class ["px-3" "pt-2"]}
+          [parent-names {:header? true} (first grouped-todos)]]
+
+         [:div
+          {:class ["flex" "flex-row" "flex-wrap" "justify-around"]}
+          (for [[i td] (cond->> grouped-todos
+                         true sort-todos
+                         true (map-indexed vector))]
+            ^{:key i}
+            [:div
+             {:class ["p-2"]}
+             [item-card {:hide-parent-names? true} td]])]])])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; current stack
@@ -543,13 +574,14 @@
            [:div
             {:class ["flex" "flex-row" "flex-wrap" "justify-around"]}
 
-            (for [[i it] (cond->> item-group
-                           @hide-completed (remove completed?)
-                           @only-current   (filter current?)
-                           true            sort-todos
-                           true            (map-indexed vector))]
-              ^{:key i}
-              [item-card it])]])])
+            (let [items (cond->> item-group
+                          @hide-completed (remove completed?)
+                          @only-current   (filter current?)
+                          true            sort-todos
+                          true            (map-indexed vector))]
+              (for [[i it] items]
+                ^{:key i}
+                [item-todo-cards it]))]])])
 
      (when (not (seq todos))
        [:div

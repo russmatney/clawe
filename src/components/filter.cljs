@@ -4,6 +4,7 @@
             [components.debug :as components.debug]
             [util :as util]))
 
+;; let's not forget this wants to be a filter-grouper-sorter
 (defn- filter-grouper
   "A component for displaying and selecting filters/groups.
 
