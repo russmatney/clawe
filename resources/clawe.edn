@@ -124,6 +124,7 @@
            :client/workspace-title "browsers"
            :match/ignore-names ["picture-in-picture"]
            :match/skip-title true}
+    "web-video-popout" {:bury/ignore true :client/app-names ["picture-in-picture"]}
     "xcode" {:client/app-name "xcode"
              :client/app-names ["xcode"]
              :client/workspace-title "xcode"
