@@ -107,13 +107,19 @@
        (if c.floating
          (c:raise)))))
 
-(defkbd bury-all-windows
+(defkbd toggle-sticky
   [[:mod :shift] "f"]
-  ;; tho being smart enough to consume this would be fun too
   (awm/awm-fnl
-    '(->
-       (client.get)
-       (lume.each (fn [c] (tset c :floating false))))))
+    '(let [c _G.client.focus]
+       (tset c :sticky (not c.sticky)))))
+
+;; (defkbd bury-all-windows
+;;   [[:mod :shift] "f"]
+;;   ;; tho being smart enough to consume this would be fun too
+;;   (awm/awm-fnl
+;;     '(->
+;;        (client.get)
+;;        (lume.each (fn [c] (tset c :floating false))))))
 
 (defkbd swap-master
   [[:mod :ctrl] "Return"]
