@@ -397,31 +397,38 @@
 (defn item-todo-cards
   ([item] [item-todo-cards nil item])
   ([{:keys [filter-by]} item]
-   (let [todos  (->> item
-                     (tree-seq (comp seq :org/items) :org/items)
-                     (remove nil?)
-                     (remove #(#{item} %))
-                     (filter :org/status)
-                     seq)
-         todos  (if filter-by (filter filter-by todos) todos)
-         groups (group-by (fn [it] (-> it :org/parent-names str)) todos)]
+   (let [todos             (->> item
+                                (tree-seq (comp seq :org/items) :org/items)
+                                (remove nil?)
+                                (remove #(#{item} %))
+                                (filter :org/status)
+                                seq)
+         [children? todos] (if (seq todos) [true todos] [false [item]])
+         todos             (if filter-by (filter filter-by todos) todos)
+         groups            (group-by (fn [it] (-> it :org/parent-names str)) todos)]
      [:div {:class ["flex" "flex-col"]}
 
       (for [[pnames grouped-todos] groups]
         ^{:key (str pnames)}
         [:div {:class ["flex" "flex-col"]}
          [:div {:class ["px-3" "pt-2"]}
-          [parent-names {:header? true} (first grouped-todos)]]
+          (when children?
+            [parent-names {:header? true} (first grouped-todos)])]
 
-         [:div
-          {:class ["flex" "flex-row" "flex-wrap" "justify-around"]}
-          (for [[i td] (cond->> grouped-todos
-                         true sort-todos
-                         true (map-indexed vector))]
-            ^{:key i}
-            [:div
-             {:class ["p-2"]}
-             [item-card {:hide-parent-names? true} td]])]])])))
+         (if children?
+           [:div
+            {:class ["flex" "flex-row" "flex-wrap" "justify-around"]}
+            (for [[i td] (cond->> grouped-todos
+                           true sort-todos
+                           true (map-indexed vector))]
+              ^{:key i}
+              [:div
+               {:class ["p-2"]}
+               [item-card {:hide-parent-names? true} td]])]
+           [:div
+            {:class ["p-2"]}
+            [item-card {:hide-parent-names? true} item]]
+           )])])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; current stack
@@ -569,7 +576,9 @@
                :else
                [:span
                 {:class ["font-nes" "text-city-blue-400"]}
-                (or (str label) "None")])]]
+                (or
+                  ;; TODO parse this label to plain string with org-crud
+                  (str label) "None")])]]
 
            [:div
             {:class ["flex" "flex-row" "flex-wrap" "justify-around"]}
