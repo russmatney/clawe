@@ -468,18 +468,20 @@
 ;; filter-grouper config
 
 (defn filter-grouper-config [{:keys [todos]}]
-  {:items            todos
-   :all-filter-defs  pages.todos/all-filter-defs
-   :default-filters  #{{:filter-key :status :match :status/not-started}
-                       {:filter-key :status :match :status/in-progress}}
-   :default-group-by :priority
+  {:items           todos
+   :all-filter-defs pages.todos/all-filter-defs
 
-   ;; TODO support this, and include :presets as another filter
    :preset-filter-groups
    {:default
     {:filters
      #{{:filter-key :status :match :status/not-started}
        {:filter-key :status :match :status/in-progress}}
+     :group-by :priority}
+
+    :tagged-current
+    {:filters
+     ;; TODO untested, not sure this tag-match works
+     #{{:filter-key :tags :match "current"}}
      :group-by :priority}
 
     :today

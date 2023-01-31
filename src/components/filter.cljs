@@ -9,13 +9,16 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn filter-def-anchor
-  [[filter-key filter-def] {:keys [set-group-by items-group-by]}]
+  [[filter-key filter-def] {:keys [set-group-by items-group-by
+                                   set-current-preset]}]
   (let [group-by-enabled? (= items-group-by filter-key)]
     [:div.text-xl.font-nes
      {:class    ["cursor-pointer"
                  "hover:text-city-red-600"
                  (when group-by-enabled? "text-city-pink-400")]
-      :on-click #(set-group-by filter-key)}
+      :on-click (fn [_]
+                  (set-current-preset nil)
+                  (set-group-by filter-key))}
      (:label filter-def)]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -24,8 +27,8 @@
 
 (defn filter-def-popover
   [items [filter-key filter-def]
-   {:keys [items-filter-by toggle-filter-by]}]
-  (let [grouped-by-counts
+   {:keys [items-filter-by toggle-filter-by set-current-preset]}]
+  (let [grouped-by-val-and-counts
         (->> items
              (group-by (:group-by filter-def))
              util/expand-coll-group-bys
@@ -42,7 +45,9 @@
           (let [filter-enabled? (items-filter-by (assoc filter-option :filter-key filter-key))]
             [:div
              {:key      i
-              :on-click #(toggle-filter-by (assoc filter-option :filter-key filter-key))
+              :on-click (fn [_]
+                          (set-current-preset nil)
+                          (toggle-filter-by (assoc filter-option :filter-key filter-key)))
               :class    ["flex" "flex-row" "font-mono"
                          "cursor-pointer"
                          "hover:text-city-red-600"
@@ -52,7 +57,7 @@
      (let [group-filters-by (:group-filters-by filter-def (fn [_] nil))]
        [:div
         {:class ["flex" "flex-row" "flex-wrap" "gap-x-4"]}
-        (for [[i [group-label group]] (->> grouped-by-counts
+        (for [[i [group-label group]] (->> grouped-by-val-and-counts
                                            (group-by (comp group-filters-by first))
                                            (sort-by first)
                                            (map-indexed vector))]
@@ -74,10 +79,50 @@
                             "hover:text-city-red-600"
                             (when filter-enabled?
                               "text-city-pink-400")]
-                 :on-click #(toggle-filter-by {:filter-key filter-key :match k})}
+                 :on-click (fn [_]
+                             (set-current-preset nil)
+                             (toggle-filter-by {:filter-key filter-key :match k}))}
                 (let [format-label (:format-label filter-def str)]
                   [:span.p-1.pl-2.text-xl.ml-auto (format-label k)])
                 [:span.p-1.text-xl.w-10.text-center v]]))])])]))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; preset-filters
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn preset-filters [{:keys [preset-filter-groups
+                              current-preset
+                              set-filters
+                              set-current-preset
+                              set-group-by]}]
+  ;; TODO floating/popover
+  [floating/popover
+   {:hover true :click true
+    :anchor-comp
+    [:span {:class ["font-nes"]}
+     "Presets"]
+
+    :popover-comp
+    [:div
+     {:class ["flex" "flex-col"
+              "bg-yo-blue-800"
+              "p-4"]}
+     (for [[k {:keys [filters group-by]}]
+           preset-filter-groups]
+       ^{:key k}
+       [:div
+        {:class ["font-mono"
+                 "cursor-pointer"
+                 (if (#{current-preset} k)
+                   "text-city-pink-400"
+                   "text-city-green-600")
+                 "hover:text-city-red-600"]
+         :on-click
+         (fn [_]
+           (set-current-preset k)
+           (set-filters filters)
+           (set-group-by group-by))}
+        [:span k]])]}])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; filter-grouper full component
@@ -88,9 +133,13 @@
   "A component for displaying and selecting filters/groups.
 
   Returned as part of `use-filter`."
-  [items {:keys [all-filter-defs items-filter-by]
+  [items {:keys [all-filter-defs
+                 items-filter-by
+                 items-group-by]
           :as   filter-grouper-config}]
   [:div.flex.flex-col
+   [preset-filters filter-grouper-config]
+
    [:div.flex.flex-row.flex-wrap
     {:class ["gap-x-3"]}
 
@@ -103,10 +152,13 @@
 
    ;; TODO improve debug view for collections
    [components.debug/raw-metadata {:label "[raw filters]"} items-filter-by]
+   [components.debug/raw-metadata {:label "[raw group-by]"} {:val items-group-by}]
 
    ;; TODO create applied filters component for saving/revisiting saved filters
    (for [[i f] (->> items-filter-by (map-indexed vector))]
-     ^{:key i} [:div [:pre (str f)]])])
+     ^{:key i} [:div [:pre (str f)]])
+   [:div [:pre (str ":group-by " items-group-by)]]])
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; filtering logic
@@ -145,13 +197,22 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; TODO write a set of unit tests around this
-(defn use-filter [{:keys [items default-filters default-group-by all-filter-defs]}]
+(defn use-filter
+  [{:keys [items
+           default-filters default-group-by
+           preset-filter-groups
+           all-filter-defs]}]
   ;; TODO malli schema+validation for all-filter-defs and default-filters
   ;; TODO local storage read/write for each filter-grouper (are they serializable?)
-  (let [items-group-by  (uix/state
-                          (or default-group-by
-                              (some->> all-filter-defs first first)))
+  (let [default-filters  (or default-filters
+                             (some-> preset-filter-groups :default :filters))
+        default-group-by (or default-group-by
+                             (some-> preset-filter-groups :default :group-by)
+                             (some-> all-filter-defs first first))
+
         items-filter-by (uix/state default-filters)
+        items-group-by  (uix/state default-group-by)
+        current-preset  (uix/state :default)
 
         filtered-items
         (if-not (seq @items-filter-by) items
@@ -171,14 +232,18 @@
 
     {:filter-grouper
      [filter-grouper items
-      {:all-filter-defs all-filter-defs
-       :set-group-by    #(reset! items-group-by %)
+      {:all-filter-defs      all-filter-defs
+       :preset-filter-groups preset-filter-groups
+       :set-current-preset   #(reset! current-preset %)
+       :current-preset       @current-preset
+       :set-group-by         #(reset! items-group-by %)
+       :set-filters          #(reset! items-filter-by %)
        :toggle-filter-by
        (fn [f-by]
          ;; TODO filters that use funcs won't match/exclude here
          (swap! items-filter-by #(if (% f-by) (disj % f-by) (conj % f-by))))
-       :items-filter-by @items-filter-by
-       :items-group-by  @items-group-by}]
+       :items-filter-by      @items-filter-by
+       :items-group-by       @items-group-by}]
      :filtered-items       filtered-items
      :filtered-item-groups filtered-item-groups
      :items-group-by       @items-group-by
