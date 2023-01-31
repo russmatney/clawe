@@ -2,7 +2,7 @@
   (:require [garden.core :as garden]
             [org-crud.core :as org-crud]
             [org-crud.update :as org-crud.update]
-            [clojure.set :as set]
+            ;; [clojure.set :as set]
             [systemic.core :as sys :refer [defsys]]
             [manifold.stream :as s]
             [dates.tick :as dates.tick]
@@ -21,34 +21,37 @@
       )
     (map org-crud/path->nested-item)))
 
-(def opt-in-tags #{"goal" "goals" "focus"})
+(defn prep-todo [item]
+  (cond
+    (:org/closed item)
+    (assoc item
+           ;; TODO this immediately falls out of date, heh
+           ;; need to calc and include a timer on the FE
+           :org/closed-since
+           (-> item :org/closed
+               dates.tick/parse-time-string
+               dates.tick/human-time-since))
+
+    :else item))
+
+;; (def opt-in-tags #{"goal" "goals" "focus"})
 
 (defn todays-goals
   "Top level items tagged 'focus' or 'goals'"
   []
   (->>
     (todays-org-items)
-    (mapcat :org/items)
-    (filter (fn [it]
-              (or
-                ;; include any todos
-                (:org/status it)
-                ;; or any child of an opt-in tag
-                ((comp seq #(set/intersection opt-in-tags %) :org/tags) it))))
+    ;; (mapcat :org/items)
+    ;; include everything?
+    ;; (filter (fn [it]
+    ;;           (or
+    ;;             ;; include any todos
+    ;;             (:org/status it)
+    ;;             ;; or any child of an opt-in tag
+    ;;             ((comp seq #(set/intersection opt-in-tags %) :org/tags) it))))
     (mapcat org-crud/nested-item->flattened-items)
     (filter :org/status)
-    (map (fn [item]
-           (cond
-             (:org/closed item)
-             (assoc item
-                    ;; TODO this immediately falls out of date, heh
-                    ;; need to calc and include a timer on the FE
-                    :org/closed-since
-                    (-> item :org/closed
-                        dates.tick/parse-time-string
-                        dates.tick/human-time-since))
-
-             :else item)))))
+    (map prep-todo)))
 
 (comment
   (todays-goals))
