@@ -95,11 +95,11 @@
                               set-filters
                               set-current-preset
                               set-group-by]}]
-  ;; TODO floating/popover
   [floating/popover
    {:hover true :click true
     :anchor-comp
-    [:span {:class ["font-nes"]}
+    [:span {:class ["font-nes" "text-xl"
+                    "cursor-pointer"]}
      "Presets"]
 
     :popover-comp
@@ -107,7 +107,7 @@
      {:class ["flex" "flex-col"
               "bg-yo-blue-800"
               "p-4"]}
-     (for [[k {:keys [filters group-by]}]
+     (for [[k {:keys [filters group-by label]}]
            preset-filter-groups]
        ^{:key k}
        [:div
@@ -122,7 +122,7 @@
            (set-current-preset k)
            (set-filters filters)
            (set-group-by group-by))}
-        [:span k]])]}])
+        [:span (or label k)]])]}])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; filter-grouper full component

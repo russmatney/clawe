@@ -12,7 +12,8 @@
    [components.filter :as components.filter]
    [components.garden :as components.garden]
    [pages.todos :as pages.todos]
-   [components.debug :as components.debug]))
+   [components.debug :as components.debug]
+   [dates.tick :as dates.tick]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; preds
@@ -476,7 +477,8 @@
     {:filters
      #{{:filter-key :status :match :status/not-started}
        {:filter-key :status :match :status/in-progress}}
-     :group-by :priority}
+     :group-by :priority
+     :label "Not Started/In Progress"}
 
     :tagged-current
     {:filters
@@ -486,11 +488,16 @@
 
     :today
     {:filters
-     #{{:filter-key :short-path :match :daily/today}}
+     #{{:filter-key :short-path :match-fn
+        (fn [path]
+          (let [bname (pages.todos/path->basename path)
+                today-bname (->> dates.tick/now dates.tick/add-tz (t/format "YYYY-MM-dd"))]
+            (= today-bname bname)))}}
      :group-by :priority}
 
     :last-three-days
     {:filters
+     ;; TODO rewrite matches to support these constraints
      #{{:filter-key :short-path :match :daily/today}
        {:filter-key :short-path :match :daily/yesterday}
        {:filter-key :short-path :match :daily/days-ago-3}}
