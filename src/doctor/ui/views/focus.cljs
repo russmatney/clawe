@@ -157,9 +157,7 @@
                   "text-city-green-400"]}
          p-name]
         [:div
-         {:class ["flex" "flex-"]}]
-        ])
-     )))
+         {:class ["flex" "flex-"]}]]))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; item-id-hash
@@ -397,6 +395,7 @@
 (defn item-todo-cards
   ([item] [item-todo-cards nil item])
   ([{:keys [filter-by]} item]
+
    (let [todos             (->> item
                                 (tree-seq (comp seq :org/items) :org/items)
                                 (remove nil?)
@@ -406,6 +405,7 @@
          [children? todos] (if (seq todos) [true todos] [false [item]])
          todos             (if filter-by (filter filter-by todos) todos)
          groups            (group-by (fn [it] (-> it :org/parent-names str)) todos)]
+
      [:div {:class ["flex" "flex-col"]}
 
       (for [[pnames grouped-todos] groups]
