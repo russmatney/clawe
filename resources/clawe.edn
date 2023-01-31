@@ -167,11 +167,13 @@
     "fabb" {:workspace/directory "~/teknql/fabb"}
     "fishgame-godot" {:workspace/directory "~/heroiclabs/fishgame-godot"}
     "game-assets" {:workspace/directory "~/game-assets"}
+    "gdfxr" {:workspace/directory "~/timothyqiu/gdfxr"}
     "girouette" {:workspace/directory "~/green-coder/girouette"}
     "godot" {:workspace/directory "~/godotengine/godot"}
     "godot-LDtk-import" {:workspace/directory "~/levigilbert/godot-LDtk-import"}
     "godot-demo-projects" {:workspace/directory "~/godotengine/godot-demo-projects"}
     "godot-git-plugin" {:workspace/directory "~/godotengine/godot-git-plugin"}
+    "godot-sfxr" {:workspace/directory "~/tomeyro/godot-sfxr"}
     "godot-tutorials" {:workspace/directory "~/nagidev/godot-tutorials"}
     "heroicons" {:workspace/directory "~/tailwindlabs/heroicons"}
     "ink-library" {:workspace/directory "~/inkle/ink-library"}
@@ -200,6 +202,7 @@
     "protomoon-two" {:workspace/directory "~/russmatney/protomoon-two"}
     "quickblog" {:workspace/directory "~/borkdude/quickblog"}
     "re-db" {:workspace/directory "~/mhuebert/re-db"}
+    "repertoire-maker" {:workspace/directory "~/Camsbury/repertoire-maker"}
     "rewrite-clj" {:workspace/directory "~/clj-commons/rewrite-clj"}
     "spicetify" {:workspace/directory "~/catppuccin/spicetify"}
     "spicetify-cli" {:workspace/directory "~/spicetify/spicetify-cli"}
