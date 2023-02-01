@@ -1,7 +1,6 @@
 (ns components.filter
   (:require [components.floating :as floating]
             [uix.core.alpha :as uix]
-            [components.debug :as components.debug]
             [util :as util]
             [clojure.string :as string]))
 
@@ -148,26 +147,32 @@
     {:class ["pb-3"]}
     [preset-filters config]]
 
-   [:div.flex.flex-row.flex-wrap
-    {:class ["gap-x-3"]}
+   ;; active filters
+   (for [[i f] (->> items-filter-by (map-indexed vector))]
+     ^{:key i} [:div
+                {:class ["font-mono"]}
+                (str f)])
+
+   ;; active group-by
+   [:div [:pre (str ":group-by " items-group-by)]]
+
+   ;; edit filters
+   [:div
+    {:class ["flex flex-row"
+             "flex-wrap"
+             "pt-2"
+             "gap-x-3"]}
 
     (for [[i [filter-key filter-def]] (map-indexed vector all-filter-defs)]
       ^{:key i}
-      [floating/popover
-       {:hover        true :click true
-        :anchor-comp  [filter-def-anchor [filter-key filter-def] config]
-        :popover-comp [filter-def-popover [filter-key filter-def] config]}])]
-
-   ;; ;; TODO improve debug view for collections
-   ;; [components.debug/raw-metadata {:label "[raw filters]"} items-filter-by]
-   ;; [components.debug/raw-metadata {:label "[raw group-by]"} {:val items-group-by}]
-
-   (when current-preset
-     [:div [:pre (str ":preset " current-preset)]])
-   ;; TODO create applied filters component for saving/revisiting saved filters
-   (for [[i f] (->> items-filter-by (map-indexed vector))]
-     ^{:key i} [:div [:pre (str f)]])
-   [:div [:pre (str ":group-by " items-group-by)]]])
+      [:div
+       {:class ["flex" "flex-col"]}
+       [filter-def-anchor [filter-key filter-def] config]
+       [filter-def-popover [filter-key filter-def] config]]
+      #_[floating/popover
+         {:hover        true :click true
+          :anchor-comp  [filter-def-anchor [filter-key filter-def] config]
+          :popover-comp [filter-def-popover [filter-key filter-def] config]}])]])
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
