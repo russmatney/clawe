@@ -9,8 +9,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn filter-def-anchor
-  [[filter-key filter-def] {:keys [set-group-by items-group-by
-                                   set-current-preset]}]
+  [[filter-key filter-def]
+   {:keys [set-group-by items-group-by set-current-preset]}]
   (let [group-by-enabled? (= items-group-by filter-key)]
     [:div.text-xl.font-nes
      {:class    ["cursor-pointer"
@@ -26,8 +26,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn filter-def-popover
-  [items [filter-key filter-def]
-   {:keys [items-filter-by toggle-filter-by set-current-preset]}]
+  [[filter-key filter-def]
+   {:keys [items items-filter-by toggle-filter-by set-current-preset]}]
   (let [grouped-by-val-and-counts
         (->> items
              (group-by (:group-by filter-def))
@@ -90,7 +90,7 @@
 ;; preset-filters
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn preset-filters [{:keys [preset-filter-groups
+(defn preset-filters [{:keys [presets
                               current-preset
                               set-filters
                               set-current-preset
@@ -108,7 +108,7 @@
               "bg-yo-blue-800"
               "p-4"]}
      (for [[k {:keys [filters group-by label]}]
-           preset-filter-groups]
+           presets]
        ^{:key k}
        [:div
         {:class ["font-mono"
@@ -133,12 +133,12 @@
   "A component for displaying and selecting filters/groups.
 
   Returned as part of `use-filter`."
-  [items {:keys [all-filter-defs
-                 items-filter-by
-                 items-group-by]
-          :as   filter-grouper-config}]
+  [{:keys [all-filter-defs
+           items-filter-by
+           items-group-by]
+    :as   config}]
   [:div.flex.flex-col
-   [preset-filters filter-grouper-config]
+   [preset-filters config]
 
    [:div.flex.flex-row.flex-wrap
     {:class ["gap-x-3"]}
@@ -147,8 +147,8 @@
       ^{:key i}
       [floating/popover
        {:hover        true :click true
-        :anchor-comp  [filter-def-anchor [filter-key filter-def] filter-grouper-config]
-        :popover-comp [filter-def-popover items [filter-key filter-def] filter-grouper-config]}])]
+        :anchor-comp  [filter-def-anchor [filter-key filter-def] config]
+        :popover-comp [filter-def-popover [filter-key filter-def] config]}])]
 
    ;; TODO improve debug view for collections
    [components.debug/raw-metadata {:label "[raw filters]"} items-filter-by]
@@ -196,18 +196,17 @@
 ;; use-filter
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; TODO write a set of unit tests around this
+;; TODO write unit tests around this
 (defn use-filter
-  [{:keys [items
-           default-filters default-group-by
-           preset-filter-groups
-           all-filter-defs]}]
+  [{:keys [items all-filter-defs] :as config}]
   ;; TODO malli schema+validation for all-filter-defs and default-filters
   ;; TODO local storage read/write for each filter-grouper (are they serializable?)
-  (let [default-filters  (or default-filters
-                             (some-> preset-filter-groups :default :filters))
-        default-group-by (or default-group-by
-                             (some-> preset-filter-groups :default :group-by)
+  (let [default          (or (->> config :presets (filter (comp :default second)))
+                             (some-> config :presets :default))
+        default-filters  (or (:default-filters config)
+                             (some-> default :filters))
+        default-group-by (or (:default-group-by config)
+                             (some-> default :group-by)
                              (some-> all-filter-defs first first))
 
         items-filter-by (uix/state default-filters)
@@ -231,19 +230,19 @@
              (map (fn [[label its]] {:item-group its :label label})))]
 
     {:filter-grouper
-     [filter-grouper items
-      {:all-filter-defs      all-filter-defs
-       :preset-filter-groups preset-filter-groups
-       :set-current-preset   #(reset! current-preset %)
-       :current-preset       @current-preset
-       :set-group-by         #(reset! items-group-by %)
-       :set-filters          #(reset! items-filter-by %)
-       :toggle-filter-by
-       (fn [f-by]
-         ;; TODO filters that use funcs won't match/exclude here
-         (swap! items-filter-by #(if (% f-by) (disj % f-by) (conj % f-by))))
-       :items-filter-by      @items-filter-by
-       :items-group-by       @items-group-by}]
+     [filter-grouper
+      (-> config
+          (merge
+            {:current-preset     @current-preset
+             :items-filter-by    @items-filter-by
+             :items-group-by     @items-group-by
+             :set-current-preset #(reset! current-preset %)
+             :set-group-by       #(reset! items-group-by %)
+             :set-filters        #(reset! items-filter-by %)
+             :toggle-filter-by
+             (fn [f-by]
+               ;; TODO filters that use funcs won't match/exclude here
+               (swap! items-filter-by #(if (% f-by) (disj % f-by) (conj % f-by))))}))]
      :filtered-items       filtered-items
      :filtered-item-groups filtered-item-groups
      :items-group-by       @items-group-by

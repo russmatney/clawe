@@ -472,13 +472,14 @@
   {:items           todos
    :all-filter-defs pages.todos/all-filter-defs
 
-   :preset-filter-groups
-   {:default
+   :presets
+   {:not-started-in-progress
     {:filters
      #{{:filter-key :status :match :status/not-started}
        {:filter-key :status :match :status/in-progress}}
      :group-by :priority
-     :label "Not Started/In Progress"}
+     :label "Not Started/In Progress"
+     :default true}
 
     :tagged-current
     {:filters

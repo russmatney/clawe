@@ -53,14 +53,17 @@
                                                  (t/format "MMM d, YYYY")))
                                         "Unscheduled"))}})
 
-(def default-group-by :short-path)
-
-(def default-filters
-  #{{:filter-key :status :match :status/not-started}
-    {:filter-key :status :match :status/in-progress}
-    {:filter-key :short-path :match "todo/journal.org"}
-    {:filter-key :short-path :match "todo/projects.org"}
-    {:filter-key :short-path :match-fn is-daily-fname :label "All Dailies"}})
+(def filter-grouper-config
+  {:all-filter-defs all-filter-defs
+   :preset-filter-groups
+   {:default
+    {:filters
+     #{{:filter-key :status :match :status/not-started}
+       {:filter-key :status :match :status/in-progress}
+       {:filter-key :short-path :match "todo/journal.org"}
+       {:filter-key :short-path :match "todo/projects.org"}
+       {:filter-key :short-path :match-fn is-daily-fname :label "All Dailies"}}
+     :group-by :short-path}}})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; page
@@ -71,11 +74,7 @@
         selected (uix/state (first todos))
         {:keys [filtered-item-groups filtered-items filter-grouper]}
         (components.filter/use-filter
-          {:all-filter-defs  all-filter-defs
-           :default-filters  default-filters
-           :default-group-by default-group-by
-           :items            todos})]
-
+          (assoc filter-grouper-config :items todos))]
     [:div
      {:class ["grid" "grid-flow-row" "place-items-center"
               "overflow-hidden"
