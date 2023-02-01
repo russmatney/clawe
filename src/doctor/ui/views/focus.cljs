@@ -12,7 +12,6 @@
    [components.filter :as components.filter]
    [components.garden :as components.garden]
    [components.debug :as components.debug]
-   [dates.tick :as dates.tick]
    [components.filter-defs :as filter-defs]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -428,8 +427,7 @@
                [item-card {:hide-parent-names? true} td]])]
            [:div
             {:class ["p-2"]}
-            [item-card {:hide-parent-names? true} item]]
-           )])])))
+            [item-card {:hide-parent-names? true} item]])])])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; current stack
@@ -446,9 +444,8 @@
            {:class ["bg-city-blue-800"]}
            [:hr {:class ["border-city-blue-900" "pb-4"]}]
            [item-header c]
-           [item-todo-cards {:filter-by (comp not #{:status/skipped
-                                                    :status/done}
-                                              :org/status)}
+           [item-todo-cards
+            {:filter-by (comp not #{:status/skipped :status/done} :org/status)}
             c]
            [item-body c]]))
 
@@ -468,41 +465,52 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; filter-grouper config
 
-(defn filter-grouper-config [{:keys [todos]}]
-  {:items           todos
-   :all-filter-defs filter-defs/all-filter-defs
+(defn ->fg-config [todos]
+  (assoc filter-defs/fg-config
+         :items todos
+         :presets
+         ;; these presets might be higher level modes, i.e. they might imply other ui changes
+         {:not-started-in-progress
+          {:filters
+           #{{:filter-key :status :match :status/not-started}
+             {:filter-key :status :match :status/in-progress}}
+           :group-by :priority
+           :label    "Not Started/In Progress"
+           :default  true}
 
-   :presets
-   {:not-started-in-progress
-    {:filters
-     #{{:filter-key :status :match :status/not-started}
-       {:filter-key :status :match :status/in-progress}}
-     :group-by :priority
-     :label "Not Started/In Progress"
-     :default true}
+          :tagged-current
+          {:filters #{{:filter-key :tags :match "current"}}
+           :group-by :priority}
 
-    :tagged-current
-    {:filters
-     ;; TODO untested, not sure this tag-match works
-     #{{:filter-key :tags :match "current"}}
-     :group-by :priority}
+          :today
+          {:filters
+           #{{:filter-key :short-path :match-str-includes-any #{(filter-defs/short-path-days-ago 0)}}}
+           :group-by :priority}
 
-    :today
-    {:filters
-     #{{:filter-key :short-path :match-fn
-        (fn [path]
-          (let [bname (filter-defs/path->basename path)
-                today-bname (->> dates.tick/now dates.tick/add-tz (t/format "YYYY-MM-dd"))]
-            (= today-bname bname)))}}
-     :group-by :priority}
+          :today-complete
+          {:filters
+           #{{:filter-key :status :match :status/done}
+             {:filter-key :short-path :match-str-includes-any #{(filter-defs/short-path-days-ago 0)}}}
+           :group-by :priority}
 
-    :last-three-days
-    {:filters
-     ;; TODO rewrite matches to support these constraints
-     #{{:filter-key :short-path :match :daily/today}
-       {:filter-key :short-path :match :daily/yesterday}
-       {:filter-key :short-path :match :daily/days-ago-3}}
-     :group-by :short-path}}})
+          :today-incomplete
+          {:filters
+           #{{:filter-key :status :match :status/in-progress}
+             {:filter-key :status :match :status/not-started}
+             {:filter-key :short-path :match-str-includes-any #{(filter-defs/short-path-days-ago 0)}}}
+           :group-by :priority}
+
+          :last-three-days
+          {:filters
+           #{{:filter-key :short-path :match-str-includes-any
+              (->> 3 range (map filter-defs/short-path-days-ago))}}
+           :group-by :short-path}
+
+          :last-seven-days
+          {:filters
+           #{{:filter-key :short-path :match-str-includes-any
+              (->> 7 range (map filter-defs/short-path-days-ago))}}
+           :group-by :short-path}}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; main widget
@@ -514,7 +522,7 @@
   (let [focus-data           (use-focus/use-focus-data)
         {:keys [todos]}      @focus-data
         filter-todos-results (components.filter/use-filter
-                               (filter-grouper-config {:todos todos}))
+                               (->fg-config todos))
         current              (some->> todos (filter current?) seq)
 
         time           (uix/state (t/zoned-date-time))

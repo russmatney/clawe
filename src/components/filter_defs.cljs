@@ -9,6 +9,15 @@
 ;; grouping and filtering
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn short-path-days-ago
+  ([] (short-path-days-ago 0))
+  ([n]
+   (str
+     "daily/"
+     (t/format "YYYY-MM-DD" (t/<< (dates.tick/now)
+                                  (t/new-duration n :days)))
+     ".org")))
+
 (defn is-daily-fname [fname]
   (some-> fname (string/includes? "daily")))
 

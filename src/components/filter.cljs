@@ -2,7 +2,8 @@
   (:require [components.floating :as floating]
             [uix.core.alpha :as uix]
             [components.debug :as components.debug]
-            [util :as util]))
+            [util :as util]
+            [clojure.string :as string]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; filter def anchor
@@ -135,7 +136,8 @@
   Returned as part of `use-filter`."
   [{:keys [all-filter-defs
            items-filter-by
-           items-group-by]
+           items-group-by
+           current-preset]
     :as   config}]
   [:div.flex.flex-col
    [preset-filters config]
@@ -150,10 +152,12 @@
         :anchor-comp  [filter-def-anchor [filter-key filter-def] config]
         :popover-comp [filter-def-popover [filter-key filter-def] config]}])]
 
-   ;; TODO improve debug view for collections
-   [components.debug/raw-metadata {:label "[raw filters]"} items-filter-by]
-   [components.debug/raw-metadata {:label "[raw group-by]"} {:val items-group-by}]
+   ;; ;; TODO improve debug view for collections
+   ;; [components.debug/raw-metadata {:label "[raw filters]"} items-filter-by]
+   ;; [components.debug/raw-metadata {:label "[raw group-by]"} {:val items-group-by}]
 
+   (when current-preset
+     [:div [:pre (str ":preset " current-preset)]])
    ;; TODO create applied filters component for saving/revisiting saved filters
    (for [[i f] (->> items-filter-by (map-indexed vector))]
      ^{:key i} [:div [:pre (str f)]])
@@ -176,15 +180,19 @@
   The filter-key's group-by can return collections - in that case, a match on any elem
   is a match for the whole filter-key."
   [all-filter-defs [filter-key filter-defs]]
-  (let [->value       (-> filter-key all-filter-defs :group-by)
-        exact-matches (->> filter-defs (map :match) (into #{}))
-        ;; TODO consider removing match-fns that can't be called
-        pred-matches  (->> filter-defs (map :match-fn) (remove nil?))
-        is-match      (->> [exact-matches]
-                           (filter seq)
-                           (concat pred-matches)
-                           ((fn [fns]
-                              (apply some-fn fns))))]
+  (let [->value              (-> filter-key all-filter-defs :group-by)
+        exact-matches        (->> filter-defs (map :match) (into #{}))
+        ;; consider removing match-fns that can't be called
+        pred-matches         (->> filter-defs (map :match-fn) (remove nil?))
+        includes-any-matches (->> filter-defs (map :match-str-includes-any) (remove nil?)
+                                  (map (fn [strs]
+                                         ;; return a predicate for each set of strings
+                                         (fn [val]
+                                           (->> strs (filter #(string/includes? val %)) seq)))))
+        is-match             (->> [exact-matches]
+                                  (filter seq)
+                                  (concat pred-matches includes-any-matches)
+                                  (apply some-fn))]
     (fn [raw]
       (-> raw ->value
           ((fn [val]
@@ -199,15 +207,15 @@
 (defn use-filter
   [{:keys [items all-filter-defs] :as config}]
   ;; TODO cut off this default usage with local storage read/write for last-set preset
-  (let [default          (or (->> config :presets (filter (comp :default second)))
-                             (some-> config :presets :default))
-        default-filters  (some-> default :filters)
+  (let [[d-key default]  (or (some->> config :presets (filter (comp :default second)) first)
+                             (some->> config :presets (filter (comp #{:default} first)) first))
+        default-filters  (or (some-> default :filters) #{})
         default-group-by (or (some-> default :group-by)
                              (some-> all-filter-defs first first))
 
         items-filter-by (uix/state default-filters)
         items-group-by  (uix/state default-group-by)
-        current-preset  (uix/state :default)
+        current-preset  (uix/state d-key)
 
         filtered-items
         (if-not (seq @items-filter-by) items
