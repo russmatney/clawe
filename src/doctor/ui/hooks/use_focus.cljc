@@ -9,6 +9,7 @@
 
 (defhandler add-tag [item tag] (api.focus/add-tag item tag))
 (defhandler remove-tag [item tag] (api.focus/remove-tag item tag))
+(defhandler remove-priority [item] (api.focus/remove-priority item))
 
 #?(:cljs
    (defn use-focus-data []

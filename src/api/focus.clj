@@ -106,6 +106,9 @@
 (defn remove-tag [item tag]
   (org-crud.update/update! item {:org/tags [:remove tag]}))
 
+(defn remove-priority [item]
+  (org-crud.update/update! item {:org/priority nil}))
+
 (comment
   (->>
     (todays-goals)

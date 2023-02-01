@@ -109,9 +109,12 @@
 (defn priority-label [it]
   (when (:org/priority it)
     [:span
-     {:class
+     {:on-click (fn [_] (use-focus/remove-priority it))
+      :class
       (concat
-        ["whitespace-nowrap" "font-nes"]
+        ["whitespace-nowrap" "font-nes"
+         "cursor-pointer"
+         "hover:line-through"]
         (let [pri (:org/priority it)]
           (cond
             (completed? it) ["text-city-blue-dark-400"]
