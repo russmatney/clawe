@@ -478,6 +478,16 @@
            :label    "Not Started/In Progress"
            :default  true}
 
+          :prioritized
+          {:filters
+           #{{:filter-key :priority :match-fn (comp not nil?)}}
+           :group-by :priority}
+
+          :unprioritized
+          {:filters
+           #{{:filter-key :priority :match-fn nil?}}
+           :group-by :short-path}
+
           :tagged-current
           {:filters #{{:filter-key :tags :match "current"}}
            :group-by :priority}
