@@ -274,7 +274,7 @@
            [:> HIMini/PlayIcon {:class ["w-4" "h-6"]}]
            ;; disabled if already tagged current or already completed/skipped
            :action/disabled
-           (or ((:org/tags todo) "current")
+           (or ((or (some->> todo :org/tags (into #{})) #{}) "current")
                (#{:status/done :status/cancelled :status/skipped}
                  status))
            ;; higher priority if priority set

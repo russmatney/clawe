@@ -173,13 +173,14 @@
              "gap-x-4"]}
 
     (for [[i [filter-key filter-def]] (map-indexed vector all-filter-defs)]
-      ^{:key i}
       (if show-filters-inline
+        ^{:key i}
         [:div
          {:class ["flex" "flex-col"
                   "items-center"]}
          [filter-def-anchor [filter-key filter-def] config]
          [filter-def-popover [filter-key filter-def] config]]
+        ^{:key i}
         [floating/popover
          {:hover        true :click true
           :anchor-comp  [filter-def-anchor [filter-key filter-def] config]
