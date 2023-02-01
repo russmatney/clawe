@@ -17,13 +17,30 @@
     (garden/last-modified-paths)
     (take 3)))
 
+(defn ->repo-root [repo-id]
+  (str (fs/home) "/" repo-id))
+
+(defn repo-todo-files []
+  (let [repo-roots ["russmatney/dino"
+                    "russmatney/org-crud"
+                    "russmatney/clawe"
+                    "teknql/fabb"]]
+    (->> repo-roots
+         (map ->repo-root)
+         (mapcat (fn [root-path]
+                   [(str root-path "/todo.org")
+                    (str root-path "/readme.org")
+                    ;; one day, source todos from code files
+                    ]))
+         (filter fs/exists?))))
+
 (defn relevant-org-items []
   (->>
     (concat
       (garden/daily-paths 7)
       (garden/basic-todo-paths)
-      (->> (garden/last-modified-paths)
-           (take 30)))
+      (->> (garden/last-modified-paths) (take 30))
+      (repo-todo-files))
     (distinct)
     (map org-crud/path->nested-item)))
 

@@ -471,7 +471,37 @@
          :show-filters-inline true
          :presets
          ;; these presets might be higher level modes, i.e. they might imply other ui changes
-         {:incomplete
+         {:repo
+          {:filters
+           #{{:filter-key :short-path :match-str-includes-any
+              ["russmatney/clawe"
+               "russmatney/dino"
+               "russmatney/org-crud"]}}
+           :group-by :priority}
+
+          :clawe
+          {:filters
+           ;; TODO add the clawe workspace here as well
+           #{{:filter-key :short-path :match-str-includes-any ["russmatney/clawe"]}
+             ;; TODO support opting in vs excluding with this
+             ;; in some cases, we want 'AND' filters, in others, 'OR'
+             ;; {:filter-key :tags :match "clawe"}
+             }
+           :group-by :priority}
+          :org-crud
+          {:filters
+           #{{:filter-key :short-path :match-str-includes-any ["russmatney/org-crud"]}
+             ;; {:filter-key :tags :match "orgcrud"}
+             }
+           :group-by :priority}
+          :dino
+          {:filters
+           #{{:filter-key :short-path :match-str-includes-any ["russmatney/dino"]}
+             ;; {:filter-key :tags :match "dino"}
+             }
+           :group-by :priority}
+
+          :incomplete
           {:filters
            #{{:filter-key :status :match :status/not-started}
              {:filter-key :status :match :status/in-progress}}
