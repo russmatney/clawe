@@ -96,34 +96,36 @@
                               set-filters
                               set-current-preset
                               set-group-by]}]
-  [floating/popover
-   {:hover true :click true
-    :anchor-comp
-    [:span {:class ["font-nes" "text-xl"
-                    "cursor-pointer"]}
-     "Presets"]
+  [:div
+   {:class ["flex" "flex-col"]}
+   [:span {:class ["font-nes" "text-xl"
+                   "cursor-pointer"
+                   "pb-2"]}
+    "Presets"]
 
-    :popover-comp
-    [:div
-     {:class ["flex" "flex-col"
-              "bg-yo-blue-800"
-              "p-4"]}
-     (for [[k {:keys [filters group-by label]}]
-           presets]
-       ^{:key k}
-       [:div
-        {:class ["font-mono"
-                 "cursor-pointer"
-                 (if (#{current-preset} k)
-                   "text-city-pink-400"
-                   "text-city-green-600")
-                 "hover:text-city-red-600"]
-         :on-click
-         (fn [_]
-           (set-current-preset k)
-           (set-filters filters)
-           (set-group-by group-by))}
-        [:span (or label k)]])]}])
+   [:div
+    {:class ["flex" "flex-row" "ml-auto" "flex-wrap"
+             "gap-1"]}
+    (for [[k {:keys [filters group-by label]}]
+          presets]
+      ^{:key k}
+      [:div
+       {:class ["bg-yo-blue-800"
+                "rounded-xl"
+                "px-3" "py-2"
+                "text-sm"
+                "font-mono"
+                "cursor-pointer"
+                (if (#{current-preset} k)
+                  "text-city-pink-400"
+                  "text-city-green-600")
+                "hover:text-city-red-600"]
+        :on-click
+        (fn [_]
+          (set-current-preset k)
+          (set-filters filters)
+          (set-group-by group-by))}
+       [:span (or label k)]])]])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; filter-grouper full component
@@ -139,8 +141,12 @@
            items-group-by
            current-preset]
     :as   config}]
-  [:div.flex.flex-col
-   [preset-filters config]
+  [:div
+   {:class ["flex flex-col"]}
+
+   [:div
+    {:class ["pb-3"]}
+    [preset-filters config]]
 
    [:div.flex.flex-row.flex-wrap
     {:class ["gap-x-3"]}
