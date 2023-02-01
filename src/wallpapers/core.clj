@@ -20,7 +20,8 @@
 (defn local-wallpapers-file-paths []
   (->
     (wp-dir->paths (str (fs/home) "/Dropbox/wallpapers/**/*"))
-    (->> (filter #(re-seq #"\.(jpg|png)$" %)))))
+    (concat (wp-dir->paths (str (fs/home) "/Dropbox/wallpapers/*")))
+    (->> (filter #(re-seq #"\.(jpeg|jpg|png)$" %)))))
 
 (comment
   (local-wallpapers-file-paths))
@@ -36,9 +37,12 @@
                {:doctor/type          :type/wallpaper
                 :file/full-path       f
                 :wallpaper/short-path common-path
-                :file/web-asset-path  (str "/assets/wallpapers/"
-                                           (-> f fs/parent fs/file-name)
-                                           "/" (fs/file-name f))
+                :file/web-asset-path
+                (str "/assets/wallpapers/"
+                     (let [parent-name (-> f fs/parent fs/file-name)]
+                       (if (= "wallpapers" parent-name) ""
+                           (str parent-name "/")))
+                     (fs/file-name f))
                 :file/file-name       (fs/file-name f)}))))))
 
 (defn ingest-wallpapers []
@@ -56,7 +60,7 @@
   (->>
     (all-wallpapers)
     (group-by :file/web-asset-path)
-    (filter (comp #(> % 1) count second))
+    ;; (filter (comp #(> % 1) count second))
     (map second)
     (map first)
     (map :db/id)

@@ -109,7 +109,7 @@
      (shelll "yarn install")
 
      ;; local symlinks
-     (log/info "TODO impl ensure local symlinks (ln -s ~/Screenshots public/assets/screenshots)")
+     (log/info "TODO impl ensure local symlinks (eg: ln -s ~/Screenshots public/assets/screenshots)")
      (shelll "l public/assets"))}
 
   doctor-be {:doc "Run the doctor backend."
