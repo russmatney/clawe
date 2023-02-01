@@ -2,23 +2,29 @@
   (:require [garden.core :as garden]
             [org-crud.core :as org-crud]
             [org-crud.update :as org-crud.update]
-            ;; [clojure.set :as set]
             [systemic.core :as sys :refer [defsys]]
             [manifold.stream :as s]
             [dates.tick :as dates.tick]
-            [clojure.string :as string]))
+            [clojure.string :as string]
+            [babashka.fs :as fs]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; domain
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn todays-org-items []
+(comment
+  (->>
+    (garden/last-modified-paths)
+    (take 3)))
+
+(defn relevant-org-items []
   (->>
     (concat
       (garden/daily-paths 7)
       (garden/basic-todo-paths)
-      ;; TODO n recently modified
-      )
+      (->> (garden/last-modified-paths)
+           (take 30)))
+    (distinct)
     (map org-crud/path->nested-item)))
 
 (defn prep-todo [item]
@@ -40,7 +46,7 @@
   "Top level items tagged 'focus' or 'goals'"
   []
   (->>
-    (todays-org-items)
+    (relevant-org-items)
     ;; (mapcat :org/items)
     ;; include everything?
     ;; (filter (fn [it]

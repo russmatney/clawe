@@ -118,8 +118,17 @@
 
 (comment
   (count
-    (all-garden-paths))
-  )
+    (all-garden-paths)))
+
+(defn last-modified-paths []
+  (->> (all-garden-paths)
+       (filter fs/exists?)
+       (map (fn [p]
+              {:path     p
+               :last-mod (fs/last-modified-time p)}))
+       (sort-by :last-mod)
+       reverse
+       (map :path)))
 
 ;; general helper
 

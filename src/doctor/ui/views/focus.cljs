@@ -471,17 +471,24 @@
          :show-filters-inline true
          :presets
          ;; these presets might be higher level modes, i.e. they might imply other ui changes
-         {:not-started-in-progress
+         {:incomplete
           {:filters
            #{{:filter-key :status :match :status/not-started}
              {:filter-key :status :match :status/in-progress}}
            :group-by :priority
-           :label    "Not Started/In Progress"
+           :label    "Incomplete"
            :default  true}
 
           :prioritized
           {:filters
            #{{:filter-key :priority :match-fn (comp not nil?)}}
+           :group-by :priority}
+
+          :prioritized-incomplete
+          {:filters
+           #{{:filter-key :status :match :status/not-started}
+             {:filter-key :status :match :status/in-progress}
+             {:filter-key :priority :match-fn (comp not nil?)}}
            :group-by :priority}
 
           :unprioritized

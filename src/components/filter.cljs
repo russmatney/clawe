@@ -28,9 +28,11 @@
 
 (defn filter-def-popover
   [[filter-key filter-def]
-   {:keys [filtered-items items-filter-by toggle-filter-by set-current-preset]}]
+   {:keys [items _filtered-items items-filter-by toggle-filter-by set-current-preset]}]
   (let [grouped-by-val-and-counts
-        (->> filtered-items
+        ;; TODO items vs filtered-items here needs to be toggleable
+        ;; are we narrowing or widening?
+        (->> items
              (group-by (:group-by filter-def))
              util/expand-coll-group-bys
              (map (fn [[v xs]] [v (count xs)])))]

@@ -5,8 +5,8 @@
    [taoensso.timbre :as log]
    [babashka.fs :as fs]
    [garden.db :as garden.db]
-   [garden.core :as garden]
-   [api.focus :as api.focus]))
+   [api.focus :as api.focus]
+   [clojure.string :as string]))
 
 (defn garden-dir-path []
   (fs/file (str (fs/home) "/todo")))
@@ -29,8 +29,9 @@
               first))))
 
 (defn should-push-focus-data? [file]
-  (contains? (into #{} (garden/daily-paths 7)) (str file)))
-
+  (or
+    (string/includes? (str file) "daily")
+    (string/includes? (str file) "garden")))
 
 (defsys ^:dynamic *garden-watcher*
   :start
