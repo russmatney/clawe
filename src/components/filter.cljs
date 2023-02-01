@@ -1,8 +1,9 @@
 (ns components.filter
-  (:require [components.floating :as floating]
-            [uix.core.alpha :as uix]
-            [util :as util]
-            [clojure.string :as string]))
+  (:require
+   [components.floating :as floating]
+   [uix.core.alpha :as uix]
+   [util :as util]
+   [clojure.string :as string]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; filter def anchor
@@ -27,9 +28,9 @@
 
 (defn filter-def-popover
   [[filter-key filter-def]
-   {:keys [items items-filter-by toggle-filter-by set-current-preset]}]
+   {:keys [filtered-items items-filter-by toggle-filter-by set-current-preset]}]
   (let [grouped-by-val-and-counts
-        (->> items
+        (->> filtered-items
              (group-by (:group-by filter-def))
              util/expand-coll-group-bys
              (map (fn [[v xs]] [v (count xs)])))]
@@ -70,8 +71,13 @@
               {:class ["font-nes" "mx-auto"]}
               group-label])
 
-           (for [[i [k v]] (->> group (sort-by first >) (map-indexed vector))]
-             (let [filter-enabled? (items-filter-by {:filter-key filter-key :match k})]
+           ;; these counts don't include applied filters
+           (for [[i [k ct]] (->> group (sort-by first >) (map-indexed vector))]
+             (let [filter-desc     (if (nil? k)
+                                     {:filter-key filter-key :match-fn nil?}
+                                     {:filter-key filter-key :match k})
+                   ;; TODO extend to match on :match-str-includes-any (and other match extensions)
+                   filter-enabled? (items-filter-by filter-desc)]
                [:div
                 {:key      i
                  :class    ["flex" "flex-row" "font-mono"
@@ -81,10 +87,11 @@
                               "text-city-pink-400")]
                  :on-click (fn [_]
                              (set-current-preset nil)
-                             (toggle-filter-by {:filter-key filter-key :match k}))}
-                (let [format-label (:format-label filter-def str)]
+                             (toggle-filter-by filter-desc))}
+                (let [format-label (:format-label filter-def (fn [k]
+                                                               (if (nil? k) "None" (str k))))]
                   [:span.p-1.pl-2.text-xl.ml-auto (format-label k)])
-                [:span.p-1.text-xl.w-10.text-center v]]))])])]))
+                [:span.p-1.text-xl.w-10.text-center (str "(" ct ")")]]))])])]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; preset-filters
@@ -106,7 +113,7 @@
     {:class ["flex" "flex-row" "ml-auto" "flex-wrap"
              "gap-1"]}
     (for [[k {:keys [filters group-by label]}]
-          presets]
+          (->> presets (sort-by first))]
       ^{:key k}
       [:div
        {:class ["bg-yo-blue-800"
@@ -138,7 +145,7 @@
   [{:keys [all-filter-defs
            items-filter-by
            items-group-by
-           current-preset]
+           show-filters-inline]
     :as   config}]
   [:div
    {:class ["flex flex-col"]}
@@ -161,18 +168,20 @@
     {:class ["flex flex-row"
              "flex-wrap"
              "pt-2"
-             "gap-x-3"]}
+             "gap-x-4"]}
 
     (for [[i [filter-key filter-def]] (map-indexed vector all-filter-defs)]
       ^{:key i}
-      [:div
-       {:class ["flex" "flex-col"]}
-       [filter-def-anchor [filter-key filter-def] config]
-       [filter-def-popover [filter-key filter-def] config]]
-      #_[floating/popover
+      (if show-filters-inline
+        [:div
+         {:class ["flex" "flex-col"
+                  "items-center"]}
+         [filter-def-anchor [filter-key filter-def] config]
+         [filter-def-popover [filter-key filter-def] config]]
+        [floating/popover
          {:hover        true :click true
           :anchor-comp  [filter-def-anchor [filter-key filter-def] config]
-          :popover-comp [filter-def-popover [filter-key filter-def] config]}])]])
+          :popover-comp [filter-def-popover [filter-key filter-def] config]}]))]])
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -248,7 +257,8 @@
      [filter-grouper
       (-> config
           (merge
-            {:current-preset     @current-preset
+            {:filtered-items     filtered-items
+             :current-preset     @current-preset
              :items-filter-by    @items-filter-by
              :items-group-by     @items-group-by
              :set-current-preset #(reset! current-preset %)

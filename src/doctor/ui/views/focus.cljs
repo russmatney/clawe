@@ -468,6 +468,7 @@
 (defn ->fg-config [todos]
   (assoc filter-defs/fg-config
          :items todos
+         :show-filters-inline true
          :presets
          ;; these presets might be higher level modes, i.e. they might imply other ui changes
          {:not-started-in-progress
