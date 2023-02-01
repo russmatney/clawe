@@ -11,9 +11,9 @@
    [components.colors :as colors]
    [components.filter :as components.filter]
    [components.garden :as components.garden]
-   [pages.todos :as pages.todos]
    [components.debug :as components.debug]
-   [dates.tick :as dates.tick]))
+   [dates.tick :as dates.tick]
+   [components.filter-defs :as filter-defs]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; preds
@@ -470,7 +470,7 @@
 
 (defn filter-grouper-config [{:keys [todos]}]
   {:items           todos
-   :all-filter-defs pages.todos/all-filter-defs
+   :all-filter-defs filter-defs/all-filter-defs
 
    :presets
    {:not-started-in-progress
@@ -491,7 +491,7 @@
     {:filters
      #{{:filter-key :short-path :match-fn
         (fn [path]
-          (let [bname (pages.todos/path->basename path)
+          (let [bname (filter-defs/path->basename path)
                 today-bname (->> dates.tick/now dates.tick/add-tz (t/format "YYYY-MM-dd"))]
             (= today-bname bname)))}}
      :group-by :priority}
@@ -581,7 +581,7 @@
                (#{:short-path} (:items-group-by filter-todos-results))
                [:span
                 {:class ["font-nes" "text-city-blue-400"]}
-                [pages.todos/path->basename label]]
+                [filter-defs/path->basename label]]
 
                :else
                [:span

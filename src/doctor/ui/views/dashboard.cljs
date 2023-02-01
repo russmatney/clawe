@@ -5,10 +5,10 @@
    [components.events :as components.events]
    [doctor.ui.views.ingest :as ingest]
    [components.filter :as components.filter]
-   [pages.todos :as pages.todos]
    [uix.core.alpha :as uix]
    [components.actions :as components.actions]
-   [clojure.string :as string]))
+   [clojure.string :as string]
+   [components.filter-defs :as filter-defs]))
 
 (def all-todos-initial-filters
   #{{:filter-key :short-path
@@ -32,10 +32,11 @@
 
          event-filter-results
          (components.filter/use-filter
-           {:all-filter-defs  pages.todos/all-filter-defs
-            :default-filters  #{}
-            :default-group-by :tags
-            :items            recent-events})
+           (assoc filter-defs/fg-config
+                  :items recent-events
+                  :presets
+                  {:default {:filters  #{}
+                             :group-by :tags}}))
          all-todos (ui.db/garden-todos
                      (:conn opts) {:n 200 ;; TODO support fetching more
                                    :filter-pred
@@ -43,11 +44,11 @@
                                      (#{:status/not-started} status))})
          todo-filter-results
          (components.filter/use-filter
-           {:all-filter-defs  pages.todos/all-filter-defs
-            :default-filters  all-todos-initial-filters
-            :default-group-by :tags
-            :items            all-todos})]
-
+           (assoc filter-defs/fg-config
+                  :items all-todos
+                  :presets
+                  {:default {:filters  all-todos-initial-filters
+                             :group-by :tags}}))]
      [:div
       [:div
        [:div "Todo list (" (count queued-todos) ")"]

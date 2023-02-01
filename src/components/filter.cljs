@@ -196,17 +196,13 @@
 ;; use-filter
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; TODO write unit tests around this
 (defn use-filter
   [{:keys [items all-filter-defs] :as config}]
-  ;; TODO malli schema+validation for all-filter-defs and default-filters
-  ;; TODO local storage read/write for each filter-grouper (are they serializable?)
+  ;; TODO cut off this default usage with local storage read/write for last-set preset
   (let [default          (or (->> config :presets (filter (comp :default second)))
                              (some-> config :presets :default))
-        default-filters  (or (:default-filters config)
-                             (some-> default :filters))
-        default-group-by (or (:default-group-by config)
-                             (some-> default :group-by)
+        default-filters  (some-> default :filters)
+        default-group-by (or (some-> default :group-by)
                              (some-> all-filter-defs first first))
 
         items-filter-by (uix/state default-filters)
