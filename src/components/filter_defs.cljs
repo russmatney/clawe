@@ -14,9 +14,13 @@
   ([n]
    (str
      "daily/"
-     (t/format "YYYY-MM-DD" (t/<< (dates.tick/now)
+     (t/format "YYYY-MM-dd" (t/<< (dates.tick/now)
                                   (t/new-duration n :days)))
      ".org")))
+
+(comment
+  (t/format "YYYY-MM-dd" (t/<< (dates.tick/now)
+                               (t/new-duration 0 :days))))
 
 (defn is-daily-fname [fname]
   (some-> fname (string/includes? "daily")))
