@@ -177,9 +177,35 @@
         ^{:key i}
         [:div
          {:class ["flex" "flex-col"
-                  "items-center"]}
-         [filter-def-anchor [filter-key filter-def] config]
-         [filter-def-popover [filter-key filter-def] config]]
+                  "items-center"
+                  "grow"
+                  "m-2"
+                  "p-2"
+                  "border-8"
+                  "rounded-lg"
+                  "border-city-blue-900"
+                  "hover:border-city-orange-500"
+                  "cursor-pointer"]}
+         [:div
+          [filter-def-anchor [filter-key filter-def] config]]
+
+         ;; active filters
+         (for [[i f] (->> items-filter-by
+                          (filter (comp #{filter-key} :filter-key))
+                          (map-indexed vector))]
+           ^{:key i} [:div
+                      {:class ["font-mono"]}
+                      (str f)])
+
+         ;; active group-by
+         [:div
+          [:pre ":group-by " items-group-by]]
+
+         ;; fill to hold bottom in 'middle'
+         [:div {:class ["grow"]}]
+         [:div {:class ["grow"]}
+          [filter-def-popover [filter-key filter-def] config]]]
+
         ^{:key i}
         [floating/popover
          {:hover        true :click true
