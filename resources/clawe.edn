@@ -50,7 +50,9 @@
                              :tmux.fire/session "doctor-focus"}
              :client/window-title "tauri-doctor-focus"
              :client/workspace-title "widgets"
-             :focus/float-and-center false}
+             :focus/float-and-center false
+             :focus/toggle-opts [:focus.toggle/front-and-center :focus.toggle/bury
+                                 :focus.toggle/sticky-right {:focus.toggle/workspace "widgets"}]}
     "godot" {:client/app-names ["godot"]
              :client/workspace-title "godot"
              :match/soft-title true
@@ -174,8 +176,10 @@
     "godot-demo-projects" {:workspace/directory "~/godotengine/godot-demo-projects"}
     "godot-git-plugin" {:workspace/directory "~/godotengine/godot-git-plugin"}
     "godot-sfxr" {:workspace/directory "~/tomeyro/godot-sfxr"}
+    "godot-snake-game" {:workspace/directory "~/MCMLXXXV/godot-snake-game"}
     "godot-text_effects" {:workspace/directory "~/teebarjunk/godot-text_effects"}
     "godot-tutorials" {:workspace/directory "~/nagidev/godot-tutorials"}
+    "godot-twitch-irc-client" {:workspace/directory "~/rblopes/godot-twitch-irc-client"}
     "heroicons" {:workspace/directory "~/tailwindlabs/heroicons"}
     "ink-library" {:workspace/directory "~/inkle/ink-library"}
     "inkgd" {:workspace/directory "~/ephread/inkgd"}
