@@ -53,7 +53,7 @@
              :focus/float-and-center false
              :focus/toggle-opts [:focus.toggle/front-and-center :focus.toggle/bury
                                  :focus.toggle/sticky-right {:focus.toggle/workspace "widgets"}]}
-    "godot" {:client/app-names ["godot"]
+    "godot" {:client/app-names ["godot" "godot_engine"]
              :client/workspace-title "godot"
              :match/soft-title true
              :match/use-workspace-title true
