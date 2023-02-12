@@ -1,10 +1,11 @@
 (ns ralphie.notify
   (:require
    [babashka.process :as process :refer [$ check]]
+   [clojure.string :as string]
    [ralphie.zsh :as zsh]))
 
 
-(def is-mac? (boolean (#{"darwin21"} (zsh/expand "$OSTYPE"))))
+(def is-mac? (boolean (string/includes? (zsh/expand "$OSTYPE") "darwin")))
 
 (comment
   is-mac?)

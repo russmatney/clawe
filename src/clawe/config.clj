@@ -9,7 +9,7 @@
    [clojure.string :as string]))
 
 (defn calc-is-mac? []
-  (boolean (#{"darwin21"} (zsh/expand "$OSTYPE"))))
+  (boolean (string/includes? (zsh/expand "$OSTYPE") "darwin")))
 
 (def config-res (io/resource "clawe.edn"))
 
