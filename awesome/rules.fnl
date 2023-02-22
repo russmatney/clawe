@@ -101,15 +101,16 @@
           :properties {:floating true}}
 
          ;; godot fix?
-         {:rule_any {:name ["Godot Engine"]}
+         {:rule {:instance "Godot_Engine"}
           :properties
           {:fullscreen false
            :maximized false
            :maximized_vertial false
            :maximized_horizontal false}
           :callback (fn [c]
-                      (print "godot editor hit!")
+                      (print "godot engine running!")
                       (pp c)
+                      (awful.client.setslave c)
                       (set c.fullscreen false)
                       (set c.maximized false)
                       (set c.maximized_vertical false)
