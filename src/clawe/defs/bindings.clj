@@ -165,18 +165,18 @@
                        :float?    true
                        :bury-all? true} current-client)))
 
-#_(defkbd center-window-large
-    [[:mod :shift] "c"]
-    (awm/awm-fnl
-      '(let [c _G.client.focus]
-         (tset c :ontop true)
-         (tset c :floating true)
-         (-> c
-             ((+ awful.placement.scale
-                 awful.placement.centered)
-              {:honor_padding  true
-               :honor_workarea true
-               :to_percent     0.9})))))
+(defkbd center-window-large
+  [[:mod :shift] "c"]
+  (awm/awm-fnl
+    '(let [c _G.client.focus]
+       (tset c :ontop true)
+       (tset c :floating true)
+       (-> c
+           ((+ awful.placement.scale
+               awful.placement.centered)
+            {:honor_padding  true
+             :honor_workarea true
+             :to_percent     0.9})))))
 
 (defkbd center-window-small
   [[:mod] "v"]
@@ -275,9 +275,9 @@
   [[:mod :shift] "w"]
   (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key clerk-workspace"))
 
-(defkbd toggle-workspace-doctor-clerk
-  [[:mod :shift] "c"]
-  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key clerk"))
+;; (defkbd toggle-workspace-doctor-clerk
+;;   [[:mod :shift] "c"]
+;;   (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key clerk"))
 
 (defkbd toggle-workspace-aseprite
   [[:mod :shift] "p"]
