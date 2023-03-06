@@ -149,6 +149,7 @@
     "blog" {:workspace/directory "~/russmatney/blog" :workspace/preferred-index 3}
     "blorg" {:workspace/directory "~/eigenhombre/blorg"}
     "book" {:workspace/directory "~/babashka/book"}
+    "browsers" {:workspace/preferred-index 9}
     "candy-icons" {:workspace/directory "~/EliverLara/candy-icons"}
     "cider" {:workspace/directory "~/clojure-emacs/cider"}
     "clawe" {:workspace/directory "~/russmatney/clawe" :workspace/preferred-index 2}
@@ -211,9 +212,11 @@
     "re-db" {:workspace/directory "~/mhuebert/re-db"}
     "repertoire-maker" {:workspace/directory "~/Camsbury/repertoire-maker"}
     "rewrite-clj" {:workspace/directory "~/clj-commons/rewrite-clj"}
+    "slack" {:workspace/preferred-index 9}
     "spicetify" {:workspace/directory "~/catppuccin/spicetify"}
     "spicetify-cli" {:workspace/directory "~/spicetify/spicetify-cli"}
     "spicetify-themes" {:workspace/directory "~/spicetify/spicetify-themes"}
+    "spotify" {:workspace/preferred-index 9}
     "steam" {:workspace/directory "~"}
     "the-great-tree" {:workspace/directory "~/dandeliondino/the-great-tree"}
     "tools.namespace" {:workspace/directory "~/clojure/tools.namespace"}
