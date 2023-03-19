@@ -52,9 +52,9 @@
 
 (defn zp
   "Zero Pad numbers - takes a number and the length to pad to as arguments"
-  [n c]
-  #?@(:clj [(format (str "%0" c "d") n)]
-      :cljs [(gstring/format (str "%0" c "d") n)]))
+  [x n]
+  #?@(:clj [(format (str "%0" n "d") x)]
+      :cljs [(gstring/format (str "%0" n "d") x)]))
 
 (comment
   (zp 5 3)) ;; => "005"

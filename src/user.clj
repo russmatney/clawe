@@ -9,8 +9,11 @@
    [clj-kondo.main :as clj-kondo.main]
    [loom.graph :refer [digraph]]
    [loom.io :refer [view]]
+   [util :as util]
+   [clojure.string :as string]
    #_[nextjournal.clerk :as clerk]
-   ))
+
+   [babashka.fs :as fs]))
 
 (comment
   (repl/sync-libs!))
@@ -121,3 +124,34 @@
     "--lint" "/home/russ/russmatney/clawe/src"
     "--skip-lint")
   )
+
+
+(comment
+  (def dropbox-dir "/Users/Russ/Library/CloudStorage/Dropbox")
+  (->>
+    (fs/list-dir (str dropbox-dir "/games-notebooks/notebook-1"))
+    (map (fn [file]
+           {:file      file
+            :file-name (fs/file-name file)}))
+    (sort-by :file-name)
+    (map-indexed (fn [i f]
+                   (let [idx (+ i
+                                ;;118
+                                ;;1
+                                105
+                                )]
+                     (-> f
+                         (assoc :idx idx)
+                         (assoc :new-file-name
+                                (str "pg_" (util/zp idx 3) ".HEIC"))))))
+    (take (- 117 105))
+    (map (fn [f]
+           (let [source (:file f)
+                 target (-> f :file str
+                            (string/replace (:file-name f)
+                                            (:new-file-name f)))]
+             (println "renaming" (str source) target)
+             (fs/move (str source) target)
+             (:idx f)
+             )))
+    doall))
