@@ -136,13 +136,17 @@
  :doctor-base-url "http://localhost:3334"
  :repo-roots ["~/russmatney/*" "~/teknql/*"]
  :workspace/defs
-   {"Spicetify" {:workspace/directory "~/Comfy-Themes/Spicetify"}
+   {"Godot-3-2D-Day-Night-Cycle" {:workspace/directory "~/hiulit/Godot-3-2D-Day-Night-Cycle"}
+    "Godot-Mixing-Desk" {:workspace/directory "~/kyzfrintin/Godot-Mixing-Desk"}
+    "Project-Map" {:workspace/directory "~/Yogoda/Project-Map"}
+    "Spicetify" {:workspace/directory "~/Comfy-Themes/Spicetify"}
     "TilePIpe" {:workspace/directory "~/aleksandrbazhin/TilePIpe"}
     "ViewportPlus" {:workspace/directory "~/NesiAwesomeneess/ViewportPlus"}
     "aave" {:workspace/directory "~/teknql/aave"}
     "advent-of-babashka-template" {:workspace/directory "~/borkdude/advent-of-babashka-template"}
     "advent-of-code" {:workspace/directory "~/russmatney/advent-of-code"}
     "advent-of-godot" {:workspace/directory "~/russmatney/advent-of-godot"}
+    "apple-platform-rs" {:workspace/directory "~/indygreg/apple-platform-rs"}
     "bbin" {:workspace/directory "~/babashka/bbin"}
     "bean-of-the-wild" {:workspace/directory "~/nagidev/bean-of-the-wild"}
     "beatemup-three" {:workspace/directory "~/russmatney/beatemup-three"}
@@ -170,18 +174,24 @@
     "fabb" {:workspace/directory "~/teknql/fabb"}
     "fishgame-godot" {:workspace/directory "~/heroiclabs/fishgame-godot"}
     "game-assets" {:workspace/directory "~/game-assets"}
+    "gatt" {:workspace/directory "~/sesopenko/gatt"}
     "gdfxr" {:workspace/directory "~/timothyqiu/gdfxr"}
     "girouette" {:workspace/directory "~/green-coder/girouette"}
     "godot" {:workspace/directory "~/godotengine/godot"}
     "godot-LDtk-import" {:workspace/directory "~/levigilbert/godot-LDtk-import"}
+    "godot-actions" {:workspace/directory "~/bend-n/godot-actions"}
+    "godot-aseprite-wizard" {:workspace/directory "~/viniciusgerevini/godot-aseprite-wizard"}
     "godot-demo-projects" {:workspace/directory "~/godotengine/godot-demo-projects"}
+    "godot-filesystem-view" {:workspace/directory "~/zaevi/godot-filesystem-view"}
     "godot-git-plugin" {:workspace/directory "~/godotengine/godot-git-plugin"}
+    "godot-next" {:workspace/directory "~/godot-extended-libraries/godot-next"}
     "godot-sfxr" {:workspace/directory "~/tomeyro/godot-sfxr"}
     "godot-snake-game" {:workspace/directory "~/MCMLXXXV/godot-snake-game"}
     "godot-template" {:workspace/directory "~/bakneko/godot-template"}
     "godot-text_effects" {:workspace/directory "~/teebarjunk/godot-text_effects"}
     "godot-tutorials" {:workspace/directory "~/nagidev/godot-tutorials"}
     "godot-twitch-irc-client" {:workspace/directory "~/rblopes/godot-twitch-irc-client"}
+    "godot_input_helper" {:workspace/directory "~/nathanhoad/godot_input_helper"}
     "heroicons" {:workspace/directory "~/tailwindlabs/heroicons"}
     "http-server" {:workspace/directory "~/babashka/http-server"}
     "ink-library" {:workspace/directory "~/inkle/ink-library"}
