@@ -662,7 +662,6 @@
 
         (for [[i group-desc]
               (->> (:filtered-item-groups filter-todos-results)
-                   (sort-by (comp ->comparable-int :label) <)
                    (map-indexed vector))]
           ^{:key i}
           [focus-item-group (assoc group-desc

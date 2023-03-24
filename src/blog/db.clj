@@ -1,5 +1,4 @@
 (ns blog.db
-  {:nextjournal.clerk/visibility {:code :hide :result :hide}}
   (:require
    [util :refer [ensure-uuid]]
    [garden.core :as garden]
@@ -29,6 +28,10 @@
   (let [all-nested (garden/all-garden-notes-nested)]
     (println "[DB]: blog.db built")
     {:all-notes all-nested}))
+
+(defn get-db []
+  (sys/start! `*notes-db*)
+  @*notes-db*)
 
 (defn all-notes []
   (sys/start! `*notes-db*)

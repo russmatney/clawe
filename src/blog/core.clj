@@ -20,10 +20,10 @@
   (blog.db/refresh-notes)
 
   (blog.db/notes-by-short-path)
-  (blog.db/notes-by-id)
+  (blog.db/notes-by-id))
 
-  )
-
+;; NOTE rn blog.db and blog.config come from org files and the org-blog-content repo
+;; while the code below pulls from db.core
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; db helpers

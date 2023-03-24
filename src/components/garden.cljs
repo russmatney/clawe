@@ -377,3 +377,25 @@
          [all-nested-tags-comp item]]
         [:div
          [urls-list all-urls]]]]])))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; priority-label
+
+(defn priority-label
+  ([it] [priority-label nil it])
+  ([opts it]
+   (when (:org/priority it)
+     [:span
+      (merge opts
+             {:class
+              (concat
+                ["whitespace-nowrap" "font-nes"
+                 "cursor-pointer"
+                 "hover:line-through"]
+                (let [pri (:org/priority it)]
+                  (cond
+                    (not (:active opts)) ["text-city-blue-dark-400"]
+                    (#{"A"} pri)         ["text-city-red-400"]
+                    (#{"B"} pri)         ["text-city-pink-400"]
+                    (#{"C"} pri)         ["text-city-green-400"])))})
+      (str "#" (:org/priority it) " ")])))

@@ -249,6 +249,15 @@
 ;; use-filter
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn ->comparable-int [p]
+  (cond
+    (and p (string? p)) (.charCodeAt p)
+    (int? p)            p
+    (keyword? p)        (->comparable-int (name p))
+    ;; some high val
+    :else               1000))
+
+
 (defn use-filter
   [{:keys [items all-filter-defs] :as config}]
   ;; TODO cut off this default usage with local storage read/write for last-set preset
@@ -276,7 +285,8 @@
         (->> filtered-items
              (group-by (some-> @items-group-by all-filter-defs :group-by))
              util/expand-coll-group-bys
-             (map (fn [[label its]] {:item-group its :label label})))]
+             (map (fn [[label its]] {:item-group its :label label}))
+             (sort-by (comp ->comparable-int :label) <))]
 
     {:filter-grouper
      [filter-grouper
