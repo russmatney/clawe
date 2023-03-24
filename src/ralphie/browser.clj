@@ -67,7 +67,6 @@
                               (-> (t) (.-url)))))))
     p/check)
 
-
   (->
     ^{:out :string}
     (p/$
@@ -77,11 +76,7 @@
     (string/replace "missing value" "")
     (string/split #",")
     (->> (map string/trim)
-         (remove empty?)
-         )
-    )
-
-  )
+         (remove empty?))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; List open tabs

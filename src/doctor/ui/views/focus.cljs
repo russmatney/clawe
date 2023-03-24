@@ -12,8 +12,7 @@
    [components.filter :as components.filter]
    [components.garden :as components.garden]
    [components.debug :as components.debug]
-   [components.filter-defs :as filter-defs]
-   [components.pill :as pill]))
+   [components.filter-defs :as filter-defs]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; preds
@@ -344,16 +343,6 @@
            (map (fn [{:keys [on-click label]}]
                   [button {:on-click on-click} label]))
            (into [:div]))])])
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; page toggles
-
-(defn toggles
-  ;; TODO rewrite as actions-based api (duh)
-  ;; conditionally hide only-current when there is none
-  [{:keys [hide-completed toggle-hide-completed
-           only-current toggle-only-current]}]
-  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; sort todos

@@ -7,11 +7,11 @@
 (comment
   (crit/bench (Thread/sleep 1000))
 
-
+  #_#_
   (count
-    #_(defworkspace/list-workspaces))
+    (defworkspace/list-workspaces))
   (count
-    #_(defworkspace/latest-db-workspaces))
+    (defworkspace/latest-db-workspaces))
 
   (crit/bench nil #_(defworkspace/list-workspaces))
   ;; Evaluation count : 3269891160 in 60 samples of 54498186 calls.
