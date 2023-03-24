@@ -138,8 +138,8 @@
  :workspace/defs
    {"Godot-3-2D-Day-Night-Cycle" {:workspace/directory "~/hiulit/Godot-3-2D-Day-Night-Cycle"}
     "Godot-Mixing-Desk" {:workspace/directory "~/kyzfrintin/Godot-Mixing-Desk"}
-    "Project-Map" {:workspace/directory "~/Yogoda/Project-Map"}
     "Gut" {:workspace/directory "~/bitwes/Gut"}
+    "Project-Map" {:workspace/directory "~/Yogoda/Project-Map"}
     "Spicetify" {:workspace/directory "~/Comfy-Themes/Spicetify"}
     "TilePIpe" {:workspace/directory "~/aleksandrbazhin/TilePIpe"}
     "ViewportPlus" {:workspace/directory "~/NesiAwesomeneess/ViewportPlus"}
