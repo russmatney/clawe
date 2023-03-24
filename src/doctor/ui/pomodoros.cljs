@@ -5,9 +5,10 @@
    [tick.core :as t]))
 
 (defn get-state []
-  (or (some-> (localstorage/get-item "pomodoros")
-              edn/read-string)
-      {}))
+  nil
+  #_(or (some-> (localstorage/get-item "pomodoros")
+                edn/read-string)
+        {}))
 
 (comment
   (localstorage/remove-item! "pomodoros")

@@ -1,7 +1,7 @@
 {:paths ["src" "test" "resources"]
- :deps  {babashka/fs                        {:mvn/version "0.2.12"}
-         org.babashka/cli                   {:mvn/version "0.5.40"}
-         metosin/malli                      {:mvn/version "0.9.2"}
+ :deps  {babashka/fs                        {:mvn/version "0.3.17"}
+         org.babashka/cli                   {:mvn/version "0.6.50"}
+         metosin/malli                      {:mvn/version "0.10.4"}
          com.lambdaisland/specmonstah-malli {:mvn/version "0.0.7"}
          aero/aero                          {:mvn/version "1.1.6"}
 
@@ -18,8 +18,8 @@
                               :git/sha "654d62e1b21fbb04db3eb0ac88d4cb0f3174cf98"}
 
          kkinnear/zprint {:git/url "https://github.com/kkinnear/zprint"
-                          :git/tag "1.2.5-alpha1"
-                          :git/sha "15ea82a"}}
+                          :git/tag "1.2.5"
+                          :git/sha "52efc5a"}}
  :tasks
  {:requires ([clojure.string :as string]
              [clojure.pprint :as pprint]

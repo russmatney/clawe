@@ -3,7 +3,6 @@
    [dates.transit-time-literals :as ttl]
    [plasma.client]
    [taoensso.timbre :as log]
-   [time-literals.data-readers]
    [time-literals.read-write]
    [tick.timezone]
    [tick.locale-en-us]
