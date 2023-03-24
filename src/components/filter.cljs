@@ -149,68 +149,77 @@
            items-group-by
            show-filters-inline]
     :as   config}]
-  [:div
-   {:class ["flex flex-col"]}
+  (let [filter-detail-open? (uix/state false)]
+    [:div
+     {:class ["flex flex-col"]}
 
-   [:div
-    {:class ["pb-3"]}
-    [preset-filters config]]
+     [:div
+      {:class ["pb-3" "flex" "flex-row"]}
+      [preset-filters config]
 
-   ;; active filters
-   (for [[i f] (->> items-filter-by (map-indexed vector))]
-     ^{:key i} [:div
-                {:class ["font-mono"]}
-                (str f)])
+      [:div
+       [:button {:on-click #(swap! filter-detail-open? not)
+                 :class    ["whitespace-nowrap"]
+                 }
+        (str (if @filter-detail-open? "Hide" "Show") " filter detail")]]]
 
-   ;; active group-by
-   [:div [:pre (str ":group-by " items-group-by)]]
+     ;; active group-by
+     [:div [:pre (str ":group-by " items-group-by)]]
 
-   ;; edit filters
-   [:div
-    {:class ["flex flex-row"
-             "flex-wrap"
-             "pt-2"
-             "gap-x-4"]}
+     (when @filter-detail-open?
+       ;; active filters
+       (for [[i f] (->> items-filter-by (map-indexed vector))]
+         ^{:key i} [:div
+                    {:class ["font-mono"]}
+                    (str f)]))
 
-    (for [[i [filter-key filter-def]] (map-indexed vector all-filter-defs)]
-      (if show-filters-inline
-        ^{:key i}
-        [:div
-         {:class ["flex" "flex-col"
-                  "items-center"
-                  "grow"
-                  "m-2"
-                  "p-2"
-                  "border-8"
-                  "rounded-lg"
-                  "border-city-blue-900"
-                  "hover:border-city-orange-500"
-                  "cursor-pointer"]}
-         [:div
-          [filter-def-anchor [filter-key filter-def] config]]
+     (when @filter-detail-open?
+       ;; edit filters
+       [:div
+        {:class ["flex flex-row"
+                 "flex-wrap"
+                 "pt-2"
+                 "gap-x-4"]}
 
-         ;; active filters
-         (for [[i f] (->> items-filter-by
-                          (filter (comp #{filter-key} :filter-key))
-                          (map-indexed vector))]
-           ^{:key i} [:div
-                      {:class ["font-mono"]}
-                      (str f)])
+        (for [[i [filter-key filter-def]] (map-indexed vector all-filter-defs)]
+          (if show-filters-inline
+            ^{:key i}
+            [:div
+             {:class ["flex" "flex-col"
+                      "items-center"
+                      "grow"
+                      "m-2"
+                      "p-2"
+                      "border-8"
+                      "rounded-lg"
+                      "border-city-blue-900"
+                      "hover:border-city-orange-500"
+                      "cursor-pointer"]}
+             [:div
+              [filter-def-anchor [filter-key filter-def] config]]
 
-         ;; active group-by
-         [:div
-          [:pre ":group-by " items-group-by]]
+             ;; active filters
+             (for [[i f] (->> items-filter-by
+                              (filter (comp #{filter-key} :filter-key))
+                              (map-indexed vector))]
+               ^{:key i} [:div
+                          {:class ["font-mono"]}
+                          (str f)])
 
-         ;; fill to hold bottom in 'middle'
-         [:div {:class ["grow"]}]
-         [:div {:class ["grow"]}
-          [filter-def-popover [filter-key filter-def] config]]]
+             ;; active group-by
+             [:div
+              [:pre ":group-by " items-group-by]]
 
-        ^{:key i}
-        [floating/popover
-         {:hover        true :click true
-          :anchor-comp  [filter-def-anchor [filter-key filter-def] config]
-          :popover-comp [filter-def-popover [filter-key filter-def] config]}]))]])
+             ;; fill to hold bottom in 'middle'
+             [:div {:class ["grow"]}]
+             [:div {:class ["grow"]}
+              [filter-def-popover [filter-key filter-def] config]]]
+
+            ^{:key i}
+            [floating/popover
+             {:hover        true :click true
+              :anchor-comp  [filter-def-anchor [filter-key filter-def] config]
+              :popover-comp [filter-def-popover [filter-key filter-def] config]}]))])]))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
