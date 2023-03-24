@@ -503,7 +503,8 @@
         {:class ["ml-auto"  "text-city-blue-400"]}
         [:button {:on-click #(swap! item-group-open? not)
                   :class    ["whitespace-nowrap"]}
-         (str (if @item-group-open? "Hide" "Show") " items")]]]]
+         (str (if @item-group-open? "Hide" "Show")
+              " " (count item-group) " item(s)")]]]]
 
      (when @item-group-open?
        [:div
@@ -636,7 +637,6 @@
          {:on-click #(swap! only-current not)
           :label    (if @only-current "Show all" "Show only current")
           :active   @only-current}]
-
 
         filter-todos-results (components.filter/use-filter
                                (assoc
