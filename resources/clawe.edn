@@ -139,6 +139,7 @@
    {"Godot-3-2D-Day-Night-Cycle" {:workspace/directory "~/hiulit/Godot-3-2D-Day-Night-Cycle"}
     "Godot-Mixing-Desk" {:workspace/directory "~/kyzfrintin/Godot-Mixing-Desk"}
     "Project-Map" {:workspace/directory "~/Yogoda/Project-Map"}
+    "Gut" {:workspace/directory "~/bitwes/Gut"}
     "Spicetify" {:workspace/directory "~/Comfy-Themes/Spicetify"}
     "TilePIpe" {:workspace/directory "~/aleksandrbazhin/TilePIpe"}
     "ViewportPlus" {:workspace/directory "~/NesiAwesomeneess/ViewportPlus"}
@@ -176,6 +177,7 @@
     "game-assets" {:workspace/directory "~/game-assets"}
     "gatt" {:workspace/directory "~/sesopenko/gatt"}
     "gdfxr" {:workspace/directory "~/timothyqiu/gdfxr"}
+    "gdlisp" {:workspace/directory "~/Mercerenies/gdlisp"}
     "girouette" {:workspace/directory "~/green-coder/girouette"}
     "godot" {:workspace/directory "~/godotengine/godot"}
     "godot-LDtk-import" {:workspace/directory "~/levigilbert/godot-LDtk-import"}
@@ -234,4 +236,5 @@
     "tools.namespace" {:workspace/directory "~/clojure/tools.namespace"}
     "topgrade" {:workspace/directory "~/topgrade-rs/topgrade"}
     "viewers" {:workspace/directory "~/nextjournal/viewers"}
-    "watch" {:workspace/directory "~/rads/watch"}}}
+    "watch" {:workspace/directory "~/rads/watch"}
+    "when-is-my-ride" {:workspace/directory "~/jackrr/when-is-my-ride"}}}
