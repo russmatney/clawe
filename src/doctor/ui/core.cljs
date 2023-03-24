@@ -83,7 +83,9 @@
 ;; Websocket events
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn on-close [] (log/info "Connection with server closed"))
+(defn on-close []
+  (log/info "Connection with server closed")
+  (log/info "TODO impl reconnect logic"))
 (defn on-error [] (log/info "Connection with server error"))
 (defn on-open []
   (log/info "Connection with server open"))
