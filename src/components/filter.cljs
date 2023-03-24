@@ -159,19 +159,17 @@
 
       [:div
        [:button {:on-click #(swap! filter-detail-open? not)
-                 :class    ["whitespace-nowrap"]
-                 }
+                 :class    ["whitespace-nowrap"]}
         (str (if @filter-detail-open? "Hide" "Show") " filter detail")]]]
 
      ;; active group-by
      [:div [:pre (str ":group-by " items-group-by)]]
 
-     (when @filter-detail-open?
-       ;; active filters
-       (for [[i f] (->> items-filter-by (map-indexed vector))]
-         ^{:key i} [:div
-                    {:class ["font-mono"]}
-                    (str f)]))
+     ;; active filters
+     (for [[i f] (->> items-filter-by (map-indexed vector))]
+       ^{:key i} [:div
+                  {:class ["font-mono"]}
+                  (str f)])
 
      (when @filter-detail-open?
        ;; edit filters
