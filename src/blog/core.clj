@@ -7,7 +7,23 @@
    [db.core :as db]
    [util :refer [ensure-uuid]]
    [clojure.string :as string]
-   [org-crud.core :as org-crud]))
+   [org-crud.core :as org-crud]
+
+   [blog.db :as blog.db]
+   [blog.config :as blog.config]))
+
+(comment
+  (blog.config/reload-config)
+  (blog.config/note-defs)
+
+  ;; WARN also kills nrepl/all systems!
+  (blog.db/refresh-notes)
+
+  (blog.db/notes-by-short-path)
+  (blog.db/notes-by-id)
+
+  )
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; db helpers
