@@ -465,6 +465,63 @@
           {:class ["text-2xl" "pt-4"]}
           "What are ya, taking a load off? GERT BERK TER WORK!"]])])))
 
+(defn focus-item-group [{:keys [item-group label
+                                filter-todos-results hide-completed only-current]}]
+  (let [item-group-open? (uix/state false)]
+    ;; item group
+    [:div
+     {:class ["flex" "flex-col"]}
+     [:div
+      [:hr {:class ["mt-6" "border-city-blue-900"]}]
+      [:div
+       {:class ["p-6" "flex flex-row"]}
+       (cond
+         (#{:priority} (:items-group-by filter-todos-results))
+         (if label
+           [priority-label {:org/priority label}]
+           [:span
+            {:class ["font-nes" "text-city-blue-400"]}
+            "No Priority"])
+
+         (#{:tags} (:items-group-by filter-todos-results))
+         (if label
+           [tags-list {:org/tags #{label}}]
+           [:span
+            {:class ["font-nes" "text-city-blue-400"]}
+            "No tags"])
+
+         (#{:short-path} (:items-group-by filter-todos-results))
+         [:span
+          {:class ["font-nes" "text-city-blue-400"]}
+          [filter-defs/path->basename label]]
+
+         :else
+         [:span
+          {:class ["font-nes" "text-city-blue-400"]}
+          (or
+            ;; TODO parse this label to plain string with org-crud
+            (str label) "None")])
+
+       [:div
+        {:class ["ml-auto"  "text-city-blue-400"]}
+        [:button {:on-click #(swap! item-group-open? not)
+                  :class    ["whitespace-nowrap"]}
+         (str (if @item-group-open? "Hide" "Show") " items")]]]]
+
+     (when @item-group-open?
+       [:div
+        {:class ["flex" "flex-row" "flex-wrap" "justify-around"]}
+
+        (let [items (cond->> item-group
+                      hide-completed (remove completed?)
+                      only-current   (filter current?)
+                      true           sort-todos
+                      true           (map-indexed vector))]
+          (for [[i it] items]
+            ^{:key i}
+            [item-todo-cards it]))])]))
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; filter-grouper config
 
@@ -530,7 +587,7 @@
            :group-by :short-path}
 
           :tagged-current
-          {:filters #{{:filter-key :tags :match "current"}}
+          {:filters  #{{:filter-key :tags :match "current"}}
            :group-by :priority}
 
           :today
@@ -611,55 +668,16 @@
 
      (when (seq (:filtered-items filter-todos-results))
        [:div {:class ["pt-6"]}
-        (for [[i {:keys [item-group label]}]
+
+        (for [[i group-desc]
               (->> (:filtered-item-groups filter-todos-results)
                    (sort-by (comp ->comparable-int :label) <)
                    (map-indexed vector))]
           ^{:key i}
-          [:div
-           {:class ["flex" "flex-col"]}
-           [:div
-            [:hr {:class ["mt-6" "border-city-blue-900"]}]
-            [:div
-             {:class ["p-6"]}
-             (cond
-               (#{:priority} (:items-group-by filter-todos-results))
-               (if label
-                 [priority-label {:org/priority label}]
-                 [:span
-                  {:class ["font-nes" "text-city-blue-400"]}
-                  "No Priority"])
-
-               (#{:tags} (:items-group-by filter-todos-results))
-               (if label
-                 [tags-list {:org/tags #{label}}]
-                 [:span
-                  {:class ["font-nes" "text-city-blue-400"]}
-                  "No tags"])
-
-               (#{:short-path} (:items-group-by filter-todos-results))
-               [:span
-                {:class ["font-nes" "text-city-blue-400"]}
-                [filter-defs/path->basename label]]
-
-               :else
-               [:span
-                {:class ["font-nes" "text-city-blue-400"]}
-                (or
-                  ;; TODO parse this label to plain string with org-crud
-                  (str label) "None")])]]
-
-           [:div
-            {:class ["flex" "flex-row" "flex-wrap" "justify-around"]}
-
-            (let [items (cond->> item-group
-                          @hide-completed (remove completed?)
-                          @only-current   (filter current?)
-                          true            sort-todos
-                          true            (map-indexed vector))]
-              (for [[i it] items]
-                ^{:key i}
-                [item-todo-cards it]))]])])
+          [focus-item-group (assoc group-desc
+                                   :filter-todos-results filter-todos-results
+                                   :hide-completed @hide-completed
+                                   :only-current @only-current)])])
 
      (when (not (seq todos))
        [:div
