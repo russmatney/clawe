@@ -263,6 +263,7 @@ cmd - b : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key dev
 cmd - s : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key spotify
 cmd - e : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key aseprite
 cmd - a : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key slack
+shift + cmd - d : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key discord
 cmd - m : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key messages
 shift + cmd - m : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key mindnode
 shift + cmd - g : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key godot
