@@ -213,6 +213,7 @@
     "org-blog-content" {:workspace/directory "~/russmatney/org-blog-content"}
     "org-crud" {:workspace/directory "~/russmatney/org-crud"}
     "org-roam" {:workspace/directory "~/org-roam/org-roam"}
+    "picture-pages" {:workspace/directory "~/russmatney/picture-pages"}
     "pirates" {:workspace/directory "~/russmatney/pirates"}
     "pluggs" {:workspace/directory "~/russmatney/pluggs"}
     "pollen" {:workspace/directory "~/mbutterick/pollen"}
