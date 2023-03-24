@@ -12,7 +12,8 @@
    [components.filter :as components.filter]
    [components.garden :as components.garden]
    [components.debug :as components.debug]
-   [components.filter-defs :as filter-defs]))
+   [components.filter-defs :as filter-defs]
+   [components.pill :as pill]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; preds
@@ -353,10 +354,12 @@
   [{:keys [hide-completed toggle-hide-completed
            only-current toggle-only-current]}]
   [:div
-   [button {:on-click (fn [_] (toggle-hide-completed))}
-    (if hide-completed "Show completed" "Hide completed")]
-   [button {:on-click (fn [_] (toggle-only-current))}
-    (if only-current "Show all" "Show only current")]])
+   #_{:class ["flex" "flex-row"]}
+   [pill/pill {:on-click toggle-hide-completed
+               :label    (if hide-completed "Show completed" "Hide completed")}]
+   [pill/pill {:on-click toggle-only-current
+               :label
+               (if only-current "Show all" "Show only current")}]])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; sort todos
@@ -649,21 +652,21 @@
 
      [bar (assoc opts :time @time)]
 
-     [:div
-      {:class ["flex" "flex-row" "items-center" "py-2"]}
-
-      ;; TODO rewrite as actions-based api
-      [toggles {:toggle-hide-completed (fn [] (swap! hide-completed not))
-                :hide-completed        @hide-completed
-                :toggle-only-current   (fn [] (swap! only-current not))
-                :only-current          @only-current}]]
-
      [current-stack current]
 
      [:hr {:class ["mb-6" "border-city-blue-900"]}]
      [:div
       {:class ["px-6"
                "text-city-blue-400"]}
+      [:div
+       {:class ["flex" "flex-row" "items-center" "py-2"]}
+
+       ;; TODO rewrite as actions-based api
+       [toggles {:toggle-hide-completed (fn [] (swap! hide-completed not))
+                 :hide-completed        @hide-completed
+                 :toggle-only-current   (fn [] (swap! only-current not))
+                 :only-current          @only-current}]]
+
       (:filter-grouper filter-todos-results)]
 
      (when (seq (:filtered-items filter-todos-results))

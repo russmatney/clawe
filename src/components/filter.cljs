@@ -3,7 +3,8 @@
    [components.floating :as floating]
    [uix.core.alpha :as uix]
    [util :as util]
-   [clojure.string :as string]))
+   [clojure.string :as string]
+   [components.pill :as pill]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; filter def anchor
@@ -117,23 +118,14 @@
     (for [[k {:keys [filters group-by label]}]
           (->> presets (sort-by first))]
       ^{:key k}
-      [:div
-       {:class ["bg-yo-blue-800"
-                "rounded-xl"
-                "px-3" "py-2"
-                "text-sm"
-                "font-mono"
-                "cursor-pointer"
-                (if (#{current-preset} k)
-                  "text-city-pink-400"
-                  "text-city-green-600")
-                "hover:text-city-red-600"]
+      [pill/pill
+       {:label  (or label k)
+        :active (#{current-preset} k)
         :on-click
         (fn [_]
           (set-current-preset k)
           (set-filters filters)
-          (set-group-by group-by))}
-       [:span (or label k)]])]])
+          (set-group-by group-by))}])]])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; filter-grouper full component
