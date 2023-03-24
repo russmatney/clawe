@@ -2,7 +2,6 @@
   (:require
    [cljs.test :refer [deftest is testing]]
    [components.timeline :as sut]
-   [time-literals.data-readers]
    [time-literals.read-write]
    [tick.timezone]
    [tick.locale-en-us]
