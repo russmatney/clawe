@@ -353,13 +353,7 @@
   ;; conditionally hide only-current when there is none
   [{:keys [hide-completed toggle-hide-completed
            only-current toggle-only-current]}]
-  [:div
-   #_{:class ["flex" "flex-row"]}
-   [pill/pill {:on-click toggle-hide-completed
-               :label    (if hide-completed "Show completed" "Hide completed")}]
-   [pill/pill {:on-click toggle-only-current
-               :label
-               (if only-current "Show all" "Show only current")}]])
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; sort todos
@@ -630,16 +624,29 @@
   ;; TODO the 'current' usage in this widget could be a 'tag' based feature
   ;; i.e. based on arbitrary tags, e.g. if that's our 'mode' right now
   ;; i.e. 'current' is an execution mode - another mode might be pre or post execution
-  (let [focus-data           (use-focus/use-focus-data)
-        {:keys [todos]}      @focus-data
+  (let [focus-data      (use-focus/use-focus-data)
+        {:keys [todos]} @focus-data
+
+        hide-completed (uix/state nil)
+        only-current   (uix/state nil #_(if current true nil))
+        pills
+        [{:on-click #(swap! hide-completed not)
+          :label    (if @hide-completed "Show completed" "Hide completed")
+          :active   @hide-completed}
+         {:on-click #(swap! only-current not)
+          :label    (if @only-current "Show all" "Show only current")
+          :active   @only-current}]
+
+
         filter-todos-results (components.filter/use-filter
-                               (->fg-config todos))
+                               (assoc
+                                 (->fg-config todos)
+                                 :extra-preset-pills pills))
         current              (some->> todos (filter current?) seq)
 
-        time           (uix/state (t/zoned-date-time))
-        interval       (atom nil)
-        hide-completed (uix/state nil)
-        only-current   (uix/state nil #_(if current true nil))]
+        time     (uix/state (t/zoned-date-time))
+        interval (atom nil)
+        ]
     (uix/with-effect [@interval]
       (reset! interval (js/setInterval #(reset! time (t/zoned-date-time)) 1000))
       (fn [] (js/clearInterval @interval)))
@@ -658,14 +665,6 @@
      [:div
       {:class ["px-6"
                "text-city-blue-400"]}
-      [:div
-       {:class ["flex" "flex-row" "items-center" "py-2"]}
-
-       ;; TODO rewrite as actions-based api
-       [toggles {:toggle-hide-completed (fn [] (swap! hide-completed not))
-                 :hide-completed        @hide-completed
-                 :toggle-only-current   (fn [] (swap! only-current not))
-                 :only-current          @only-current}]]
 
       (:filter-grouper filter-todos-results)]
 

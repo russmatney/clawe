@@ -97,37 +97,6 @@
                 [:span.p-1.text-xl.w-10.text-center (str "(" ct ")")]]))])])]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; preset-filters
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn preset-filters [{:keys [presets
-                              current-preset
-                              set-filters
-                              set-current-preset
-                              set-group-by]}]
-  [:div
-   {:class ["flex" "flex-col"]}
-   [:span {:class ["font-nes" "text-xl"
-                   "cursor-pointer"
-                   "pb-2"]}
-    "Presets"]
-
-   [:div
-    {:class ["flex" "flex-row" "ml-auto" "flex-wrap"
-             "gap-1"]}
-    (for [[k {:keys [filters group-by label]}]
-          (->> presets (sort-by first))]
-      ^{:key k}
-      [pill/pill
-       {:label  (or label k)
-        :active (#{current-preset} k)
-        :on-click
-        (fn [_]
-          (set-current-preset k)
-          (set-filters filters)
-          (set-group-by group-by))}])]])
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; filter-grouper full component
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -139,7 +108,13 @@
   [{:keys [all-filter-defs
            items-filter-by
            items-group-by
-           show-filters-inline]
+           show-filters-inline
+           presets
+           current-preset
+           set-filters
+           set-current-preset
+           set-group-by
+           extra-preset-pills]
     :as   config}]
   (let [filter-detail-open? (uix/state false)]
     [:div
@@ -147,12 +122,34 @@
 
      [:div
       {:class ["pb-3" "flex" "flex-row"]}
-      [preset-filters config]
-
       [:div
-       [:button {:on-click #(swap! filter-detail-open? not)
-                 :class    ["whitespace-nowrap"]}
-        (str (if @filter-detail-open? "Hide" "Show") " filter detail")]]]
+       {:class ["flex" "flex-col"]}
+       [:div
+        {:class ["flex" "flex-row"]}
+        [:span {:class ["font-nes" "text-xl"
+                        "cursor-pointer"
+                        "pb-2"]}
+         "Presets"]
+
+        [:div
+         {:class ["ml-auto"]}
+         [:button {:on-click #(swap! filter-detail-open? not)
+                   :class    ["whitespace-nowrap"]}
+          (str (if @filter-detail-open? "Hide" "Show") " filter detail")]]]
+
+       [pill/cluster
+        (->> presets
+             (sort-by first)
+             (map
+               (fn [[k {:keys [filters group-by label]}]]
+                 {:label  (or label k)
+                  :active (#{current-preset} k)
+                  :on-click
+                  (fn [_]
+                    (set-current-preset k)
+                    (set-filters filters)
+                    (set-group-by group-by))}))
+             (concat (or extra-preset-pills [])))]]]
 
      ;; active group-by
      [:div [:pre (str ":group-by " items-group-by)]]

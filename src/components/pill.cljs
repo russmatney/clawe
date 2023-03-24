@@ -20,6 +20,9 @@
 
 (defn cluster [xs]
   [:div
+   {:class ["w-full"
+            "flex" "flex-row" "flex-wrap"
+            "justify-center"]}
    (for [x xs]
      ^{:key (str x)}
      [pill x])])
