@@ -27,12 +27,14 @@
    [pages.journal :as pages.journal]
    [hooks.db :as hooks.db]
 
+   [doctor.ui.views.blog :as views.blog]
    [doctor.ui.views.focus :as views.focus]
    [doctor.ui.views.topbar :as views.topbar]
    [doctor.ui.views.dashboard :as views.dashboard]))
 
 (comment
   :hello)
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; routes, home
@@ -54,7 +56,8 @@
    {:route "/garden" :page-name :page/garden :label "Garden" :comp pages.garden/page}
    {:route "/posts" :page-name :page/posts :label "Posts" :comp pages.posts/page}
    {:route "/journal" :page-name :page/journal :label "Journal" :comp pages.journal/page}
-   {:route "/focus" :page-name :page/focus :label "Focus Widget" :comp views.focus/widget :comp-only true}])
+   {:route "/focus" :page-name :page/focus :label "Focus Widget" :comp views.focus/widget :comp-only true}
+   {:route "/blog" :page-name :page/blog :label "Blog Widget" :comp views.blog/widget :comp-only true}])
 
 (def routes
   (->> route-defs
