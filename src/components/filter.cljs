@@ -110,11 +110,11 @@
            items-group-by
            show-filters-inline
            presets
+           extra-preset-pills
            current-preset
            set-filters
            set-current-preset
-           set-group-by
-           extra-preset-pills]
+           set-group-by]
     :as   config}]
   (let [filter-detail-open? (uix/state false)]
     [:div

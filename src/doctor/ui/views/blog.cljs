@@ -9,9 +9,14 @@
 
 (defn bar []
   [:div
-   {:class ["bg-city-blue-600" "h-8"
+   {:class ["bg-city-blue-600"
             "w-full"
-            "flex" "flex-col"]}])
+            "flex" "flex-col"]}
+   [:span
+    {:class ["font-mono"
+             "text-city-blue-900"
+             "p-2"]}
+    "clawe/blog"]])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; note-comp
@@ -100,26 +105,110 @@
             [note-comp it]))])]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; presets
+
+(defn presets []
+  ;; these presets might be higher level modes, i.e. they might imply other ui changes
+  {:repo
+   {:filters
+    #{{:filter-key :short-path :match-str-includes-any
+       ["russmatney/clawe"
+        "russmatney/dino"
+        "russmatney/org-crud"]}}}
+
+   :clawe
+   {:filters
+    ;; TODO add the clawe workspace here as well
+    #{{:filter-key :short-path :match-str-includes-any ["russmatney/clawe"]}
+      ;; TODO support opting in vs excluding with this
+      ;; in some cases, we want 'AND' filters, in others, 'OR'
+      ;; {:filter-key :tags :match "clawe"}
+      }}
+
+   :org-crud
+   {:filters
+    #{{:filter-key :short-path :match-str-includes-any ["russmatney/org-crud"]}
+      ;; {:filter-key :tags :match "orgcrud"}
+      }}
+
+   :dino
+   {:filters
+    #{{:filter-key :short-path :match-str-includes-any ["russmatney/dino"]}
+      ;; {:filter-key :tags :match "dino"}
+      }}
+
+   :incomplete
+   {:filters
+    #{{:filter-key :status :match :status/not-started}
+      {:filter-key :status :match :status/in-progress}}
+    :group-by :priority
+    :label    "Incomplete"}
+
+   :prioritized
+   {:filters
+    #{{:filter-key :priority :match-fn (comp not nil?)}}}
+
+   :prioritized-incomplete
+   {:filters
+    #{{:filter-key :status :match :status/not-started}
+      {:filter-key :status :match :status/in-progress}
+      {:filter-key :priority :match-fn (comp not nil?)}}}
+
+   :unprioritized
+   {:filters
+    #{{:filter-key :priority :match-fn nil?}}}
+
+   :tagged-current
+   {:filters #{{:filter-key :tags :match "current"}}}
+
+   :today
+   {:filters
+    #{{:filter-key :short-path :match-str-includes-any #{(filter-defs/short-path-days-ago 0)}}}
+    :default true}
+
+   :today-complete
+   {:filters
+    #{{:filter-key :status :match :status/done}
+      {:filter-key :short-path :match-str-includes-any #{(filter-defs/short-path-days-ago 0)}}}}
+
+   :today-incomplete
+   {:filters
+    #{{:filter-key :status :match :status/in-progress}
+      {:filter-key :status :match :status/not-started}
+      {:filter-key :short-path :match-str-includes-any #{(filter-defs/short-path-days-ago 0)}}}}
+
+   :last-three-days
+   {:filters
+    #{{:filter-key :short-path :match-str-includes-any
+       (->> 3 range (map filter-defs/short-path-days-ago))}}
+    :group-by :short-path}
+
+   :last-seven-days
+   {:filters
+    #{{:filter-key :short-path :match-str-includes-any
+       (->> 7 range (map filter-defs/short-path-days-ago))}}
+    :group-by :short-path}})
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; main widget
 
-(defn widget [opts]
+(defn widget [_opts]
   ;; TODO the 'current' usage in this widget could be a 'tag' based feature
   ;; i.e. based on arbitrary tags, e.g. if that's our 'mode' right now
   ;; i.e. 'current' is an execution mode - another mode might be pre or post execution
   (let [blog-data           (use-blog/use-blog-data)
         {:keys [all-notes]} @blog-data
-        notes               all-notes
 
         sample-pill-active (uix/state nil)
-        pills
-        [{:on-click #(swap! sample-pill-active not)
-          :label    "Sample Pill"
-          :active   @sample-pill-active}]
 
+        pills                [{:on-click #(swap! sample-pill-active not)
+                               :label    "Sample Pill"
+                               :active   @sample-pill-active}]
         filter-todos-results (components.filter/use-filter
                                (assoc filter-defs/fg-config
+                                      :presets (presets)
                                       :extra-preset-pills pills
-                                      :items notes))]
+                                      :items all-notes))]
     [:div
      {:class ["bg-city-blue-800"
               "bg-opacity-90"
@@ -145,7 +234,7 @@
           [note-group (assoc group-desc
                              :filter-todos-results filter-todos-results)])])
 
-     (when (not (seq notes))
+     (when (not (seq all-notes))
        [:div
         {:class ["text-bold" "text-city-pink-300" "p-4"]}
         [:h1

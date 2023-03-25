@@ -510,102 +510,98 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; filter-grouper config
+;; filter-grouper presets
 
-(defn ->fg-config [todos]
-  (assoc filter-defs/fg-config
-         :items todos
-         :show-filters-inline true
-         :presets
-         ;; these presets might be higher level modes, i.e. they might imply other ui changes
-         {:repo
-          {:filters
-           #{{:filter-key :short-path :match-str-includes-any
-              ["russmatney/clawe"
-               "russmatney/dino"
-               "russmatney/org-crud"]}}
-           :group-by :priority}
+(defn presets []
+  ;; these presets might be higher level modes, i.e. they might imply other ui changes
+  {:repo
+   {:filters
+    #{{:filter-key :short-path :match-str-includes-any
+       ["russmatney/clawe"
+        "russmatney/dino"
+        "russmatney/org-crud"]}}
+    :group-by :priority}
 
-          :clawe
-          {:filters
-           ;; TODO add the clawe workspace here as well
-           #{{:filter-key :short-path :match-str-includes-any ["russmatney/clawe"]}
-             ;; TODO support opting in vs excluding with this
-             ;; in some cases, we want 'AND' filters, in others, 'OR'
-             ;; {:filter-key :tags :match "clawe"}
-             }
-           :group-by :priority}
-          :org-crud
-          {:filters
-           #{{:filter-key :short-path :match-str-includes-any ["russmatney/org-crud"]}
-             ;; {:filter-key :tags :match "orgcrud"}
-             }
-           :group-by :priority}
-          :dino
-          {:filters
-           #{{:filter-key :short-path :match-str-includes-any ["russmatney/dino"]}
-             ;; {:filter-key :tags :match "dino"}
-             }
-           :group-by :priority}
+   :clawe
+   {:filters
+    ;; TODO add the clawe workspace here as well
+    #{{:filter-key :short-path :match-str-includes-any ["russmatney/clawe"]}
+      ;; TODO support opting in vs excluding with this
+      ;; in some cases, we want 'AND' filters, in others, 'OR'
+      ;; {:filter-key :tags :match "clawe"}
+      }
+    :group-by :priority}
+   :org-crud
+   {:filters
+    #{{:filter-key :short-path :match-str-includes-any ["russmatney/org-crud"]}
+      ;; {:filter-key :tags :match "orgcrud"}
+      }
+    :group-by :priority}
+   :dino
+   {:filters
+    #{{:filter-key :short-path :match-str-includes-any ["russmatney/dino"]}
+      ;; {:filter-key :tags :match "dino"}
+      }
+    :group-by :priority}
 
-          :incomplete
-          {:filters
-           #{{:filter-key :status :match :status/not-started}
-             {:filter-key :status :match :status/in-progress}}
-           :group-by :priority
-           :label    "Incomplete"
-           :default  true}
+   :incomplete
+   {:filters
+    #{{:filter-key :status :match :status/not-started}
+      {:filter-key :status :match :status/in-progress}}
+    :group-by :priority
+    :label    "Incomplete"
+    :default  true}
 
-          :prioritized
-          {:filters
-           #{{:filter-key :priority :match-fn (comp not nil?)}}
-           :group-by :priority}
+   :prioritized
+   {:filters
+    #{{:filter-key :priority :match-fn (comp not nil?)}}
+    :group-by :priority}
 
-          :prioritized-incomplete
-          {:filters
-           #{{:filter-key :status :match :status/not-started}
-             {:filter-key :status :match :status/in-progress}
-             {:filter-key :priority :match-fn (comp not nil?)}}
-           :group-by :priority}
+   :prioritized-incomplete
+   {:filters
+    #{{:filter-key :status :match :status/not-started}
+      {:filter-key :status :match :status/in-progress}
+      {:filter-key :priority :match-fn (comp not nil?)}}
+    :group-by :priority}
 
-          :unprioritized
-          {:filters
-           #{{:filter-key :priority :match-fn nil?}}
-           :group-by :short-path}
+   :unprioritized
+   {:filters
+    #{{:filter-key :priority :match-fn nil?}}
+    :group-by :short-path}
 
-          :tagged-current
-          {:filters  #{{:filter-key :tags :match "current"}}
-           :group-by :priority}
+   :tagged-current
+   {:filters  #{{:filter-key :tags :match "current"}}
+    :group-by :priority}
 
-          :today
-          {:filters
-           #{{:filter-key :short-path :match-str-includes-any #{(filter-defs/short-path-days-ago 0)}}}
-           :group-by :priority}
+   :today
+   {:filters
+    #{{:filter-key :short-path :match-str-includes-any #{(filter-defs/short-path-days-ago 0)}}}
+    :group-by :priority}
 
-          :today-complete
-          {:filters
-           #{{:filter-key :status :match :status/done}
-             {:filter-key :short-path :match-str-includes-any #{(filter-defs/short-path-days-ago 0)}}}
-           :group-by :priority}
+   :today-complete
+   {:filters
+    #{{:filter-key :status :match :status/done}
+      {:filter-key :short-path :match-str-includes-any #{(filter-defs/short-path-days-ago 0)}}}
+    :group-by :priority}
 
-          :today-incomplete
-          {:filters
-           #{{:filter-key :status :match :status/in-progress}
-             {:filter-key :status :match :status/not-started}
-             {:filter-key :short-path :match-str-includes-any #{(filter-defs/short-path-days-ago 0)}}}
-           :group-by :priority}
+   :today-incomplete
+   {:filters
+    #{{:filter-key :status :match :status/in-progress}
+      {:filter-key :status :match :status/not-started}
+      {:filter-key :short-path :match-str-includes-any #{(filter-defs/short-path-days-ago 0)}}}
+    :group-by :priority}
 
-          :last-three-days
-          {:filters
-           #{{:filter-key :short-path :match-str-includes-any
-              (->> 3 range (map filter-defs/short-path-days-ago))}}
-           :group-by :short-path}
+   :last-three-days
+   {:filters
+    #{{:filter-key :short-path :match-str-includes-any
+       (->> 3 range (map filter-defs/short-path-days-ago))}}
+    :group-by :short-path}
 
-          :last-seven-days
-          {:filters
-           #{{:filter-key :short-path :match-str-includes-any
-              (->> 7 range (map filter-defs/short-path-days-ago))}}
-           :group-by :short-path}}))
+   :last-seven-days
+   {:filters
+    #{{:filter-key :short-path :match-str-includes-any
+       (->> 7 range (map filter-defs/short-path-days-ago))}}
+    :group-by :short-path}})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; main widget
@@ -628,9 +624,11 @@
           :active   @only-current}]
 
         filter-todos-results (components.filter/use-filter
-                               (assoc
-                                 (->fg-config todos)
-                                 :extra-preset-pills pills))
+                               (assoc filter-defs/fg-config
+                                      :items todos
+                                      :show-filters-inline true
+                                      :extra-preset-pills pills
+                                      :presets (presets)))
         current              (some->> todos (filter current?) seq)
 
         time     (uix/state (t/zoned-date-time))
