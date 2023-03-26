@@ -46,8 +46,9 @@
 ;; note-group
 
 (defn note-group [{:keys [item-group label
-                          filter-todos-results]}]
-  (let [item-group-open? (uix/state false)]
+                          filter-data]}]
+  (let [{:keys [items-group-by]} filter-data
+        item-group-open?         (uix/state false)]
     ;; item group
     [:div
      {:class ["flex" "flex-col"]}
@@ -57,7 +58,7 @@
        {:class ["p-6" "flex flex-row"]}
        ;; TODO filter-grouper group-by label rendering needs love
        (cond
-         (#{:priority} (:items-group-by filter-todos-results))
+         (#{:priority} items-group-by)
          (if label
            [components.garden/priority-label
             ;; mocking an org-item here
@@ -66,7 +67,7 @@
             {:class ["font-nes" "text-city-blue-400"]}
             "No Priority"])
 
-         (#{:tags} (:items-group-by filter-todos-results))
+         (#{:tags} items-group-by)
          (if label
            [:div
             ;; TODO style
@@ -75,7 +76,7 @@
             {:class ["font-nes" "text-city-blue-400"]}
             "No tags"])
 
-         (#{:short-path} (:items-group-by filter-todos-results))
+         (#{:short-path} items-group-by)
          [:span
           {:class ["font-nes" "text-city-blue-400"]}
           [filter-defs/path->basename label]]
@@ -109,85 +110,28 @@
 
 (defn presets []
   ;; these presets might be higher level modes, i.e. they might imply other ui changes
-  {:repo
-   {:filters
-    #{{:filter-key :short-path :match-str-includes-any
-       ["russmatney/clawe"
-        "russmatney/dino"
-        "russmatney/org-crud"]}}}
+  {:tags
+   {:filters  {}
+    :group-by :filters/tags}
 
-   :clawe
-   {:filters
-    ;; TODO add the clawe workspace here as well
-    #{{:filter-key :short-path :match-str-includes-any ["russmatney/clawe"]}
-      ;; TODO support opting in vs excluding with this
-      ;; in some cases, we want 'AND' filters, in others, 'OR'
-      ;; {:filter-key :tags :match "clawe"}
-      }}
-
-   :org-crud
-   {:filters
-    #{{:filter-key :short-path :match-str-includes-any ["russmatney/org-crud"]}
-      ;; {:filter-key :tags :match "orgcrud"}
-      }}
-
-   :dino
-   {:filters
-    #{{:filter-key :short-path :match-str-includes-any ["russmatney/dino"]}
-      ;; {:filter-key :tags :match "dino"}
-      }}
-
-   :incomplete
-   {:filters
-    #{{:filter-key :status :match :status/not-started}
-      {:filter-key :status :match :status/in-progress}}
-    :group-by :priority
-    :label    "Incomplete"}
-
-   :prioritized
-   {:filters
-    #{{:filter-key :priority :match-fn (comp not nil?)}}}
-
-   :prioritized-incomplete
-   {:filters
-    #{{:filter-key :status :match :status/not-started}
-      {:filter-key :status :match :status/in-progress}
-      {:filter-key :priority :match-fn (comp not nil?)}}}
-
-   :unprioritized
-   {:filters
-    #{{:filter-key :priority :match-fn nil?}}}
-
-   :tagged-current
-   {:filters #{{:filter-key :tags :match "current"}}}
-
+   :last-modified-date
+   {:filters  {}
+    :group-by :filters/last-modified-date}
    :today
    {:filters
-    #{{:filter-key :short-path :match-str-includes-any #{(filter-defs/short-path-days-ago 0)}}}
-    :default true}
-
-   :today-complete
-   {:filters
-    #{{:filter-key :status :match :status/done}
-      {:filter-key :short-path :match-str-includes-any #{(filter-defs/short-path-days-ago 0)}}}}
-
-   :today-incomplete
-   {:filters
-    #{{:filter-key :status :match :status/in-progress}
-      {:filter-key :status :match :status/not-started}
-      {:filter-key :short-path :match-str-includes-any #{(filter-defs/short-path-days-ago 0)}}}}
+    #{{:filter-key :filters/short-path :match-str-includes-any #{(filter-defs/short-path-days-ago 0)}}}}
 
    :last-three-days
    {:filters
-    #{{:filter-key :short-path :match-str-includes-any
+    #{{:filter-key :filters/short-path :match-str-includes-any
        (->> 3 range (map filter-defs/short-path-days-ago))}}
-    :group-by :short-path}
+    :group-by :filters/short-path}
 
    :last-seven-days
    {:filters
-    #{{:filter-key :short-path :match-str-includes-any
+    #{{:filter-key :filters/short-path :match-str-includes-any
        (->> 7 range (map filter-defs/short-path-days-ago))}}
-    :group-by :short-path}})
+    :group-by :filters/short-path}})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; main widget
@@ -201,14 +145,14 @@
 
         sample-pill-active (uix/state nil)
 
-        pills                [{:on-click #(swap! sample-pill-active not)
-                               :label    "Sample Pill"
-                               :active   @sample-pill-active}]
-        filter-todos-results (components.filter/use-filter
-                               (assoc filter-defs/fg-config
-                                      :presets (presets)
-                                      :extra-preset-pills pills
-                                      :items all-notes))]
+        pills       [{:on-click #(swap! sample-pill-active not)
+                      :label    "Sample Pill"
+                      :active   @sample-pill-active}]
+        filter-data (components.filter/use-filter
+                      (assoc filter-defs/fg-config
+                             :presets (presets)
+                             :extra-preset-pills pills
+                             :items all-notes))]
     [:div
      {:class ["bg-city-blue-800"
               "bg-opacity-90"
@@ -222,17 +166,17 @@
       {:class ["px-6"
                "text-city-blue-400"]}
 
-      (:filter-grouper filter-todos-results)]
+      (:filter-grouper filter-data)]
 
-     (when (seq (:filtered-items filter-todos-results))
+     (when (seq (:filtered-items filter-data))
        [:div {:class ["pt-6"]}
 
         (for [[i group-desc]
-              (->> (:filtered-item-groups filter-todos-results)
+              (->> (:filtered-item-groups filter-data)
                    (map-indexed vector))]
           ^{:key i}
           [note-group (assoc group-desc
-                             :filter-todos-results filter-todos-results)])])
+                             :filter-data filter-data)])])
 
      (when (not (seq all-notes))
        [:div

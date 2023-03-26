@@ -254,8 +254,11 @@
     (and p (string? p)) (.charCodeAt p)
     (int? p)            p
     (keyword? p)        (->comparable-int (name p))
+
+    ;; TODO compare dates
+
     ;; some high val
-    :else               1000))
+    :else 1000))
 
 
 (defn use-filter
@@ -280,6 +283,9 @@
                                          (group-by :filter-key)
                                          (map (partial
                                                 filter-match-fn all-filter-defs)))))))
+
+        ;; TODO support sorting items, both here and at the group level
+        filtered-items filtered-items
 
         filtered-item-groups
         (->> filtered-items

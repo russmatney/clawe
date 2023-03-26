@@ -34,41 +34,67 @@
           (->> (take 10) (apply str))))
 
 (def all-filter-defs
-  {:short-path {:label            "File"
-                :group-by         (fn [it]
-                                    (or (:org/short-path it) (:org/source-file it)))
-                :group-filters-by (fn [fname]
-                                    (some-> fname (string/split #"/") reverse (->> (drop 1) first)))
-                :filter-options   [{:label    "All Dailies"
-                                    :match-fn is-daily-fname}
-                                   {:label    "All Workspaces"
-                                    :match-fn is-workspace-fname}]
-                :format-label     path->basename}
-   :tags       {:label    "Tags"
-                :group-by :org/tags
-                ;; TODO show untagged as well
-                }
-   :status     {:label    "Status"
-                :group-by :org/status}
-   :priority   {:label    "Priority"
-                :group-by :org/priority}
-   :scheduled  {:label        "Scheduled"
-                :group-by     :org/scheduled
-                :format-label (fn [d] (if d
-                                        (if (string? d) d
-                                            (->> d dates.tick/add-tz
-                                                 (t/format "MMM d, YYYY")))
-                                        "Unscheduled"))}})
+  {:filters/short-path {:label            "File"
+                        :group-by         (fn [it]
+                                            (or (:org/short-path it) (:org/source-file it)))
+                        :group-filters-by (fn [fname]
+                                            (some-> fname (string/split #"/") reverse (->> (drop 1) first)))
+                        :filter-options   [{:label    "All Dailies"
+                                            :match-fn is-daily-fname}
+                                           {:label    "All Workspaces"
+                                            :match-fn is-workspace-fname}]
+                        :format-label     path->basename}
+   :filters/tags       {:label    "Tags"
+                        :group-by :org/tags
+                        ;; TODO show untagged as well
+                        }
+   :filters/status     {:label    "Status"
+                        :group-by :org/status}
+   :filters/priority   {:label    "Priority"
+                        :group-by :org/priority}
+   :filters/scheduled  {:label        "Scheduled"
+                        :group-by     :org/scheduled
+                        :format-label (fn [d] (if d
+                                                (if (string? d) d
+                                                    (->> d dates.tick/add-tz
+                                                         (t/format "MMM d, YYYY")))
+                                                "Unscheduled"))}
+
+   :filters/last-modified-date
+   {:label          "Last Modified Date"
+    :group-by       (fn [it]
+                      ;; TODO safe date conversion
+                      (:file/last-modified it))
+    :filter-options [{:label    "Today"
+                      :match-fn (fn [_]
+                                  ;; safe today func
+                                  )}
+                     {:label    "Yesterday"
+                      :match-fn (fn [_]
+                                  ;; safe yesterday func
+                                  )}
+                     {:label    "Last 3 days"
+                      :match-fn (fn [_]
+                                  ;; safe yesterday func
+                                  )}
+                     {:label    "Last 7 days"
+                      :match-fn (fn [_]
+                                  ;; safe yesterday func
+                                  )}
+                     ]
+    :format-label   (fn [t]
+                      ;; format date
+                      (str t))}})
 
 (def fg-config
   "The filter-grouper config."
   {:all-filter-defs all-filter-defs
-   :preset-filter-groups
+   :presets
    {:default
     {:filters
-     #{{:filter-key :status :match :status/not-started}
-       {:filter-key :status :match :status/in-progress}
-       {:filter-key :short-path :match "todo/journal.org"}
-       {:filter-key :short-path :match "todo/projects.org"}
-       {:filter-key :short-path :match-fn is-daily-fname :label "All Dailies"}}
-     :group-by :short-path}}})
+     #{{:filter-key :filters/status :match :status/not-started}
+       {:filter-key :filters/status :match :status/in-progress}
+       {:filter-key :filters/short-path :match "todo/journal.org"}
+       {:filter-key :filters/short-path :match "todo/projects.org"}
+       {:filter-key :filters/short-path :match-fn is-daily-fname :label "All Dailies"}}
+     :group-by :filters/short-path}}})
