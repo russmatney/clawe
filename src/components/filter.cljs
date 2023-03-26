@@ -4,7 +4,77 @@
    [uix.core.alpha :as uix]
    [util :as util]
    [clojure.string :as string]
-   [components.pill :as pill]))
+   [components.pill :as pill]
+
+   [components.filter-defs :as filter-defs]
+   ))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; grouped filter items component
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn group->comp
+  [{:keys [item-group label item->comp filter-data]}]
+  (let [{:keys [items-group-by]} filter-data
+        item-group-open?         (uix/state false)]
+    ;; item group
+    [:div
+     {:class ["flex" "flex-col"]}
+     [:div
+      [:hr {:class ["mt-6" "border-city-blue-900"]}]
+      [:div
+       {:class ["p-6" "flex flex-row"]}
+       ;; TODO support these label fallbacks via filter-defs
+       (cond
+         (#{:priority} items-group-by)
+         (if label label
+             [:span
+              {:class ["font-nes" "text-city-blue-400"]}
+              "No Priority"])
+
+         (#{:tags} items-group-by)
+         (if label label
+             [:span
+              {:class ["font-nes" "text-city-blue-400"]}
+              "No tags"])
+
+         (#{:short-path} items-group-by)
+         [:span
+          {:class ["font-nes" "text-city-blue-400"]}
+          [filter-defs/path->basename label]]
+
+         :else
+         [:span
+          {:class ["font-nes" "text-city-blue-400"]}
+          (or
+            ;; TODO parse this label to plain string with org-crud
+            (str label) "None")])
+
+       [:div
+        {:class ["ml-auto"  "text-city-blue-400"]}
+        [:button {:on-click #(swap! item-group-open? not)
+                  :class    ["whitespace-nowrap"]}
+         (str (if @item-group-open? "Hide" "Show")
+              " " (count item-group) " item(s)")]]]]
+
+     (when @item-group-open?
+       [:div
+        {:class ["flex" "flex-row" "flex-wrap" "justify-around"]}
+
+        (let [items (->> item-group (map-indexed vector))]
+          (for [[i it] items]
+            ^{:key (:org/name it i)}
+            [item->comp it]))])]))
+
+(defn items-by-group [{:keys [item->comp] :as filter-data}]
+  [:div
+   (for [[i group-desc]
+         (->> (:filtered-item-groups filter-data)
+              (map-indexed vector))]
+     ^{:key (:label group-desc i)}
+     [group->comp (assoc group-desc
+                         :item->comp item->comp
+                         :filter-data filter-data)])])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; filter def anchor
@@ -108,6 +178,7 @@
   [{:keys [all-filter-defs
            items-filter-by
            items-group-by
+           sort-groups-key
            show-filters-inline
            presets
            extra-preset-pills
@@ -152,13 +223,19 @@
              (concat (or extra-preset-pills [])))]]]
 
      ;; active group-by
-     [:div [:pre (str ":group-by " items-group-by)]]
+     [:div [:pre (str ":group-by-key " items-group-by)]]
+
+     ;; active sort-groups-key
+     [:div
+      [:pre ":sort-groups-key " sort-groups-key]]
 
      ;; active filters
-     (for [[i f] (->> items-filter-by (map-indexed vector))]
-       ^{:key i} [:div
-                  {:class ["font-mono"]}
-                  (str f)])
+     [:div
+      [:pre ":active-filters "]
+      (for [[i f] (->> items-filter-by (map-indexed vector))]
+        ^{:key i} [:div
+                   {:class ["font-mono"]}
+                   (str f)])]
 
      (when @filter-detail-open?
        ;; edit filters
@@ -249,11 +326,11 @@
 ;; use-filter
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn ->comparable-int [p]
+(defn label->comparable-int [p]
   (cond
     (and p (string? p)) (.charCodeAt p)
     (int? p)            p
-    (keyword? p)        (->comparable-int (name p))
+    (keyword? p)        (label->comparable-int (name p))
 
     ;; TODO compare dates
 
@@ -264,22 +341,23 @@
 (defn use-filter
   [{:keys [items all-filter-defs] :as config}]
   ;; TODO cut off this default usage with local storage read/write for last-set preset
-  (let [[d-key default]  (or (some->> config :presets (filter (comp :default second)) first)
-                             (some->> config :presets (filter (comp #{:default} first)) first))
-        default-filters  (or (some-> default :filters) #{})
-        default-group-by (or (some-> default :group-by)
-                             (some-> all-filter-defs first first))
+  (let [[d-key default]      (or (some->> config :presets (filter (comp :default second)) first)
+                                 (some->> config :presets (filter (comp #{:default} first)) first))
+        default-filters      (or (some-> default :filters) #{})
+        default-group-by-key (or (some-> default :group-by)
+                                 (some-> all-filter-defs first first))
 
-        items-filter-by (uix/state default-filters)
-        items-group-by  (uix/state default-group-by)
+        active-filters  (uix/state default-filters)
+        group-by-key    (uix/state default-group-by-key)
+        sort-groups-key (uix/state nil)
         current-preset  (uix/state d-key)
 
         filtered-items
-        (if-not (seq @items-filter-by) items
+        (if-not (seq @active-filters) items
                 (->> items (filter
                              (apply every-pred
                                     ;; every predicate must match
-                                    (->> @items-filter-by
+                                    (->> @active-filters
                                          (group-by :filter-key)
                                          (map (partial
                                                 filter-match-fn all-filter-defs)))))))
@@ -287,12 +365,21 @@
         ;; TODO support sorting items, both here and at the group level
         filtered-items filtered-items
 
+        group-by-f (or (some-> @group-by-key all-filter-defs :group-by)
+                       (fn [_]
+                         (println "WARN: no group-by-f could be determined")
+                         :default))
+
         filtered-item-groups
         (->> filtered-items
-             (group-by (some-> @items-group-by all-filter-defs :group-by))
+             (group-by group-by-f)
              util/expand-coll-group-bys
-             (map (fn [[label its]] {:item-group its :label label}))
-             (sort-by (comp ->comparable-int :label) <))]
+             (map (fn [[label its]] {:item-group its :label label})))
+
+        sort-groups-f        (some-> @sort-groups-key all-filter-defs :sort-groups-fn)
+        filtered-item-groups (if sort-groups-f
+                               (sort-by sort-groups-f filtered-item-groups)
+                               (sort-by (comp label->comparable-int :label) < filtered-item-groups))]
 
     {:filter-grouper
      [filter-grouper
@@ -300,16 +387,18 @@
           (merge
             {:filtered-items     filtered-items
              :current-preset     @current-preset
-             :items-filter-by    @items-filter-by
-             :items-group-by     @items-group-by
+             :items-filter-by    @active-filters
+             :items-group-by     @group-by-key
+             :sort-groups-key    @sort-groups-key
              :set-current-preset #(reset! current-preset %)
-             :set-group-by       #(reset! items-group-by %)
-             :set-filters        #(reset! items-filter-by %)
+             :set-group-by       #(reset! group-by-key %)
+             :set-filters        #(reset! active-filters %)
              :toggle-filter-by
              (fn [f-by]
                ;; TODO filters that use funcs won't match/exclude here
-               (swap! items-filter-by #(if (% f-by) (disj % f-by) (conj % f-by))))}))]
+               (swap! active-filters #(if (% f-by) (disj % f-by) (conj % f-by))))}))]
      :filtered-items       filtered-items
      :filtered-item-groups filtered-item-groups
-     :items-group-by       @items-group-by
-     :items-filter-by      @items-filter-by}))
+     :items-group-by       @group-by-key
+     :items-filter-by      @active-filters
+     :sort-groups-key      @sort-groups-key}))

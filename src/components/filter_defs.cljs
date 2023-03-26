@@ -44,21 +44,25 @@
                                            {:label    "All Workspaces"
                                             :match-fn is-workspace-fname}]
                         :format-label     path->basename}
-   :filters/tags       {:label    "Tags"
-                        :group-by :org/tags
+   :filters/tags       {:label         "Tags"
+                        :group-by      :org/tags
+                        :sort-group-by (fn [[label group]]
+                                         )
                         ;; TODO show untagged as well
+
+                        ;; :format-label string/lower-case
                         }
-   :filters/status     {:label    "Status"
-                        :group-by :org/status}
-   :filters/priority   {:label    "Priority"
-                        :group-by :org/priority}
-   :filters/scheduled  {:label        "Scheduled"
-                        :group-by     :org/scheduled
-                        :format-label (fn [d] (if d
-                                                (if (string? d) d
-                                                    (->> d dates.tick/add-tz
-                                                         (t/format "MMM d, YYYY")))
-                                                "Unscheduled"))}
+   :filters/status    {:label    "Status"
+                       :group-by :org/status}
+   :filters/priority  {:label    "Priority"
+                       :group-by :org/priority}
+   :filters/scheduled {:label        "Scheduled"
+                       :group-by     :org/scheduled
+                       :format-label (fn [d] (if d
+                                               (if (string? d) d
+                                                   (->> d dates.tick/add-tz
+                                                        (t/format "MMM d, YYYY")))
+                                               "Unscheduled"))}
 
    :filters/last-modified-date
    {:label          "Last Modified Date"

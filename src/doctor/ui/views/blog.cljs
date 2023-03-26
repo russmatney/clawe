@@ -3,7 +3,6 @@
    [doctor.ui.hooks.use-blog :as use-blog]
    [uix.core.alpha :as uix]
    [components.filter :as components.filter]
-   [components.garden :as components.garden]
    [components.debug :as components.debug]
    [components.filter-defs :as filter-defs]))
 
@@ -41,69 +40,6 @@
       [:div
        {:class ["flex flex-col"]}
        (:org/body-string note)])]))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; note-group
-
-(defn note-group [{:keys [item-group label
-                          filter-data]}]
-  (let [{:keys [items-group-by]} filter-data
-        item-group-open?         (uix/state false)]
-    ;; item group
-    [:div
-     {:class ["flex" "flex-col"]}
-     [:div
-      [:hr {:class ["mt-6" "border-city-blue-900"]}]
-      [:div
-       {:class ["p-6" "flex flex-row"]}
-       ;; TODO filter-grouper group-by label rendering needs love
-       (cond
-         (#{:priority} items-group-by)
-         (if label
-           [components.garden/priority-label
-            ;; mocking an org-item here
-            {:org/priority label}]
-           [:span
-            {:class ["font-nes" "text-city-blue-400"]}
-            "No Priority"])
-
-         (#{:tags} items-group-by)
-         (if label
-           [:div
-            ;; TODO style
-            label]
-           [:span
-            {:class ["font-nes" "text-city-blue-400"]}
-            "No tags"])
-
-         (#{:short-path} items-group-by)
-         [:span
-          {:class ["font-nes" "text-city-blue-400"]}
-          [filter-defs/path->basename label]]
-
-         :else
-         [:span
-          {:class ["font-nes" "text-city-blue-400"]}
-          (or
-            ;; TODO parse this label to plain string with org-crud
-            (str label) "None")])
-
-       [:div
-        {:class ["ml-auto"  "text-city-blue-400"]}
-        [:button {:on-click #(swap! item-group-open? not)
-                  :class    ["whitespace-nowrap"]}
-         (str (if @item-group-open? "Hide" "Show")
-              " " (count item-group) " item(s)")]]]]
-
-     (when @item-group-open?
-       [:div
-        {:class ["flex" "flex-row" "flex-wrap" "justify-around"]}
-
-        (let [items (->> item-group
-                         (map-indexed vector))]
-          (for [[i it] items]
-            ^{:key i}
-            [note-comp it]))])]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; presets
@@ -153,6 +89,10 @@
                              :presets (presets)
                              :extra-preset-pills pills
                              :items all-notes))]
+    (println "some filter data"
+             :items-group-by (:items-group-by filter-data)
+             :sort-groups-key (:sort-groups-key filter-data)
+             :items-filter-by (:items-filter-by filter-data))
     [:div
      {:class ["bg-city-blue-800"
               "bg-opacity-90"
@@ -170,13 +110,8 @@
 
      (when (seq (:filtered-items filter-data))
        [:div {:class ["pt-6"]}
-
-        (for [[i group-desc]
-              (->> (:filtered-item-groups filter-data)
-                   (map-indexed vector))]
-          ^{:key i}
-          [note-group (assoc group-desc
-                             :filter-data filter-data)])])
+        [components.filter/items-by-group
+         (assoc filter-data :item->comp note-comp)]])
 
      (when (not (seq all-notes))
        [:div
