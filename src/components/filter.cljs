@@ -67,7 +67,7 @@
                       sort-items   sort-items
                       true         (map-indexed vector))]
           (for [[i it] items]
-            ^{:key (:org/name it i)}
+            ^{:key (str (:org/name it) i)}
             [item->comp it]))])]))
 
 (defn items-by-group [{:keys [item->comp] :as filter-data}]

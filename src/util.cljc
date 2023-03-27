@@ -87,19 +87,24 @@
 
 (defn expand-coll-group-bys
   "Expands a cardinality-many group-by result.
-  Note that the resulting lists will have duplicate elements.
-  "
+  Note that the resulting lists will have duplicate elements."
   [items-grouped-by]
   (reduce
     (fn [item-groups-by-label [labels items]]
-      (if (coll? labels)
-        ;; update for each label
-        (reduce
-          #(update %1 %2 concat items)
-          item-groups-by-label
-          labels)
-        ;; simple case, just passing through
-        (assoc item-groups-by-label labels items)))
+      (let [labels (cond
+                     (not (coll? labels)) labels
+                     ;; make sure empty collections move to nil here
+                     ;; so they get grouped with other nil labels (with missing keys, for ex)
+                     (empty? labels)      nil
+                     :else                labels)]
+        (if (coll? labels)
+          ;; update for each label in `labels`
+          (reduce
+            #(update %1 %2 concat items)
+            item-groups-by-label
+            labels)
+          ;; update to support nil coming from group-by or empty-colls
+          (update item-groups-by-label labels concat items))))
     {}
     items-grouped-by))
 
@@ -107,15 +112,35 @@
   (->>
     [{:ks #{1 2 3} :n :a}
      {:ks #{2 3 4} :n :b}
-     {:ks #{3 4 5} :n :c}]
+     {:ks #{3 4 5} :n :c}
+     {:ks #{} :n :d}
+     {:ks nil :n :e}
+     {:n :f}
+     ]
     (group-by :ks)
     (map (fn [[k xs]]
            [k (->> xs (map :n))])))
 
   (->>
+    [{:ks 1 :n :a}
+     {:ks 2 :n :b}
+     {:ks 1 :n :c}
+     {:ks #{} :n :d}
+     {:ks nil :n :e}
+     {:n :f}]
+    (group-by :ks)
+    (expand-coll-group-bys)
+    (map (fn [[k xs]]
+           [k (->> xs (map :n))]))
+    (into {}))
+
+  (->>
     [{:ks #{1 2 3} :n :a}
      {:ks #{2 3 4} :n :b}
-     {:ks #{3 4 5} :n :c}]
+     {:ks #{3 4 5} :n :c}
+     {:ks #{} :n :d}
+     {:ks nil :n :e}
+     {:n :f}]
     (group-by :ks)
     (expand-coll-group-bys)
     (map (fn [[k xs]]
