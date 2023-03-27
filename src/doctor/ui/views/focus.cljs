@@ -567,9 +567,6 @@
 ;; main widget
 
 (defn widget [opts]
-  ;; TODO the 'current' usage in this widget could be a 'tag' based feature
-  ;; i.e. based on arbitrary tags, e.g. if that's our 'mode' right now
-  ;; i.e. 'current' is an execution mode - another mode might be pre or post execution
   (let [focus-data      (use-focus/use-focus-data)
         {:keys [todos]} @focus-data
 
@@ -584,11 +581,16 @@
           :active   @only-current}]
 
         filter-data (components.filter/use-filter
-                      (assoc filter-defs/fg-config
-                             :items todos
-                             :show-filters-inline true
-                             :extra-preset-pills pills
-                             :presets (presets)))
+                      (-> filter-defs/fg-config
+                          (assoc :items todos
+                                 :show-filters-inline true
+                                 :extra-preset-pills pills
+                                 :filter-items (fn [items]
+                                                 (cond->> items
+                                                   @hide-completed (remove completed?)
+                                                   @only-current   (filter current?)))
+                                 :sort-items sort-todos)
+                          (update :presets merge (presets))))
         current     (some->> todos (filter current?) seq)
 
         time     (uix/state (t/zoned-date-time))
@@ -617,13 +619,7 @@
      (when (seq (:filtered-items filter-data))
        [:div {:class ["pt-6"]}
         [components.filter/items-by-group
-         (assoc filter-data
-                :item->comp item-todo-cards
-                :filter-items (fn [items]
-                                (cond->> items
-                                  @hide-completed (remove completed?)
-                                  @only-current   (filter current?)))
-                :sort-items sort-todos)]])
+         (assoc filter-data :item->comp item-todo-cards)]])
 
      (when (not (seq todos))
        [:div

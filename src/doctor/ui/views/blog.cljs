@@ -53,8 +53,9 @@
     :default     true}
 
    :last-modified-date
-   {:filters  {}
-    :group-by :filters/last-modified-date}
+   {:filters     {}
+    :group-by    :filters/last-modified-date
+    :sort-groups :filters/last-modified-date}
 
    :today
    {:filters
@@ -93,9 +94,9 @@
                                  :items all-notes)
                           (update :presets merge (presets))))]
     (println "some filter data"
-             :items-group-by (:items-group-by filter-data)
+             :group-by-key (:group-by-key filter-data)
              :sort-groups-key (:sort-groups-key filter-data)
-             :items-filter-by (:items-filter-by filter-data))
+             :active-filters (:active-filters filter-data))
     [:div
      {:class ["bg-city-blue-800"
               "bg-opacity-90"
@@ -121,7 +122,7 @@
         {:class ["text-bold" "text-city-pink-300" "p-4"]}
         [:h1
          {:class ["text-4xl" "font-nes"]}
-         "no todos found!"]
+         "no notes found!"]
         [:p
          {:class ["text-2xl" "pt-4"]}
          ""]])]))

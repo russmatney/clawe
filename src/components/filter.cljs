@@ -4,21 +4,20 @@
    [uix.core.alpha :as uix]
    [util :as util]
    [clojure.string :as string]
-   [components.pill :as pill]
-   ))
+   [components.pill :as pill]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; grouped filter items component
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn group->comp
-  [{:keys [item-group label item->comp filter-data
-           filter-items sort-items]}]
-  (let [{:keys [items-group-by]} filter-data
-        label->group-by-label    (or (-> filter-data :all-filter-defs items-group-by :group-by-label)
-                                     (fn [label] (or (str label) "None")))
-        item-group-open?         (uix/state false)]
-    ;; item group
+  [{:keys [item-group label item->comp group-by-key filter-items sort-items all-filter-defs]}]
+  (let [label->group-by-label (or (-> all-filter-defs group-by-key :group-by-label)
+                                  (fn [label] (or (str label) "None")))
+        item-group-open?      (uix/state false)
+        items                 (cond->> item-group
+                                filter-items filter-items
+                                sort-items   sort-items)]
     [:div
      {:class ["flex" "flex-col"]}
      [:div
@@ -34,29 +33,23 @@
         [:button {:on-click #(swap! item-group-open? not)
                   :class    ["whitespace-nowrap"]}
          (str (if @item-group-open? "Hide" "Show")
-              " " (count item-group) " item(s)")]]]]
+              " " (count items) " item(s)")]]]]
 
      (when @item-group-open?
        [:div
         {:class ["flex" "flex-row" "flex-wrap" "justify-around"]}
 
-        (let [items (cond->> item-group
-                      filter-items filter-items
-                      sort-items   sort-items
-                      true         (map-indexed vector))]
-          (for [[i it] items]
-            ^{:key (str (:org/name it) i)}
-            [item->comp it]))])]))
+        (for [[i it] (->> items (map-indexed vector))]
+          ^{:key (str (:org/name it) i)}
+          [item->comp it])])]))
 
-(defn items-by-group [{:keys [item->comp] :as filter-data}]
+(defn items-by-group [filter-data]
   [:div
    (for [[i group-desc]
          (->> (:filtered-item-groups filter-data)
               (map-indexed vector))]
      ^{:key (str (:label group-desc) i)}
-     [group->comp (assoc group-desc
-                         :item->comp item->comp
-                         :filter-data filter-data)])])
+     [group->comp (merge group-desc filter-data)])])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; filter def anchor
@@ -64,17 +57,16 @@
 
 (defn filter-def-anchor
   [[filter-key filter-def]
-   {:keys [set-group-by set-sort-groups-key items-group-by set-current-preset]}]
-  (let [group-by-enabled? (= items-group-by filter-key)]
+   {:keys [set-group-by-key group-by-key set-current-preset-key set-sort-groups-key]}]
+  (let [group-by-enabled? (= group-by-key filter-key)]
     [:div.text-xl.font-nes
      {:class    ["cursor-pointer"
                  "hover:text-city-red-600"
                  (when group-by-enabled? "text-city-pink-400")]
       :on-click (fn [_]
-                  (set-current-preset nil)
-                  (set-group-by filter-key)
-                  ;; (set-sort-groups-key filter-key)
-                  )}
+                  (set-current-preset-key nil)
+                  (set-group-by-key filter-key)
+                  (set-sort-groups-key filter-key))}
      (:label filter-def)]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -83,7 +75,7 @@
 
 (defn filter-def-popover
   [[filter-key filter-def]
-   {:keys [items _filtered-items items-filter-by toggle-filter-by set-current-preset]}]
+   {:keys [items _filtered-items active-filters toggle-filter-by set-current-preset-key]}]
   (let [grouped-by-val-and-counts
         ;; TODO items vs filtered-items here needs to be toggleable
         ;; are we narrowing or widening?
@@ -100,11 +92,11 @@
      (when (seq (:filter-options filter-def))
        [:div
         (for [[i filter-option] (->> filter-def :filter-options (map-indexed vector))]
-          (let [filter-enabled? (items-filter-by (assoc filter-option :filter-key filter-key))]
+          (let [filter-enabled? (active-filters (assoc filter-option :filter-key filter-key))]
             [:div
              {:key      i
               :on-click (fn [_]
-                          (set-current-preset nil)
+                          (set-current-preset-key nil)
                           (toggle-filter-by (assoc filter-option :filter-key filter-key)))
               :class    ["flex" "flex-row" "font-mono"
                          "cursor-pointer"
@@ -134,7 +126,7 @@
                                      {:filter-key filter-key :match-fn nil?}
                                      {:filter-key filter-key :match k})
                    ;; TODO extend to match on :match-str-includes-any (and other match extensions)
-                   filter-enabled? (items-filter-by filter-desc)]
+                   filter-enabled? (active-filters filter-desc)]
                [:div
                 {:key      i
                  :class    ["flex" "flex-row" "font-mono"
@@ -143,7 +135,7 @@
                             (when filter-enabled?
                               "text-city-pink-400")]
                  :on-click (fn [_]
-                             (set-current-preset nil)
+                             (set-current-preset-key nil)
                              (toggle-filter-by filter-desc))}
                 (let [format-label (:format-label filter-def (fn [k]
                                                                (if (nil? k) "None" (str k))))]
@@ -160,16 +152,16 @@
 
   Returned as part of `use-filter`."
   [{:keys [all-filter-defs
-           items-filter-by
-           items-group-by
+           active-filters
+           group-by-key
            sort-groups-key
            show-filters-inline
            presets
            extra-preset-pills
-           current-preset
+           current-preset-key
            set-filters
-           set-current-preset
-           set-group-by
+           set-current-preset-key
+           set-group-by-key
            set-sort-groups-key]
     :as   config}]
   (let [filter-detail-open? (uix/state false)]
@@ -199,17 +191,17 @@
              (map
                (fn [[k {:keys [filters group-by sort-groups label]}]]
                  {:label  (or label k)
-                  :active (#{current-preset} k)
+                  :active (#{current-preset-key} k)
                   :on-click
                   (fn [_]
-                    (set-current-preset k)
+                    (set-current-preset-key k)
                     (set-filters filters)
-                    (set-group-by group-by)
+                    (set-group-by-key group-by)
                     (set-sort-groups-key sort-groups))}))
              (concat (or extra-preset-pills [])))]]]
 
      ;; active group-by
-     [:div [:pre (str ":group-by-key " items-group-by)]]
+     [:div [:pre (str ":group-by-key " group-by-key)]]
 
      ;; active sort-groups-key
      [:div
@@ -218,7 +210,7 @@
      ;; active filters
      [:div
       [:pre ":active-filters "]
-      (for [[i f] (->> items-filter-by (map-indexed vector))]
+      (for [[i f] (->> active-filters (map-indexed vector))]
         ^{:key i} [:div
                    {:class ["font-mono"]}
                    (str f)])]
@@ -249,7 +241,7 @@
               [filter-def-anchor [filter-key filter-def] config]]
 
              ;; active filters
-             (for [[i f] (->> items-filter-by
+             (for [[i f] (->> active-filters
                               (filter (comp #{filter-key} :filter-key))
                               (map-indexed vector))]
                ^{:key i} [:div
@@ -258,7 +250,7 @@
 
              ;; active group-by
              [:div
-              [:pre ":group-by " items-group-by]]
+              [:pre ":group-by " group-by-key]]
 
              ;; fill to hold bottom in 'middle'
              [:div {:class ["grow"]}]
@@ -325,9 +317,9 @@
 
 
 (defn use-filter
-  [{:keys [items all-filter-defs] :as config}]
+  [{:keys [items all-filter-defs filter-items sort-items] :as config}]
   ;; TODO cut off this default usage with local storage read/write for last-set preset
-  (let [[d-key default]
+  (let [[preset-key default]
         (or
           ;; first preset with {:default true} in desc
           (some->> config :presets (filter (comp :default second)) first)
@@ -338,10 +330,10 @@
                                     (some-> all-filter-defs first first))
         initial-sort-groups-key (some-> default :sort-groups)
 
-        active-filters  (uix/state initial-filters)
-        group-by-key    (uix/state initial-group-by-key)
-        sort-groups-key (uix/state initial-sort-groups-key)
-        current-preset  (uix/state d-key)
+        active-filters     (uix/state initial-filters)
+        group-by-key       (uix/state initial-group-by-key)
+        sort-groups-key    (uix/state initial-sort-groups-key)
+        current-preset-key (uix/state preset-key)
 
         filtered-items
         (if-not (seq @active-filters) items
@@ -353,8 +345,10 @@
                                          (map (partial
                                                 filter-match-fn all-filter-defs)))))))
 
-        ;; TODO support sorting items, both here and at the group level
-        filtered-items filtered-items
+        ;; apply passed filter/sorts, usually based on a per-page atom
+        filtered-items (cond->> filtered-items
+                         filter-items filter-items
+                         sort-items   sort-items)
 
         group-by-f (or (some-> @group-by-key all-filter-defs :group-by)
                        (fn [_]
@@ -376,15 +370,15 @@
      [filter-grouper
       (-> config
           (merge
-            {:filtered-items      filtered-items
-             :current-preset      @current-preset
-             :items-filter-by     @active-filters
-             :items-group-by      @group-by-key
-             :sort-groups-key     @sort-groups-key
-             :set-current-preset  #(reset! current-preset %)
-             :set-group-by        #(reset! group-by-key %)
-             :set-sort-groups-key #(reset! sort-groups-key %)
-             :set-filters         #(reset! active-filters %)
+            {:filtered-items         filtered-items
+             :current-preset         @current-preset-key
+             :active-filters         @active-filters
+             :group-by-key           @group-by-key
+             :sort-groups-key        @sort-groups-key
+             :set-current-preset-key #(reset! current-preset-key %)
+             :set-group-by-key       #(reset! group-by-key %)
+             :set-sort-groups-key    #(reset! sort-groups-key %)
+             :set-filters            #(reset! active-filters %)
              :toggle-filter-by
              (fn [f-by]
                ;; TODO filters that use funcs won't match/exclude here
@@ -392,6 +386,6 @@
      :all-filter-defs      all-filter-defs
      :filtered-items       filtered-items
      :filtered-item-groups filtered-item-groups
-     :items-group-by       @group-by-key
-     :items-filter-by      @active-filters
+     :group-by-key         @group-by-key
+     :active-filters       @active-filters
      :sort-groups-key      @sort-groups-key}))

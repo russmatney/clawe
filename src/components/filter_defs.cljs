@@ -78,7 +78,14 @@
    {:label          "Last Modified Date"
     :group-by       (fn [it]
                       ;; TODO safe date conversion
-                      (:file/last-modified it))
+                      (-> it :file/last-modified
+                          dates.tick/parse-time-string
+                          t/date))
+    :sort-groups-fn (fn [item-groups]
+                      ;; TODO refactor to sort by last-modified date, most recent first
+                      (->>
+                        item-groups
+                        (sort-by :label t/>)))
     :filter-options [{:label    "Today"
                       :match-fn (fn [_]
                                   ;; safe today func
@@ -96,9 +103,10 @@
                                   ;; safe yesterday func
                                   )}
                      ]
-    :format-label   (fn [t]
-                      ;; format date
-                      (str t))}})
+    ;; :format-label   (fn [t]
+    ;;                   ;; format date
+    ;;                   (str t))
+    }})
 
 (def fg-config
   "The filter-grouper config."
