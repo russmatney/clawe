@@ -5,8 +5,6 @@
    [util :as util]
    [clojure.string :as string]
    [components.pill :as pill]
-
-   [components.filter-defs :as filter-defs]
    ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -17,6 +15,8 @@
   [{:keys [item-group label item->comp filter-data
            filter-items sort-items]}]
   (let [{:keys [items-group-by]} filter-data
+        label->group-by-label    (or (-> filter-data :all-filter-defs items-group-by :group-by-label)
+                                     (fn [label] (or (str label) "None")))
         item-group-open?         (uix/state false)]
     ;; item group
     [:div
@@ -25,31 +25,9 @@
       [:hr {:class ["mt-6" "border-city-blue-900"]}]
       [:div
        {:class ["p-6" "flex flex-row"]}
-       ;; TODO support these label fallbacks via filter-defs
-       (cond
-         (#{:priority} items-group-by)
-         (if label label
-             [:span
-              {:class ["font-nes" "text-city-blue-400"]}
-              "No Priority"])
-
-         (#{:tags} items-group-by)
-         (if label label
-             [:span
-              {:class ["font-nes" "text-city-blue-400"]}
-              "No tags"])
-
-         (#{:short-path} items-group-by)
-         [:span
-          {:class ["font-nes" "text-city-blue-400"]}
-          [filter-defs/path->basename label]]
-
-         :else
-         [:span
-          {:class ["font-nes" "text-city-blue-400"]}
-          (or
-            ;; TODO parse this label to plain string with org-crud
-            (str label) "None")])
+       [:span
+        {:class ["font-nes" "text-city-blue-400"]}
+        (label->group-by-label label)]
 
        [:div
         {:class ["ml-auto"  "text-city-blue-400"]}
@@ -75,7 +53,7 @@
    (for [[i group-desc]
          (->> (:filtered-item-groups filter-data)
               (map-indexed vector))]
-     ^{:key (:label group-desc i)}
+     ^{:key (str (:label group-desc) i)}
      [group->comp (assoc group-desc
                          :item->comp item->comp
                          :filter-data filter-data)])])
@@ -86,7 +64,7 @@
 
 (defn filter-def-anchor
   [[filter-key filter-def]
-   {:keys [set-group-by items-group-by set-current-preset]}]
+   {:keys [set-group-by set-sort-groups-key items-group-by set-current-preset]}]
   (let [group-by-enabled? (= items-group-by filter-key)]
     [:div.text-xl.font-nes
      {:class    ["cursor-pointer"
@@ -94,7 +72,9 @@
                  (when group-by-enabled? "text-city-pink-400")]
       :on-click (fn [_]
                   (set-current-preset nil)
-                  (set-group-by filter-key))}
+                  (set-group-by filter-key)
+                  ;; (set-sort-groups-key filter-key)
+                  )}
      (:label filter-def)]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -189,7 +169,8 @@
            current-preset
            set-filters
            set-current-preset
-           set-group-by]
+           set-group-by
+           set-sort-groups-key]
     :as   config}]
   (let [filter-detail-open? (uix/state false)]
     [:div
@@ -216,14 +197,15 @@
         (->> presets
              (sort-by first)
              (map
-               (fn [[k {:keys [filters group-by label]}]]
+               (fn [[k {:keys [filters group-by sort-groups label]}]]
                  {:label  (or label k)
                   :active (#{current-preset} k)
                   :on-click
                   (fn [_]
                     (set-current-preset k)
                     (set-filters filters)
-                    (set-group-by group-by))}))
+                    (set-group-by group-by)
+                    (set-sort-groups-key sort-groups))}))
              (concat (or extra-preset-pills [])))]]]
 
      ;; active group-by
@@ -407,6 +389,7 @@
              (fn [f-by]
                ;; TODO filters that use funcs won't match/exclude here
                (swap! active-filters #(if (% f-by) (disj % f-by) (conj % f-by))))}))]
+     :all-filter-defs      all-filter-defs
      :filtered-items       filtered-items
      :filtered-item-groups filtered-item-groups
      :items-group-by       @group-by-key

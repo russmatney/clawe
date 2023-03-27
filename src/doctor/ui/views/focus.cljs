@@ -461,7 +461,8 @@
        ["russmatney/clawe"
         "russmatney/dino"
         "russmatney/org-crud"]}}
-    :group-by :filters/priority}
+    :group-by    :filters/short-path
+    :sort-groups :filters/short-path}
 
    :clawe
    {:filters
@@ -471,78 +472,91 @@
       ;; in some cases, we want 'AND' filters, in others, 'OR'
       ;; {:filter-key :tags :match "clawe"}
       }
-    :group-by :filters/priority}
+    :group-by    :filters/priority
+    :sort-groups :filters/priority}
    :org-crud
    {:filters
     #{{:filter-key :filters/short-path :match-str-includes-any ["russmatney/org-crud"]}
       ;; {:filter-key :tags :match "orgcrud"}
       }
-    :group-by :filters/priority}
+    :group-by    :filters/priority
+    :sort-groups :filters/priority}
    :dino
    {:filters
     #{{:filter-key :filters/short-path :match-str-includes-any ["russmatney/dino"]}
       ;; {:filter-key :tags :match "dino"}
       }
-    :group-by :filters/priority}
+    :group-by    :filters/priority
+    :sort-groups :filters/priority}
 
    :incomplete
    {:filters
     #{{:filter-key :filters/status :match :status/not-started}
       {:filter-key :filters/status :match :status/in-progress}}
-    :group-by :filters/priority
-    :label    "Incomplete"
-    :default  true}
+    :group-by    :filters/priority
+    :sort-groups :filters/priority
+    :label       "Incomplete"
+    :default     true}
 
    :prioritized
    {:filters
     #{{:filter-key :filters/priority :match-fn (comp not nil?)}}
-    :group-by :filters/priority}
+    :group-by    :filters/priority
+    :sort-groups :filters/priority}
 
    :prioritized-incomplete
    {:filters
     #{{:filter-key :filters/status :match :status/not-started}
       {:filter-key :filters/status :match :status/in-progress}
       {:filter-key :filters/priority :match-fn (comp not nil?)}}
-    :group-by :filters/priority}
+    :group-by    :filters/priority
+    :sort-groups :filters/priority}
 
    :unprioritized
    {:filters
     #{{:filter-key :filters/priority :match-fn nil?}}
-    :group-by :filters/short-path}
+    :group-by    :filters/short-path
+    :sort-groups :filters/short-path}
 
    :tagged-current
-   {:filters  #{{:filter-key :filters/tags :match "current"}}
-    :group-by :filters/priority}
+   {:filters     #{{:filter-key :filters/tags :match "current"}}
+    :group-by    :filters/priority
+    :sort-groups :filters/priority}
 
    :today
    {:filters
     #{{:filter-key :filters/short-path :match-str-includes-any #{(filter-defs/short-path-days-ago 0)}}}
-    :group-by :filters/priority}
+    :group-by    :filters/priority
+    :sort-groups :filters/priority}
 
    :today-complete
    {:filters
     #{{:filter-key :filters/status :match :status/done}
       {:filter-key :filters/short-path :match-str-includes-any #{(filter-defs/short-path-days-ago 0)}}}
-    :group-by :filters/priority}
+    :group-by    :filters/priority
+    :sort-groups :filters/priority}
 
    :today-incomplete
    {:filters
     #{{:filter-key :filters/status :match :status/in-progress}
       {:filter-key :filters/status :match :status/not-started}
       {:filter-key :filters/short-path :match-str-includes-any #{(filter-defs/short-path-days-ago 0)}}}
-    :group-by :filters/priority}
+    :group-by    :filters/priority
+    :sort-groups :filters/priority}
 
    :last-three-days
    {:filters
     #{{:filter-key :filters/short-path :match-str-includes-any
        (->> 3 range (map filter-defs/short-path-days-ago))}}
-    :group-by :filters/short-path}
+    :group-by    :filters/short-path
+    :sort-groups :filters/short-path}
 
    :last-seven-days
    {:filters
     #{{:filter-key :filters/short-path :match-str-includes-any
        (->> 7 range (map filter-defs/short-path-days-ago))}}
-    :group-by :filters/short-path}
+    :group-by    :filters/short-path
+    :sort-groups :filters/short-path}
 
    :tags
    {:filters     {}

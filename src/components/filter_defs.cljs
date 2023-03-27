@@ -29,9 +29,12 @@
   (some-> fname (string/includes? "workspaces")))
 
 (defn path->basename [fname]
-  (some-> fname (string/split #"/") reverse first
-          (string/replace #".org" "")
-          (->> (take 10) (apply str))))
+  (let [[f s & _rest]
+        (some-> fname (string/split #"/") reverse)]
+    (->>
+      [s f] (map #(-> % (string/replace #".org" "")
+                      (->> (take 10) (apply str))))
+      (string/join "/"))))
 
 (def all-filter-defs
   {:filters/short-path {:label            "File"
@@ -39,6 +42,13 @@
                                             (or (:org/short-path it) (:org/source-file it)))
                         :group-filters-by (fn [fname]
                                             (some-> fname (string/split #"/") reverse (->> (drop 1) first)))
+                        :group-by-label   (fn [label]
+                                            (or
+                                              (path->basename label)
+                                              "No :org/short-path"))
+                        :sort-groups-fn   (fn [item-groups]
+                                            ;; TODO refactor to sort by last-modified date, most recent first
+                                            (sort-by (comp count :item-group) > item-groups))
                         :filter-options   [{:label    "All Dailies"
                                             :match-fn is-daily-fname}
                                            {:label    "All Workspaces"
@@ -46,25 +56,23 @@
                         :format-label     path->basename}
    :filters/tags       {:label          "Tags"
                         :group-by       :org/tags
+                        :group-by-label (fn [label]
+                                          (or label "Untagged"))
                         :sort-groups-fn (fn [item-groups]
-                                          (println "sorting item-groups" (count item-groups))
-                                          (sort-by (comp count :item-group) > item-groups))
-
-                        ;; TODO show untagged as well
-
-                        ;; :format-label string/lower-case
-                        }
-   :filters/status    {:label    "Status"
-                       :group-by :org/status}
-   :filters/priority  {:label    "Priority"
-                       :group-by :org/priority}
-   :filters/scheduled {:label        "Scheduled"
-                       :group-by     :org/scheduled
-                       :format-label (fn [d] (if d
-                                               (if (string? d) d
-                                                   (->> d dates.tick/add-tz
-                                                        (t/format "MMM d, YYYY")))
-                                               "Unscheduled"))}
+                                          (sort-by (comp count :item-group) > item-groups))}
+   :filters/status     {:label    "Status"
+                        :group-by :org/status}
+   :filters/priority   {:label          "Priority"
+                        :group-by       :org/priority
+                        :group-by-label (fn [label]
+                                          (or label "Unprioritized"))}
+   :filters/scheduled  {:label        "Scheduled"
+                        :group-by     :org/scheduled
+                        :format-label (fn [d] (if d
+                                                (if (string? d) d
+                                                    (->> d dates.tick/add-tz
+                                                         (t/format "MMM d, YYYY")))
+                                                "Unscheduled"))}
 
    :filters/last-modified-date
    {:label          "Last Modified Date"
