@@ -3,6 +3,7 @@
    [util :refer [ensure-uuid]]
    [garden.core :as garden]
    [org-crud.core :as org-crud]
+   [blog.config :as blog.config]
    [systemic.core :as sys]))
 
 ;; imported from org-blog/db.
@@ -25,7 +26,15 @@
 
 (defn build-db []
   (println "[DB]: building blog.db")
-  (let [all-nested (garden/all-garden-notes-nested)]
+  (let [blog-config (blog.config/->config)
+        all-nested
+        (->>
+          (garden/all-garden-notes-nested)
+          (map (fn [note]
+                 (let [blog-def (-> blog-config :notes (get (:org/short-path note)))]
+                   (if blog-def
+                     (merge note blog-def {:blog/published true})
+                     note)))))]
     (println "[DB]: blog.db built")
     {:all-notes all-nested}))
 

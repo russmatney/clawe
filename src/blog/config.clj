@@ -25,7 +25,7 @@
 
 (defn ->config [] (aero/read-config blog-edn))
 
-(defsys *config* :start (atom (->config)))
+(defsys ^:dynamic *config* :start (atom (->config)))
 
 (defn reload-config []
   (sys/start! `*config*)
@@ -88,7 +88,8 @@
 
 (defn persist-note-def
   "Adds the passed note to the :notes config.
-  Expects at least :org/short-path on the config. "
+  Expects at least :org/short-path on the config."
+  ;; TODO consider including org/tags in the notes def, or otherwise building up a published-tags list
   [note]
   (let [short-path (:org/short-path note)]
     (if-not short-path
