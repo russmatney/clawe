@@ -12,7 +12,7 @@
 
 (defn group->comp
   [{:keys [item-group label item->comp group-by-key filter-items sort-items all-filter-defs]}]
-  (let [label->group-by-label (or (-> all-filter-defs group-by-key :group-by-label)
+  (let [label->group-by-label (or (some-> group-by-key all-filter-defs :group-by-label)
                                   (fn [label] (or (str label) "None")))
         item-group-open?      (uix/state false)
         items                 (cond->> item-group
@@ -155,10 +155,10 @@
            active-filters
            group-by-key
            sort-groups-key
+           current-preset-key
            show-filters-inline
            presets
            extra-preset-pills
-           current-preset-key
            set-filters
            set-current-preset-key
            set-group-by-key
@@ -371,7 +371,7 @@
       (-> config
           (merge
             {:filtered-items         filtered-items
-             :current-preset         @current-preset-key
+             :current-preset-key     @current-preset-key
              :active-filters         @active-filters
              :group-by-key           @group-by-key
              :sort-groups-key        @sort-groups-key
@@ -388,4 +388,5 @@
      :filtered-item-groups filtered-item-groups
      :group-by-key         @group-by-key
      :active-filters       @active-filters
-     :sort-groups-key      @sort-groups-key}))
+     :sort-groups-key      @sort-groups-key
+     :current-preset-key   @current-preset-key}))
