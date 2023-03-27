@@ -468,23 +468,22 @@
    {:filters
     ;; TODO add the clawe workspace here as well
     #{{:filter-key :filters/short-path :match-str-includes-any ["russmatney/clawe"]}
-      ;; TODO support opting in vs excluding with this
-      ;; in some cases, we want 'AND' filters, in others, 'OR'
-      ;; {:filter-key :tags :match "clawe"}
+      ;; TODO support OR here, probably opt-in
+      ;; {:filter-key :filters/tags :match "clawe"}
       }
     :group-by    :filters/priority
     :sort-groups :filters/priority}
    :org-crud
    {:filters
     #{{:filter-key :filters/short-path :match-str-includes-any ["russmatney/org-crud"]}
-      ;; {:filter-key :tags :match "orgcrud"}
+      ;; {:filter-key :filters/tags :match "orgcrud"}
       }
     :group-by    :filters/priority
     :sort-groups :filters/priority}
    :dino
    {:filters
     #{{:filter-key :filters/short-path :match-str-includes-any ["russmatney/dino"]}
-      ;; {:filter-key :tags :match "dino"}
+      ;; {:filter-key :filters/tags :match "dino"}
       }
     :group-by    :filters/priority
     :sort-groups :filters/priority}

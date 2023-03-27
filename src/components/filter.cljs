@@ -146,9 +146,8 @@
 ;; filter-grouper full component
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; let's not forget this wants to be a filter-grouper-sorter
 (defn- filter-grouper
-  "A component for displaying and selecting filters/groups.
+  "A component for displaying and selecting filters/group-bys/sort-bys.
 
   Returned as part of `use-filter`."
   [{:keys [all-filter-defs
@@ -205,7 +204,7 @@
 
      ;; active sort-groups-key
      [:div
-      [:pre ":sort-groups-key " sort-groups-key]]
+      [:pre (str ":sort-groups-key " sort-groups-key)]]
 
      ;; active filters
      [:div

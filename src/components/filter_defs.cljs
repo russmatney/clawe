@@ -82,47 +82,28 @@
    :filters/last-modified-date
    {:label          "Last Modified Date"
     :group-by       (fn [it]
-                      ;; TODO safe date conversion
                       (-> it :file/last-modified
                           dates.tick/parse-time-string
                           t/date))
     :sort-groups-fn (fn [item-groups]
-                      ;; TODO refactor to sort by last-modified date, most recent first
-                      (->>
-                        item-groups
-                        (sort-by :label t/>)))
+                      (->> item-groups (sort-by :label t/>)))
     :filter-options [{:label    "Today"
-                      :match-fn (fn [_]
-                                  ;; safe today func
-                                  )}
+                      :match-fn (fn [lm] (t/>= lm (t/today)))}
                      {:label    "Yesterday"
-                      :match-fn (fn [_]
-                                  ;; safe yesterday func
-                                  )}
+                      :match-fn (fn [lm] (t/>= lm
+                                               (t/date (t/<< (dates.tick/now) (t/new-duration 1 :days)))))}
                      {:label    "Last 3 days"
-                      :match-fn (fn [_]
-                                  ;; safe yesterday func
-                                  )}
+                      :match-fn (fn [lm] (t/>= lm
+                                               (t/date (t/<< (dates.tick/now) (t/new-duration 4 :days)))))}
                      {:label    "Last 7 days"
-                      :match-fn (fn [_]
-                                  ;; safe yesterday func
-                                  )}
-                     ]
-    ;; :format-label   (fn [t]
-    ;;                   ;; format date
-    ;;                   (str t))
-    }})
+                      :match-fn (fn [lm] (t/>= lm
+                                               (t/date (t/<< (dates.tick/now) (t/new-duration 8 :days)))))}]}})
 
 (def fg-config
   "The filter-grouper config."
   {:all-filter-defs all-filter-defs
    :presets
-   {:default
-    {:filters
-     #{{:filter-key :filters/status :match :status/not-started}
-       {:filter-key :filters/status :match :status/in-progress}
-       {:filter-key :filters/short-path :match "todo/journal.org"}
-       {:filter-key :filters/short-path :match "todo/projects.org"}
-       {:filter-key :filters/short-path :match-fn is-daily-fname :label "All Dailies"}}
-     :group-by    :filters/short-path
-     :sort-groups :filters/short-path}}})
+   {:all
+    {:filters     #{}
+     :group-by    :filters/last-modified-date
+     :sort-groups :filters/last-modified-date}}})
