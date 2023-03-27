@@ -407,9 +407,7 @@
          (if children?
            [:div
             {:class ["flex" "flex-row" "flex-wrap" "justify-around"]}
-            (for [[i td] (cond->> grouped-todos
-                           true sort-todos
-                           true (map-indexed vector))]
+            (for [[i td] (->> grouped-todos sort-todos (map-indexed vector))]
               ^{:key i}
               [:div
                {:class ["p-2"]}
@@ -450,63 +448,6 @@
          [:p
           {:class ["text-2xl" "pt-4"]}
           "What are ya, taking a load off? GERT BERK TER WORK!"]])])))
-
-(defn focus-item-group [{:keys [item-group label
-                                filter-data hide-completed only-current]}]
-  (let [item-group-open? (uix/state false)]
-    ;; item group
-    [:div
-     {:class ["flex" "flex-col"]}
-     [:div
-      [:hr {:class ["mt-6" "border-city-blue-900"]}]
-      [:div
-       {:class ["p-6" "flex flex-row"]}
-       (cond
-         (#{:priority} (:items-group-by filter-data))
-         (if label
-           [priority-label {:org/priority label}]
-           [:span
-            {:class ["font-nes" "text-city-blue-400"]}
-            "No Priority"])
-
-         (#{:tags} (:items-group-by filter-data))
-         (if label
-           [tags-list {:org/tags #{label}}]
-           [:span
-            {:class ["font-nes" "text-city-blue-400"]}
-            "No tags"])
-
-         (#{:short-path} (:items-group-by filter-data))
-         [:span
-          {:class ["font-nes" "text-city-blue-400"]}
-          [filter-defs/path->basename label]]
-
-         :else
-         [:span
-          {:class ["font-nes" "text-city-blue-400"]}
-          (or
-            ;; TODO parse this label to plain string with org-crud
-            (str label) "None")])
-
-       [:div
-        {:class ["ml-auto"  "text-city-blue-400"]}
-        [:button {:on-click #(swap! item-group-open? not)
-                  :class    ["whitespace-nowrap"]}
-         (str (if @item-group-open? "Hide" "Show")
-              " " (count item-group) " item(s)")]]]]
-
-     (when @item-group-open?
-       [:div
-        {:class ["flex" "flex-row" "flex-wrap" "justify-around"]}
-
-        (let [items (cond->> item-group
-                      hide-completed (remove completed?)
-                      only-current   (filter current?)
-                      true           sort-todos
-                      true           (map-indexed vector))]
-          (for [[i it] items]
-            ^{:key i}
-            [item-todo-cards it]))])]))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -601,7 +542,12 @@
    {:filters
     #{{:filter-key :filters/short-path :match-str-includes-any
        (->> 7 range (map filter-defs/short-path-days-ago))}}
-    :group-by :filters/short-path}})
+    :group-by :filters/short-path}
+
+   :tags
+   {:filters     {}
+    :group-by    :filters/tags
+    :sort-groups :filters/tags}})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; main widget
@@ -656,15 +602,14 @@
 
      (when (seq (:filtered-items filter-data))
        [:div {:class ["pt-6"]}
-
-        (for [[i group-desc]
-              (->> (:filtered-item-groups filter-data)
-                   (map-indexed vector))]
-          ^{:key i}
-          [focus-item-group (assoc group-desc
-                                   :filter-data filter-data
-                                   :hide-completed @hide-completed
-                                   :only-current @only-current)])])
+        [components.filter/items-by-group
+         (assoc filter-data
+                :item->comp item-todo-cards
+                :filter-items (fn [items]
+                                (cond->> items
+                                  @hide-completed (remove completed?)
+                                  @only-current   (filter current?)))
+                :sort-items sort-todos)]])
 
      (when (not (seq todos))
        [:div
