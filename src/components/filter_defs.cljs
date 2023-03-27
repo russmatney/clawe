@@ -74,6 +74,11 @@
                                                          (t/format "MMM d, YYYY")))
                                                 "Unscheduled"))}
 
+   :filters/published {:label    "Published"
+                       :group-by (fn [note]
+                                   (if (:blog/published note)
+                                     "Published" "Unpublished"))}
+
    :filters/last-modified-date
    {:label          "Last Modified Date"
     :group-by       (fn [it]

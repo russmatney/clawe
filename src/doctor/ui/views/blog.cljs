@@ -46,11 +46,28 @@
 
 (defn presets []
   ;; these presets might be higher level modes, i.e. they might imply other ui changes
-  {:tags
+  {:published   {:filters     #{{:filter-key :filters/published :match "Published"}}
+                 :group-by    :filters/last-modified-date
+                 :sort-groups :filters/last-modified-date}
+   :unpublished {:filters     #{{:filter-key :filters/published :match "Unpublished"}}
+                 :group-by    :filters/last-modified-date
+                 :sort-groups :filters/last-modified-date}
+
+   :posts-by-last-modified {:filters     #{{:filter-key :filters/tags :match-fn #{"post" "posts"}}}
+                            :group-by    :filters/last-modified-date
+                            :sort-groups :filters/last-modified-date
+                            :default     true}
+
+   :posts-by-tags {:filters     #{{:filter-key :filters/tags :match-fn #{"post" "posts"}}}
+                   :group-by    :filters/tags
+                   :sort-groups :filters/tags}
+
+   :tags
    {:filters     {}
     :group-by    :filters/tags
     :sort-groups :filters/tags
-    :default     true}
+    #_#_:default true
+    }
 
    :last-modified-date
    {:filters     {}
