@@ -14,7 +14,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn group->comp
-  [{:keys [item-group label item->comp filter-data]}]
+  [{:keys [item-group label item->comp filter-data
+           filter-items sort-items]}]
   (let [{:keys [items-group-by]} filter-data
         item-group-open?         (uix/state false)]
     ;; item group
@@ -61,7 +62,10 @@
        [:div
         {:class ["flex" "flex-row" "flex-wrap" "justify-around"]}
 
-        (let [items (->> item-group (map-indexed vector))]
+        (let [items (cond->> item-group
+                      filter-items filter-items
+                      sort-items   sort-items
+                      true         (map-indexed vector))]
           (for [[i it] items]
             ^{:key (:org/name it i)}
             [item->comp it]))])]))
@@ -341,15 +345,20 @@
 (defn use-filter
   [{:keys [items all-filter-defs] :as config}]
   ;; TODO cut off this default usage with local storage read/write for last-set preset
-  (let [[d-key default]      (or (some->> config :presets (filter (comp :default second)) first)
-                                 (some->> config :presets (filter (comp #{:default} first)) first))
-        default-filters      (or (some-> default :filters) #{})
-        default-group-by-key (or (some-> default :group-by)
-                                 (some-> all-filter-defs first first))
+  (let [[d-key default]
+        (or
+          ;; first preset with {:default true} in desc
+          (some->> config :presets (filter (comp :default second)) first)
+          ;; preset with :default as key
+          (some->> config :presets (filter (comp #{:default} first)) first))
+        initial-filters         (or (some-> default :filters) #{})
+        initial-group-by-key    (or (some-> default :group-by)
+                                    (some-> all-filter-defs first first))
+        initial-sort-groups-key (some-> default :sort-groups)
 
-        active-filters  (uix/state default-filters)
-        group-by-key    (uix/state default-group-by-key)
-        sort-groups-key (uix/state nil)
+        active-filters  (uix/state initial-filters)
+        group-by-key    (uix/state initial-group-by-key)
+        sort-groups-key (uix/state initial-sort-groups-key)
         current-preset  (uix/state d-key)
 
         filtered-items
@@ -378,21 +387,22 @@
 
         sort-groups-f        (some-> @sort-groups-key all-filter-defs :sort-groups-fn)
         filtered-item-groups (if sort-groups-f
-                               (sort-by sort-groups-f filtered-item-groups)
+                               (sort-groups-f filtered-item-groups)
                                (sort-by (comp label->comparable-int :label) < filtered-item-groups))]
 
     {:filter-grouper
      [filter-grouper
       (-> config
           (merge
-            {:filtered-items     filtered-items
-             :current-preset     @current-preset
-             :items-filter-by    @active-filters
-             :items-group-by     @group-by-key
-             :sort-groups-key    @sort-groups-key
-             :set-current-preset #(reset! current-preset %)
-             :set-group-by       #(reset! group-by-key %)
-             :set-filters        #(reset! active-filters %)
+            {:filtered-items      filtered-items
+             :current-preset      @current-preset
+             :items-filter-by     @active-filters
+             :items-group-by      @group-by-key
+             :sort-groups-key     @sort-groups-key
+             :set-current-preset  #(reset! current-preset %)
+             :set-group-by        #(reset! group-by-key %)
+             :set-sort-groups-key #(reset! sort-groups-key %)
+             :set-filters         #(reset! active-filters %)
              :toggle-filter-by
              (fn [f-by]
                ;; TODO filters that use funcs won't match/exclude here

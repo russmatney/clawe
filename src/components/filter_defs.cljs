@@ -44,10 +44,12 @@
                                            {:label    "All Workspaces"
                                             :match-fn is-workspace-fname}]
                         :format-label     path->basename}
-   :filters/tags       {:label         "Tags"
-                        :group-by      :org/tags
-                        :sort-group-by (fn [[label group]]
-                                         )
+   :filters/tags       {:label          "Tags"
+                        :group-by       :org/tags
+                        :sort-groups-fn (fn [item-groups]
+                                          (println "sorting item-groups" (count item-groups))
+                                          (sort-by (comp count :item-group) > item-groups))
+
                         ;; TODO show untagged as well
 
                         ;; :format-label string/lower-case
@@ -101,4 +103,5 @@
        {:filter-key :filters/short-path :match "todo/journal.org"}
        {:filter-key :filters/short-path :match "todo/projects.org"}
        {:filter-key :filters/short-path :match-fn is-daily-fname :label "All Dailies"}}
-     :group-by :filters/short-path}}})
+     :group-by    :filters/short-path
+     :sort-groups :filters/short-path}}})

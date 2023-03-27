@@ -47,12 +47,15 @@
 (defn presets []
   ;; these presets might be higher level modes, i.e. they might imply other ui changes
   {:tags
-   {:filters  {}
-    :group-by :filters/tags}
+   {:filters     {}
+    :group-by    :filters/tags
+    :sort-groups :filters/tags
+    :default     true}
 
    :last-modified-date
    {:filters  {}
     :group-by :filters/last-modified-date}
+
    :today
    {:filters
     #{{:filter-key :filters/short-path :match-str-includes-any #{(filter-defs/short-path-days-ago 0)}}}}
@@ -85,10 +88,10 @@
                       :label    "Sample Pill"
                       :active   @sample-pill-active}]
         filter-data (components.filter/use-filter
-                      (assoc filter-defs/fg-config
-                             :presets (presets)
-                             :extra-preset-pills pills
-                             :items all-notes))]
+                      (-> filter-defs/fg-config
+                          (assoc :extra-preset-pills pills
+                                 :items all-notes)
+                          (update :presets merge (presets))))]
     (println "some filter data"
              :items-group-by (:items-group-by filter-data)
              :sort-groups-key (:sort-groups-key filter-data)
