@@ -34,12 +34,12 @@
           (render/write-page
             {:path    (str (blog.config/blog-content-public) (blog.db/note->uri note))
              :content (pages.daily/page note)
-             :title   (:org/name note)})
+             :title   (:org/name-string note)})
 
           (render/write-page
             {:path    (str (blog.config/blog-content-public) (blog.db/note->uri note))
              :content (pages.note/page note)
-             :title   (:org/name note)}))))))
+             :title   (:org/name-string note)}))))))
 
 (defn publish-notes []
   (let [notes-to-publish (blog.db/published-notes)]

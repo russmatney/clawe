@@ -5,22 +5,21 @@
    [blog.render :as render]
    [blog.config :as config]))
 
-(def ^:dynamic *note*
-  (->> (db/root-notes)
-       ;; (remove (comp #(string/includes? % "/daily/") :org/source-file))
-       (sort-by :file/last-modified)
-       last))
-
 (defn page [note]
   [:div
    ;; TODO show metadata
-   ;; TODO last modified
+   ;; TODO show last modified
+   ;; TODO show date published
    (item/item->hiccup-content note)
-   (item/id->backlink-hiccup (:org/id *note*))])
+   (item/id->backlink-hiccup (:org/id note))])
 
 
 (comment
-  (render/write-page
-    {:path    (str (config/blog-content-public) (db/note->uri *note*))
-     :content (page *note*)
-     :title   (:org/name *note*)}))
+  (let [note (->> (db/root-notes)
+                  (filter :org/name-string)
+                  (filter (comp #(re-seq #"Things I Love" %) :org/name-string))
+                  first)]
+    (render/write-page
+      {:path    (str (config/blog-content-public) (db/note->uri note))
+       :content (page note)
+       :title   (:org/name note)})))

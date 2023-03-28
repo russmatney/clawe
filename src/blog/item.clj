@@ -374,7 +374,7 @@ and [[https://github.com/russmatney/org-crud][this other repo]]"))
         [:a
          {:class ["cursor-pointer"]
           :href  (blog.db/*id->link-uri* (:org/id note))}
-         (:org/name note)]]
+         (:org/name-string note)]]
 
        ;; [:div
        ;;  {:class ["font-mono"]}

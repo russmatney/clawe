@@ -104,7 +104,6 @@
 
 (defn root-notes []
   (sys/start! `*notes-db*)
-  (println "[DB]: passing :root-notes")
   (:root-notes @*notes-db*))
 
 (defn fetch-root-note-with-id
@@ -133,7 +132,8 @@
     (-> (get-db) :link-id->linking-root-note-id))
 
   (->>
-    (root-notes)
+    (get-db)
+    :root-notes
     (sort-by :file/last-modified)
     (reverse)
     (take 2))
