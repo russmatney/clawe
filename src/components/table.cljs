@@ -16,7 +16,8 @@
   (let [page-size (uix/state (or n 10))
         step      5]
     [:div
-     {:class ["border border-slate-600 bg-slate-800/50 rounded-xl overflow-auto"]}
+     {:class ["border border-slate-600 bg-slate-800/50 rounded-xl overflow-auto"
+              "w-full"]}
      [:div
       {:class ["my-8"]}
 

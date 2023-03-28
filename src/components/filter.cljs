@@ -1,6 +1,7 @@
 (ns components.filter
   (:require
    [components.floating :as floating]
+   [components.table :as components.table]
    [components.actions :as components.actions]
    [uix.core.alpha :as uix]
    [util :as util]
@@ -31,10 +32,11 @@
 
 (defn group->comp
   [{:keys [item-group label item->comp group-by-key filter-items sort-items all-filter-defs
-           default-page-size]}]
+           default-page-size table-def]}]
   (let [label->group-by-label (or (some-> group-by-key all-filter-defs :group-by-label)
                                   (fn [label] (or (str label) "None")))
         item-group-open?      (uix/state true)
+        table-open?           (uix/state true)
         items                 (cond->> item-group
                                 filter-items filter-items
                                 sort-items   sort-items)
@@ -55,16 +57,31 @@
          {:n         5
           :page-size page-size :step 4 :total (count items)
           :actions
-          [{:action/on-click (fn [_] (swap! item-group-open? not))
+          [{:action/on-click (fn [_] (swap! table-open? not))
+            :action/label    (str (if @table-open? "Hide table" "Show table"))}
+           {:action/on-click (fn [_] (swap! item-group-open? not))
             :action/label    (str (if @item-group-open? "Hide group" "Show group"))}]}]]]]
 
      (when @item-group-open?
        [:div
         {:class ["flex" "flex-row" "flex-wrap" "justify-around"]}
 
-        (for [[i it] (->> items (take @page-size) (map-indexed vector))]
-          ^{:key (str (:org/name it) i)}
-          [item->comp it])])]))
+        (when item->comp
+          (for [[i it] (->> items (take @page-size) (map-indexed vector))]
+            ^{:key (str (:org/name it) i)}
+            [item->comp it]))
+
+        ])
+
+     (when @table-open?
+       [:div
+        {:class ["flex" "flex-row" "w-full"]}
+        (when (and table-def (:->row table-def))
+          [components.table/table
+           (-> table-def
+               (assoc :n @page-size)
+               (assoc :rows (->> items (map (:->row table-def)))))])])
+     ]))
 
 (defn items-by-group [filter-data]
   [:div

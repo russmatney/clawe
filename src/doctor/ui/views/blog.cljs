@@ -1,10 +1,14 @@
 (ns doctor.ui.views.blog
   (:require
+   [components.floating :as floating]
    [doctor.ui.hooks.use-blog :as use-blog]
    [uix.core.alpha :as uix]
    [components.filter :as components.filter]
    [components.debug :as components.debug]
    [components.filter-defs :as filter-defs]
+   [components.actions :as components.actions]
+   [components.garden :as components.garden]
+   [doctor.ui.handlers :as handlers]
    [tick.core :as t]
    [dates.tick :as dates.tick]))
 
@@ -46,6 +50,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; presets
 
+(defn modified-in-last-n-days [n]
+  (fn [lm] (t/>= lm (t/date (t/<< (dates.tick/now) (t/new-duration n :days))))))
+
 (defn presets []
   ;; these presets might be higher level modes, i.e. they might imply other ui changes
   {:published   {:filters     #{{:filter-key :filters/published :match "Published"}}
@@ -57,8 +64,7 @@
 
    :posts-by-last-modified {:filters     #{{:filter-key :filters/tags :match-fn #{"post" "posts"}}}
                             :group-by    :filters/last-modified-date
-                            :sort-groups :filters/last-modified-date
-                            :default     true}
+                            :sort-groups :filters/last-modified-date}
 
    :posts-by-tags {:filters     #{{:filter-key :filters/tags :match-fn #{"post" "posts"}}}
                    :group-by    :filters/tags
@@ -68,11 +74,11 @@
    {:filters     {}
     :group-by    :filters/tags
     :sort-groups :filters/tags
-    #_#_:default true
-    }
+    :default     true}
 
    :last-modified-date
-   {:filters     {}
+   {:filters     #{{:filter-key :filters/last-modified-date
+                    :match-fn   (modified-in-last-n-days 21)}}
     :group-by    :filters/last-modified-date
     :sort-groups :filters/last-modified-date}
 
@@ -92,8 +98,7 @@
    :last-seven-days
    {:filters
     #{{:filter-key :filters/last-modified-date
-       :match-fn
-       (fn [lm] (t/>= lm (t/date (t/<< (dates.tick/now) (t/new-duration 8 :days)))))}}
+       :match-fn   (modified-in-last-n-days 8)}}
     :group-by    :filters/last-modified-date
     :sort-groups :filters/last-modified-date}})
 
@@ -133,7 +138,22 @@
      (when (seq (:filtered-items filter-data))
        [:div {:class ["pt-6"]}
         [components.filter/items-by-group
-         (assoc filter-data :item->comp note-comp)]])
+         (assoc filter-data
+                :item->comp note-comp
+                :table-def
+                {:headers ["Published" "Name" "Actions" "Raw"]
+                 :->row   (fn [note]
+                            (let [note (assoc note :doctor/type :type/garden)]
+                              [[:span
+                                (when (:blog/published note) "Published")
+                                ]
+                               [floating/popover
+                                {:hover        true :click true
+                                 :anchor-comp  (:org/name note)
+                                 :popover-comp [components.garden/full-note note]}]
+                               [components.actions/actions-popup
+                                {:actions (handlers/->actions note)}]
+                               [components.debug/raw-metadata {:label "raw"} note]]))})]])
 
      (when (not (seq all-notes))
        [:div
