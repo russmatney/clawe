@@ -50,8 +50,15 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; presets
 
-(defn modified-in-last-n-days [n]
-  (fn [lm] (t/>= lm (t/date (t/<< (dates.tick/now) (t/new-duration n :days))))))
+(defn filter-modified-in-last-n-days [n]
+  {:filter-key :filters/last-modified-date
+   :match-fn
+   (fn [lm] (t/>= lm (t/date (t/<< (dates.tick/now) (t/new-duration n :days)))))})
+
+(defn filter-has-tags [tags]
+  (cond
+    (string? tags) {:filter-key :filters/tags :match tags}
+    (coll? tags)   {:filter-key :filters/tags :match-fn (->> tags (into #{}))}))
 
 (defn presets []
   ;; these presets might be higher level modes, i.e. they might imply other ui changes
@@ -62,62 +69,85 @@
                  :group-by    :filters/last-modified-date
                  :sort-groups :filters/last-modified-date}
 
-   :posts-by-last-modified {:filters     #{{:filter-key :filters/tags :match-fn #{"post" "posts"}}}
-                            :group-by    :filters/last-modified-date
-                            :sort-groups :filters/last-modified-date}
+   :posts-by-last-modified
+   {:filters     #{(filter-has-tags #{"post" "posts"})}
+    :group-by    :filters/last-modified-date
+    :sort-groups :filters/last-modified-date}
 
-   :posts-by-tags {:filters     #{{:filter-key :filters/tags :match-fn #{"post" "posts"}}}
-                   :group-by    :filters/tags
-                   :sort-groups :filters/tags}
+   :posts-by-tags
+   {:filters     #{(filter-has-tags #{"post" "posts"})}
+    :group-by    :filters/tags
+    :sort-groups :filters/tags}
 
    :tags
-   {:filters     {}
+   {:filters     #{(filter-modified-in-last-n-days 21)}
     :group-by    :filters/tags
     :sort-groups :filters/tags
     :default     true}
 
-   :last-modified-date
-   {:filters     #{{:filter-key :filters/last-modified-date
-                    :match-fn   (modified-in-last-n-days 21)}}
+   :by-last-modified-date
+   {:filters     #{(filter-modified-in-last-n-days 21)}
     :group-by    :filters/last-modified-date
     :sort-groups :filters/last-modified-date}
 
-   :today
+   :modified-today
    {:filters
     #{{:filter-key :filters/last-modified-date
        :match      (t/today)}}
     :group-by    :filters/last-modified-date
     :sort-groups :filters/last-modified-date}
 
-   :yesterday
+   :modified-yesterday
    {:filters
     #{{:filter-key :filters/last-modified-date :match (t/yesterday)}}
     :group-by    :filters/last-modified-date
     :sort-groups :filters/last-modified-date}
 
-   :last-seven-days
+   :modified-last-7-days
    {:filters
-    #{{:filter-key :filters/last-modified-date
-       :match-fn   (modified-in-last-n-days 8)}}
+    #{(filter-modified-in-last-n-days 21)}
     :group-by    :filters/last-modified-date
     :sort-groups :filters/last-modified-date}})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; main widget
 
+(defn is-daily? [note]
+  (re-seq #"daily/" (:org/short-path note)))
+
 (defn widget [_opts]
   (let [blog-data           (use-blog/use-blog-data)
         {:keys [all-notes]} @blog-data
 
-        sample-pill-active (uix/state nil)
+        sample-pill-active   (uix/state nil)
+        sort-published-first (uix/state nil)
+        sort-published-last  (uix/state nil)
+        hide-dailies         (uix/state nil)
 
         pills       [{:on-click #(swap! sample-pill-active not)
                       :label    "Sample Pill"
-                      :active   @sample-pill-active}]
+                      :active   @sample-pill-active}
+                     {:on-click (fn [_]
+                                  (swap! sort-published-first not)
+                                  (reset! sort-published-last nil))
+                      :label    "sort-published-first"
+                      :active   @sort-published-first}
+                     {:on-click (fn [_]
+                                  (swap! sort-published-last not)
+                                  (reset! sort-published-first nil))
+                      :label    "sort-published-last"
+                      :active   @sort-published-last}
+                     {:on-click #(swap! hide-dailies not)
+                      :label    "hide-dailies"
+                      :active   @hide-dailies}]
         filter-data (components.filter/use-filter
                       (-> filter-defs/fg-config
                           (assoc :extra-preset-pills pills
-                                 :items all-notes)
+                                 :items all-notes
+                                 :filter-items
+                                 (fn [items]
+                                   (cond->> items
+                                     @hide-dailies (remove is-daily?))))
                           (update :presets merge (presets))))]
 
     [:div
@@ -140,6 +170,12 @@
         [components.filter/items-by-group
          (assoc filter-data
                 :item->comp note-comp
+                :sort-items
+                (cond
+                  @sort-published-first
+                  (fn [items] (->> items (sort-by :blog/published >)))
+                  @sort-published-last
+                  (fn [items] (->> items (sort-by :blog/published <))))
                 :table-def
                 {:headers ["Published" "Name" "Actions" "Raw"]
                  :->row   (fn [note]
