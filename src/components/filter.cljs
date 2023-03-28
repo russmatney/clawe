@@ -12,27 +12,23 @@
 ;; grouped filter items component
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn pagination-controls [{:keys [page-size step total actions n]}]
-  [components.actions/actions-list
-   {:n (or n 5)
-    :actions
-    (concat
-      (or actions [])
-      [(when (> @page-size 0)
-         (let [new-size (max (- @page-size step) 0)]
-           {:action/label    (str "less (" new-size ")")
-            :action/on-click (fn [_] (reset! page-size new-size))}))
-       (when (< @page-size total)
-         (let [new-size (min (+ @page-size step) total)]
-           {:action/label    (str "more (" new-size ")")
-            :action/on-click (fn [_] (reset! page-size new-size))}))
-       (when (< @page-size total)
-         {:action/label    (str "all (" total ")")
-          :action/on-click (fn [_] (reset! page-size total))})])}])
+(defn pagination-actions [{:keys [page-size step total]}]
+  [(when (> @page-size 0)
+     (let [new-size (max (- @page-size step) 0)]
+       {:action/label    (str "less (" new-size ")")
+        :action/on-click (fn [_] (reset! page-size new-size))}))
+   (when (< @page-size total)
+     (let [new-size (min (+ @page-size step) total)]
+       {:action/label    (str "more (" new-size ")")
+        :action/on-click (fn [_] (reset! page-size new-size))}))
+   (when (< @page-size total)
+     {:action/label    (str "all (" total ")")
+      :action/on-click (fn [_] (reset! page-size total))})])
 
 (defn group->comp
   [{:keys [item-group label item->comp group-by-key filter-items sort-items all-filter-defs
-           default-page-size table-def]}]
+           default-page-size table-def
+           hide-all-tables hide-all-groups]}]
   (let [label->group-by-label (or (some-> group-by-key all-filter-defs :group-by-label)
                                   (fn [label] (or (str label) "None")))
         item-group-open?      (uix/state true)
@@ -53,27 +49,30 @@
 
        [:div
         {:class ["ml-auto"]}
-        [pagination-controls
-         {:n         5
-          :page-size page-size :step 4 :total (count items)
-          :actions
-          [{:action/on-click (fn [_] (swap! table-open? not))
-            :action/label    (str (if @table-open? "Hide table" "Show table"))}
-           {:action/on-click (fn [_] (swap! item-group-open? not))
-            :action/label    (str (if @item-group-open? "Hide group" "Show group"))}]}]]]]
 
-     (when @item-group-open?
+        [components.actions/actions-list
+         {:n 5 ;; num actions to show before paginating
+          :actions
+          (concat
+            [(when (not hide-all-tables)
+               {:action/on-click (fn [_] (swap! table-open? not))
+                :action/label    (str (if @table-open? "Hide table" "Show table"))})
+             (when (not hide-all-groups)
+               {:action/on-click (fn [_] (swap! item-group-open? not))
+                :action/label    (str (if @item-group-open? "Hide group" "Show group"))})]
+            (when-not (and hide-all-tables hide-all-groups)
+              (pagination-actions {:page-size page-size :step 4 :total (count items)})))}]]]]
+
+     (when (and @item-group-open? (not hide-all-groups))
        [:div
         {:class ["flex" "flex-row" "flex-wrap" "justify-around"]}
 
         (when item->comp
           (for [[i it] (->> items (take @page-size) (map-indexed vector))]
             ^{:key (str (:org/name it) i)}
-            [item->comp it]))
+            [item->comp it]))])
 
-        ])
-
-     (when @table-open?
+     (when (and @table-open? (not hide-all-tables))
        [:div
         {:class ["flex" "flex-row" "w-full"]}
         (when (and table-def (:->row table-def))
@@ -216,13 +215,32 @@
         [:span {:class ["font-nes" "text-xl"
                         "cursor-pointer"
                         "pb-2"]}
-         "Presets"]
+         "Filters"]
 
         [:div
          {:class ["ml-auto"]}
          [:button {:on-click #(swap! filter-detail-open? not)
                    :class    ["whitespace-nowrap"]}
           (str (if @filter-detail-open? "Hide" "Show") " filter detail")]]]
+
+       ;; active group-by, sort-groups
+       [:div
+        {:class ["flex" "flex-row" "space-x-4"]}
+        [:pre (str ":group-by-key " group-by-key)]
+        [:pre (str ":sort-groups-key " sort-groups-key)]]
+
+       ;; active filters
+       [:div
+        [:pre ":active-filters "]
+        (for [[i f] (->> active-filters (map-indexed vector))]
+          ^{:key i} [:div
+                     {:class ["font-mono"]}
+                     (str f)])]
+
+       [:div
+        {:class ["py-2"]}
+        (when (seq extra-preset-pills)
+          [pill/cluster extra-preset-pills])]
 
        [pill/cluster
         (->> presets
@@ -236,23 +254,7 @@
                     (set-current-preset-key k)
                     (set-filters filters)
                     (set-group-by-key group-by)
-                    (set-sort-groups-key sort-groups))}))
-             (concat (or extra-preset-pills [])))]]]
-
-     ;; active group-by
-     [:div [:pre (str ":group-by-key " group-by-key)]]
-
-     ;; active sort-groups-key
-     [:div
-      [:pre (str ":sort-groups-key " sort-groups-key)]]
-
-     ;; active filters
-     [:div
-      [:pre ":active-filters "]
-      (for [[i f] (->> active-filters (map-indexed vector))]
-        ^{:key i} [:div
-                   {:class ["font-mono"]}
-                   (str f)])]
+                    (set-sort-groups-key sort-groups))})))]]]
 
      (when @filter-detail-open?
        ;; edit filters

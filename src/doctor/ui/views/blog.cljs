@@ -14,14 +14,14 @@
 
 (defn bar []
   [:div
-   {:class ["bg-city-blue-600"
+   {:class ["bg-yo-blue-800"
             "w-full"
             "flex" "flex-col"]}
    [:span
-    {:class ["font-mono"
-             "text-city-blue-900"
+    {:class ["font-nes"
+             "text-city-blue-600"
              "p-2"]}
-    "clawe/blog"]])
+    ":clawe/blog"]])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; note-comp
@@ -119,15 +119,13 @@
   (let [blog-data           (use-blog/use-blog-data)
         {:keys [all-notes]} @blog-data
 
-        sample-pill-active   (uix/state nil)
         sort-published-first (uix/state nil)
         sort-published-last  (uix/state nil)
         hide-dailies         (uix/state nil)
+        hide-all-tables      (uix/state nil)
+        hide-all-groups      (uix/state nil)
 
-        pills       [{:on-click #(swap! sample-pill-active not)
-                      :label    "Sample Pill"
-                      :active   @sample-pill-active}
-                     {:on-click (fn [_]
+        pills       [{:on-click (fn [_]
                                   (swap! sort-published-first not)
                                   (reset! sort-published-last nil))
                       :label    "sort-published-first"
@@ -139,7 +137,13 @@
                       :active   @sort-published-last}
                      {:on-click #(swap! hide-dailies not)
                       :label    "hide-dailies"
-                      :active   @hide-dailies}]
+                      :active   @hide-dailies}
+                     {:on-click #(swap! hide-all-tables not)
+                      :label    "hide-all-tables"
+                      :active   @hide-all-tables}
+                     {:on-click #(swap! hide-all-groups not)
+                      :label    "hide-all-groups"
+                      :active   @hide-all-groups}]
         filter-data (components.filter/use-filter
                       (-> filter-defs/fg-config
                           (assoc :extra-preset-pills pills
@@ -154,7 +158,9 @@
      {:class ["bg-city-blue-800"
               "bg-opacity-90"
               "min-h-screen"
-              "flex" "flex-col"]}
+              "flex" "flex-col"
+              "pb-16"
+              ]}
 
      [bar]
 
@@ -170,6 +176,8 @@
         [components.filter/items-by-group
          (assoc filter-data
                 :item->comp note-comp
+                :hide-all-tables @hide-all-tables
+                :hide-all-groups @hide-all-groups
                 :sort-items
                 (cond
                   @sort-published-first
