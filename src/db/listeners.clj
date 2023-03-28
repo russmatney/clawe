@@ -4,6 +4,9 @@
    [systemic.core :as sys :refer [defsys]]
    [datascript.core :as d]
 
+   [blog.publish :as blog.publish]
+   [blog.db :as blog.db]
+
    ;; circular dep!!
    #_[blog.core :as blog]
    [db.core :as db]
@@ -44,9 +47,7 @@
   (sys/start! `*garden->expo*)
   (sys/stop! `*garden->expo*)
 
-  (d/db db/*conn*)
-
-  )
+  (d/db db/*conn*))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; data expander
@@ -152,27 +153,43 @@
   (do
     (db/transact [{:some-random-data "hi there"
                    :some/names       "paced key"}])
-    nil)
-  )
+    nil))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; blog re-render
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn tx->republish-updated-note [tx]
+  (let [txed-ents (->> tx :tx-data (map :e) (into #{})
+                       (d/pull-many @db/*conn* '[*]))
+
+        published-notes (->> txed-ents
+                             (filter (comp blog.db/published-id? :org/id)))]
+
+    (when (seq published-notes)
+      (log/info "rerendering edited notes!"
+                (->> txed-ents (map :org/name-string)))
+      (->> published-notes (map blog.db/update-db-note) doall)
+      (->> published-notes
+           ;; NOTE CAREFUL! this is an easy way to accidentally publish notes!
+           ;; publish-note also guards against it
+           (map (comp blog.publish/publish-note :org/source-file))
+           doall))))
+
 (defsys ^:dynamic *garden->blog*
-  :start (do
-           (sys/start! `db/*conn*)
-           (d/listen!
-             db/*conn* :garden->blog
-             (fn [tx]
-               (try
-                 ;; TODO debouncing logic for this!!!
-                 (log/info "rerendering blog!")
-                 ;; circular dependency
-                 #_(blog/render)
-                 (catch Exception e
-                   (log/warn "Error in garden->blog db listener" e)
-                   tx)))))
+  :start
+  (do
+    (sys/start! `db/*conn*)
+    (d/listen!
+      db/*conn* :garden->blog
+      (fn [tx]
+        (try
+          ;; TODO debouncing logic for this!!!
+          (tx->republish-updated-note tx)
+
+          (catch Exception e
+            (log/warn "Error in garden->blog db listener" e)
+            tx)))))
   :stop
   (try
     (log/debug "Removing :garden->blog db listener")

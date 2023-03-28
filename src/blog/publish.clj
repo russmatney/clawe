@@ -18,16 +18,17 @@
 
 (defn publish-note [path-or-note]
   (let [note
-        (if (and
-              (map? path-or-note)
-              (:org/source-file path-or-note)
-              (= :level/root (:org/level path-or-note))) path-or-note
-            (some->>
-              (blog.db/published-notes)
-              (filter (comp #{(str path-or-note)} :org/source-file))
-              first))]
+        (if (and (map? path-or-note)
+                 (:org/source-file path-or-note)
+                 (= :level/root (:org/level path-or-note))
+                 (blog.db/published-id? (:org/id path-or-note)))
+          path-or-note
+          (some->>
+            (blog.db/published-notes)
+            (filter (comp #{(str path-or-note)} :org/source-file))
+            first))]
     (if-not note
-      (log/info "[PUBLISH] could not find note" path-or-note)
+      (log/info "[PUBLISH] could not find published note" path-or-note)
       (do
         (log/info "[PUBLISH] exporting note: " (:org/short-path note))
         (if (-> note :org/source-file (string/includes? "/daily/"))

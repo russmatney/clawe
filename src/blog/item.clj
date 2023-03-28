@@ -1,5 +1,6 @@
 (ns blog.item
   (:require
+   [taoensso.timbre :as log]
    [clojure.set :as set]
    [clojure.string :as string]
    [org-crud.core :as org-crud]
@@ -242,7 +243,7 @@ and [[https://github.com/russmatney/org-crud][this other repo]]"))
            (into [:ol]))
 
       :else
-      (println "[WARN]: unknown list type" (->> lines first)))))
+      (log/warn "[WARN]: unknown list type" (->> lines first)))))
 
 (defn render-block [{:keys [content block-type qualifier] :as _block}]
   (cond
@@ -261,7 +262,7 @@ and [[https://github.com/russmatney/org-crud][this other repo]]"))
 
     :else
     (do
-      (println "[WARN]: unknown block type, using fallback block markup")
+      (log/warn "[WARN]: unknown block type, using fallback block markup")
       [:div
        (->> content (map :text)
             (map (fn [t] [:span t]))

@@ -1,5 +1,6 @@
 (ns blog.config
   (:require
+   [taoensso.timbre :as log]
    [aero.core :as aero]
    [systemic.core :as sys :refer [defsys]]
    [babashka.fs :as fs]
@@ -92,7 +93,7 @@
   [note]
   (let [short-path (:org/short-path note)]
     (if-not short-path
-      (println "[ERROR: config/update-note]: no :short-path for passed note")
+      (log/warn "[ERROR: config/update-note]: no :short-path for passed note")
       (-> @*config*
           (update-in [:notes short-path] merge note)
           write-config))

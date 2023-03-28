@@ -86,8 +86,16 @@
 
 (sys/defsys ^:dynamic *notes-db*
   :start
-  (println "[DB]: *notes-db* (re)started")
+  (log/info "[DB]: *notes-db* (re)started")
   (atom (build-db)))
+
+(defn update-db-note [note]
+  (let [note        (-> note :org/source-file org-crud/path->nested-item)
+        blog-config (blog.config/->config)]
+    (log/info "Updating *notes-db* with note" (:org/short-path note))
+    ;; TODO we may need to remove references
+    ;; e.g. when links are updated/deleted
+    (swap! *notes-db* (fn [db] (add-note-to-db blog-config db note)))))
 
 (defn refresh-notes []
   (if (sys/running? `*notes-db*)
@@ -187,8 +195,5 @@
       (let [linked-id (:org/id note)]
         (if (published-id? linked-id)
           (note->uri note)
-
-          #_(println "[INFO: missing link]: skipping link to unpublished note: "
-                     (:org/name note))
           ;; returning nil here to signal the link's removal
           nil)))))

@@ -15,10 +15,14 @@
 
 
 (comment
+  (db/refresh-notes)
   (let [note (->> (db/root-notes)
                   (filter :org/name-string)
-                  (filter (comp #(re-seq #"Things I Love" %) :org/name-string))
+                  ;; (filter (comp #(re-seq #"Things I Love" %) :org/name-string))
+                  (filter (comp #(re-seq #"minimap" %) :org/name-string))
                   first)]
+    #_(str (config/blog-content-public) (db/note->uri note))
+    #_(page note)
     (render/write-page
       {:path    (str (config/blog-content-public) (db/note->uri note))
        :content (page note)
