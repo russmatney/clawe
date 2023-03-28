@@ -16,8 +16,7 @@
 
 
 (def initial-db
-  {:root-notes                    []
-   :root-notes-by-id              {}
+  {:root-notes-by-id              {}
    :all-notes-by-id               {}
    :published-by-id               {}
    :any-id->root-note             {}
@@ -38,7 +37,6 @@
                                     (mapcat :org/links-to)
                                     (map :link/id))))]
     (cond-> db
-      true     (update :root-notes concat [note])
       blog-def (update :published-by-id assoc (:org/id note) note)
       true     (update :root-notes-by-id assoc (:org/id note) note)
       true     (update :all-notes-by-id
@@ -69,7 +67,7 @@
 (defn build-db []
   (log/info "[DB]: building blog.db")
   (let [start-t     (t/now)
-        blog-config (blog.config/->config)
+        blog-config @blog.config/*config*
         blog-db     (->>
                       (garden/all-garden-notes-nested)
                       (reduce
@@ -91,11 +89,13 @@
 
 (defn update-db-note [note]
   (let [note        (-> note :org/source-file org-crud/path->nested-item)
-        blog-config (blog.config/->config)]
+        blog-config @blog.config/*config*]
     (log/info "Updating *notes-db* with note" (:org/short-path note))
-    ;; TODO we may need to remove references
+    ;; TODO we will need to remove references first
     ;; e.g. when links are updated/deleted
-    (swap! *notes-db* (fn [db] (add-note-to-db blog-config db note)))))
+    (swap! *notes-db* (fn [db]
+                        (log/info "updating db")
+                        (add-note-to-db blog-config db note)))))
 
 (defn refresh-notes []
   (if (sys/running? `*notes-db*)
@@ -110,9 +110,28 @@
   (sys/start! `*notes-db*)
   @*notes-db*)
 
+(comment
+  (->>
+    @blog.config/*config*
+    :notes
+    vals
+    (filter :org/name-string)
+    (filter (fn [note]
+              (re-seq #"all my patrons" (:org/name-string note)))))
+
+  (->>
+    (get-db)
+    :root-notes-by-id
+    vals
+    (filter (fn [note]
+              (re-seq #"all my patrons" (:org/name-string note))))
+    first
+    :blog/published
+    ))
+
 (defn root-notes []
   (sys/start! `*notes-db*)
-  (:root-notes @*notes-db*))
+  (vals (:root-notes-by-id @*notes-db*)))
 
 (defn fetch-root-note-with-id
   "Fetches a root note for the passed id. Supports fetching the root note with a child id."
@@ -141,7 +160,8 @@
 
   (->>
     (get-db)
-    :root-notes
+    :root-notes-by-id
+    vals
     (sort-by :file/last-modified)
     (reverse)
     (take 2))

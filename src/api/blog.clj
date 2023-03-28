@@ -6,7 +6,8 @@
    [systemic.core :as sys :refer [defsys]]
    [manifold.stream :as s]
    [clojure.string :as string]
-   ))
+   [dates.tick :as dates]
+   [tick.core :as t]))
 
 (comment
   (blog.config/reload-config)
@@ -21,7 +22,18 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn build-blog-data []
-  (blog.db/get-db))
+  (let [db        (blog.db/get-db)
+        month-ago (t/<< (dates/now) (t/new-period 2 :months))]
+    {:root-notes (->> db :root-notes-by-id
+                      vals
+                      (filter (fn [note]
+                                (t/> (-> note :file/last-modified dates/parse-time-string)
+                                     month-ago)))
+                      (sort-by :org/name-string))}))
+
+(comment
+  (count
+    (:root-notes (build-blog-data))))
 
 (defsys ^:dynamic *blog-data-stream*
   :start (s/stream)
@@ -31,7 +43,7 @@
   (sys/start! `*blog-data-stream*))
 
 (defn update-blog-data []
-  (blog.db/refresh-notes)
+  (log/info "Pushing blog data update to client")
   (s/put! *blog-data-stream* (build-blog-data)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -43,6 +55,7 @@
   (blog.config/persist-note-def
     (-> note (select-keys [:org/short-path
                            :org/name-string])))
+  (blog.db/update-db-note note)
   (update-blog-data))
 
 (comment
@@ -59,4 +72,5 @@
 (defn unpublish [note]
   (log/info "Unpublishing" (:org/short-path note))
   (blog.config/drop-note-def (:org/short-path note))
+  (blog.db/update-db-note note)
   (update-blog-data))
