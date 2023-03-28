@@ -1,6 +1,7 @@
 (ns components.filter
   (:require
    [components.floating :as floating]
+   [components.actions :as components.actions]
    [uix.core.alpha :as uix]
    [util :as util]
    [clojure.string :as string]
@@ -10,14 +11,34 @@
 ;; grouped filter items component
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn pagination-controls [{:keys [page-size step total actions n]}]
+  [components.actions/actions-list
+   {:n (or n 5)
+    :actions
+    (concat
+      (or actions [])
+      [(when (> @page-size 0)
+         (let [new-size (max (- @page-size step) 0)]
+           {:action/label    (str "less (" new-size ")")
+            :action/on-click (fn [_] (reset! page-size new-size))}))
+       (when (< @page-size total)
+         (let [new-size (min (+ @page-size step) total)]
+           {:action/label    (str "more (" new-size ")")
+            :action/on-click (fn [_] (reset! page-size new-size))}))
+       (when (< @page-size total)
+         {:action/label    (str "show all (" total ")")
+          :action/on-click (fn [_] (reset! page-size total))})])}])
+
 (defn group->comp
-  [{:keys [item-group label item->comp group-by-key filter-items sort-items all-filter-defs]}]
+  [{:keys [item-group label item->comp group-by-key filter-items sort-items all-filter-defs
+           default-page-size]}]
   (let [label->group-by-label (or (some-> group-by-key all-filter-defs :group-by-label)
                                   (fn [label] (or (str label) "None")))
-        item-group-open?      (uix/state false)
+        item-group-open?      (uix/state true)
         items                 (cond->> item-group
                                 filter-items filter-items
-                                sort-items   sort-items)]
+                                sort-items   sort-items)
+        page-size             (uix/state (or default-page-size 4))]
     [:div
      {:class ["flex" "flex-col"]}
      [:div
@@ -26,20 +47,22 @@
        {:class ["p-6" "flex flex-row"]}
        [:span
         {:class ["font-nes" "text-city-blue-400"]}
-        (label->group-by-label label)]
+        (str (label->group-by-label label) " (" (count items) ")")]
 
        [:div
-        {:class ["ml-auto"  "text-city-blue-400"]}
-        [:button {:on-click #(swap! item-group-open? not)
-                  :class    ["whitespace-nowrap"]}
-         (str (if @item-group-open? "Hide" "Show")
-              " " (count items) " item(s)")]]]]
+        {:class ["ml-auto"]}
+        [pagination-controls
+         {:n         5
+          :page-size page-size :step 4 :total (count items)
+          :actions
+          [{:action/on-click (fn [_] (swap! item-group-open? not))
+            :action/label    (str (if @item-group-open? "Hide group" "Show group"))}]}]]]]
 
      (when @item-group-open?
        [:div
         {:class ["flex" "flex-row" "flex-wrap" "justify-around"]}
 
-        (for [[i it] (->> items (map-indexed vector))]
+        (for [[i it] (->> items (take @page-size) (map-indexed vector))]
           ^{:key (str (:org/name it) i)}
           [item->comp it])])]))
 
