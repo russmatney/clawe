@@ -189,8 +189,7 @@
                  :->row   (fn [note]
                             (let [note (assoc note :doctor/type :type/garden)]
                               [[:span
-                                (when (:blog/published note) "Published")
-                                ]
+                                (when (:blog/published note) "Published")]
                                [floating/popover
                                 {:hover        true :click true
                                  :anchor-comp  (:org/name note)

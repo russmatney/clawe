@@ -12,7 +12,8 @@
              [db.core :as db]
              [datascript.core :as d]
              [org-crud.api :as org-crud.api]
-             [garden.db :as garden.db]]
+             [garden.db :as garden.db]
+             [api.blog :as api.blog]]
        :cljs [[hiccup-icons.fa :as fa]
               [components.icons :as components.icons]
               [components.colors :as colors]
@@ -349,6 +350,13 @@
            :action/icon     [:> HIMini/XCircleIcon {:class ["w-4" "h-6"]}]}]
          (remove nil?)))))
 
+(defhandler publish-note [item]
+  (api.blog/publish item)
+  :ok)
+
+(defhandler unpublish-note [item]
+  (api.blog/unpublish item)
+  :ok)
 
 #?(:cljs
    (defn garden-file->actions [item]
@@ -361,7 +369,15 @@
        :action/icon     fa/hashtag-solid}
       {:action/label    "purge-source-file"
        :action/on-click #(purge-org-source-file item)
-       :action/icon     fa/trash-alt-solid}]))
+       :action/icon     fa/trash-alt-solid}
+      (when-not (:blog/published item)
+        {:action/label    "Publish"
+         :action/on-click (fn [_] (publish-note item))
+         :action/priority 1})
+      (when (:blog/published item)
+        {:action/label    "Unpublish"
+         :action/on-click (fn [_] (unpublish-note item))
+         :action/priority 1})]))
 
 #?(:cljs
    (defn repo->actions [item]

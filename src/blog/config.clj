@@ -102,6 +102,7 @@
 (defn drop-note-def
   "Removes the note at the passed `:org/short-path` from the :notes config."
   [short-path]
+  ;; TODO log warning when no note found to be dissoced
   (-> @*config*
       (update :notes dissoc short-path)
       write-config)
@@ -110,6 +111,7 @@
 (comment
   (note-defs)
   (note-def "garden/some-note.org")
+  (note-def "garden/games_journal.org")
   (persist-note-def {:org/short-path "garden/some-note.org"
                      :with/data      :hi/there})
   (drop-note-def "garden/some-note.org"))
