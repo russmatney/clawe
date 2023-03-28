@@ -57,6 +57,7 @@
 (defn tags-list [tags]
   (when (seq tags)
     [:div
+     {:class ["flex flex-row flex-wrap"]}
      (for [[i t] (->> tags (map-indexed vector))]
        ^{:key t}
        [:span {:class

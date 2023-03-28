@@ -62,12 +62,21 @@
 
 (defn presets []
   ;; these presets might be higher level modes, i.e. they might imply other ui changes
-  {:published   {:filters     #{{:filter-key :filters/published :match "Published"}}
-                 :group-by    :filters/last-modified-date
-                 :sort-groups :filters/last-modified-date}
-   :unpublished {:filters     #{{:filter-key :filters/published :match "Unpublished"}}
-                 :group-by    :filters/last-modified-date
-                 :sort-groups :filters/last-modified-date}
+  {
+   :published-by-last-modified   {:filters     #{{:filter-key :filters/published :match "Published"}}
+                                  :group-by    :filters/last-modified-date
+                                  :sort-groups :filters/last-modified-date}
+   :unpublished-by-last-modified {:filters     #{{:filter-key :filters/published :match "Unpublished"}}
+                                  :group-by    :filters/last-modified-date
+                                  :sort-groups :filters/last-modified-date}
+
+   :published-by-tag {:filters     #{{:filter-key :filters/published :match "Published"}}
+                      :group-by    :filters/tags
+                      :sort-groups :filters/tags}
+
+   :unpublished-by-tag {:filters     #{{:filter-key :filters/published :match "Unpublished"}}
+                        :group-by    :filters/tags
+                        :sort-groups :filters/tags}
 
    :posts-by-last-modified
    {:filters     #{(filter-has-tags #{"post" "posts"})}
@@ -185,7 +194,7 @@
                   @sort-published-last
                   (fn [items] (->> items (sort-by :blog/published <))))
                 :table-def
-                {:headers ["Published" "Name" "Actions" "Raw"]
+                {:headers ["Published" "Name" "Tags (incl. nested)" "Actions" "Raw"]
                  :->row   (fn [note]
                             (let [note (assoc note :doctor/type :type/garden)]
                               [[:span
@@ -194,7 +203,8 @@
                                 {:hover        true :click true
                                  :anchor-comp  (:org/name note)
                                  :popover-comp [components.garden/full-note note]}]
-                               [components.actions/actions-popup
+                               [components.garden/all-nested-tags-comp note]
+                               [components.actions/actions-list
                                 {:actions (handlers/->actions note)}]
                                [components.debug/raw-metadata {:label "raw"} note]]))})]])
 
