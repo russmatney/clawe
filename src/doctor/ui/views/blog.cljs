@@ -62,21 +62,29 @@
 
 (defn presets []
   ;; these presets might be higher level modes, i.e. they might imply other ui changes
-  {
-   :published-by-last-modified   {:filters     #{{:filter-key :filters/published :match "Published"}}
-                                  :group-by    :filters/last-modified-date
-                                  :sort-groups :filters/last-modified-date}
-   :unpublished-by-last-modified {:filters     #{{:filter-key :filters/published :match "Unpublished"}}
-                                  :group-by    :filters/last-modified-date
-                                  :sort-groups :filters/last-modified-date}
+  {:published-by-last-modified
+   {:filters     #{{:filter-key :filters/published :match "Published"}
+                   (filter-modified-in-last-n-days 21)}
+    :group-by    :filters/last-modified-date
+    :sort-groups :filters/last-modified-date}
 
-   :published-by-tag {:filters     #{{:filter-key :filters/published :match "Published"}}
-                      :group-by    :filters/tags
-                      :sort-groups :filters/tags}
+   :unpublished-by-last-modified
+   {:filters     #{{:filter-key :filters/published :match "Unpublished"}
+                   (filter-modified-in-last-n-days 21)}
+    :group-by    :filters/last-modified-date
+    :sort-groups :filters/last-modified-date}
 
-   :unpublished-by-tag {:filters     #{{:filter-key :filters/published :match "Unpublished"}}
-                        :group-by    :filters/tags
-                        :sort-groups :filters/tags}
+   :published-by-tag
+   {:filters     #{{:filter-key :filters/published :match "Published"}
+                   (filter-modified-in-last-n-days 21)}
+    :group-by    :filters/tags
+    :sort-groups :filters/tags}
+
+   :unpublished-by-tag
+   {:filters     #{{:filter-key :filters/published :match "Unpublished"}
+                   (filter-modified-in-last-n-days 21)}
+    :group-by    :filters/tags
+    :sort-groups :filters/tags}
 
    :posts-by-last-modified
    {:filters     #{(filter-has-tags #{"post" "posts"})}
@@ -168,8 +176,7 @@
               "bg-opacity-90"
               "min-h-screen"
               "flex" "flex-col"
-              "pb-16"
-              ]}
+              "pb-16"]}
 
      [bar]
 
@@ -179,6 +186,11 @@
                "text-city-blue-400"]}
 
       (:filter-grouper filter-data)]
+
+     [:div
+      {:class ["px-6"
+               "text-city-blue-400"]}
+      (str (count (:filtered-items filter-data)) " notes")]
 
      (when (seq (:filtered-items filter-data))
        [:div {:class ["pt-6"]}
