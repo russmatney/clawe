@@ -1,20 +1,88 @@
 (ns blog.db
   (:require
+   [babashka.fs :as fs]
+   [clojure.string :as string]
+   [tick.core :as t]
+   [taoensso.timbre :as log]
    [util :refer [ensure-uuid]]
    [garden.core :as garden]
    [org-crud.core :as org-crud]
    [blog.config :as blog.config]
    [systemic.core :as sys]))
 
-;; imported from org-blog/db.
-;; Could/should be rewritten to work with datascript/datalevin/whatever clawe/db offers
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; garden db system
+;; db shape and build
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(declare build-db)
+(def initial-db
+  {:root-notes                    []
+   :root-notes-by-id              {}
+   :all-notes-by-id               {}
+   :published-by-id               {}
+   :any-id->root-note             {}
+   :link-id->linking-root-note-id {}})
+
+(defn add-note-to-db [blog-config db note]
+  (let [blog-def (-> blog-config :notes (get (:org/short-path note)))
+        note     (if blog-def
+                   (merge note blog-def {:blog/published true})
+                   note)
+
+        children          (->> note (org-crud/nested-item->flattened-items))
+        children-with-ids (->> children (filter :org/id))
+
+        all-link-ids (->>
+                       (concat (or (some->> note :org/links-to (map :link/id)) [])
+                               (->> children
+                                    (mapcat :org/links-to)
+                                    (map :link/id))))]
+    (cond-> db
+      true     (update :root-notes concat [note])
+      blog-def (update :published-by-id assoc (:org/id note) note)
+      true     (update :root-notes-by-id assoc (:org/id note) note)
+      true     (update :all-notes-by-id
+                       (fn [all-notes]
+                         (reduce
+                           (fn [all ch] (assoc all (:org/id ch) ch))
+                           all-notes
+                           children-with-ids)))
+
+      (seq children-with-ids)
+      (update :any-id->root-note
+              (fn [m] (reduce (fn [m ch] (assoc m (:org/id ch) note))
+                              m
+                              ;; includes parent
+                              children-with-ids)))
+
+      (seq all-link-ids)
+      (update :link-id->linking-root-note-id
+              (fn [m]
+                (reduce
+                  (fn [m link-id]
+                    (update m link-id
+                            (fn [s]
+                              (if s (conj s (:org/id note))
+                                  #{(:org/id note)}))))
+                  m all-link-ids))))))
+
+(defn build-db []
+  (log/info "[DB]: building blog.db")
+  (let [start-t     (t/now)
+        blog-config (blog.config/->config)
+        blog-db     (->>
+                      (garden/all-garden-notes-nested)
+                      (reduce
+                        (partial add-note-to-db blog-config)
+                        initial-db))]
+    (log/info "[DB]: blog.db built"
+              (str (t/millis (t/duration {:tick/beginning start-t
+                                          :tick/end       (t/now)})) "ms"))
+    blog-db))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; systemic overhead
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (sys/defsys ^:dynamic *notes-db*
   :start
@@ -22,130 +90,105 @@
   (atom (build-db)))
 
 (defn refresh-notes []
-  (sys/restart! `*notes-db*))
+  (if (sys/running? `*notes-db*)
+    (sys/restart! `*notes-db*)
+    (sys/start! `*notes-db*)))
 
-(defn build-db []
-  (println "[DB]: building blog.db")
-  (let [blog-config (blog.config/->config)
-        all-nested
-        (->>
-          (garden/all-garden-notes-nested)
-          (map (fn [note]
-                 (let [blog-def (-> blog-config :notes (get (:org/short-path note)))]
-                   (if blog-def
-                     (merge note blog-def {:blog/published true})
-                     note)))))]
-    (println "[DB]: blog.db built")
-    {:all-notes all-nested}))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; getters
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn get-db []
   (sys/start! `*notes-db*)
   @*notes-db*)
 
-(defn all-notes []
+(defn root-notes []
   (sys/start! `*notes-db*)
-  (println "[DB]: passing :all-notes")
-  (:all-notes @*notes-db*))
+  (println "[DB]: passing :root-notes")
+  (:root-notes @*notes-db*))
 
-(defn all-flattened-notes-by-id []
-  (->> (all-notes)
-       (mapcat org-crud/nested-item->flattened-items)
-       (filter :org/id)
-       (map (fn [item]
-              [(:org/id item) item]))))
+(defn fetch-root-note-with-id
+  "Fetches a root note for the passed id. Supports fetching the root note with a child id."
+  [id]
+  (-> (get-db) :any-id->root-note (get (ensure-uuid id))))
 
-(defn notes-by-short-path []
-  (->>
-    (all-notes)
-    (map (fn [n] [(:org/short-path n) n]))))
-
-(defn notes-by-id []
-  (->>
-    (all-notes)
-    (map (fn [n] [(:org/id n) n]))))
-
-(defn root-note-by-child-id []
-  (->>
-    (notes-by-id)
-    (mapcat (fn [[p-id note]]
-              (concat
-                [[p-id note]]
-                (->> note
-                     org-crud/nested-item->flattened-items
-                     (map :org/id)
-                     (remove nil?)
-                     (map (fn [c-id]
-                            [c-id p-id]))))))))
-
-(defn root-note-for-any-id [id]
-  (let [note ((root-note-by-child-id) id)]
-    (if (map? note)
-      note
-      ((into {} (notes-by-id)) note))))
-
-(defn fetch-with-id [id]
-  (root-note-for-any-id (ensure-uuid id)))
-
-(comment
-  (count (all-notes))
-  (count (notes-by-id)))
-
-(defn root-ids-by-link-id []
-  (->>
-    (all-notes)
-    (mapcat org-crud/nested-item->flattened-items)
-    (reduce
-      (fn [agg item]
-        (let [item-id (:org/id item
-                               ;; we need an id for what is linking to this thing
-                               ;; yuck, this is a set, we want... the first? or last?
-                               ;; TODO move to a sensible stack here (org-crud)
-                               ;; this is used for backlinks, so we really want the linking context...
-                               ;; maybe want to require ids for items with links
-                               (some-> item :org/parent-ids first))]
-          (if-not item-id
-            #_(println "[WARN] no id/parent-id for link" item)
-            agg
-            (let [link-ids (->> item :org/links-to (map :link/id))]
-              (reduce (fn [agg link-id]
-                        (if (get agg link-id)
-                          (update agg link-id conj item-id)
-                          (assoc agg link-id #{item-id})))
-                      agg
-                      link-ids)))))
-      {})))
-
-(defn ids-linked-from
+(defn id->root-notes-linked-from
   "Returns a list of items that link to the passed id."
   [id]
-  ((root-ids-by-link-id) id))
+  (let [n-by-id (:all-notes-by-id (get-db))]
+    (-> (get-db) :link-id->linking-root-note-id
+        (get (ensure-uuid id))
+        (->> (map n-by-id)))))
 
-(defn notes-linked-from
-  "Returns a list of items that link to the passed id."
-  [id]
-  (let [n-by-id (into {} (all-flattened-notes-by-id))]
-    (->> (ids-linked-from id)
-         (map
-           ;; linking to child items? or roots only?
-           (fn [id] (n-by-id id))
-           #_fetch-with-id))))
-
+;; TODO re-impl and consume, if needed
+;; (defn linked-to [_note]
+;;   (let [links       nil #_ (item/item->all-links note)
+;;         notes-by-id (notes-by-id)]
+;;     (->> links
+;;          (map :link/id)
+;;          (map notes-by-id))))
 
 (comment
   (count
-    (root-ids-by-link-id))
-
-  (root-ids-by-link-id)
+    (-> (get-db) :link-id->linking-root-note-id))
 
   (->>
-    (all-notes)
+    (root-notes)
     (sort-by :file/last-modified)
     (reverse)
     (take 2))
 
-  (fetch-with-id #uuid "b4e38bb2-2e05-43e4-9a88-808a55602932")
-  (ids-linked-from #uuid "b4e38bb2-2e05-43e4-9a88-808a55602932")
-  (notes-linked-from #uuid "b4e38bb2-2e05-43e4-9a88-808a55602932")
+  (fetch-root-note-with-id #uuid "b4e38bb2-2e05-43e4-9a88-808a55602932")
+  (id->root-notes-linked-from #uuid "b4e38bb2-2e05-43e4-9a88-808a55602932")
 
-  (fetch-with-id #uuid "8b22b22a-c442-4859-9927-641f8405ec8d")
-  (notes-linked-from #uuid "8b22b22a-c442-4859-9927-641f8405ec8d"))
+  (fetch-root-note-with-id #uuid "8b22b22a-c442-4859-9927-641f8405ec8d")
+  (id->root-notes-linked-from #uuid "8b22b22a-c442-4859-9927-641f8405ec8d"))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; published note api
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn published-notes []
+  (->> (get-db) :published-by-id vals))
+
+(comment
+  (count (published-notes))
+
+  (->>
+    (published-notes)
+    (filter (fn [note]
+              (re-seq #"github" (:org/name-string note)))))
+  )
+
+(defn published-id? [id]
+  (-> (get-db) :published-by-id (get id)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; uris
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn path->uri [path]
+  (-> path fs/file-name fs/strip-ext
+      (#(str (cond
+               (string/includes? path "/daily/")      "/daily"
+               (string/includes? path "/workspaces/") "/note/workspaces"
+               :else                                  "/note")
+             "/" % ".html"))))
+
+(defn note->uri [note]
+  (-> note :org/source-file path->uri))
+
+(defn ^:dynamic *id->link-uri*
+  "Passed into org-crud to determine if a text link should be included or ignored."
+  [id]
+  (let [note (fetch-root-note-with-id id)]
+    (if-not note
+      (log/warn "[WARN: bad data]: could not find org note with id:" id)
+      (let [linked-id (:org/id note)]
+        (if (published-id? linked-id)
+          (note->uri note)
+
+          #_(println "[INFO: missing link]: skipping link to unpublished note: "
+                     (:org/name note))
+          ;; returning nil here to signal the link's removal
+          nil)))))

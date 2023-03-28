@@ -17,10 +17,7 @@
   (blog.config/note-defs)
 
   ;; WARN also kills nrepl/all systems!
-  (blog.db/refresh-notes)
-
-  (blog.db/notes-by-short-path)
-  (blog.db/notes-by-id))
+  (blog.db/refresh-notes))
 
 ;; NOTE rn blog.db and blog.config come from org files and the org-blog-content repo
 ;; while the code below pulls from db.core
@@ -29,15 +26,15 @@
 ;; db helpers
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn fetch-with-db-id [id]
-  (some->>
-    (db/query
-      '[:find (pull ?e [*])
-        :in $ ?e
-        :where
-        [?e :org/source-file ?src-file]]
-      id)
-    ffirst))
+;; (defn fetch-with-db-id [id]
+;;   (some->>
+;;     (db/query
+;;       '[:find (pull ?e [*])
+;;         :in $ ?e
+;;         :where
+;;         [?e :org/source-file ?src-file]]
+;;       id)
+;;     ffirst))
 
 (comment
   (db/query

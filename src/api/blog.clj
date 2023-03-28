@@ -13,10 +13,7 @@
   (blog.config/note-defs)
 
   ;; WARN also kills nrepl/all systems!
-  (blog.db/refresh-notes)
-
-  (blog.db/notes-by-short-path)
-  (blog.db/notes-by-id))
+  (blog.db/refresh-notes))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

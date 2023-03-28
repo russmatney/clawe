@@ -11,7 +11,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn blog-content-root []
-  ;; TODO rework to read/write from config
   (str (fs/home) "/russmatney/org-blog-content"))
 
 (defn blog-content-public []

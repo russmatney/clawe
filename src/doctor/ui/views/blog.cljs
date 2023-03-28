@@ -133,8 +133,8 @@
   (re-seq #"daily/" (:org/short-path note)))
 
 (defn widget [_opts]
-  (let [blog-data           (use-blog/use-blog-data)
-        {:keys [all-notes]} @blog-data
+  (let [blog-data            (use-blog/use-blog-data)
+        {:keys [root-notes]} @blog-data
 
         sort-published-first (uix/state nil)
         sort-published-last  (uix/state nil)
@@ -164,7 +164,7 @@
         filter-data (components.filter/use-filter
                       (-> filter-defs/fg-config
                           (assoc :extra-preset-pills pills
-                                 :items all-notes
+                                 :items root-notes
                                  :filter-items
                                  (fn [items]
                                    (cond->> items
@@ -220,7 +220,7 @@
                                 {:actions (handlers/->actions note)}]
                                [components.debug/raw-metadata {:label "raw"} note]]))})]])
 
-     (when (not (seq all-notes))
+     (when (not (seq root-notes))
        [:div
         {:class ["text-bold" "text-city-pink-300" "p-4"]}
         [:h1
