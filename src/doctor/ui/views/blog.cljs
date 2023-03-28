@@ -4,7 +4,9 @@
    [uix.core.alpha :as uix]
    [components.filter :as components.filter]
    [components.debug :as components.debug]
-   [components.filter-defs :as filter-defs]))
+   [components.filter-defs :as filter-defs]
+   [tick.core :as t]
+   [dates.tick :as dates.tick]))
 
 (defn bar []
   [:div
@@ -76,27 +78,29 @@
 
    :today
    {:filters
-    #{{:filter-key :filters/short-path :match-str-includes-any #{(filter-defs/short-path-days-ago 0)}}}}
+    #{{:filter-key :filters/last-modified-date
+       :match      (t/today)}}
+    :group-by    :filters/last-modified-date
+    :sort-groups :filters/last-modified-date}
 
-   :last-three-days
+   :yesterday
    {:filters
-    #{{:filter-key :filters/short-path :match-str-includes-any
-       (->> 3 range (map filter-defs/short-path-days-ago))}}
-    :group-by :filters/short-path}
+    #{{:filter-key :filters/last-modified-date :match (t/yesterday)}}
+    :group-by    :filters/last-modified-date
+    :sort-groups :filters/last-modified-date}
 
    :last-seven-days
    {:filters
-    #{{:filter-key :filters/short-path :match-str-includes-any
-       (->> 7 range (map filter-defs/short-path-days-ago))}}
-    :group-by :filters/short-path}})
+    #{{:filter-key :filters/last-modified-date
+       :match-fn
+       (fn [lm] (t/>= lm (t/date (t/<< (dates.tick/now) (t/new-duration 8 :days)))))}}
+    :group-by    :filters/last-modified-date
+    :sort-groups :filters/last-modified-date}})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; main widget
 
 (defn widget [_opts]
-  ;; TODO the 'current' usage in this widget could be a 'tag' based feature
-  ;; i.e. based on arbitrary tags, e.g. if that's our 'mode' right now
-  ;; i.e. 'current' is an execution mode - another mode might be pre or post execution
   (let [blog-data           (use-blog/use-blog-data)
         {:keys [all-notes]} @blog-data
 
@@ -110,10 +114,7 @@
                           (assoc :extra-preset-pills pills
                                  :items all-notes)
                           (update :presets merge (presets))))]
-    (println "some filter data"
-             :group-by-key (:group-by-key filter-data)
-             :sort-groups-key (:sort-groups-key filter-data)
-             :active-filters (:active-filters filter-data))
+
     [:div
      {:class ["bg-city-blue-800"
               "bg-opacity-90"

@@ -26,7 +26,7 @@
            {:action/label    (str "more (" new-size ")")
             :action/on-click (fn [_] (reset! page-size new-size))}))
        (when (< @page-size total)
-         {:action/label    (str "show all (" total ")")
+         {:action/label    (str "all (" total ")")
           :action/on-click (fn [_] (reset! page-size total))})])}])
 
 (defn group->comp
