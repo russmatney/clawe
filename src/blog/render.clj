@@ -141,7 +141,7 @@ gtag('config', '" ga-id "');"))])]
 
 (defn write-styles []
   (log/info "[PUBLISH]: exporting tailwind styles")
-  (let [content-path (str (blog.config/blog-content-public) "/*.html")]
+  (let [content-path (str (blog.config/blog-content-public) "/**/*.html")]
     (->
       ^{:out :string
         :dir (blog.config/blog-content-root)}

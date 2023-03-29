@@ -35,6 +35,7 @@
              ;; (filter (comp #(re-seq #"Things I Love" %) :org/name-string))
              ;; (filter (comp #(re-seq #"^brainstorm" %) :org/name-string))
              (filter (comp #(re-seq #"2022-10-08" %) :org/name-string))
+             (filter (comp #(re-seq #"2022-12-04" %) :org/name-string))
              first)]
     #_(str (config/blog-content-public) (db/note->uri note))
     #_(page note)

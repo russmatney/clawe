@@ -31,6 +31,7 @@
 ;;   (->> items (filter #(item-has-parent % parent-names))))
 
 (defn item->all-tags [item]
+  ;; TODO daily notes should filter untagged items (subitems)
   (->> item org-crud/nested-item->flattened-items
        (mapcat :org/tags) (into #{})))
 
@@ -295,6 +296,8 @@ and [[https://github.com/russmatney/org-crud][this other repo]]"))
                   (#{:block} (:type first-elem))
                   (render-block group)))))))
 
+(declare tags-list)
+
 (defn item->hiccup-content
   ([item] (item->hiccup-content item nil))
   ([item opts]
@@ -305,6 +308,7 @@ and [[https://github.com/russmatney/org-crud][this other repo]]"))
        (concat
          (when-not (:skip-title opts)
            [(item->hiccup-headline item)])
+         [(tags-list item)]
          (when-not (:skip-body opts)
            (item->hiccup-body item))
          children)
@@ -358,7 +362,9 @@ and [[https://github.com/russmatney/org-crud][this other repo]]"))
            (fn [_i tag]
              [:a {:href  (str "/tags.html" tag)
                   :class ["font-mono"]} tag]))
-         (into [:div]))))))
+         (into [:div
+                {:class ["space-x-1"
+                         "flex flex-row flex-wrap"]}]))))))
 
 (defn note-row
   ([note] (note-row note nil))
@@ -422,6 +428,7 @@ and [[https://github.com/russmatney/org-crud][this other repo]]"))
               (-> note :org.prop/created-at dates/parse-time-string))))
 
 (defn word-count [note]
+  ;; TODO daily notes should filter untagged items in word count
   (let [items (org-crud/nested-item->flattened-items note)]
     (reduce + 0 (map :org/word-count items))))
 
@@ -433,28 +440,28 @@ and [[https://github.com/russmatney/org-crud][this other repo]]"))
    (let [c (created-at item)]
      (when c
        [:span
-        {:class ["font-mono" "px-3"]}
+        {:class ["font-mono"]}
         (str "Created: " c)]))
    (let [dp (date-published item)]
      (when dp
        [:span
-        {:class ["font-mono" "px-3"]}
+        {:class ["font-mono"]}
         (str "Published: " dp)]))
    [:span
-    {:class ["font-mono" "px-3"]}
+    {:class ["font-mono"]}
     (str "Last modified: " (last-modified item))]
    [:div
-    {:class ["px-3"]}
+    {:class []}
     (if (seq (item->all-tags item))
       (tags-list item
                  (->> (item->all-tags item) sort))
       [:span {:class ["font-mono"]} "No tags"])]
    [:span
-    {:class ["font-mono" "px-3"]}
+    {:class ["font-mono"]}
     (str "Word count: " (word-count item))]
    (let [backlinks (backlink-notes item)]
      (when (seq backlinks)
        [:span
-        {:class ["font-mono" "px-3"]}
+        {:class ["font-mono"]}
         (str "Backlinks: " (count backlinks))]))
    [:hr]])
