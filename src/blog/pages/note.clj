@@ -2,8 +2,7 @@
   (:require
    [blog.item :as item]
    [blog.db :as db]
-   [blog.render :as render]
-   [blog.config :as config]))
+   [blog.render :as render]))
 
 (defn page [note]
   [:div
@@ -27,6 +26,6 @@
     #_(str (config/blog-content-public) (db/note->uri note))
     #_(page note)
     (render/write-page
-      {:path    (str (config/blog-content-public) (db/note->uri note))
+      {:note    note
        :content (page note)
        :title   (:org/name note)})))

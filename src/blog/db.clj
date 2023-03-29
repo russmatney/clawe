@@ -3,17 +3,18 @@
    [babashka.fs :as fs]
    [clojure.string :as string]
    [tick.core :as t]
+   [dates.tick :as dates]
    [taoensso.timbre :as log]
+   [org-crud.core :as org-crud]
+
    [util :refer [ensure-uuid]]
    [garden.core :as garden]
-   [org-crud.core :as org-crud]
-   [blog.config :as blog.config]
-   [systemic.core :as sys]))
+   [systemic.core :as sys]
+   [blog.config :as blog.config]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; db shape and build
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 
 (def initial-db
   {:root-notes-by-id              {}
@@ -74,8 +75,7 @@
                         (partial add-note-to-db blog-config)
                         initial-db))]
     (log/info "[DB]: blog.db built"
-              (str (t/millis (t/duration {:tick/beginning start-t
-                                          :tick/end       (t/now)})) "ms"))
+              (str (dates/millis-since start-t) "ms"))
     blog-db))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

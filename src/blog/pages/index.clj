@@ -6,8 +6,7 @@
    [dates.tick :as dates]
    [blog.item :as blog.item]
    [blog.render :as render]
-   [blog.db :as blog.db]
-   [blog.config :as blog.config]))
+   [blog.db :as blog.db]))
 
 (defn notes-by-day [notes]
   (->> notes
@@ -99,6 +98,6 @@
 
 (comment
   (render/write-page
-    {:path    (str (blog.config/blog-content-public) "/index.html")
+    {:path    "/index.html"
      :content (page)
      :title   "Home"}))

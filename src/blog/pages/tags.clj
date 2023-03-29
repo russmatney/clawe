@@ -2,7 +2,6 @@
   (:require
    [blog.item :as item]
    [blog.db :as blog.db]
-   [blog.config :as config]
    [blog.render :as render]))
 
 (defn notes-by-tag [notes]
@@ -53,6 +52,6 @@
 
 (comment
   (render/write-page
-    {:path    (str (config/blog-content-public) "/tags.html")
+    {:path    "/tags.html"
      :content (page)
      :title   "Home"}))

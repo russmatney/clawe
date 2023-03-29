@@ -5,7 +5,9 @@
    [taoensso.timbre :as log]
    [hiccup.page :as hiccup.page]
    [hiccup2.core :as hiccup2.core]
-   [blog.config :as blog.config]))
+   [clojure.string :as string]
+   [blog.config :as blog.config]
+   [blog.db :as blog.db]))
 
 (defn format-html-file [path]
   (-> ^{:out :string}
@@ -133,19 +135,28 @@ gtag('config', '" ga-id "');"))])]
           content]
          (footer)]]])))
 
-(defn write-page [{:keys [path title content]}]
-  (ensure-path path)
-  (log/info "[PUBLISH]: writing path" path)
-  (spit path (->html-with-escaping (if title (str main-title " - " title) main-title) content))
-  (format-html-file path))
+(defn write-page [{:keys [note path title content]}]
+  (let [public-path (blog.config/blog-content-public)
+        path        (cond
+                      note  (str public-path (blog.db/note->uri note))
+                      (and path (string/includes? path public-path))
+                      path
+                      :else (str public-path path))]
+    (ensure-path path)
+    (log/info "[PUBLISH]: writing path" path)
+    (spit path (->html-with-escaping
+                 (if title (str title " - " main-title) main-title)
+                 content))
+    (format-html-file path)))
 
 (defn write-styles []
   (log/info "[PUBLISH]: exporting tailwind styles")
   (let [content-path (str (blog.config/blog-content-public) "/**/*.html")]
     (->
-      ^{:out :string
-        :dir (blog.config/blog-content-root)}
-      (process/$ npx tailwindcss -c "resources/tailwind.config.js" -i "resources/styles.css"
+      ^{:out :string :dir (blog.config/blog-content-root)}
+      (process/$ npx tailwindcss
+                 -c "resources/tailwind.config.js"
+                 -i "resources/styles.css"
                  --content ~content-path
                  -o ~(str "public/styles.css"))
       process/check :out)))

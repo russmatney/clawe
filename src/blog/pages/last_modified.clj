@@ -5,8 +5,7 @@
 
    [blog.item :as item]
    [blog.render :as render]
-   [blog.db :as blog.db]
-   [blog.config :as config]))
+   [blog.db :as blog.db]))
 
 (defn notes-by-day [notes]
   (->> notes
@@ -43,6 +42,6 @@
 
 (comment
   (render/write-page
-    {:path    (str (config/blog-content-public) "/last-modified.html")
+    {:path    "/last-modified.html"
      :content (page)
      :title   "By Modified Date"}))

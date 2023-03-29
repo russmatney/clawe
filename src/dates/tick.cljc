@@ -127,6 +127,10 @@
      {:tick/beginning inst
       :tick/end       (or end (t/zoned-date-time))})))
 
+(defn millis-since
+  [start-inst]
+  (t/millis (t/duration {:tick/beginning start-inst :tick/end (t/now)})))
+
 (defn human-time-since
   ([inst] (human-time-since inst nil))
   ([inst end]
