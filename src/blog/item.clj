@@ -210,22 +210,26 @@ and [[https://github.com/russmatney/org-crud][this other repo]]"))
                    [[:span
                      {:class ["font-mono"]}
                      (case todo-status
-                       :status/not-started "[ ]"
-                       :status/in-progress "[-]"
-                       :status/done        "[X]"
+                       :status/not-started "TODO"
+                       :status/in-progress "IN PROGRESS"
+                       :status/done        "DONE"
                        "")]
                     [:span " "]])
                  elems)))
-            (into [(or (:header-override opts)
-                       (case (:org/level item)
-                         :level/root :h1
-                         1           :h1
-                         2           :h2
-                         3           :h3
-                         4           :h4
-                         5           :h5
-                         6           :h6
-                         :span))]))))))
+            (into
+              (let [[header-elem classes prefix]
+                    (case (:org/level item)
+                      :level/root [:h1 [] nil]
+                      1           [:h1 [] nil]
+                      2           [:h2 [""] "> "]
+                      3           [:h3 [""] ">> "]
+                      4           [:h4 [""] ">>> "]
+                      5           [:h5 [""] ">>>> "]
+                      6           [:h6 [""] ">>>>> "]
+                      [:span [] nil])]
+                [(or (:header-override opts) header-elem)
+                 {:class classes}
+                 prefix])))))))
 
 (defn render-list [lines]
   (let [type (->> lines first :line-type)]
