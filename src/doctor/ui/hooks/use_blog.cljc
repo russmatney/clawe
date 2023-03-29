@@ -16,3 +16,5 @@
        (with-stream [] (blog-data-stream) handle-resp)
 
        blog-data)))
+
+(defhandler republish-all [] (api.blog/republish-all))

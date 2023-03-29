@@ -14,14 +14,22 @@
 
 (defn bar []
   [:div
-   {:class ["bg-yo-blue-800"
-            "w-full"
-            "flex" "flex-col"]}
-   [:span
-    {:class ["font-nes"
-             "text-city-blue-600"
-             "p-2"]}
-    ":clawe/blog"]])
+   {:class ["bg-yo-blue-800" "w-full"
+            "flex" "flex-row"]}
+   [:div
+    {:class ["flex" "flex-col"
+             "justify-center"
+             "p-3"]}
+    [:span {:class ["font-nes" "text-city-blue-600"]}
+     ":clawe/blog"]]
+
+   [:div
+    {:class ["ml-auto" "p-2"]}
+    [components.actions/actions-list
+     {:actions
+      [{:action/label    "Republish Blog"
+        :action/on-click (fn [_]
+                           (use-blog/republish-all))}]}]]])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; note-comp

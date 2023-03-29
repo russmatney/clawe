@@ -10,7 +10,8 @@
    [blog.pages.index :as pages.index]
    [blog.pages.tags :as pages.tags]
    [blog.db :as blog.db]
-   [blog.config :as blog.config]))
+   [blog.config :as blog.config]
+   [ralphie.notify :as notify]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 #_ "publish funcs"
@@ -77,13 +78,21 @@
 (defn publish-all
   ;; TODO delete notes/files that aren't here?
   []
-  (let [start-t (t/now)]
+  (let [start-t  (t/now)
+        notif-id "publishing-blog"]
+    (notify/notify {:subject "Rebuilding blog..."
+                    :body    "Building all notes and indexes"
+                    :id      notif-id})
     (publish-notes)
     (publish-indexes)
     (render/write-styles)
-    (log/info "[PUBLISH]: blog publish complete"
-              (str (t/millis (t/duration {:tick/beginning start-t
-                                          :tick/end       (t/now)})) "ms"))))
+    (let [time-str
+          (str (t/millis (t/duration {:tick/beginning start-t
+                                      :tick/end       (t/now)})) "ms")]
+      (log/info "[PUBLISH]: blog publish complete " time-str)
+      (notify/notify {:subject "Rebuilding blog [Complete]"
+                      :body    (str "Rebuilt in " time-str)
+                      :id      notif-id}))))
 
 (comment
   (publish-all))

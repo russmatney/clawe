@@ -7,7 +7,8 @@
    [manifold.stream :as s]
    [clojure.string :as string]
    [dates.tick :as dates]
-   [tick.core :as t]))
+   [tick.core :as t]
+   [blog.publish :as blog.publish]))
 
 (comment
   (blog.config/reload-config)
@@ -74,3 +75,6 @@
   (blog.config/drop-note-def (:org/short-path note))
   (blog.db/update-db-note note)
   (update-blog-data))
+
+(defn republish-all []
+  (blog.publish/publish-all))
