@@ -7,11 +7,12 @@
 
 (defn page [note]
   [:div
-   ;; TODO show metadata
-   ;; TODO show last modified
-   ;; TODO show date published
-   (item/item->hiccup-content note)
-   (item/id->backlink-hiccup (:org/id note))])
+   [:h1
+    {:class ["font-mono"]}
+    (:org/name-string note)]
+   (item/metadata note)
+   (item/item->hiccup-content note {:skip-title true})
+   (item/backlink-hiccup note)])
 
 
 (comment
@@ -19,7 +20,9 @@
   (let [note (->> (db/root-notes)
                   (filter :org/name-string)
                   ;; (filter (comp #(re-seq #"Things I Love" %) :org/name-string))
-                  (filter (comp #(re-seq #"minimap" %) :org/name-string))
+                  ;; (filter (comp #(re-seq #"^brainstorm" %) :org/name-string))
+                  ;; (filter (comp #(re-seq #"^future" %) :org/name-string))
+                  (filter (comp #(re-seq #"^clojure$" %) :org/name-string))
                   first)]
     #_(str (config/blog-content-public) (db/note->uri note))
     #_(page note)

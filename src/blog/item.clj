@@ -4,7 +4,9 @@
    [clojure.set :as set]
    [clojure.string :as string]
    [org-crud.core :as org-crud]
-   [blog.db :as blog.db]))
+   [blog.db :as blog.db]
+   [tick.core :as t]
+   [dates.tick :as dates]))
 
 (defn item-has-any-tags
   "Returns truthy if the item has at least one matching tag."
@@ -46,6 +48,7 @@
              (:org/tags item))]
        (when (seq tags)
          (->> tags (map #(str ":" %)) (string/join "\t"))))))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; hiccup helpers
@@ -135,7 +138,7 @@ some ~famous blob~ with a list
   (def t "[[https://github.com/russmatney/some-repo][leading link]]
     check out [[https://www.youtube.com/watch?v=Z9S_2FmLCm8][this video]] on youtube
     and [[https://github.com/russmatney/org-blog][this repo]]
-    and [[https://github.com/russmatney/org-crud][this other repo]]")
+    and [[https://github.com/russmatney/org-crud][this (other) repo]]")
   (interpose-pattern t org-link-re parse-hiccup-link)
   (interpose-links t))
 
@@ -300,7 +303,8 @@ and [[https://github.com/russmatney/org-crud][this other repo]]"))
            (->> item :org/items (map item->hiccup-content)))]
      (->>
        (concat
-         [(item->hiccup-headline item)]
+         (when-not (:skip-title opts)
+           [(item->hiccup-headline item)])
          (when-not (:skip-body opts)
            (item->hiccup-body item))
          children)
@@ -310,18 +314,18 @@ and [[https://github.com/russmatney/org-crud][this other repo]]"))
 ;; links and backlinks
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn id->backlink-hiccup [id]
-  (let [backlink-notes (->>
-                         ;; NOTE this does not yet support inlining backlink content
-                         ;; from items without uuids
-                         ;; TODO improve backlink content inlining
-                         id blog.db/id->root-notes-linked-from
-                         (filter (comp blog.db/*id->link-uri* :org/id)))]
-    (when (seq backlink-notes)
+(defn backlink-notes [note]
+  (->> note :org/id
+       blog.db/id->root-notes-linked-from
+       (filter (comp blog.db/*id->link-uri* :org/id))))
+
+(defn backlink-hiccup [note]
+  (let [b-notes (backlink-notes note)]
+    (when (seq b-notes)
       [:div
        [:br]
        [:h1 "Backlinks"]
-       (->> backlink-notes
+       (->> b-notes
             (map (fn [note]
                    (->>
                      (concat
@@ -330,6 +334,9 @@ and [[https://github.com/russmatney/org-crud][this other repo]]"))
                        (item->hiccup-body note))
                      (into [:div {:class "pb-4"}]))))
             (into [:div]))])))
+
+(defn id->backlink-hiccup [id]
+  (backlink-hiccup {:org/id id}))
 
 (comment
   (id->backlink-hiccup
@@ -395,3 +402,59 @@ and [[https://github.com/russmatney/org-crud][this other repo]]"))
                      ;; TODO ideally this is a link to an anchor tag for the daily
                      [:h4 t]
                      (tags-list ch)]))))])))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; item metadata
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn date-published [note]
+  (when (:blog/published-at note)
+    (t/format "MMM dd, YYYY"
+              (-> note :blog/published-at dates/parse-time-string))))
+
+(defn last-modified [note]
+  (t/format "MMM dd, YYYY"
+            (-> note :file/last-modified dates/parse-time-string)))
+
+(defn created-at [note]
+  (when (:org.prop/created-at note)
+    (t/format "MMM dd, YYYY"
+              (-> note :org.prop/created-at dates/parse-time-string))))
+
+(defn word-count [note]
+  (let [items (org-crud/nested-item->flattened-items note)]
+    (reduce + 0 (map :org/word-count items))))
+
+(defn metadata [item]
+  [:div
+   {:class ["flex flex-col"]}
+
+   ;; TODO show more metadata
+   (let [c (created-at item)]
+     (when c
+       [:span
+        {:class ["font-mono" "px-3"]}
+        (str "Created: " c)]))
+   (let [dp (date-published item)]
+     (when dp
+       [:span
+        {:class ["font-mono" "px-3"]}
+        (str "Published: " dp)]))
+   [:span
+    {:class ["font-mono" "px-3"]}
+    (str "Last modified: " (last-modified item))]
+   [:div
+    {:class ["px-3"]}
+    (if (seq (item->all-tags item))
+      (tags-list item
+                 (->> (item->all-tags item) sort))
+      [:span {:class ["font-mono"]} "No tags"])]
+   [:span
+    {:class ["font-mono" "px-3"]}
+    (str "Word count: " (word-count item))]
+   (let [backlinks (backlink-notes item)]
+     (when (seq backlinks)
+       [:span
+        {:class ["font-mono" "px-3"]}
+        (str "Backlinks: " (count backlinks))]))
+   [:hr]])
