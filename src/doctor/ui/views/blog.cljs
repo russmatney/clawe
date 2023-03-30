@@ -119,7 +119,7 @@
                    :popover-comp [components.garden/full-note note]}]
                  [components.garden/all-nested-tags-comp note]
                  [components.actions/actions-list
-                  {:actions (handlers/->actions note)}]
+                  {:actions (handlers/->actions note) :n 5}]
                  [components.debug/raw-metadata {:label "raw"} note]]))})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
