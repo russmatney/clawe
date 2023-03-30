@@ -41,7 +41,7 @@
 (defn date-published [note]
   (when (:blog/published-at note)
     (t/format "MMM dd, YYYY"
-              (-> note :blog/published-at dates/parse-time-string))))
+              (-> note :blog/published-at))))
 
 (defn last-modified [note]
   (t/format "MMM dd, YYYY"

@@ -2,10 +2,12 @@
   (:require
    [taoensso.timbre :as log]
    [aero.core :as aero]
+   [tick.core :as t]
    [systemic.core :as sys :refer [defsys]]
    [babashka.fs :as fs]
    [zprint.core :as zp]
-   [clojure.string :as string]))
+   [clojure.string :as string]
+   [clojure.edn :as edn]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; blog content root
@@ -19,7 +21,6 @@
 
 (defn blog-content-config []
   (str (blog-content-root) "/blog.edn"))
-
 
 (def blog-edn (blog-content-config))
 
@@ -111,9 +112,77 @@
   (reload-config))
 
 (comment
-  (note-defs)
+  (count (note-defs))
   (note-def "garden/some-note.org")
   (note-def "garden/games_journal.org")
   (persist-note-def {:org/short-path "garden/some-note.org"
                      :with/data      :hi/there})
-  (drop-note-def "garden/some-note.org"))
+  (drop-note-def "garden/some-note.org")
+
+  (t/date "2022-04-01")
+
+  ;; parse git_all_versions_of output into :org/short-path -> earliest timestamp
+
+  (let [all-parsed
+        (->>
+          (fs/list-dir (blog-content-root))
+          (filter (fn [p]
+                    (string/includes? (str p) "blog.edn.")))
+          (map (fn [p]
+                 (def p p)
+                 (if (string/includes? (str p) "logmsg")
+                   (let [msg-line  (->> p str slurp string/split-lines
+                                        (filter #(re-seq #"Authored by" %))
+                                        first)
+                         timestamp (->> msg-line
+                                        (re-seq #"Authored by Russell Matney at (.*)")
+                                        first last
+                                        (#(string/split % #" "))
+                                        first
+                                        t/date)
+                         path      (fs/file-name p)]
+                     [path timestamp])
+                   (let [notes (-> p str aero/read-config :notes)
+                         path  (fs/file-name p)]
+                     [path notes])))))
+
+        grouped
+        (->> all-parsed
+             (group-by (comp map? second)))
+        notes-by-commit     (get grouped true)
+        timestamp-by-commit (into {} (get grouped false))
+
+        notes-with-timestamps
+        (->> notes-by-commit
+             (mapcat (fn [[commit notes]]
+                       (->> notes keys
+                            (map (fn [short-path]
+                                   [short-path commit])))))
+             (group-by first)
+             (map (fn [[k v]]
+                    [k (->> v (map second) sort last
+                            (#(str % ".logmsg"))
+                            timestamp-by-commit)])))
+
+        commit-dates->note-paths
+        (->> notes-with-timestamps
+             (group-by second)
+             (map (fn [[k v]]
+                    [k (map first v)]))
+             (into {}))]
+    ;; timestamp-by-commit
+    ;; notes-with-timestamps
+    #_(->> commit-dates->note-paths
+           vals
+           (apply concat)
+           count)
+    (->>
+      commit-dates->note-paths
+      (map (fn [[date paths]]
+             (->> paths
+                  (map (fn [p]
+                         (persist-note-def {:org/short-path    p
+                                            :blog/published-at date})))
+                  doall)))
+      doall))
+  )
