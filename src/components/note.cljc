@@ -1,7 +1,19 @@
 (ns components.note
   (:require
    [tick.core :as t]
-   [dates.tick :as dates]))
+   [dates.tick :as dates]
+   [clojure.set :as set]
+   ))
+
+(defn item-has-any-tags
+  "Returns truthy if the item has at least one matching tag."
+  [item]
+  (-> item :org/tags seq))
+
+(defn item-has-tags
+  "Returns truthy if the item has at least one matching tag."
+  [item tags]
+  (-> item :org/tags (set/intersection tags) seq))
 
 (defn backlink-notes [_note]
   ;; TODO how to cal on the frontend - could cache the total, or use datascript
@@ -29,10 +41,17 @@
 (defn note->flattened-items [note]
   (tree-seq map? :org/items note))
 
-(defn item->all-tags [item]
+(defn ->all-tags [item]
   ;; TODO daily notes should filter untagged items (subitems)
   (->> item note->flattened-items
        (mapcat :org/tags) (into #{})))
+
+(defn ->all-links [item]
+  (->> item note->flattened-items
+       (mapcat :org/links-to) (into #{})))
+
+(defn ->daily-items-with-tags [note]
+  (some->> note :org/items (filter item-has-any-tags)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; item metadata
@@ -78,9 +97,9 @@
     (str "Last modified: " (last-modified item))]
    [:div
     {:class []}
-    (if (seq (item->all-tags item))
+    (if (seq (->all-tags item))
       (tags-list item
-                 (->> (item->all-tags item) sort))
+                 (->> (->all-tags item) sort))
       [:span {:class ["font-mono"]} "No tags"])]
    [:span
     {:class ["font-mono"]}

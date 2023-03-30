@@ -14,6 +14,16 @@
    [dates.tick :as dates.tick]
    [components.colors :as colors]))
 
+(defn is-daily? [note]
+  (re-seq #"^daily/" (:org/short-path note)))
+
+(defn is-workspace-note? [note]
+  (re-seq #"^workspaces/" (:org/short-path note)))
+
+(defn is-garden-note? [note]
+  (re-seq #"^garden/" (:org/short-path note)))
+
+
 (defn bar []
   [:div
    {:class ["bg-yo-blue-800" "w-full"
@@ -33,6 +43,7 @@
         :action/on-click (fn [_]
                            (use-blog/republish-all))}]}]]])
 
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; note-comp
 
@@ -41,7 +52,8 @@
    {:class
     (concat
       ["border-8" "p-4" "m-2"
-       "cursor-pointer"]
+       "cursor-pointer"
+       "flex flex-col"]
       (let [i (+ 3 (:i opts (int (rand 5))))]
         (concat
           (colors/color-wheel-classes
@@ -59,7 +71,29 @@
      {:class ["font-nes" "ml-auto"]}
      (str "(" (inc (:i opts)) "/" (count (:item-group opts)) ")")]]
 
-   [components.note/metadata note]])
+   [components.note/metadata note]
+
+   [:div
+    {:class ["font-nes"]}
+    (str "Internal links: " (-> note components.note/->all-links count))]
+
+   (when (is-daily? note)
+     [:div
+      {:class ["font-nes"]}
+      (str "Daily items: " (-> note components.note/->daily-items-with-tags count)
+           "/" (-> note :org/items count))])
+
+   [:hr]
+
+   [:div
+    {:class ["flex flex-col justify-between ml-auto"]}
+    [floating/popover
+     {:hover        true :click true
+      :anchor-comp  [:span "content"]
+      :popover-comp [components.garden/full-note note]}]
+
+    ;; raw note on hover
+    [components.debug/raw-metadata {:label "raw"} note]]])
 
 (defn note-comp
   ([note] [note-comp nil note])
@@ -68,15 +102,7 @@
    [:div
     {:class ["flex flex-col" "p-4" "grow"]}
 
-    [note-stats opts note]
-
-    [floating/popover
-     {:hover        true :click true
-      :anchor-comp  [:span "content"]
-      :popover-comp [components.garden/full-note note]}]
-
-    ;; raw note on hover
-    [components.debug/raw-metadata {:label "raw"} note]]))
+    [note-stats opts note]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; notes table def
@@ -153,8 +179,7 @@
    :by-last-modified-date
    {:filters     #{(filter-modified-in-last-n-days 21)}
     :group-by    :filters/last-modified-date
-    :sort-groups :filters/last-modified-date
-    :default     true}
+    :sort-groups :filters/last-modified-date}
 
    :modified-today
    {:filters
@@ -173,19 +198,34 @@
    {:filters
     #{(filter-modified-in-last-n-days 21)}
     :group-by    :filters/last-modified-date
-    :sort-groups :filters/last-modified-date}})
+    :sort-groups :filters/last-modified-date}
+
+   :unpublished-workspace-notes
+   {:filters     #{{:filter-key :filters/published :match "Unpublished"}
+                   {:filter-key :filters/short-path
+                    :match-fn   filter-defs/is-workspace-fname}}
+    :group-by    :filters/last-modified-date
+    :sort-groups :filters/last-modified-date}
+
+   :unpublished-garden-notes
+   {:filters     #{{:filter-key :filters/published :match "Unpublished"}
+                   {:filter-key :filters/short-path
+                    :match-fn   (fn [x]
+                                  (not (or (filter-defs/is-daily-fname x)
+                                           (filter-defs/is-workspace-fname x))))}}
+    :group-by    :filters/last-modified-date
+    :sort-groups :filters/last-modified-date}
+
+   :unpublished-dailies
+   {:filters     #{{:filter-key :filters/published :match "Unpublished"}
+                   {:filter-key :filters/short-path
+                    :match-fn   filter-defs/is-daily-fname}}
+    :group-by    :filters/last-modified-date
+    :sort-groups :filters/last-modified-date
+    :default     true}})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; main widget
-
-(defn is-daily? [note]
-  (re-seq #"^daily/" (:org/short-path note)))
-
-(defn is-workspace-note? [note]
-  (re-seq #"^workspaces/" (:org/short-path note)))
-
-(defn is-garden-note? [note]
-  (re-seq #"^garden/" (:org/short-path note)))
 
 (defn widget [_opts]
   (let [blog-data            (use-blog/use-blog-data)
