@@ -133,11 +133,11 @@
                         (browser/open-dev
                           {:url (str "http://localhost:3334/notebooks/" (:name notebook))}))}]))
 
-(defn notebook->rofi-opt [notebook]
-  (let [label (str "notebook: " (:name notebook))]
-    (assoc notebook :rofi/label label
-           :rofi/on-select (fn [_] (rofi/rofi {:msg label}
-                                              (notebook->rofi-actions notebook))))))
+;; (defn notebook->rofi-opt [notebook]
+;;   (let [label (str "notebook: " (:name notebook))]
+;;     (assoc notebook :rofi/label label
+;;            :rofi/on-select (fn [_] (rofi/rofi {:msg label}
+;;                                               (notebook->rofi-actions notebook))))))
 
 (defn notebook-rofi-opts []
   []

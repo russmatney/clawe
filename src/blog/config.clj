@@ -52,19 +52,19 @@
 (defn get-mastodon-href [] (:mastodon-href @*config*))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; export-mode
+;; debug-mode
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defonce !export-mode (atom nil))
-(defn export-mode? [] @!export-mode)
-(defn toggle-export-mode [] (swap! !export-mode not))
-(defn set-export-mode [v] (reset! !export-mode v))
+(defonce !debug-mode (atom true))
+(defn debug-mode? [] @!debug-mode)
+(defn toggle-debug-mode [] (swap! !debug-mode not))
+(defn set-debug-mode [v] (reset! !debug-mode v))
 
 (comment
   (not nil)
-  (export-mode?)
-  (toggle-export-mode)
-  (set-export-mode true))
+  (debug-mode?)
+  (toggle-debug-mode)
+  (set-debug-mode true))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; note defs

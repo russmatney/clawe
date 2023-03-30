@@ -78,11 +78,6 @@
               (str (dates/millis-since start-t) "ms"))
     blog-db))
 
-(comment
-  (build-db)
-  (t/now)
-  (refresh-notes))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; systemic overhead
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -117,25 +112,6 @@
   (sys/start! `*notes-db*)
   @*notes-db*)
 
-(comment
-  (->>
-    @blog.config/*config*
-    :notes
-    vals
-    (filter :org/name-string)
-    (filter (fn [note]
-              (re-seq #"all my patrons" (:org/name-string note)))))
-
-  (->>
-    (get-db)
-    :root-notes-by-id
-    vals
-    (filter (fn [note]
-              (re-seq #"all my patrons" (:org/name-string note))))
-    first
-    :blog/published
-    ))
-
 (defn root-notes []
   (sys/start! `*notes-db*)
   (vals (:root-notes-by-id @*notes-db*)))
@@ -153,47 +129,12 @@
         (get (ensure-uuid id))
         (->> (map n-by-id)))))
 
-;; TODO re-impl and consume, if needed
-;; (defn linked-to [_note]
-;;   (let [links       nil #_ (item/item->all-links note)
-;;         notes-by-id (notes-by-id)]
-;;     (->> links
-;;          (map :link/id)
-;;          (map notes-by-id))))
-
-(comment
-  (count
-    (-> (get-db) :link-id->linking-root-note-id))
-
-  (->>
-    (get-db)
-    :root-notes-by-id
-    vals
-    (sort-by :file/last-modified)
-    (reverse)
-    (take 2))
-
-  (fetch-root-note-with-id #uuid "b4e38bb2-2e05-43e4-9a88-808a55602932")
-  (id->root-notes-linked-from #uuid "b4e38bb2-2e05-43e4-9a88-808a55602932")
-
-  (fetch-root-note-with-id #uuid "8b22b22a-c442-4859-9927-641f8405ec8d")
-  (id->root-notes-linked-from #uuid "8b22b22a-c442-4859-9927-641f8405ec8d"))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; published note api
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn published-notes []
   (->> (get-db) :published-by-id vals))
-
-(comment
-  (count (published-notes))
-
-  (->>
-    (published-notes)
-    (filter (fn [note]
-              (re-seq #"github" (:org/name-string note)))))
-  )
 
 (defn published-id? [id]
   (-> (get-db) :published-by-id (get id)))
