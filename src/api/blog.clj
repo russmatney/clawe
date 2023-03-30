@@ -54,8 +54,9 @@
 (defn publish [note]
   (log/info "Publishing" (:org/short-path note))
   (blog.config/persist-note-def
-    (-> note (select-keys [:org/short-path
-                           :org/name-string])))
+    (-> note
+        (select-keys [:org/short-path :org/name-string])
+        (assoc :blog/published-at (t/date))))
   (blog.db/update-db-note note)
   (update-blog-data))
 
