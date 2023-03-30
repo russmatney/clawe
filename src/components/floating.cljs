@@ -13,28 +13,44 @@
         offset     (or offset 30)
         open       (uix/state false)
 
-        floating-state (FUI/useFloating
-                         (clj->js {:open @open :onOpenChange #(reset! open %)
-                                   :middleware
-                                   [(FUI/offset offset)
-                                    (FUI/autoPlacement)
-                                    ;; (FUI/flip)
-                                    (FUI/shift)]}))
-        context        (. floating-state -context)
-        ixs            (FUI/useInteractions
-                         (clj->js
-                           (->> [(when hover (FUI/useHover context
-                                                           #js {:restMs 150
-                                                                :delay  #js {:open 300}}))
-                                 (when click (FUI/useClick context))
-                                 (FUI/useDismiss context
-                                                 ;; probably want opt-in/out for these
-                                                 #js {:escapeKey            true
-                                                      :outsidePointerDown   false
-                                                      :referencePointerDown false
-                                                      :bubbles              false})]
-                                (remove nil?)
-                                (into []))))]
+        floating-state
+        (FUI/useFloating
+          (clj->js
+            {:open @open :onOpenChange #(reset! open %)
+             :middleware
+             [(FUI/offset offset)
+              (FUI/autoPlacement)
+              ;; (FUI/flip)
+              (FUI/size
+                #js {:apply
+                     (fn [ctx]
+                       (let [availWidth  (if (> (.-availableWidth ctx) 0)
+                                           (.-availableWidth ctx)
+                                           200)
+                             availHeight (if (> (.-availableHeight ctx) 0)
+                                           (.-availableHeight ctx)
+                                           200)]
+                         (set! (.. ctx -elements -floating -style -maxHeight)
+                               (str availHeight "px"))
+                         (set! (.. ctx -elements -floating -style -maxWidth)
+                               (str availWidth "px")))
+                       )})
+              (FUI/shift)]}))
+        context (. floating-state -context)
+        ixs     (FUI/useInteractions
+                  (clj->js
+                    (->> [(when hover (FUI/useHover context
+                                                    #js {:restMs 150
+                                                         :delay  #js {:open 300}}))
+                          (when click (FUI/useClick context))
+                          (FUI/useDismiss context
+                                          ;; probably want opt-in/out for these
+                                          #js {:escapeKey            true
+                                               :outsidePointerDown   false
+                                               :referencePointerDown false
+                                               :bubbles              false})]
+                         (remove nil?)
+                         (into []))))]
 
     [:<>
      [:div
@@ -54,6 +70,7 @@
                                      :style {:position (.-strategy floating-state)
                                              :top      (or (.-y floating-state) "")
                                              :left     (or (.-x floating-state) "")
-                                             :maxWidth "calc(100vw - 10px)" }})))
+                                             :maxWidth "calc(100vw - 10px)"
+                                             :overflow "scroll"}})))
             popover-comp-props)
           popover-comp]])]]))
