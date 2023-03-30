@@ -294,6 +294,24 @@ and [[https://github.com/russmatney/org-crud][this other repo]]"))
             (interpose [:span " "])
             (into [:p]))])))
 
+(defn render-paragraph [lines]
+  (let [any-ends-with-punct?
+        (->> lines (filter (fn [l]
+                             (-> l :text string/trimr
+                                 (#(re-seq #"[.|\?|!]$" %)))))
+             seq)]
+    (if any-ends-with-punct?
+      (->> lines (map :text)
+           (string/join "\n")
+           (render-text-and-links)
+           (into [:p]))
+      (->> lines
+           ;; this won't be able to support links across line breaks
+           (map (comp #(into [:p {:style {:margin-top    "0.2rem"
+                                          :margin-bottom "0.2rem"}}] %) render-text-and-links :text))
+           (into [:div {:style {:margin-top    "1rem"
+                                :margin-bottom "1rem"}}])) )))
+
 (defn item->hiccup-body [item]
   (->> item :org/body
        (partition-by (comp #{:blank :metadata} :line-type))
@@ -318,18 +336,26 @@ and [[https://github.com/russmatney/org-crud][this other repo]]"))
                   (#{:blank} first-elem-line-type) nil #_ [:br]
 
                   (#{:table-row} first-elem-line-type)
-                  (->> group (map :text)
-                       ;; join the lines so we can handle multi-line links
-                       ;; NOTE here we forego the original line breaks :/
-                       (string/join " ")
-                       (render-text-and-links)
-                       (into [:p]))
+                  (render-paragraph group)
 
                   (#{:unordered-list :ordered-list} first-elem-line-type)
                   (render-nested-lists group)
 
                   (#{:block} (:type first-elem))
                   (render-block group)))))))
+
+(comment
+  (def note
+    (->> (:root-notes-by-id (blog.db/get-db))
+         vals
+         (filter (fn [note]
+                   (-> note :org/source-file
+                       (#(re-seq #"the_publishing_pipeline" %)))))
+         first
+         :org/items
+         first))
+  (item->hiccup-body note)
+  )
 
 (declare tags-list)
 
