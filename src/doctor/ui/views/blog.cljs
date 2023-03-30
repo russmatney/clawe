@@ -8,6 +8,7 @@
    [components.filter-defs :as filter-defs]
    [components.actions :as components.actions]
    [components.garden :as components.garden]
+   [components.note :as components.note]
    [doctor.ui.handlers :as handlers]
    [tick.core :as t]
    [dates.tick :as dates.tick]
@@ -35,7 +36,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; note-comp
 
-(defn note-anchor [opts note]
+(defn note-stats [opts note]
   [:div
    {:class
     (concat
@@ -48,7 +49,9 @@
             {:i (+ 2 i) :n (:page-size opts 5) :type :both :hover? true}))))}
    [:span
     {:class ["font-nes"]}
-    (:org/name-string note)]])
+    (:org/name-string note)]
+
+   [components.note/metadata note]])
 
 (defn note-comp
   ([note] [note-comp nil note])
@@ -56,17 +59,16 @@
     {:keys [] :as note}]
    [:div
     {:class ["flex flex-col" "p-4"]}
-    ;; header
-    [:div
-     {:class ["flex flex-row"]}
 
-     [floating/popover
-      {:hover        true :click true
-       :anchor-comp  [note-anchor opts note]
-       :popover-comp [components.garden/full-note note]}]
+    [note-stats opts note]
 
-     ;; raw note on hover
-     [components.debug/raw-metadata {:label "raw"} note]]]))
+    [floating/popover
+     {:hover        true :click true
+      :anchor-comp  [:span "content"]
+      :popover-comp [components.garden/full-note note]}]
+
+    ;; raw note on hover
+    [components.debug/raw-metadata {:label "raw"} note]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; notes table def
@@ -138,13 +140,13 @@
    :tags
    {:filters     #{(filter-modified-in-last-n-days 21)}
     :group-by    :filters/tags
-    :sort-groups :filters/tags
-    :default     true}
+    :sort-groups :filters/tags}
 
    :by-last-modified-date
    {:filters     #{(filter-modified-in-last-n-days 21)}
     :group-by    :filters/last-modified-date
-    :sort-groups :filters/last-modified-date}
+    :sort-groups :filters/last-modified-date
+    :default     true}
 
    :modified-today
    {:filters
@@ -169,7 +171,13 @@
 ;; main widget
 
 (defn is-daily? [note]
-  (re-seq #"daily/" (:org/short-path note)))
+  (re-seq #"^daily/" (:org/short-path note)))
+
+(defn is-workspace-note? [note]
+  (re-seq #"^workspaces/" (:org/short-path note)))
+
+(defn is-garden-note? [note]
+  (re-seq #"^garden/" (:org/short-path note)))
 
 (defn widget [_opts]
   (let [blog-data            (use-blog/use-blog-data)
@@ -177,7 +185,11 @@
 
         sort-published-first (uix/state nil)
         sort-published-last  (uix/state nil)
+        only-notes           (uix/state nil)
+        only-dailies         (uix/state nil)
         hide-dailies         (uix/state nil)
+        hide-workspaces      (uix/state nil)
+        only-workspaces      (uix/state nil)
         hide-all-tables      (uix/state nil)
         hide-all-groups      (uix/state nil)
 
@@ -191,6 +203,18 @@
                                   (reset! sort-published-first nil))
                       :label    "sort-published-last"
                       :active   @sort-published-last}
+                     {:on-click #(swap! only-notes not)
+                      :label    "only-garden-notes"
+                      :active   @only-notes}
+                     {:on-click #(swap! only-workspaces not)
+                      :label    "only-workspaces"
+                      :active   @only-workspaces}
+                     {:on-click #(swap! hide-workspaces not)
+                      :label    "hide-workspaces"
+                      :active   @hide-workspaces}
+                     {:on-click #(swap! only-dailies not)
+                      :label    "only-dailies"
+                      :active   @only-dailies}
                      {:on-click #(swap! hide-dailies not)
                       :label    "hide-dailies"
                       :active   @hide-dailies}
@@ -207,7 +231,11 @@
                                  :filter-items
                                  (fn [items]
                                    (cond->> items
-                                     @hide-dailies (remove is-daily?))))
+                                     @hide-workspaces (remove is-workspace-note?)
+                                     @only-workspaces (filter is-workspace-note?)
+                                     @only-notes      (filter is-garden-note?)
+                                     @hide-dailies    (remove is-daily?)
+                                     @only-dailies    (filter is-daily?))))
                           (update :presets merge (presets))))]
 
     [:div
