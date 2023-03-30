@@ -28,7 +28,8 @@
 (defn group->comp
   [{:keys [item-group label item->comp group-by-key filter-items sort-items all-filter-defs
            default-page-size table-def
-           hide-all-tables hide-all-groups]}]
+           hide-all-tables hide-all-groups]
+    :as   opts}]
   (let [label->group-by-label (or (some-> group-by-key all-filter-defs :group-by-label)
                                   (fn [label] (or (str label) "None")))
         item-group-open?      (uix/state true)
@@ -70,7 +71,7 @@
         (when item->comp
           (for [[i it] (->> items (take @page-size) (map-indexed vector))]
             ^{:key (str (:org/name it) i)}
-            [item->comp it]))])
+            [item->comp (assoc opts :i i :page-size @page-size) it]))])
 
      (when (and @table-open? (not hide-all-tables))
        [:div

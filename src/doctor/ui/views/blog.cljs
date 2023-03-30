@@ -10,7 +10,8 @@
    [components.garden :as components.garden]
    [doctor.ui.handlers :as handlers]
    [tick.core :as t]
-   [dates.tick :as dates.tick]))
+   [dates.tick :as dates.tick]
+   [components.colors :as colors]))
 
 (defn bar []
   [:div
@@ -34,26 +35,56 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; note-comp
 
+(defn note-anchor [opts note]
+  [:div
+   {:class
+    (concat
+      ["border-8" "p-4" "m-2" "cursor-pointer"]
+      (let [i (+ 3 (:i opts (int (rand 5))))]
+        (concat
+          (colors/color-wheel-classes
+            {:i i :n (:page-size opts 5) :type :both})
+          (colors/color-wheel-classes
+            {:i (+ 2 i) :n (:page-size opts 5) :type :both :hover? true}))))}
+   [:span
+    {:class ["font-nes"]}
+    (:org/name-string note)]])
+
 (defn note-comp
   ([note] [note-comp nil note])
-  ([{:keys [] :as opts}
+  ([{:keys [item-group label] :as opts}
     {:keys [] :as note}]
    [:div
     {:class ["flex flex-col" "p-4"]}
     ;; header
     [:div
      {:class ["flex flex-row"]}
-     [:div
-      (:org/name note)]
+
+     [floating/popover
+      {:hover        true :click true
+       :anchor-comp  [note-anchor opts note]
+       :popover-comp [components.garden/full-note note]}]
 
      ;; raw note on hover
-     [components.debug/raw-metadata {:label "RAW"} note]]
+     [components.debug/raw-metadata {:label "raw"} note]]]))
 
-    ;; body
-    (when (:show-body? opts false)
-      [:div
-       {:class ["flex flex-col"]}
-       (:org/body-string note)])]))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; notes table def
+
+(defn notes-table-def []
+  {:headers ["Published" "Name" "Tags (incl. nested)" "Actions" "Raw"]
+   :->row   (fn [note]
+              (let [note (assoc note :doctor/type :type/garden)]
+                [[:span
+                  (when (:blog/published note) "Published")]
+                 [floating/popover
+                  {:hover        true :click true
+                   :anchor-comp  (:org/name note)
+                   :popover-comp [components.garden/full-note note]}]
+                 [components.garden/all-nested-tags-comp note]
+                 [components.actions/actions-list
+                  {:actions (handlers/->actions note)}]
+                 [components.debug/raw-metadata {:label "raw"} note]]))})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; presets
@@ -204,29 +235,15 @@
        [:div {:class ["pt-6"]}
         [components.filter/items-by-group
          (assoc filter-data
+                :table-def (notes-table-def)
                 :item->comp note-comp
                 :hide-all-tables @hide-all-tables
                 :hide-all-groups @hide-all-groups
-                :sort-items
-                (cond
-                  @sort-published-first
-                  (fn [items] (->> items (sort-by :blog/published >)))
-                  @sort-published-last
-                  (fn [items] (->> items (sort-by :blog/published <))))
-                :table-def
-                {:headers ["Published" "Name" "Tags (incl. nested)" "Actions" "Raw"]
-                 :->row   (fn [note]
-                            (let [note (assoc note :doctor/type :type/garden)]
-                              [[:span
-                                (when (:blog/published note) "Published")]
-                               [floating/popover
-                                {:hover        true :click true
-                                 :anchor-comp  (:org/name note)
-                                 :popover-comp [components.garden/full-note note]}]
-                               [components.garden/all-nested-tags-comp note]
-                               [components.actions/actions-list
-                                {:actions (handlers/->actions note)}]
-                               [components.debug/raw-metadata {:label "raw"} note]]))})]])
+                :sort-items (cond
+                              @sort-published-first
+                              (fn [items] (->> items (sort-by :blog/published >)))
+                              @sort-published-last
+                              (fn [items] (->> items (sort-by :blog/published <)))))]])
 
      (when (not (seq root-notes))
        [:div
