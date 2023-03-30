@@ -251,45 +251,13 @@ and [[https://github.com/russmatney/org-crud][this other repo]]"))
           first
           (string/replace #"\d" "d")))
 
-(comment
-  (re-seq #" +\+|-" "  +")
-  (->> --lines (map list-item-prefix))
-  (->> --lines (partition-by list-item-prefix)))
-
 (defn line->list-item [replace-reg {:keys [text] :as line}]
-  (-> text (string/replace replace-reg "")
-      render-text-and-links
-      (->> (into [:li])) ))
-
-(comment
-  (def --lines nil))
-
-(defn render-list
-  ([lines] (render-list lines nil))
-  ([lines last-prefix]
-   (when (nil? --lines) (def --lines lines))
-
-   (let [lines                   (->> lines (merge-non-list-lines-up))
-         type                    (->> lines first :line-type)
-         [list-elem replace-reg] (cond
-                                   (#{:unordered-list} type) [:ul #"^ *[-|\+] "]
-                                   (#{:ordered-list} type)   [:ol #"^ *\d+\. "]
-                                   :else                     [nil nil])]
-     (if list-elem
-       (->> lines
-            (partition-by list-item-prefix)
-            (mapcat (fn [line-group]
-                      (let [pref (list-item-prefix (first line-group))]
-                        (if (and pref (string/starts-with? pref " "))
-                          [[:li (render-list (->> line-group
-                                                  (map (fn [l]
-                                                         (update l :text string/triml))))
-                                             pref)]]
-                          (->> line-group
-                               (map (partial line->list-item replace-reg)))))))
-            (into [list-elem]))
-
-       (log/warn "[WARN]: unknown list type" (->> lines first))))))
+  (let [prefix     (list-item-prefix line)
+        prefix-len (count prefix)]
+    (-> text (string/replace replace-reg "")
+        render-text-and-links
+        (->> (into [:li
+                    {:style {:margin-left (str (* prefix-len 8) "px")}}])))))
 
 (defn render-nested-lists [lines]
   (let [lines                   (->> lines (merge-non-list-lines-up))
@@ -299,36 +267,8 @@ and [[https://github.com/russmatney/org-crud][this other repo]]"))
                                   (#{:ordered-list} type)   [:ol #"^ *\d+\. "]
                                   :else                     [nil nil])]
     (->> lines
-         (reduce
-           (fn [agg line]
-             (let [prefix         (list-item-prefix line)
-                   current-prefix (-> agg :prefix-stack first)]
-               (cond
-                 ;; prefix matches current-prefix
-                 ;; new smaller prefix
-                 ;; new larger prefix
-                 )))
-           {:lines        []
-            :prefix-stack []}))))
-
-(comment
-  (def note
-    (->> (blog.db/get-db)
-         :root-notes-by-id
-         (filter (comp :org/name-string second))
-         (filter (comp #(re-seq #"tending the mind garden" %) :org/name-string second))
-         first
-         second))
-
-  (->> note :org/body
-       (partition-by (comp #{:blank :metadata} :line-type)))
-
-  (item->hiccup-body note)
-
-  (->> --lines (map list-item-prefix))
-  (->> --lines (partition-by list-item-prefix))
-
-  )
+         (map (partial line->list-item replace-reg))
+         (into [list-elem]))))
 
 (defn render-block [{:keys [content block-type qualifier] :as _block}]
   (cond
@@ -357,9 +297,22 @@ and [[https://github.com/russmatney/org-crud][this other repo]]"))
 (defn item->hiccup-body [item]
   (->> item :org/body
        (partition-by (comp #{:blank :metadata} :line-type))
+
+       ;; correct paragraph/lists without blank lines between
+       (mapcat
+         (fn [group]
+           (let [first-elem-type  (-> group first :line-type)
+                 second-elem-type (some-> group second :line-type)]
+             (cond
+               (and (#{:table-row} first-elem-type)
+                    second-elem-type
+                    (#{:unordered-list
+                       :ordered-list} second-elem-type))
+               [[(first group)] (rest group)]
+               :else [group]))))
+
        (map (fn [group]
-              (let [
-                    first-elem           (-> group first)
+              (let [first-elem           (-> group first)
                     first-elem-line-type (-> first-elem :line-type)]
                 (cond
                   (#{:blank} first-elem-line-type) nil #_ [:br]
@@ -373,28 +326,10 @@ and [[https://github.com/russmatney/org-crud][this other repo]]"))
                        (into [:p]))
 
                   (#{:unordered-list :ordered-list} first-elem-line-type)
-                  (render-list group)
+                  (render-nested-lists group)
 
                   (#{:block} (:type first-elem))
                   (render-block group)))))))
-
-(comment
-  (blog.db/refresh-notes)
-  (def note
-    (->> (blog.db/get-db)
-         :root-notes-by-id
-         (filter (comp :org/name-string second))
-         (filter (comp #(re-seq #"tending the mind garden" %) :org/name-string second))
-         first
-         second
-         ))
-
-  (->> note :org/body
-       (partition-by (comp #{:blank :metadata} :line-type)))
-
-  (item->hiccup-body note)
-  )
-
 
 (declare tags-list)
 
