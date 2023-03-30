@@ -296,10 +296,11 @@ and [[https://github.com/russmatney/org-crud][this other repo]]"))
 
 (defn render-paragraph [lines]
   (let [any-ends-with-punct?
-        (->> lines (filter (fn [l]
-                             (-> l :text string/trimr
-                                 (#(re-seq #"[.|\?|!]$" %)))))
-             seq)]
+        (some->> lines
+                 (filter (fn [l]
+                           (some-> l :text string/trimr
+                                   (#(re-seq #"[.|\?|!]$" %)))))
+                 seq)]
     (if any-ends-with-punct?
       (->> lines (map :text)
            (string/join "\n")
