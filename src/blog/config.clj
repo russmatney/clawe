@@ -25,7 +25,9 @@
 
 (defn ->config [] (aero/read-config blog-edn))
 
-(defsys ^:dynamic *config* :start (atom (->config)))
+(defsys ^:dynamic *config* :start
+  (log/info "[BLOG-CONFIG]: Restarting *config*")
+  (atom (->config)))
 
 (defn reload-config []
   (sys/start! `*config*)

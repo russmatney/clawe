@@ -78,14 +78,21 @@
               (str (dates/millis-since start-t) "ms"))
     blog-db))
 
+(comment
+  (build-db)
+  (t/now)
+  (refresh-notes))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; systemic overhead
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (sys/defsys ^:dynamic *notes-db*
   :start
-  (log/info "[DB]: *notes-db* (re)started")
+  (blog.config/reload-config)
+  (log/info "[BLOG-DB]: Restarting *notes-db*")
   (atom (build-db)))
+
 
 (defn update-db-note [note]
   (let [note        (-> note :org/source-file org-crud/path->nested-item)
