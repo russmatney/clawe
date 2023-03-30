@@ -40,25 +40,33 @@
   [:div
    {:class
     (concat
-      ["border-8" "p-4" "m-2" "cursor-pointer"]
+      ["border-8" "p-4" "m-2"
+       "cursor-pointer"]
       (let [i (+ 3 (:i opts (int (rand 5))))]
         (concat
           (colors/color-wheel-classes
             {:i i :n (:page-size opts 5) :type :both})
           (colors/color-wheel-classes
             {:i (+ 2 i) :n (:page-size opts 5) :type :both :hover? true}))))}
-   [:span
-    {:class ["font-nes"]}
-    (:org/name-string note)]
+   [:div
+    {:class ["flex flex-row justify-between"]}
+
+    [:span
+     {:class ["font-nes"]}
+     (:org/name-string note)]
+
+    [:span
+     {:class ["font-nes" "ml-auto"]}
+     (str "(" (inc (:i opts)) "/" (count (:item-group opts)) ")")]]
 
    [components.note/metadata note]])
 
 (defn note-comp
   ([note] [note-comp nil note])
-  ([{:keys [item-group label] :as opts}
+  ([{:keys [] :as opts}
     {:keys [] :as note}]
    [:div
-    {:class ["flex flex-col" "p-4"]}
+    {:class ["flex flex-col" "p-4" "grow"]}
 
     [note-stats opts note]
 
