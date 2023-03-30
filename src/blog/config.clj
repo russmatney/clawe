@@ -6,8 +6,7 @@
    [systemic.core :as sys :refer [defsys]]
    [babashka.fs :as fs]
    [zprint.core :as zp]
-   [clojure.string :as string]
-   [clojure.edn :as edn]))
+   [clojure.string :as string]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; blog content root
@@ -129,7 +128,6 @@
           (filter (fn [p]
                     (string/includes? (str p) "blog.edn.")))
           (map (fn [p]
-                 (def p p)
                  (if (string/includes? (str p) "logmsg")
                    (let [msg-line  (->> p str slurp string/split-lines
                                         (filter #(re-seq #"Authored by" %))
