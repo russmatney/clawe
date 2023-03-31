@@ -41,9 +41,9 @@
   (let [{:keys [current]} (get-state)]
     (->>
       [(when current
-         {:on-click (fn [_] (end-current))
-          :label    "End"})
+         {:action/on-click (fn [_] (end-current))
+          :action/label    "End"})
        (when (not current)
-         {:on-click (fn [_] (start-new))
-          :label    "Start"})]
+         {:action/on-click (fn [_] (start-new))
+          :action/label    "Start"})]
       (remove nil?))))
