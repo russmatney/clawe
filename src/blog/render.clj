@@ -112,6 +112,8 @@
         [:link {:type "text/css"
                 :href "https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&family=Fira+Mono:wght@400;700&family=Fira+Sans+Condensed:ital,wght@0,700;1,700&family=Fira+Sans:ital,wght@0,400;0,500;0,700;1,400;1,500;1,700&family=PT+Serif:ital,wght@0,400;0,700;1,400;1,700&display=swap"
                 :rel  "stylesheet"}]
+        [:link {:href "https://fonts.googleapis.com/css?family=Press+Start+2P"
+                :rel  "stylesheet"}]
 
         #_(when-not @blog.config/!debug-mode)
         (when true

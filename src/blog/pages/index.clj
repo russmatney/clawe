@@ -33,7 +33,7 @@
 
    [:div
     {:class ["flex" "flex-row" "justify-center"]}
-    [:h2 {:class ["font-mono"]} "Home"]]
+    [:h2 {:class ["font-nes"]} "Home"]]
 
    [:div
     [:h3 [:a {:href "/note/blog_about.html"} "About"]]]
