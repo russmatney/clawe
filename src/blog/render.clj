@@ -42,7 +42,12 @@
                  "cursor-pointer"
                  "text-gray-100"]
          :href  "/index.html"}
-     [:h3 {:class ["font-mono"]} main-title]]
+     [:div
+      {:class ["flex" "flex-row" "align-center"]}
+      [:img {:class ["object-scale-down"]
+             :src   "/images/portrait-nobg-2x.png"
+             :alt   "Pixellated Portrait of a ginger with a beard."}]
+      [:h3 {:class ["ml-4" "mt-4" "font-nes"]} main-title]]]
 
     [:div
      {:class ["ml-auto" "flex" "flex-row" "space-x-4"]}
@@ -109,6 +114,8 @@
         [:title title]
         [:meta {:charset "UTF-8"}]
         [:meta {:name "viewport" :content "width=device-width, initial-scale=1"}]
+
+        [:link {:rel "icon" :type "image/x-icon" :href "/images/favicon.ico"}]
 
         [:link {:type "text/css" :rel "stylesheet" :href "/styles.css"}]
         [:script {:type "text/javascript"
