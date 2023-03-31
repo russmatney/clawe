@@ -20,7 +20,7 @@
   []
   #_(->> note :org/id
          blog.db/id->root-notes-linked-from
-         (filter (comp blog.db/*id->link-uri* :org/id))))
+         (filter (comp blog.db/id->link-uri :org/id))))
 
 (defn tags-list
   ([note] (tags-list note nil))

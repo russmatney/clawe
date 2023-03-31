@@ -154,14 +154,19 @@
 (defn note->uri [note]
   (-> note :org/source-file path->uri))
 
-(defn ^:dynamic *id->link-uri*
-  "Passed into org-crud to determine if a text link should be included or ignored."
+(defn id->note
   [id]
-  (let [note (fetch-root-note-with-id id)]
-    (if-not note
-      (log/warn "[WARN: bad data]: could not find org note with id:" id)
-      (let [linked-id (:org/id note)]
-        (if (published-id? linked-id)
-          (note->uri note)
-          ;; returning nil here to signal the link's removal
-          nil)))))
+  (fetch-root-note-with-id id))
+
+(defn note->published-uri
+  "Only returns a uri if the note is published."
+  [note]
+  (when (and note (:blog/published note))
+    (note->uri note)))
+
+(defn id->link-uri
+  [id]
+  (let [note (id->note id)]
+    (if note
+      (note->published-uri note)
+      (log/warn "[WARN: bad data]: could not find org note with id:" id))))

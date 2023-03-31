@@ -68,24 +68,34 @@
 (defn ->hiccup-link [{:keys [text link]}]
   (when link
     (let [id         (some->> (re-seq #"^id:([A-Za-z0-9-]*)" link) first second)
-          link-uri   (when id (blog.db/*id->link-uri* id))
+          note       (when id (blog.db/id->note id))
+          note-uri   (when note (blog.db/note->published-uri note))
           text-elems (->> text interpose-inline-code (map (fn [el] [:span el])))]
-      (cond
-        (and id link-uri)
-        ;; TODO maybe flag intra-blog-note-links as a different color
-        (->> text-elems (into [:a {:href link-uri}]))
+      [:span {:class ["not-prose"]}
+       (cond
+         (and id note-uri)
+         (->> text-elems (into [:a {:href       note-uri
+                                    :class      ["text-city-green-400"
+                                                 "font-bold"
+                                                 "hover:underline"]
+                                    :aria-label (:org/name-string note)}]))
 
-        (and id (not link-uri))
-        ;; TODO tooltip for 'maybe-future-link'
-        (->> text-elems (into [:span]))
+         (and id (not note-uri))
+         (->> text-elems
+              (into
+                [:span {:class      ["text-city-orange-400"
+                                     "hover:underline"]
+                        :aria-label (str "Unpublished note: " (:org/name-string note))}]))
 
-        :else
-        (cond
-          (string/starts-with? link "http")
-          (->> text-elems (into [:a {:href link}]))
+         (string/starts-with? link "http")
+         (->> text-elems (into [:a {:href       link
+                                    :class      ["text-city-red-400"
+                                                 "font-bold"
+                                                 "hover:underline"]
+                                    :aria-label "External Link"}]))
 
-          :else
-          (->> text-elems (into [:span])))))))
+         ;; uh, probably not too many of these?
+         :else text-elems)])))
 
 (defn parse-hiccup-link
   "Returns hiccup representing the next link in the passed string"
@@ -384,7 +394,7 @@ and [[https://github.com/russmatney/org-crud][this other repo]]"))
 (defn backlink-notes [note]
   (->> note :org/id
        blog.db/id->root-notes-linked-from
-       (filter (comp blog.db/*id->link-uri* :org/id))))
+       (filter (comp blog.db/id->link-uri :org/id))))
 
 (defn backlink-hiccup [note]
   (let [b-notes (backlink-notes note)]
@@ -396,10 +406,14 @@ and [[https://github.com/russmatney/org-crud][this other repo]]"))
             (map (fn [note]
                    (->>
                      (concat
-                       [[:a {:href (blog.db/*id->link-uri* (:org/id note))}
-                         (item->hiccup-headline note {:header-override :h3})]]
+                       [[:div
+                         {:class ["not-prose"]}
+                         [:a {:href       (blog.db/id->link-uri (:org/id note))
+                              :class      ["text-slate-400"]
+                              :aria-label (:org/name-string note)}
+                          (item->hiccup-headline note {:header-override :h3})]]]
                        (item->hiccup-body note))
-                     (into [:div {:class "pb-4"}]))))
+                     (into [:div {:class ["pb-4"]}]))))
             (into [:div]))])))
 
 (defn id->backlink-hiccup [id]
@@ -435,23 +449,23 @@ and [[https://github.com/russmatney/org-crud][this other repo]]"))
   ([note opts]
    (let [is-daily? (re-seq #"/daily/" (:org/source-file note))
          children-with-tags
-         (if is-daily?
+         (when is-daily?
            (cond->> (:org/items note)
              true
              (filter item-has-any-tags)
              (:tags opts)
-             (filter #(item-has-tags % (:tags opts))))
-           nil)]
+             (filter #(item-has-tags % (:tags opts)))))]
      [:div
       {:class ["flex" "flex-col"]}
       [:div
        {:class ["flex" "flex-row" "justify-between"]}
        [:h3
         {:class ["hover:underline" "whitespace-nowrap"
-                 "pr-2"]}
+                 "pr-2" "not-prose"]}
         [:a
-         {:class ["cursor-pointer"]
-          :href  (blog.db/*id->link-uri* (:org/id note))}
+         {:class      ["cursor-pointer"]
+          :href       (blog.db/id->link-uri (:org/id note))
+          :aria-label (:org/name-string note)}
          (:org/name-string note)]]
 
        ;; [:div

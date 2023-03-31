@@ -37,7 +37,12 @@
     {:class ["flex" "flex-row"
              "items-center"
              "max-w-prose" "w-full" "px-8" "py-2"]}
-    [:h3 {:class ["font-mono"]} main-title]
+    [:a {:class ["font-mono"
+                 "hover:underline"
+                 "cursor-pointer"
+                 "text-gray-100"]
+         :href  "/index.html"}
+     [:h3 {:class ["font-mono"]} main-title]]
 
     [:div
      {:class ["ml-auto" "flex" "flex-row" "space-x-4"]}
@@ -130,7 +135,7 @@ function gtag() { dataLayer.push(arguments); }
 gtag('js', new Date());
 gtag('config', '" ga-id "');"))])]
        [:body
-        {:class ["bg-gray-900"]}
+        {:class ["bg-city-blue-900"]}
         [:div.flex.flex-col.items-center
          (header)
          [:div
