@@ -197,7 +197,22 @@ https://github.com/coleslaw-org/coleslaw looks pretty cool!"))
                    (if (string? chunk)
                      (render-text chunk)
                      [chunk])))
-         (interpose [:span " "]))))
+         (interpose [:span " "])
+         (reduce
+           (fn [agg next]
+             (let [last (last agg)]
+               (if-not (= last [:span " "])
+                 (concat agg [next])
+
+                 (if (and next
+                          (second next)
+                          (string? (second next))
+                          (re-seq #"^(,|\.|-|\?|\!)" (second next)))
+                   ;; drop span with space if next span is punctuation
+                   (concat (butlast agg) [next])
+                   (concat agg [next])))))
+           []))))
+
 
 (comment
   (render-text-and-links
@@ -207,7 +222,11 @@ https://github.com/coleslaw-org/coleslaw looks pretty cool!"))
     "[[https://github.com/russmatney/some-repo][leading link]]
 check out [[https://www.youtube.com/watch?v=Z9S_2FmLCm8][this video]] on youtube
 and [[https://github.com/russmatney/org-blog][this repo]]
-and [[https://github.com/russmatney/org-crud][this other repo]]"))
+and [[https://github.com/russmatney/org-crud][this other repo]]")
+
+  (render-text-and-links
+    "[[https://github.com/russmatney/some-repo][leading link]],
+    check out [[https://www.youtube.com/watch?v=Z9S_2FmLCm8][this video]]. "))
 
 (defn item->hiccup-headline
   ([item] (item->hiccup-headline item nil))
