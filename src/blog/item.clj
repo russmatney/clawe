@@ -427,7 +427,7 @@ and [[https://github.com/russmatney/org-crud][this other repo]]"))
                   :class (concat ["font-mono"]
                                  (colors/color-wheel-classes {:i i :type :line}))} tag]))
          (into [:div
-                {:class ["space-x-1"
+                {:class ["space-x-1" "not-prose"
                          "flex flex-row flex-wrap"]}]))))))
 
 (defn note-row

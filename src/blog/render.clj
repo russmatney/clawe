@@ -32,7 +32,7 @@
 (defn header []
   [:div
    {:class ["flex" "flex-col" "items-center"
-            "text-gray-900" "dark:text-white" "w-full"]}
+            "text-gray-100" "w-full"]}
    [:div
     {:class ["flex" "flex-row"
              "items-center"
@@ -59,8 +59,7 @@
   (let [mastodon-href (blog.config/get-mastodon-href)]
     [:div
      {:class ["flex" "flex-col" "items-center"
-              "text-gray-900"
-              "dark:text-white" "pb-8"]}
+              "text-gray-100" "pb-8"]}
 
      [:hr]
      [:div
@@ -100,7 +99,7 @@
     (hiccup2.core/html
       {:mode :html}
       (hiccup.page/doctype :html5)
-      [:html.dark
+      [:html
        [:head
         [:title title]
         [:meta {:charset "UTF-8"}]
@@ -131,7 +130,7 @@ function gtag() { dataLayer.push(arguments); }
 gtag('js', new Date());
 gtag('config', '" ga-id "');"))])]
        [:body
-        {:class ["dark:bg-gray-900"]}
+        {:class ["bg-gray-900"]}
         [:div.flex.flex-col.items-center
          (header)
          [:div
