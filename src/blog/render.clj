@@ -135,7 +135,9 @@ gtag('config', '" ga-id "');"))])]
         [:div.flex.flex-col.items-center
          (header)
          [:div
-          {:class ["w-full" "max-w-prose" "px-8" "viewer-notebook"]}
+          {:class ["w-full" "max-w-prose"
+                   "px-8" "py-16"
+                   "blog-prose"]}
           content]
          (footer)]]])))
 
