@@ -30,40 +30,59 @@
 (def about-link-uri "/note/blog_about.html")
 
 (defn header []
-  [:div
-   {:class ["flex" "flex-col" "items-center"
-            "text-gray-100" "w-full"]}
-   [:div
-    {:class ["flex" "flex-row"
-             "items-center"
-             "max-w-prose" "w-full" "px-8" "py-2"]}
-    [:a {:class ["font-mono"
-                 "hover:underline"
-                 "cursor-pointer"
-                 "text-gray-100"]
-         :href  "/index.html"}
-     [:div
-      {:class ["flex" "flex-row" "align-center"]}
-      [:img {:class ["object-scale-down"]
-             :src   "/images/portrait-nobg-2x.png"
-             :alt   "Pixellated Portrait of a ginger with a beard."}]
-      [:h3 {:class ["ml-4" "mt-4" "font-nes"]} main-title]]]
-
+  (let [mastodon-href (blog.config/get-mastodon-href)]
     [:div
-     {:class ["ml-auto" "flex" "flex-row" "space-x-4"]}
+     {:class ["flex" "flex-col" "items-center"
+              "text-gray-100" "w-full"]}
      [:div
-      [:h4
-       [:a {:class ["font-mono"
-                    "hover:underline"
-                    "cursor-pointer"]
-            :href  "/index.html"} "home"]]]
-     [:div
-      [:h4
-       [:a {:class ["font-mono"
-                    "hover:underline"
-                    "cursor-pointer"]
-            :href  about-link-uri} "about"]]]]]
-   [:hr]])
+      {:class ["flex" "flex-row"
+               "items-center"
+               "max-w-prose" "w-full" "px-8" "py-2"]}
+      [:a {:class ["font-mono"
+                   "hover:underline"
+                   "cursor-pointer"
+                   "text-gray-100"]
+           :href  "/index.html"}
+       [:div
+        {:class ["flex" "flex-row" "align-center"]}
+        [:img {:class ["object-scale-down"]
+               :src   "/images/portrait-nobg-2x.png"
+               :alt   "Pixellated Portrait of a ginger with a beard."}]
+        [:h3 {:class ["ml-4" "mt-0" "font-nes"]} "DangerRuss" [:br] "Notes"]]]
+
+      [:div
+       {:class ["ml-auto" "flex" "flex-col" "md:flex-row"
+                "md:space-x-4"]}
+       [:div
+        [:h4
+         [:a {:class ["font-mono"
+                      "hover:underline"
+                      "cursor-pointer"]
+              :href  "/index.html"} "home"]]]
+       [:div
+        [:h4
+         [:a {:class ["font-mono"
+                      "hover:underline"
+                      "cursor-pointer"]
+              :href  about-link-uri} "about"]]]
+
+       (when mastodon-href
+         [:div
+          [:h4
+           [:a {:class ["font-mono"
+                        "hover:underline"
+                        "cursor-pointer"]
+                :href  mastodon-href
+                :rel   "me"} "mastodon"]]])
+
+       [:div
+        [:h4
+         [:a {:class ["font-mono"
+                      "hover:underline"
+                      "cursor-pointer"]
+              :href  "https://github.com/russmatney"} "github"]]]
+       ]]
+     [:hr]]))
 
 (defn footer []
   (let [mastodon-href (blog.config/get-mastodon-href)]
@@ -94,7 +113,14 @@
                        "hover:underline"
                        "cursor-pointer"]
                :href  mastodon-href
-               :rel   "me"} "mastodon"]]])]]))
+               :rel   "me"} "mastodon"]]])
+
+      [:div
+       [:h4
+        [:a {:class ["font-mono"
+                     "hover:underline"
+                     "cursor-pointer"]
+             :href  "https://github.com/russmatney"} "github"]]]]]))
 
 
 (defn ensure-path [path]

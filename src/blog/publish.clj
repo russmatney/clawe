@@ -92,10 +92,8 @@
 
 (comment
   (publish-all)
-
   (publish-note (blog.db/find-note "clove.org"))
-  (publish-note (blog.db/find-note "beehive.org"))
-  )
+  (publish-note (blog.db/find-note "beehive.org")))
 
 (defn -main []
   (publish-all)

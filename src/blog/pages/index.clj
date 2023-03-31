@@ -28,6 +28,16 @@
      (->> notes (map blog.item/note-row) (into [:div])))
    [:hr]])
 
+(defn list-of-links [{:keys [links header subheader]}]
+  [:div
+   [:h3 header]
+   (when subheader
+     (cond
+       (string? subheader) [:p subheader]
+       :else               subheader))
+   (->> links
+        (into [:div]))])
+
 (defn page []
   [:div
 
@@ -35,58 +45,116 @@
     {:class ["flex" "flex-row" "justify-center"]}
     [:h2 {:class ["font-nes"]} "Home"]]
 
-   [:div
-    [:h3 [:a {:href "/note/blog_about.html"} "About"]]]
-
-   [:div
-    [:h3 "Notes"]
-    [:div
-     {:class "pl-4"}
-     [:h3
-      [:a {:href "/last-modified.html"} "...by Last Modified"]]
-     [:h3
-      [:a {:href "/tags.html"} "...by Tag"
-       ;; TODO include 5 most common tags
-       ]]]]
-
-   [:div
-    [:h3 "Projects"]
-    (->> (blog.db/published-notes)
-         (filter (comp seq
-                       #(set/intersection
-                          #{"project" "projects"} %)
-                       :org/tags))
-         ;; TODO sort projects, include tags
-         (map (fn [note]
-                ;; TODO include link to repo
-                ;; TODO include short description
-                (blog.item/note-row note)))
-         (into [:div {:class "pl-4"}]))]
-
-   #_ [:div
-       [:h3 "Commits"]
-       (->> (blog.db/published-notes)
-            (filter (comp seq
-                          #(set/intersection
-                             #{"project" "projects"} %)
-                          :org/tags))
-            (filter :org.prop/repo)
-            (map (fn [note]
-                   (let [repo (:org.prop/repo note)]
-                     [:h3 repo])))
-            (into [:div {:class "pl-4"}]))]
-
-   [:div
-    [:h3 "Posts"]
-    (->> (blog.db/published-notes)
-         (filter (comp seq
-                       #(set/intersection
-                          #{"post" "posts"} %)
-                       :org/tags))
-         (map blog.item/note-row)
-         (into [:div {:class "pl-4"}]))]
+   (->
+     (blog.db/find-note "blog_home.org")
+     (blog.item/item->hiccup-content {:skip-title true}))
 
    [:hr]
+
+   [:div
+    {:class ["flex flex-col"]}
+    [:div
+     {:class ["flex flex-row" "justify-center"]}
+     [:h2 "Find notes..."]]
+    [:div
+     {:class ["flex flex-row"
+              "space-x-4"
+              "justify-between"]}
+     [:p
+      {:class ["not-prose"]}
+      [:a {:href  "/tags.html"
+           :class ["text-city-pink-400"
+                   "hover:text-city-pink-200"
+                   "font-nes"]}
+       "by tag"
+       ;; TODO include 5 most common tags
+       ]]
+     [:p
+      {:class ["not-prose"]}
+      [:a {:href  "/last-modified.html"
+           :class ["text-city-green-400"
+                   "hover:text-city-green-200"
+                   "font-nes"]}
+       "by last modified date"]]
+     [:p
+      {:class ["not-prose"]}
+      [:a {:href  "/tags.html#index"
+           :class ["text-city-blue-400"
+                   "hover:text-city-blue-200"
+                   "font-nes"]}
+       "via indexes"
+       ;; TODO include 5 most common tags
+       ]]
+     ]]
+
+   [:hr]
+
+   (list-of-links
+     {:header "Dino Games and Addons"
+      :subheader
+      [:p
+       "I'm building a suite of games in "
+       [:span
+        {:class ["not-prose"]}
+        [:a {:href  "https://github.com/russmatney/dino"
+             :class ["text-city-red-400"
+                     "hover:text-city-red-200"
+                     "font-mono" "font-bold"]}
+         "Dino"]]
+       (str ", a godot sandbox and monorepo.")]
+      :links
+      (->> (blog.db/published-notes)
+           (filter (comp seq
+                         (fn [tags]
+                           (and
+                             (seq (set/intersection #{"dino" "dinogame" "dinoaddon"} tags))
+                             (seq (set/intersection #{"project" "game" "addon"} tags))))
+                         :org/tags))
+           (map blog.item/note-row))})
+
+   [:hr]
+
+   (list-of-links
+     {:header "Clojure Projects"
+      :subheader
+      [:p
+       [:span
+        {:class ["not-prose"]}
+        [:a {:href  "https://github.com/russmatney/clawe"
+             :class ["text-city-red-400"
+                     "hover:text-city-red-200"
+                     "font-mono" "font-bold"]}
+         "Clawe"]]
+       " is my clojure monorepo, and it's absorbed most of the projects here already."]
+      :links
+      (->> (blog.db/published-notes)
+           (filter (comp
+                     (fn [tags]
+                       (and
+                         (or
+                           (seq (set/intersection #{"clojure"} tags))
+                           (seq (set/intersection #{"orgcrud"} tags))
+                           (seq (set/intersection #{"clawe"} tags)))
+                         (seq (set/intersection #{"project"} tags))))
+                     :org/tags))
+           (map blog.item/note-row))})
+
+   [:hr]
+
+   (list-of-links
+     {:header "Posts"
+      :links
+      (->> (blog.db/published-notes)
+           (filter (comp
+                     (fn [tags]
+                       (and
+                         (not (seq (set/intersection #{"draft"} tags)))
+                         (seq (set/intersection #{"post" "posts"} tags))))
+                     :org/tags))
+           (map blog.item/note-row))})
+
+   [:hr]
+
    [:div
     [:h3 "Recently modified"]
     [:div
