@@ -6,7 +6,8 @@
    [org-crud.core :as org-crud]
    [blog.db :as blog.db]
    [tick.core :as t]
-   [dates.tick :as dates]))
+   [dates.tick :as dates]
+   [components.colors :as colors]))
 
 (defn item-has-any-tags
   "Returns truthy if the item has at least one matching tag."
@@ -421,9 +422,10 @@ and [[https://github.com/russmatney/org-crud][this other repo]]"))
          tags
          (map #(str "#" %))
          (map-indexed
-           (fn [_i tag]
+           (fn [i tag]
              [:a {:href  (str "/tags.html" tag)
-                  :class ["font-mono"]} tag]))
+                  :class (concat ["font-mono"]
+                                 (colors/color-wheel-classes {:i i :type :line}))} tag]))
          (into [:div
                 {:class ["space-x-1"
                          "flex flex-row flex-wrap"]}]))))))
