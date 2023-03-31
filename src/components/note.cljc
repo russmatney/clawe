@@ -39,7 +39,7 @@
                          "flex flex-row flex-wrap"]}]))))))
 
 (defn note->flattened-items [note]
-  (tree-seq map? :org/items note))
+  (tree-seq (comp seq :org/items) :org/items note))
 
 (defn ->all-tags [item]
   ;; TODO daily notes should filter untagged items (subitems)

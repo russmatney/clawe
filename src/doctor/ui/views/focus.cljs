@@ -318,7 +318,6 @@
 (defn item-todo-cards
   ([item] [item-todo-cards nil item])
   ([{:keys [filter-by]} item]
-
    (let [todos             (->> item
                                 (tree-seq (comp seq :org/items) :org/items)
                                 (remove nil?)
@@ -330,7 +329,6 @@
          groups            (group-by (fn [it] (-> it :org/parent-names str)) todos)]
 
      [:div {:class ["flex" "flex-col"]}
-
       (for [[pnames grouped-todos] groups]
         ^{:key (str pnames)}
         [:div {:class (concat ["flex" "flex-col"]

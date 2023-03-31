@@ -3,7 +3,9 @@
    [clojure.string :as string]
    [tick.core :as t]
    [dates.tick :as dates.tick]
-   [components.todo :as todo]))
+   [components.todo :as todo]
+   [components.note :as note]
+   ))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -99,7 +101,11 @@
                                                (t/date (t/<< (dates.tick/now) (t/new-duration 4 :days)))))}
                      {:label    "Last 7 days"
                       :match-fn (fn [lm] (t/>= lm
-                                               (t/date (t/<< (dates.tick/now) (t/new-duration 8 :days)))))}]}})
+                                               (t/date (t/<< (dates.tick/now) (t/new-duration 8 :days)))))}]}
+
+   :filters/link-count
+   {:label    "Link Count"
+    :group-by #(->> % components.note/->all-links count)}})
 
 (def fg-config
   "The filter-grouper config."

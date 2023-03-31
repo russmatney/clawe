@@ -222,7 +222,16 @@
                     :match-fn   filter-defs/is-daily-fname}}
     :group-by    :filters/last-modified-date
     :sort-groups :filters/last-modified-date
-    :default     true}})
+    :default     true}
+
+   :dead-ends
+   {:group-by    :filters/link-count
+    :sort-groups :filters/link-count}
+
+   :dead-ends-published
+   {:filters     #{{:filter-key :filters/published :match "Published"}}
+    :group-by    :filters/link-count
+    :sort-groups :filters/link-count}})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; main widget
