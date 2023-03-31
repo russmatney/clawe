@@ -129,6 +129,18 @@
         (get (ensure-uuid id))
         (->> (map n-by-id)))))
 
+(defn find-notes [note-name]
+  (->> (root-notes)
+       (filter (fn [note]
+                 (or
+                   (and (:org/name-string note)
+                        (string/includes? (:org/name-string note) note-name))
+                   (and (:org/source-file note)
+                        (string/includes? (:org/source-file note) note-name)))))))
+
+(defn find-note [note-name]
+  (->> (find-notes note-name) first))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; published note api
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

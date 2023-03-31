@@ -91,7 +91,11 @@
                       :id      notif-id}))))
 
 (comment
-  (publish-all))
+  (publish-all)
+
+  (publish-note
+    (blog.db/find-note "clove.org"))
+  )
 
 (defn -main []
   (publish-all)
