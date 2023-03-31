@@ -207,7 +207,7 @@ https://github.com/coleslaw-org/coleslaw looks pretty cool!"))
                  (if (and next
                           (second next)
                           (string? (second next))
-                          (re-seq #"^(,|\.|-|\?|\!)" (second next)))
+                          (re-seq #"^(,|\.|\?|\!|:|;)" (second next)))
                    ;; drop span with space if next span is punctuation
                    (concat (butlast agg) [next])
                    (concat agg [next])))))
@@ -247,18 +247,18 @@ and [[https://github.com/russmatney/org-crud][this other repo]]")
                     [:span " "]])
                  elems)))
             (into
-              (let [[header-elem classes prefix]
+              (let [[header-elem prefix]
                     (case (:org/level item)
-                      :level/root [:h1 [] nil]
-                      1           [:h1 [] nil]
-                      2           [:h2 [""] "> "]
-                      3           [:h3 [""] ">> "]
-                      4           [:h4 [""] ">>> "]
-                      5           [:h5 [""] ">>>> "]
-                      6           [:h6 [""] ">>>>> "]
-                      [:span [] nil])]
+                      :level/root [:h1 nil]
+                      1           [:h1 nil]
+                      2           [:h2 "> "]
+                      3           [:h3 ">> "]
+                      4           [:h4 ">>> "]
+                      5           [:h5 ">>>> "]
+                      6           [:h6 ">>>>> "]
+                      [:span nil])]
                 [(or (:header-override opts) header-elem)
-                 {:class classes}
+                 (merge (:header-override-opts opts {}))
                  prefix])))))))
 
 (defn merge-non-list-lines-up
@@ -343,37 +343,39 @@ and [[https://github.com/russmatney/org-crud][this other repo]]")
            (into [:div {:style {:margin-top    "1rem"
                                 :margin-bottom "1rem"}}])) )))
 
-(defn item->hiccup-body [item]
-  (->> item :org/body
-       (partition-by (comp #{:blank :metadata} :line-type))
+(defn item->hiccup-body
+  ([item] (item->hiccup-body item nil))
+  ([item _opts]
+   (->> item :org/body
+        (partition-by (comp #{:blank :metadata} :line-type))
 
-       ;; correct paragraph/lists without blank lines between
-       (mapcat
-         (fn [group]
-           (let [first-elem-type  (-> group first :line-type)
-                 second-elem-type (some-> group second :line-type)]
-             (cond
-               (and (#{:table-row} first-elem-type)
-                    second-elem-type
-                    (#{:unordered-list
-                       :ordered-list} second-elem-type))
-               [[(first group)] (rest group)]
-               :else [group]))))
+        ;; correct paragraph/lists without blank lines between
+        (mapcat
+          (fn [group]
+            (let [first-elem-type  (-> group first :line-type)
+                  second-elem-type (some-> group second :line-type)]
+              (cond
+                (and (#{:table-row} first-elem-type)
+                     second-elem-type
+                     (#{:unordered-list
+                        :ordered-list} second-elem-type))
+                [[(first group)] (rest group)]
+                :else [group]))))
 
-       (map (fn [group]
-              (let [first-elem           (-> group first)
-                    first-elem-line-type (-> first-elem :line-type)]
-                (cond
-                  (#{:blank} first-elem-line-type) nil #_ [:br]
+        (map (fn [group]
+               (let [first-elem           (-> group first)
+                     first-elem-line-type (-> first-elem :line-type)]
+                 (cond
+                   (#{:blank} first-elem-line-type) nil #_ [:br]
 
-                  (#{:table-row} first-elem-line-type)
-                  (render-paragraph group)
+                   (#{:table-row} first-elem-line-type)
+                   (render-paragraph group)
 
-                  (#{:unordered-list :ordered-list} first-elem-line-type)
-                  (render-nested-lists group)
+                   (#{:unordered-list :ordered-list} first-elem-line-type)
+                   (render-nested-lists group)
 
-                  (#{:block} (:type first-elem))
-                  (render-block group)))))))
+                   (#{:block} (:type first-elem))
+                   (render-block group))))))))
 
 (comment
   (def note
@@ -395,11 +397,14 @@ and [[https://github.com/russmatney/org-crud][this other repo]]")
   ([item opts]
    (let [children
          (when-not (:skip-children opts)
-           (->> item :org/items (map item->hiccup-content)))]
+           (->> item :org/items (map #(item->hiccup-content
+                                        %
+                                        ;; don't skip children's titles
+                                        (dissoc opts :skip-title)))))]
      (->>
        (concat
          (when-not (:skip-title opts)
-           [(item->hiccup-headline item)])
+           [(item->hiccup-headline item opts)])
          [(tags-list item)]
          (when-not (:skip-body opts)
            (item->hiccup-body item))

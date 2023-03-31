@@ -41,13 +41,14 @@
 (defn page []
   [:div
 
-   [:div
-    {:class ["flex" "flex-row" "justify-center"]}
-    [:h2 {:class ["font-nes"]} "Home"]]
+   ;; [:div
+   ;;  {:class ["flex" "flex-row" "justify-center"]}
+   ;;  [:h2 {:class ["font-nes"]} "Home"]]
 
    (->
      (blog.db/find-note "blog_home.org")
-     (blog.item/item->hiccup-content {:skip-title true}))
+     (blog.item/item->hiccup-content {:skip-title           true
+                                      :header-override-opts {:class ["font-nes"]}}))
 
    [:hr]
 
