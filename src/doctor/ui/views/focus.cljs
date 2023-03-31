@@ -1,7 +1,6 @@
 (ns doctor.ui.views.focus
   (:require
    [doctor.ui.hooks.use-focus :as use-focus]
-   [clojure.set :as set]
    [uix.core.alpha :as uix]
    [tick.core :as t]
    [dates.tick :as dates]
@@ -12,31 +11,8 @@
    [components.filter :as components.filter]
    [components.garden :as components.garden]
    [components.debug :as components.debug]
+   [components.todo :as todo]
    [components.filter-defs :as filter-defs]))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; preds
-
-(defn completed? [it]
-  (-> it :org/status #{:status/done}))
-
-(defn not-started? [it]
-  (-> it :org/status #{:status/not-started}))
-
-(defn skipped? [it]
-  (-> it :org/status #{:status/skipped}))
-
-(defn in-progress? [it]
-  (-> it :org/status #{:status/in-progress}))
-
-(defn current? [it]
-  (seq (set/intersection #{"current"} (:org/tags it))))
-
-;; (defn has-tag? [it tag]
-;;   (seq (set/intersection #{tag} (:org/tags it))))
-
-;; (defn has-tags? [it tags]
-;;   (seq (set/intersection tags (:org/tags it))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; level
@@ -65,22 +41,22 @@
           ;; TODO refactor this logic into...something?
           (handlers/todo-set-new-status
             it (cond
-                 (completed? it)   :status/not-started
-                 (skipped? it)     :status/not-started
-                 (current? it)     :status/done
-                 (in-progress? it) :status/done
-                 (not-started? it) :status/in-progress)))}
+                 (todo/completed? it)   :status/not-started
+                 (todo/skipped? it)     :status/not-started
+                 (todo/current? it)     :status/done
+                 (todo/in-progress? it) :status/done
+                 (todo/not-started? it) :status/in-progress)))}
        (cond
-         (and (completed? it) (not @hovering?))   "[X]"
-         (and (completed? it) @hovering?)         "[ ]"
-         (and (skipped? it) (not @hovering?))     "SKIP"
-         (and (skipped? it) @hovering?)           "[ ]"
-         (and (current? it) (not @hovering?))     "[-]"
-         (and (current? it) @hovering?)           "[X]"
-         (and (in-progress? it) (not @hovering?)) "[-]"
-         (and (in-progress? it) @hovering?)       "[X]"
-         (and (not-started? it) (not @hovering?)) "[ ]"
-         (and (not-started? it) @hovering?)       "[-]")])))
+         (and (todo/completed? it) (not @hovering?))   "[X]"
+         (and (todo/completed? it) @hovering?)         "[ ]"
+         (and (todo/skipped? it) (not @hovering?))     "SKIP"
+         (and (todo/skipped? it) @hovering?)           "[ ]"
+         (and (todo/current? it) (not @hovering?))     "[-]"
+         (and (todo/current? it) @hovering?)           "[X]"
+         (and (todo/in-progress? it) (not @hovering?)) "[-]"
+         (and (todo/in-progress? it) @hovering?)       "[X]"
+         (and (todo/not-started? it) (not @hovering?)) "[ ]"
+         (and (todo/not-started? it) @hovering?)       "[-]")])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; tags-list
@@ -103,26 +79,6 @@
          t]
         ":"])]))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; priority-label
-
-(defn priority-label [it]
-  (when (:org/priority it)
-    [:span
-     {:on-click (fn [_] (use-focus/remove-priority it))
-      :class
-      (concat
-        ["whitespace-nowrap" "font-nes"
-         "cursor-pointer"
-         "hover:line-through"]
-        (let [pri (:org/priority it)]
-          (cond
-            (completed? it) ["text-city-blue-dark-400"]
-            (skipped? it)   ["text-city-blue-dark-400"]
-            (#{"A"} pri)    ["text-city-red-400"]
-            (#{"B"} pri)    ["text-city-pink-400"]
-            (#{"C"} pri)    ["text-city-green-400"])))}
-     (str "#" (:org/priority it) " ")]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; parent-names
@@ -186,7 +142,8 @@
     [item-id-hash it]
     [:div {:class ["ml-auto"]}
      [tags-list it]]
-    [priority-label it]]
+    [todo/priority-label {:on-click (fn [_] (use-focus/remove-priority it))}
+     it]]
 
    [:div {:class ["flex" "flex-row"]}
     [:div {:class ["font-nes"]}
@@ -223,10 +180,10 @@
         "text-lg"
         "bg-yo-blue-700"]
        (cond
-         (completed? it) ["text-city-blue-dark-400"]
-         (skipped? it)   ["text-city-blue-dark-600"]
+         (todo/completed? it) ["text-city-blue-dark-400"]
+         (todo/skipped? it)   ["text-city-blue-dark-600"]
          ;; (not-started? it) []
-         :else           ["text-city-blue-dark-200"]))}
+         :else                ["text-city-blue-dark-200"]))}
 
     ;; top meta
     [:div
@@ -237,7 +194,7 @@
      [item-id-hash it]
      [:div {:class ["ml-auto"]}
       [tags-list it]]
-     [priority-label it]]
+     [todo/priority-label {:on-click (fn [_] (use-focus/remove-priority it))} it]]
 
     ;; middle content
     [:div
@@ -246,11 +203,11 @@
      ;; name
      [:span
       [:span
-       {:class (when (or (completed? it) (skipped? it)) ["line-through"])}
+       {:class (when (or (todo/completed? it) (todo/skipped? it)) ["line-through"])}
        (:org/name-string it)]]
 
      ;; time ago
-     (when (and (completed? it) (:org/closed-since it))
+     (when (and (todo/completed? it) (:org/closed-since it))
        [:span
         {:class ["font-mono"]}
         (str (:org/closed-since it) " ago")])
@@ -276,19 +233,6 @@
         (handlers/->actions it (handlers/todo->actions it))
         :nowrap        true
         :hide-disabled true}]]]]))
-
-(defn button [opts label]
-  [:button
-   (merge
-     {:class ["cursor-pointer"
-              "bg-city-blue-900"
-              "text-city-green-200"
-              "text-xl"
-              "py-2" "my-2"
-              "px-4" "mx-4"
-              "rounded"]}
-     opts)
-   label])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; bar
@@ -339,21 +283,11 @@
             (when too-long? "!!")]]))
 
       ;; buttons
-      (->> (pomodoros/actions)
-           (map (fn [{:keys [on-click label]}]
-                  [button {:on-click on-click} label]))
-           (into [:div]))])])
+      [components.actions/actions-list
+       {:actions (pomodoros/actions)}]])])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; sort todos
-
-(defn ->comparable-int [p]
-  (cond
-    (and p (string? p)) (.charCodeAt p)
-    (int? p)            p
-    (keyword? p)        (->comparable-int (name p))
-    ;; some high val
-    :else               1000))
 
 (defn sort-todos [its]
   (->> its
@@ -362,19 +296,19 @@
            (cond->
                0
              ;; move finished to back
-             (or (completed? it)
-                 (skipped? it)) (+ 1000)
+             (or (todo/completed? it)
+                 (todo/skipped? it)) (+ 1000)
 
              ;; sort by priority
              (:org/priority it)
-             (+ (->comparable-int (:org/priority it)))
+             (+ (components.filter/label->comparable-int (:org/priority it)))
 
              (not (:org/priority it))
              (+ 100)
 
              ;; move current to front
-             (or (current? it)
-                 (in-progress? it)) (- 100)))
+             (or (todo/current? it)
+                 (todo/in-progress? it)) (- 100)))
          ;; lower number means earlier in the order
          <)))
 
@@ -399,10 +333,22 @@
 
       (for [[pnames grouped-todos] groups]
         ^{:key (str pnames)}
-        [:div {:class ["flex" "flex-col"]}
+        [:div {:class (concat ["flex" "flex-col"]
+                              (when children?
+                                ["border-city-green-400" "border"]))}
          [:div {:class ["px-3" "pt-2"]}
           (when children?
-            [parent-names {:header? true} (first grouped-todos)])]
+            [:div
+             {:class ["flex" "flex-row"]}
+             [parent-names {:header? true} (first grouped-todos)]
+
+             ;; actions list
+             [:span
+              {:class ["ml-auto"]}
+              [components.actions/actions-list
+               {:actions       (handlers/->actions item (handlers/todo->actions item))
+                :nowrap        true
+                :hide-disabled true}]]])]
 
          (if children?
            [:div
@@ -439,7 +385,7 @@
       (when
           ;; this could also check commit status, dirty/unpushed commits, etc
           (and (seq todos)
-               (->> todos (filter current?) seq not))
+               (->> todos (filter todo/current?) seq not))
         [:div
          {:class ["text-bold" "text-city-pink-300" "p-4"]}
          [:h1
@@ -586,11 +532,11 @@
                                  :extra-preset-pills pills
                                  :filter-items (fn [items]
                                                  (cond->> items
-                                                   @hide-completed (remove completed?)
-                                                   @only-current   (filter current?)))
+                                                   @hide-completed (remove todo/completed?)
+                                                   @only-current   (filter todo/current?)))
                                  :sort-items sort-todos)
                           (update :presets merge (presets))))
-        current     (some->> todos (filter current?) seq)
+        current     (some->> todos (filter todo/current?) seq)
 
         time     (uix/state (t/zoned-date-time))
         interval (atom nil)]

@@ -32,6 +32,8 @@
     :as   opts}]
   (let [label->group-by-label (or (some-> group-by-key all-filter-defs :group-by-label)
                                   (fn [label] (or (str label) "None")))
+        label-comp            (some-> group-by-key all-filter-defs :group-by-label-comp)
+        label                 (label->group-by-label label)
         item-group-open?      (uix/state true)
         table-open?           (uix/state true)
         items                 (cond->> item-group
@@ -46,7 +48,10 @@
        {:class ["p-6" "flex flex-row"]}
        [:span
         {:class ["font-nes" "text-city-blue-400"]}
-        (str (label->group-by-label label) " (" (count items) ")")]
+        (if (and label label-comp)
+          [label-comp label]
+          (str (label->group-by-label label)))
+        (str " (" (count items) ")")]
 
        [:div
         {:class ["ml-auto"]}

@@ -7,7 +7,53 @@
    [components.actions :as components.actions]
    [doctor.ui.handlers :as handlers]
    [dates.tick :as dates.tick]
-   [uix.core.alpha :as uix]))
+   [uix.core.alpha :as uix]
+   [clojure.set :as set]))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; preds
+
+(defn completed? [it]
+  (-> it :org/status #{:status/done}))
+
+(defn not-started? [it]
+  (-> it :org/status #{:status/not-started}))
+
+(defn skipped? [it]
+  (-> it :org/status #{:status/skipped}))
+
+(defn in-progress? [it]
+  (-> it :org/status #{:status/in-progress}))
+
+(defn current? [it]
+  (seq (set/intersection #{"current"} (:org/tags it))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; priority-label
+
+(defn priority-label
+  ([it] (priority-label nil it))
+  ([opts it]
+   (let [priort (cond (string? it) it
+                      (map? it)    (:org/priority it)
+                      :else        it)]
+     (when priort
+       [:span
+        (merge opts
+               {:class
+                (concat
+                  ["whitespace-nowrap" "font-nes"
+                   "cursor-pointer"
+                   "hover:line-through"]
+                  (cond
+                    (and (map? it)
+                         (completed? it)) ["text-city-blue-dark-400"]
+                    (and (map? it)
+                         (skipped? it))   ["text-city-blue-dark-400"]
+                    (#{"A"} priort)       ["text-city-red-400"]
+                    (#{"B"} priort)       ["text-city-pink-400"]
+                    (#{"C"} priort)       ["text-city-green-400"]))})
+        (str "#" priort " ")]))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; todo-row
