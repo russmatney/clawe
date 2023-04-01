@@ -4,6 +4,7 @@
    [org-crud.core :as org-crud]
    [ralphie.zsh :as r.zsh]
    [util]
+   [clojure.string :as string]
    [dates.tick :as dates.tick]
    [db.core :as db]
    [wing.core :as w]))
@@ -263,3 +264,16 @@
     #_(take 3)
     )
   )
+
+
+(comment
+  (->>
+    "~/todo/garden/websites/*.org"
+    r.zsh/expand-many
+    (map org-crud/path->nested-item)
+    (remove nil?)
+    (map (fn [website-note]
+           (str (:org/name-string website-note)
+                "\n\n" (:org/body-string website-note))))
+    (string/join "\n\n--\n\n")
+    (spit (str (fs/home) "/todo/garden/old_website_notes.org"))))
