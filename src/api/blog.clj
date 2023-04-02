@@ -8,7 +8,8 @@
    [blog.config :as blog.config]
    [blog.db :as blog.db]
    [blog.publish :as blog.publish]
-   [dates.tick :as dates]))
+   [dates.tick :as dates]
+   [ralphie.browser :as browser]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; infra
@@ -58,6 +59,9 @@
   (blog.publish/publish-indexes))
 
 (defn rebuild-open-pages []
+  ;; TODO impl proper tab support on osx
+  (browser/tabs)
+  ;; TODO impl
   ;; collect open pages via ralphie.browser
   ;; call publish-note with those notes
   #_(blog.publish/publish-indexes))

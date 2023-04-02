@@ -19,6 +19,7 @@
 
 (defn tabs-osx []
   (->
+    ;; TODO refactor this - this is what keeps opening safari on osx
     ^{:out :string}
     (p/$
       osascript -e "tell application \"Safari\" to return URL of every tab of every window")
