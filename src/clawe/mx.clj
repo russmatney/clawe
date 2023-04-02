@@ -114,7 +114,13 @@
 
 (defn blog-rofi-opts []
   [{:rofi/label     "Rebuild Blog"
-    :rofi/on-select doctor/rebuild-blog}])
+    :rofi/on-select doctor/rebuild-blog}
+   {:rofi/label     "Rebuild Blog Indexes"
+    :rofi/on-select doctor/rebuild-blog-indexes}
+   {:rofi/label     "Rebuild Open Pages"
+    :rofi/on-select doctor/rebuild-blog-open-pages}
+   {:rofi/label     "Restart Blog Systems"
+    :rofi/on-select doctor/restart-blog-systems}])
 
 (comment
   (rofi/rofi (blog-rofi-opts)))

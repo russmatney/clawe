@@ -27,3 +27,15 @@
 (defn rebuild-blog
   ([] (rebuild-blog nil))
   ([_] (slurp (str (clawe.config/doctor-base-url) "/blog/rebuild"))))
+
+(defn rebuild-blog-indexes
+  ([] (rebuild-blog-indexes nil))
+  ([_] (slurp (str (clawe.config/doctor-base-url) "/blog/rebuild-indexes"))))
+
+(defn rebuild-blog-open-pages
+  ([] (rebuild-blog-open-pages nil))
+  ([_] (slurp (str (clawe.config/doctor-base-url) "/blog/rebuild-open-pages"))))
+
+(defn restart-blog-systems
+  ([] (restart-blog-systems nil))
+  ([_] (slurp (str (clawe.config/doctor-base-url) "/blog/restart-systems"))))

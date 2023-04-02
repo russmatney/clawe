@@ -53,3 +53,15 @@
 
 (defn rebuild-all []
   (blog.publish/publish-all))
+
+(defn rebuild-indexes []
+  (blog.publish/publish-indexes))
+
+(defn rebuild-open-pages []
+  ;; collect open pages via ralphie.browser
+  ;; call publish-note with those notes
+  #_(blog.publish/publish-indexes))
+
+(defn restart-systems []
+  (blog.config/reload-config)
+  (blog.db/refresh-notes))

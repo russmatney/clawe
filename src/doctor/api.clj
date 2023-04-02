@@ -52,8 +52,29 @@
 
     (= uri "/blog/rebuild")
     (do
+      ;; TODO perhaps this should be non-blocking?
       (blog/rebuild-all)
-      {:status 200 :body "updated blog"})))
+      {:status 200 :body "updated blog"})
+
+    (= uri "/blog/rebuild-indexes")
+    (do
+      (blog/rebuild-indexes)
+      {:status 200 :body "updated blog indexes"})
+
+    (= uri "/blog/rebuild-open-pages")
+    (do
+      (blog/rebuild-open-pages)
+      {:status 200 :body "rebuilt open blog pages"})
+
+    (= uri "/blog/restart-systems")
+    (do
+      (blog/restart-systems)
+      {:status 200 :body "restarted blog systems"})
+
+    :else
+    (do
+      (println "uri" uri)
+      {:status 404})))
 
 (comment
   (route {:uri "/reload"}))
