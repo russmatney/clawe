@@ -261,9 +261,7 @@
   (->>
     (last-modified-org-paths)
     count
-    #_(take 3)
-    )
-  )
+    #_(take 3)))
 
 
 (comment

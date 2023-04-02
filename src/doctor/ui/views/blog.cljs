@@ -41,7 +41,7 @@
      {:actions
       [{:action/label    "Republish Blog"
         :action/on-click (fn [_]
-                           (use-blog/republish-all))}]}]]])
+                           (use-blog/rebuild-all))}]}]]])
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -17,4 +17,4 @@
 
        blog-data)))
 
-(defhandler republish-all [] (api.blog/republish-all))
+(defhandler rebuild-all [] (api.blog/rebuild-all))

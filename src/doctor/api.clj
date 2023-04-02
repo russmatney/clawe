@@ -4,6 +4,7 @@
    [api.workspaces :as workspaces]
    [api.topbar :as topbar]
    [api.todos :as todos]
+   [api.blog :as blog]
    [screenshots.core :as screenshots]
    [wallpapers.core :as wallpapers]
    #_[notebooks.clerk :as notebooks.clerk]
@@ -47,7 +48,12 @@
     (= uri "/todos/update")
     (do
       (todos/update-todos)
-      {:status 200 :body "updated todos"})))
+      {:status 200 :body "updated todos"})
+
+    (= uri "/blog/rebuild")
+    (do
+      (blog/rebuild-all)
+      {:status 200 :body "updated blog"})))
 
 (comment
   (route {:uri "/reload"}))

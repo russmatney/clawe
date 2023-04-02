@@ -1,30 +1,31 @@
 (ns clawe.mx
   (:require
-   [defthing.defkbd :as defkbd]
-   [defthing.defcom :as defcom]
-
-   [ralphie.rofi :as rofi]
-   [ralphie.core :as r.core]
-   [ralphie.git :as git]
-   [ralphie.bb :as r.bb]
-   [ralphie.tmux :as tmux]
-   [ralphie.systemd :as systemd]
-   [clawe.wm :as wm]
-   [clawe.workspace.open :as workspace.open]
-   [clawe.config :as clawe.config]
-   [clawe.toggle :as toggle]
-   [clawe.client.create :as client.create]
-   [clawe.doctor :as doctor]
-   #_[notebooks.core :as notebooks]
-   [ralphie.notify :as notify]
-   [ralphie.browser :as browser]
-   [ralphie.emacs :as emacs]
-   [ralphie.clipboard :as clipboard]
-   [org-crud.markdown :as org-crud.markdown]
-   [org-crud.parse :as org-crud.parse]
    [clojure.string :as string]
    [cheshire.core :as json]
-   [ralphie.re :as re]))
+   [org-crud.markdown :as org-crud.markdown]
+   [org-crud.parse :as org-crud.parse]
+
+   [defthing.defcom :as defcom]
+   [defthing.defkbd :as defkbd]
+   [ralphie.bb :as r.bb]
+   [ralphie.browser :as browser]
+   [ralphie.clipboard :as clipboard]
+   [ralphie.core :as r.core]
+   [ralphie.emacs :as emacs]
+   [ralphie.git :as git]
+   [ralphie.notify :as notify]
+   [ralphie.re :as re]
+   [ralphie.rofi :as rofi]
+   [ralphie.systemd :as systemd]
+   [ralphie.tmux :as tmux]
+
+   [clawe.client.create :as client.create]
+   [clawe.config :as clawe.config]
+   [clawe.doctor :as doctor]
+   [clawe.toggle :as toggle]
+   [clawe.wm :as wm]
+   [clawe.workspace.open :as workspace.open]))
+
 
 (defn clipboard-org->markdown
   ([] (clipboard-org->markdown nil))
@@ -108,45 +109,15 @@
   (deps-git-urls))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; clerk notebooks
+;; blog rofi
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn notebook->rofi-actions [notebook]
-  (concat
-    [{:rofi/label     "Eval and broadcast update"
-      :rofi/on-select (fn [_]
-                        (notify/notify "Rerendering notebook" (:name notebook))
-                        (doctor/rerender-notebook (:name notebook)))}
-     {:rofi/label     "Open .clj file in emacs"
-      :rofi/on-select (fn [_]
-                        (notify/notify "Opening in emacs" (:name notebook))
-                        (emacs/open-in-emacs {:emacs/file-path (:path notebook)}))}
-     {:rofi/label     "Open .clj file in journal-emacs (focus journal first)"
-      :rofi/on-select (fn [_]
-                        (notify/notify "Opening in emacs" (:name notebook))
-                        (wm/show-client "journal")
-                        (emacs/open-in-emacs {:emacs/file-path  (:path notebook)
-                                              :emacs/frame-name "journal"}))}
-     {:rofi/label     "Open in dev browser"
-      :rofi/on-select (fn [_]
-                        (notify/notify "Opening in dev browser" (:name notebook))
-                        (browser/open-dev
-                          {:url (str "http://localhost:3334/notebooks/" (:name notebook))}))}]))
-
-;; (defn notebook->rofi-opt [notebook]
-;;   (let [label (str "notebook: " (:name notebook))]
-;;     (assoc notebook :rofi/label label
-;;            :rofi/on-select (fn [_] (rofi/rofi {:msg label}
-;;                                               (notebook->rofi-actions notebook))))))
-
-(defn notebook-rofi-opts []
-  []
-  #_(->> (notebooks/notebooks) (map notebook->rofi-opt)))
+(defn blog-rofi-opts []
+  [{:rofi/label     "Rebuild Blog"
+    :rofi/on-select doctor/rebuild-blog}])
 
 (comment
-  (rofi/rofi (notebook-rofi-opts))
-
-  (doctor/rerender-notebook (:name "clawe")))
+  (rofi/rofi (blog-rofi-opts)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; client and workspace defs
@@ -292,7 +263,7 @@
        (workspace-defs)
        ;; all defcoms
        (->> (defcom/list-commands) (map r.core/defcom->rofi))
-       (notebook-rofi-opts))
+       (blog-rofi-opts))
      (remove nil?))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -51,5 +51,5 @@
   (blog.db/update-db-note note)
   (update-blog-data))
 
-(defn republish-all []
+(defn rebuild-all []
   (blog.publish/publish-all))
