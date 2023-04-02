@@ -8,6 +8,7 @@
    [blog.config :as blog.config]
    [blog.db :as blog.db]
    [blog.publish :as blog.publish]
+   [blog.render :as blog.render]
    [dates.tick :as dates]
    [ralphie.browser :as browser]))
 
@@ -55,8 +56,11 @@
 (defn rebuild-all []
   (blog.publish/publish-all))
 
-(defn rebuild-indexes []
-  (blog.publish/publish-indexes))
+(defn rebuild-indexes
+  "Also rebuilds blog styles."
+  []
+  (blog.publish/publish-indexes)
+  (blog.render/write-styles))
 
 (defn rebuild-open-pages []
   ;; TODO impl proper tab support on osx
