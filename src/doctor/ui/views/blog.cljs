@@ -75,13 +75,24 @@
 
    [:div
     {:class ["font-nes"]}
-    (str "Internal links: " (-> note components.note/->all-links count))]
+    (str "Links: " (-> note components.note/->all-links count))]
+
+
+   ;; TODO once we get the frontend db story set
+   ;; [:div
+   ;;  {:class ["font-nes"]}
+   ;;  (str "Backlinks: " (-> note components.note/->all-links count))]
 
    (when (is-daily? note)
      [:div
       {:class ["font-nes"]}
       (str "Daily items: " (-> note components.note/->daily-items-with-tags count)
            "/" (-> note :org/items count))])
+
+   (when (seq (components.note/->all-images note))
+     [:div
+      {:class ["font-nes"]}
+      (str "Images: " (count (components.note/->all-images note)))])
 
    [:hr]
 

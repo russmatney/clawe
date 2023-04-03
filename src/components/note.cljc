@@ -53,6 +53,9 @@
 (defn ->daily-items-with-tags [note]
   (some->> note :org/items (filter item-has-any-tags)))
 
+(defn ->all-images [item]
+  (->> item note->flattened-items (mapcat :org/images)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; item metadata
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
