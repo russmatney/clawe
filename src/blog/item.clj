@@ -343,6 +343,24 @@ and [[https://github.com/russmatney/org-crud][this other repo]]")
            (into [:div {:style {:margin-top    "1rem"
                                 :margin-bottom "1rem"}}])) )))
 
+(defn render-comment-group
+  "Only supports images for now."
+  [item lines]
+  (let [img (->> item :org/images
+                 (filter (fn [{:keys [image/path]}]
+                           (->> lines
+                                (filter (fn [line]
+                                          (-> line :text
+                                              (string/replace "[[" "")
+                                              (string/replace "]]" "")
+                                              (= path)))))))
+                 first)]
+    (when img
+      [:div
+       ;; TODO elsewhere, collect and copy 'published' images over to content dir
+       ;; TODO build up image component
+       (str (:image/path img))])))
+
 (defn item->hiccup-body
   ([item] (item->hiccup-body item nil))
   ([item _opts]
@@ -374,8 +392,12 @@ and [[https://github.com/russmatney/org-crud][this other repo]]")
                    (#{:unordered-list :ordered-list} first-elem-line-type)
                    (render-nested-lists group)
 
-                   (#{:block} (:type first-elem))
-                   (render-block group))))))))
+                   (#{:block} first-elem-line-type)
+                   (render-block group)
+
+                   ;; TODO should also support images without comments preceding
+                   (#{:comment} first-elem-line-type)
+                   (render-comment-group item group))))))))
 
 (comment
   (def note
@@ -383,10 +405,10 @@ and [[https://github.com/russmatney/org-crud][this other repo]]")
          vals
          (filter (fn [note]
                    (-> note :org/source-file
-                       (#(re-seq #"the_publishing_pipeline" %)))))
+                       (#(re-seq #"2023-04-03" %)))))
          first
          :org/items
-         first))
+         last))
   (item->hiccup-body note)
   )
 
