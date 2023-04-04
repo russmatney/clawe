@@ -11,7 +11,6 @@
    [ralphie.browser :as browser]
    [ralphie.clipboard :as clipboard]
    [ralphie.core :as r.core]
-   [ralphie.emacs :as emacs]
    [ralphie.git :as git]
    [ralphie.notify :as notify]
    [ralphie.re :as re]
