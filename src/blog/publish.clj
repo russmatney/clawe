@@ -11,7 +11,10 @@
    [blog.pages.last-modified :as pages.last-modified]
    [blog.pages.index :as pages.index]
    [blog.pages.tags :as pages.tags]
-   [blog.db :as blog.db]))
+   [blog.db :as blog.db]
+   [blog.config :as blog.config]
+   [components.note :as note]
+   [babashka.fs :as fs]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 #_ "publish funcs"
@@ -73,6 +76,31 @@
   (publish-index-by-last-modified)
   (publish-index))
 
+(defn ensure-image-dir []
+  (let [dir (blog.config/blog-content-images)]
+    (when-not (fs/exists? dir)
+      (log/info "creating image dir")
+      (fs/create-dirs dir))))
+
+(defn publish-images []
+  (ensure-image-dir)
+  (let [notes  (blog.db/published-notes)
+        images (->> notes (mapcat note/->all-images))]
+    (log/info "[PUBLISH] exporting" (count images) "images")
+    (->> images
+         (map (fn [{:as img :keys [image/path]}]
+                (let [path ;; TODO attempt expand-home in org-crud
+                      (fs/expand-home path)]
+                  (if (fs/exists? path)
+                    (let [new-path (blog.config/image->blog-path img)]
+                      (log/debug "[PUBLISH] copying image" new-path)
+                      (fs/copy path new-path {:replace-existing true}))
+                    (log/warn "[PUBLISH] image path does not exist" path)))))
+         doall
+         (remove nil?)
+         count
+         (#(log/info "[PUBLISH] Copied" % "images")))))
+
 (defn publish-all
   ;; TODO delete notes/files that aren't here?
   []
@@ -83,6 +111,7 @@
                     :id      notif-id})
     (publish-notes)
     (publish-indexes)
+    (publish-images)
     (render/write-styles)
     (let [time-str (str (dates/millis-since start-t) "ms")]
       (log/info "[PUBLISH]: blog publish complete " time-str)
@@ -91,6 +120,7 @@
                       :id      notif-id}))))
 
 (comment
+
   (publish-all)
   (publish-note (blog.db/find-note "clove.org"))
   (publish-note (blog.db/find-note "beehive.org")))

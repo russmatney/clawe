@@ -18,8 +18,12 @@
 (defn blog-content-public []
   (str (blog-content-root) "/public"))
 
+(defn blog-content-images []
+  (str (blog-content-root) "/public/images"))
+
 (defn blog-content-config []
   (str (blog-content-root) "/blog.edn"))
+
 
 (def blog-edn (blog-content-config))
 
@@ -184,3 +188,20 @@
                   doall)))
       doall))
   )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; image paths
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn path->url-safe-file-name [path]
+  (-> path
+      fs/file-name
+      (string/replace #" " "_")))
+
+(defn image->uri [{:keys [image/path]}]
+  (when path
+    (str "/images/" (path->url-safe-file-name path))))
+
+(defn image->blog-path [{:keys [image/path]}]
+  (when path
+    (str (blog-content-images) "/" (path->url-safe-file-name path))))

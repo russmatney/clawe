@@ -1,10 +1,12 @@
 (ns blog.item
   (:require
    [taoensso.timbre :as log]
+   [babashka.fs :as fs]
    [clojure.set :as set]
    [clojure.string :as string]
    [org-crud.core :as org-crud]
    [blog.db :as blog.db]
+   [blog.config :as blog.config]
    [tick.core :as t]
    [dates.tick :as dates]
    [components.colors :as colors]))
@@ -355,11 +357,18 @@ and [[https://github.com/russmatney/org-crud][this other repo]]")
                                               (string/replace "]]" "")
                                               (= path)))))))
                  first)]
-    (when img
-      [:div
-       ;; TODO elsewhere, collect and copy 'published' images over to content dir
-       ;; TODO build up image component
-       (str (:image/path img))])))
+    (when (some-> img :image/path fs/expand-home fs/exists?)
+      (let [img-path (blog.config/image->uri img)
+            alt      (:image/name img (str (:image/path img)))
+            ]
+        [:div
+         (case (:image/extension img)
+           "mp4" [:video {:controls true}
+                  [:source {:src img-path :type "video/mp4"}]]
+           [:img {:src img-path :alt alt}])
+         ;; TODO elsewhere, collect and copy 'published' images over to content dir
+         ;; TODO build up image component
+         (str (:image/path img))]))))
 
 (defn item->hiccup-body
   ([item] (item->hiccup-body item nil))
