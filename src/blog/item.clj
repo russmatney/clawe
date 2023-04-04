@@ -399,7 +399,8 @@ and [[https://github.com/russmatney/org-crud][this other repo]]")
 
         (map (fn [group]
                (let [first-elem           (-> group first)
-                     first-elem-line-type (-> first-elem :line-type)]
+                     first-elem-line-type (-> first-elem :line-type)
+                     first-elem-type      (-> first-elem :type)]
                  (cond
                    (#{:blank} first-elem-line-type) nil #_ [:br]
 
@@ -409,7 +410,7 @@ and [[https://github.com/russmatney/org-crud][this other repo]]")
                    (#{:unordered-list :ordered-list} first-elem-line-type)
                    (render-nested-lists group)
 
-                   (#{:block} first-elem-line-type)
+                   (#{:block} first-elem-type)
                    (render-block group)
 
                    ;; TODO should also support images without comments preceding
@@ -422,10 +423,11 @@ and [[https://github.com/russmatney/org-crud][this other repo]]")
          vals
          (filter (fn [note]
                    (-> note :org/source-file
-                       (#(re-seq #"2023-04-03" %)))))
+                       (#(re-seq #"2022-12-05" %)))))
          first
          :org/items
-         last))
+         (filter (comp #(% "chatgpt") :org/tags))
+         first))
   (item->hiccup-body note)
   )
 
