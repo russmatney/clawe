@@ -9,7 +9,8 @@
    [blog.config :as blog.config]
    [tick.core :as t]
    [dates.tick :as dates]
-   [components.colors :as colors]))
+   [components.colors :as colors]
+   [util]))
 
 (defn item-has-any-tags
   "Returns truthy if the item has at least one matching tag."
@@ -87,7 +88,9 @@
               (into
                 [:span {:class      ["text-city-orange-400"
                                      "hover:underline"]
-                        :aria-label (str "Unpublished note: " (:org/name-string note))}]))
+                        :aria-label (str "Unpublished note"
+                                         (when note
+                                           (str ": " (:org/name-string note))))}]))
 
          (string/starts-with? link "http")
          (->> text-elems (into [:a {:href       link
@@ -423,11 +426,24 @@ and [[https://github.com/russmatney/org-crud][this other repo]]")
          vals
          (filter (fn [note]
                    (-> note :org/source-file
-                       (#(re-seq #"2022-12-05" %)))))
+                       (#(re-seq #"2022-07-22" %)))))
          first
          :org/items
-         (filter (comp #(% "chatgpt") :org/tags))
-         first))
+         (filter (comp seq #(set/intersection % #{"emacs" "roam"}) :org/tags))
+         first
+         ))
+
+  (def note-2
+    (blog.db/find-note "this roam linked nodes"))
+
+  (->>
+    (blog.db/root-notes)
+    (filter (fn [note]
+              (-> note :org/id (= (util/ensure-uuid
+                                    "0c2de094-77eb-44d7-8657-4e1751f14b16"
+                                    #_"3c59d9a4-77bc-41c7-8b0d-ee4ea3d82ae4")))
+              )))
+
   (item->hiccup-body note)
   )
 

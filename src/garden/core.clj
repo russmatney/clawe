@@ -274,4 +274,10 @@
            (str (:org/name-string website-note)
                 "\n\n" (:org/body-string website-note))))
     (string/join "\n\n--\n\n")
-    (spit (str (fs/home) "/todo/garden/old_website_notes.org"))))
+    (spit (str (fs/home) "/todo/garden/old_website_notes.org")))
+
+  (org-crud/path->nested-item
+    (str (fs/expand-home "~/todo/garden/this_roam_linked_nodes_ui_is_backwards.org")))
+
+  (slurp
+    (str (fs/expand-home "~/todo/garden/this_roam_linked_nodes_ui_is_backwards.org"))))

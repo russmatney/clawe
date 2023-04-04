@@ -167,6 +167,7 @@
   (-> note :org/source-file path->uri))
 
 (defn id->note
+  "Needs to support published and unpublished, to show titles for unpublished notes."
   [id]
   (fetch-root-note-with-id id))
 
