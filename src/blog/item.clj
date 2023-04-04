@@ -349,7 +349,7 @@ and [[https://github.com/russmatney/org-crud][this other repo]]")
                                 :margin-bottom "1rem"}}])) )))
 
 (defn render-comment-group
-  "Only supports images for now."
+  "Supports images for now."
   [item lines]
   (let [img (->> item :org/images
                  (filter (fn [{:keys [image/path]}]
@@ -358,7 +358,8 @@ and [[https://github.com/russmatney/org-crud][this other repo]]")
                                           (-> line :text
                                               (string/replace "[[" "")
                                               (string/replace "]]" "")
-                                              (= path)))))))
+                                              (= path))))
+                                seq)))
                  first)]
     (when (some-> img blog.config/image->blog-path fs/exists?)
       (log/info "Creating img component in note" (:org/source-file item))
@@ -422,30 +423,13 @@ and [[https://github.com/russmatney/org-crud][this other repo]]")
 
 (comment
   (def note
-    (->> (:root-notes-by-id (blog.db/get-db))
-         vals
-         (filter (fn [note]
-                   (-> note :org/source-file
-                       (#(re-seq #"2022-07-22" %)))))
+    (->> (blog.db/find-notes "2023-04-04")
          first
          :org/items
-         (filter (comp seq #(set/intersection % #{"emacs" "roam"}) :org/tags))
-         first
-         ))
+         (filter (comp seq #(set/intersection % #{"bug"}) :org/tags))
+         first))
 
-  (def note-2
-    (blog.db/find-note "this roam linked nodes"))
-
-  (->>
-    (blog.db/root-notes)
-    (filter (fn [note]
-              (-> note :org/id (= (util/ensure-uuid
-                                    "0c2de094-77eb-44d7-8657-4e1751f14b16"
-                                    #_"3c59d9a4-77bc-41c7-8b0d-ee4ea3d82ae4")))
-              )))
-
-  (item->hiccup-body note)
-  )
+  (item->hiccup-body note))
 
 (declare tags-list)
 
