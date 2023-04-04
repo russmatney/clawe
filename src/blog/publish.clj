@@ -85,7 +85,9 @@
 (defn publish-images []
   (ensure-image-dir)
   (let [notes  (blog.db/published-notes)
-        images (->> notes (mapcat note/->all-images))]
+        images (->> notes
+                    ;; TODO exclude unpublished daily items
+                    (mapcat note/->all-images))]
     (log/info "[PUBLISH] exporting" (count images) "images")
     (->> images
          (map (fn [{:as img :keys [image/path]}]
@@ -109,9 +111,10 @@
     (notify/notify {:subject "Rebuilding blog..."
                     :body    "Building all notes and indexes"
                     :id      notif-id})
+    ;; images have to go first, so that notes hide/show divs for existing images
+    (publish-images)
     (publish-notes)
     (publish-indexes)
-    (publish-images)
     (render/write-styles)
     (let [time-str (str (dates/millis-since start-t) "ms")]
       (log/info "[PUBLISH]: blog publish complete " time-str)

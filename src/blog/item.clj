@@ -357,18 +357,26 @@ and [[https://github.com/russmatney/org-crud][this other repo]]")
                                               (string/replace "]]" "")
                                               (= path)))))))
                  first)]
-    (when (some-> img :image/path fs/expand-home fs/exists?)
+    (when (some-> img blog.config/image->blog-path fs/exists?)
+      (log/info "Creating img component in note" (:org/source-file item))
       (let [img-path (blog.config/image->uri img)
-            alt      (:image/name img (str (:image/path img)))
-            ]
+            alt      (:image/name img (str (:image/path img)))]
         [:div
+         {:class ["flex flex-col"]}
          (case (:image/extension img)
            "mp4" [:video {:controls true}
                   [:source {:src img-path :type "video/mp4"}]]
            [:img {:src img-path :alt alt}])
-         ;; TODO elsewhere, collect and copy 'published' images over to content dir
-         ;; TODO build up image component
-         (str (:image/path img))]))))
+
+         (when (:image/name img)
+           [:p {:class ["self-center"
+                        "font-nes"]
+                :style {:margin-bottom 0}}
+            (:image/name img)])
+         (when (:image/caption img)
+           [:p {:class ["self-center"
+                        "font-mono"]}
+            (:image/caption img)])]))))
 
 (defn item->hiccup-body
   ([item] (item->hiccup-body item nil))
