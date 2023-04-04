@@ -375,12 +375,18 @@ and [[https://github.com/russmatney/org-crud][this other repo]]")
          (when (:image/name img)
            [:p {:class ["self-center"
                         "font-nes"]
-                :style {:margin-bottom 0}}
+                :style (when (or (:image/date-string img)
+                                 (:image/caption img)) {:margin-bottom 0})}
             (:image/name img)])
          (when (:image/caption img)
            [:p {:class ["self-center"
+                        "font-mono"]
+                :style (when (:image/date-string img) {:margin-bottom 0})}
+            (:image/caption img)])
+         (when (:image/date-string img)
+           [:p {:class ["self-center"
                         "font-mono"]}
-            (:image/caption img)])]))))
+            (str "captured: " (:image/date-string img))])]))))
 
 (defn item->hiccup-body
   ([item] (item->hiccup-body item nil))
