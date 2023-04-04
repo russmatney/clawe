@@ -397,7 +397,8 @@ and [[https://github.com/russmatney/org-crud][this other repo]]")
                 (and (#{:table-row} first-elem-type)
                      second-elem-type
                      (#{:unordered-list
-                        :ordered-list} second-elem-type))
+                        :ordered-list
+                        :comment} second-elem-type))
                 [[(first group)] (rest group)]
                 :else [group]))))
 
