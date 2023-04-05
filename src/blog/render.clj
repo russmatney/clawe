@@ -26,7 +26,7 @@
   (format-html-file "public/last-modified.html"))
 
 
-(def main-title "DangerRuss Notes")
+(def main-title "Danger Russ Notes")
 (def about-link-uri "/note/blog_about.html")
 
 (defn header []
@@ -48,7 +48,7 @@
         [:img {:class ["object-scale-down"]
                :src   "/images/portrait-nobg-2x.png"
                :alt   "Pixellated Portrait of a ginger with a beard."}]
-        [:h3 {:class ["ml-4" "mt-0" "font-nes"]} "DangerRuss" [:br] "Notes"]]]
+        [:h3 {:class ["ml-4" "mt-0" "font-nes"]} "Danger" [:br] "Russ" [:br] "Notes"]]]
 
       [:div
        {:class ["ml-auto" "flex" "flex-col" "md:flex-row"
