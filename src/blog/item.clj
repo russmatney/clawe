@@ -503,7 +503,7 @@ and [[https://github.com/russmatney/org-crud][this other repo]]")
 (defn tags-list-terms
   ([note] (tags-list-terms note nil))
   ([note tags]
-   (let [tags (or tags (:org/tags note))]
+   (let [tags (or tags (->> note :org/tags (#(disj % "published"))))]
      (when (seq tags)
        (->>
          tags
