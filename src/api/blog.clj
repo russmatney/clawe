@@ -10,7 +10,8 @@
    [blog.publish :as blog.publish]
    [blog.render :as blog.render]
    [dates.tick :as dates]
-   [ralphie.browser :as browser]))
+   [ralphie.browser :as browser]
+   [org-crud.update :as org-crud.update]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; infra
@@ -40,11 +41,25 @@
 
 (defn publish [note]
   (log/info "Publishing" (:org/short-path note))
-  (blog.config/persist-note-def
-    (-> note
-        (select-keys [:org/short-path :org/name-string])
-        (assoc :blog/published-at (t/date))))
-  (blog.db/update-db-note note)
+
+  (let [;; update note
+        note (-> note
+                 (assoc :blog/published-at (t/date))
+                 (update :org/tags conj "published"))]
+
+    ;; add "published" tag to note without editing last-modified
+    (org-crud.update/update!
+      note {:org.update/reset-last-modified true
+            :org/tags                       (:org/tags note)})
+
+    ;; add note to blog.edn config (and update blog.config state)
+    (blog.config/persist-note-def
+      (-> note (select-keys [:org/short-path :org/name-string])))
+
+    ;; update blog.db state
+    (blog.db/update-db-note note))
+
+  ;; push update to client
   (update-blog-data))
 
 (defn unpublish [note]
