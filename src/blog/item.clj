@@ -37,7 +37,8 @@
 (defn item->all-tags [item]
   ;; TODO daily notes should filter untagged items (subitems)
   (->> item org-crud/nested-item->flattened-items
-       (mapcat :org/tags) (into #{})))
+       (mapcat :org/tags) (into #{})
+       (#(disj % "published"))))
 
 ;; (defn item->all-links [item]
 ;;   (->> item org-crud/nested-item->flattened-items
@@ -499,8 +500,8 @@ and [[https://github.com/russmatney/org-crud][this other repo]]")
 ;; note row
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn tags-list
-  ([note] (tags-list note nil))
+(defn tags-list-terms
+  ([note] (tags-list-terms note nil))
   ([note tags]
    (let [tags (or tags (:org/tags note))]
      (when (seq tags)
@@ -509,12 +510,20 @@ and [[https://github.com/russmatney/org-crud][this other repo]]")
          (map #(str "#" %))
          (map-indexed
            (fn [i tag]
-             [:a {:href  (str "/tags.html" tag)
-                  :class (concat ["font-mono"]
-                                 (colors/color-wheel-classes {:i i :type :line}))} tag]))
-         (into [:div
-                {:class ["space-x-1" "not-prose"
-                         "flex flex-row flex-wrap"]}]))))))
+             [:span
+              {:class ["not-prose" "px-1"]
+               :style {:line-height "2rem"}}
+              [:a {:href  (str "/tags.html" tag)
+                   :class (concat ["font-mono"]
+                                  (colors/color-wheel-classes {:i i :type :line}))} tag]])))))))
+
+(defn tags-list
+  ([note] (tags-list note nil))
+  ([note tags]
+   (let [terms (tags-list-terms note tags)]
+     (when (seq terms)
+       (->> terms
+            (into [:div {:class ["flex flex-row flex-wrap" "not-prose"]}]))))))
 
 (defn note-row
   ([note] (note-row note nil))
@@ -528,26 +537,24 @@ and [[https://github.com/russmatney/org-crud][this other repo]]")
              (:tags opts)
              (filter #(item-has-tags % (:tags opts)))))]
      [:div
-      {:class ["flex" "flex-col"]}
+      {:class ["flex" "flex-col" "mb-2"]}
+
       [:div
-       {:class ["flex" "flex-row" "justify-between"]}
+       {:class ["flex" "flex-row" "flex-wrap"
+                "text-center" "md:text-left"
+                "justify-center" "md:justify-normal"]}
        [:h3
-        {:class ["hover:underline" "whitespace-nowrap"
-                 "pr-2" "not-prose"]}
+        {:class ["hover:underline" "pr-2" "not-prose" "flex" "w-full"]
+         :style {:margin-bottom 0}}
         [:a
-         {:class      ["cursor-pointer"]
+         {:class      ["cursor-pointer" "w-full"]
           :href       (blog.db/id->link-uri (:org/id note))
           :aria-label (:org/name-string note)}
          (:org/name-string note)]]
 
-       ;; [:div
-       ;;  {:class ["font-mono"]}
-       ;;  (->> note :file/last-modified dates/parse-time-string
-       ;;       (t/format (t/formatter "hh:mma")))]
-
        ;; TODO colorize these tags with
-       (tags-list note
-                  (->> (item->all-tags note) sort))]
+       (tags-list-terms note
+                        (->> (item->all-tags note) sort))]
 
       (->> children-with-tags
            (map (fn [ch]
@@ -556,8 +563,10 @@ and [[https://github.com/russmatney/org-crud][this other repo]]")
                      {:class ["pl-4"
                               "flex" "flex-row" "justify-between"]}
                      ;; TODO ideally this is a link to an anchor tag for the daily
-                     [:h4 t]
-                     (tags-list ch)]))))])))
+                     (->>
+                       (tags-list-terms ch)
+                       (into
+                         [:h4 t]))]))))])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; item metadata
