@@ -211,6 +211,12 @@
     :group-by    :filters/last-modified-date
     :sort-groups :filters/last-modified-date}
 
+   :unpublished-but-published-tag
+   {:filters     #{{:filter-key :filters/published :match "Unpublished"}
+                   {:filter-key :filters/tags :match "published"}}
+    :group-by    :filters/last-modified-date
+    :sort-groups :filters/last-modified-date}
+
    :unpublished-workspace-notes
    {:filters     #{{:filter-key :filters/published :match "Unpublished"}
                    {:filter-key :filters/short-path
