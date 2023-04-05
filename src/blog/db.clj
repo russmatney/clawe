@@ -10,7 +10,8 @@
    [util :refer [ensure-uuid]]
    [garden.core :as garden]
    [systemic.core :as sys]
-   [blog.config :as blog.config]))
+   [blog.config :as blog.config]
+   [org-crud.update :as org-crud.update]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; db shape and build
@@ -183,3 +184,21 @@
     (if note
       (note->published-uri note)
       (log/warn "[WARN: bad data]: could not find org note with id:" id))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; scratch pad
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(comment
+  (refresh-notes)
+
+  ;; update existing posts to set :published: tag on original notes
+  (->>
+    (published-notes)
+    (sort-by :file/last-modified)
+    (map (fn [note]
+           (org-crud.update/update!
+             note {:org.update/reset-last-modified true
+                   :org/tags                       "published"})))
+    doall)
+  )
