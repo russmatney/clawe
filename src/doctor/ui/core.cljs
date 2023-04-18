@@ -65,21 +65,19 @@
        (into [])))
 
 (defn view [opts]
-  (let [page-name          (->
-                             #_{:clj-kondo/ignore [:unresolved-var]}
-                             router/*match* uix/context :data :name)
-        by-page-name       (w/index-by :page-name route-defs)
-        {:keys [comp comp-only]
-         :as   _route-def} (by-page-name page-name)
+  (let [page-name                (->
+                                   #_{:clj-kondo/ignore [:unresolved-var]}
+                                   router/*match* uix/context :data :name)
+        by-page-name             (w/index-by :page-name route-defs)
+        {:keys [comp comp-only]} (by-page-name page-name)
 
         ;; create fe db and pass it to every page
         {:keys [conn]} (hooks.db/use-db)
-        opts           (assoc opts :conn conn)
-        ]
+        opts           (assoc opts
+                              :conn conn
+                              :comp-only comp-only)]
     (if comp
-      (if comp-only
-        [comp opts]
-        [pages/page route-defs comp opts])
+      [pages/page route-defs comp opts]
       [:div "no page"])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

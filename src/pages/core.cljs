@@ -41,12 +41,9 @@
       (concat ["flex" "flex-col"
                "ml-auto"
                "transition-all ease-in-out"
+               "overflow-hidden"
                "duration-300"]
-              (if @expanded?
-                ["translate-x-0"
-                 "w-64"]
-                ["translate-x-4/5"
-                 "w-12"]))}
+              (if @expanded? [] ["w-12"]))}
      [:div
       {:class    ["p-3" "text-city-pink-100"
                   "cursor-pointer"
@@ -59,9 +56,7 @@
           octicons/chevron-right
           octicons/list-unordered)}]]
      [:div
-      {:class ["ml-auto"
-               "flex"
-               "bg-city-blue-800"
+      {:class ["bg-city-blue-800"
                "shadow-lg"
                "shadow-city-pink-800"]}
       [menu {:menu-opts menu-opts
@@ -91,31 +86,31 @@
   ;; TODO reduce this crazy arity nonsense
   ([main] [page [] main {}])
   ([main opts] [page [] main opts])
-  ([menu-opts main page-opts]
+  ([menu-opts main {:keys [comp-only] :as page-opts}]
    (let [_params           (router/use-route-parameters)
          current-page-name (->
                              #_{:clj-kondo/ignore [:unresolved-var]}
                              router/*match* uix/context :data :name)]
-     [:div
-      [page-error-boundary
-       [:div {:class ["min-h-screen" "bg-city-blue-900" "w-full"
-                      "flex" "flex-row"]}
+     [page-error-boundary
+      [:div {:class ["min-h-screen" "bg-city-blue-900"
+                     "w-full" "flex" "flex-row"]}
+       [:div
+        {:class ["flex flex-col" "w-full"]}
+
+        (when-not comp-only
+          [:div
+           {:class ["bg-city-brown-600"
+                    "shadow"
+                    "shadow-city-brown-900"
+                    "font-nes"
+                    "pt-3" "pl-3"
+                    "text-city-pink-200"
+                    "capitalize"]}
+           current-page-name])
+
         [:div
-         {:class ["flex flex-col" "w-full"]}
+         {:class ["bg-city-blue-900" "w-full"]}
 
-         [:div
-          {:class ["bg-city-brown-600"
-                   "shadow"
-                   "shadow-city-brown-900"
-                   "font-nes"
-                   "pt-3" "pl-3"
-                   "text-city-pink-200"
-                   "capitalize"]}
-          current-page-name]
+         (when main [main page-opts])]]
 
-         [:div
-          {:class ["bg-city-blue-900" "w-full"]}
-
-          (when main [main page-opts])]]
-
-        [expanding-menu menu-opts]]]])))
+       [expanding-menu menu-opts]]])))
