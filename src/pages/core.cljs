@@ -5,8 +5,8 @@
    [hiccup-icons.octicons :as octicons]
    ;; [keybind.core :as key]
 
-   [components.floating :as floating]
    [components.icons :as components.icons]))
+
 
 (defn menu [menu-opts]
   (when menu-opts
@@ -58,7 +58,8 @@
    (let [_params           (router/use-route-parameters)
          current-page-name (->
                              #_{:clj-kondo/ignore [:unresolved-var]}
-                             router/*match* uix/context :data :name)]
+                             router/*match* uix/context :data :name)
+         *menu-clicked?    (uix/state false)]
      [:div
       {:class ["bg-city-blue-900"
                "min-h-screen"
@@ -75,24 +76,27 @@
                   "capitalize"]}
          current-page-name]
 
-        [floating/popover
-         {:click             true
-          :offset            10
-          :anchor-comp-props {:class ["ml-auto"]}
-          :anchor-comp
-          [:div
-           {:class ["p-3" "text-city-pink-100"
-                    "cursor-pointer"
-                    "hover:text-city-pink-400"]}
-           [components.icons/icon-comp
-            {:text "Menu"
-             :icon octicons/list-unordered}]]
-          :popover-comp
-          [:div
-           {:class ["bg-city-blue-800"
-                    "shadow-lg"
-                    "shadow-city-pink-800"
-                    ]}
-           [menu menu-opts]]}]]]
+        [:div
+         {:class ["ml-auto"]}
+         [:div
+          {:class    ["p-3" "text-city-pink-100"
+                      "cursor-pointer"
+                      "hover:text-city-pink-400"]
+           :on-click #(swap! *menu-clicked? not)}
+          [components.icons/icon-comp
+           {:text "Menu"
+            :icon
+            (if @*menu-clicked?
+              octicons/chevron-left
+              octicons/list-unordered)}]]]]]
 
-      (when main [main page-opts])])))
+      [:div
+       {:class ["flex" "flex-row"]}
+       (when main [main page-opts])
+       (when @*menu-clicked?
+         [:div
+          {:class ["ml-auto"
+                   "bg-city-blue-800"
+                   "shadow-lg"
+                   "shadow-city-pink-800"]}
+          [menu menu-opts]])]])))
