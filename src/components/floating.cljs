@@ -56,8 +56,10 @@
      [:div
       (merge
         (js->clj (.getReferenceProps ixs (clj->js {:ref (.-reference floating-state)})))
-        {:class ["max-w-max"]}
-        anchor-comp-props)
+        {:class (concat [;; seems like a reasonable class...
+                         ;; can't be overwritten at the moment
+                         "max-w-max"] (:class anchor-comp-props))}
+        (dissoc anchor-comp-props :class))
       anchor-comp]
 
      [:> FUI/FloatingPortal
