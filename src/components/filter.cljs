@@ -248,19 +248,20 @@
         (when (seq extra-preset-pills)
           [pill/cluster extra-preset-pills])]
 
-       [pill/cluster
-        (->> presets
-             (sort-by first)
-             (map
-               (fn [[k {:keys [filters group-by sort-groups label]}]]
-                 {:label  (or label k)
-                  :active (#{current-preset-key} k)
-                  :on-click
-                  (fn [_]
-                    (set-current-preset-key k)
-                    (set-filters filters)
-                    (set-group-by-key group-by)
-                    (set-sort-groups-key sort-groups))})))]]]
+       (when (seq presets)
+         [pill/cluster
+          (->> presets
+               (sort-by first)
+               (map
+                 (fn [[k {:keys [filters group-by sort-groups label]}]]
+                   {:label  (or label k)
+                    :active (#{current-preset-key} k)
+                    :on-click
+                    (fn [_]
+                      (set-current-preset-key k)
+                      (set-filters filters)
+                      (set-group-by-key group-by)
+                      (set-sort-groups-key sort-groups))})))])]]
 
      (when @filter-detail-open?
        ;; edit filters
@@ -327,7 +328,9 @@
   The filter-key's group-by can return collections - in that case, a match on any elem
   is a match for the whole filter-key."
   [all-filter-defs [filter-key filter-defs]]
-  (let [->value              (-> filter-key all-filter-defs :group-by)
+  (let [->value              (-> filter-key all-filter-defs
+                                 ;; fallback on identity here, but otherwise use the filter's :group-by impl
+                                 (:group-by identity))
         exact-matches        (->> filter-defs (map :match) (into #{}))
         ;; consider removing match-fns that can't be called
         pred-matches         (->> filter-defs (map :match-fn) (remove nil?))
@@ -399,7 +402,7 @@
 
         group-by-f (or (some-> @group-by-key all-filter-defs :group-by)
                        (fn [_]
-                         (println "WARN: no group-by-f could be determined")
+                         #_(println "WARN: no group-by-f could be determined")
                          :default))
 
         filtered-item-groups
