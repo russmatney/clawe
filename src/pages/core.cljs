@@ -3,12 +3,17 @@
    [wing.uix.router :as router]
    [uix.core.alpha :as uix]
    [hiccup-icons.octicons :as octicons]
-   ;; [keybind.core :as key]
-
    [components.icons :as components.icons]))
 
 
-(defn menu [menu-opts]
+(defn menu-opt->icon [{:keys [page-name label]}]
+  [components.icons/icon-comp
+   (case page-name
+     nil {:icon octicons/alert}
+     {:text label})])
+
+
+(defn menu [{:keys [expanded? menu-opts]}]
   (when menu-opts
     (let [current-page-name (->
                               #_{:clj-kondo/ignore [:unresolved-var]}
@@ -19,16 +24,48 @@
          "text-city-pink-100"
          "text-xxl"
          "font-nes"]}
-       (for [[i {:keys [page-name label]}]
+       (for [[i {:keys [page-name] :as menu-opt}]
              (->> menu-opts (map-indexed vector))]
-         [:a {:key  i
-              :class
-              (concat
-                ["hover:text-city-pink-500"]
-                (cond
-                  (#{current-page-name} page-name)
-                  ["text-city-pink-400" "text-bold"]))
-              :href (router/href page-name)} label])])))
+         [:a {:key   i
+              :class (concat
+                       ["hover:text-city-pink-500"]
+                       (cond (#{current-page-name} page-name)
+                             ["text-city-pink-400" "text-bold"]))
+              :href  (router/href page-name)}
+          (menu-opt->icon (assoc menu-opt :expanded? expanded?))])])))
+
+(defn expanding-menu [menu-opts]
+  (let [expanded? (uix/state true)]
+    [:div
+     {:class
+      (concat ["flex" "flex-col"
+               "ml-auto"
+               "transition-all ease-in-out"
+               "duration-300"]
+              (if @expanded?
+                ["translate-x-0"
+                 "w-64"]
+                ["translate-x-4/5"
+                 "w-12"]))}
+     [:div
+      {:class    ["p-3" "text-city-pink-100"
+                  "cursor-pointer"
+                  "hover:text-city-pink-400"]
+       :on-click #(swap! expanded? not)}
+      [components.icons/icon-comp
+       {:text "Menu"
+        :icon
+        (if @expanded?
+          octicons/chevron-right
+          octicons/list-unordered)}]]
+     [:div
+      {:class ["ml-auto"
+               "flex"
+               "bg-city-blue-800"
+               "shadow-lg"
+               "shadow-city-pink-800"]}
+      [menu {:menu-opts menu-opts
+             :expanded? @expanded?}]]]))
 
 (def page-error-boundary
   "Not sure if this is working yet....
@@ -58,45 +95,27 @@
    (let [_params           (router/use-route-parameters)
          current-page-name (->
                              #_{:clj-kondo/ignore [:unresolved-var]}
-                             router/*match* uix/context :data :name)
-         *menu-clicked?    (uix/state false)]
+                             router/*match* uix/context :data :name)]
      [:div
-      {:class ["bg-city-blue-900"
-               "min-h-screen"
-               "w-full"]}
       [page-error-boundary
-       [:div {:class ["flex" "flex-row"
-                      "bg-city-brown-600"
-                      "shadow"
-                      "shadow-city-brown-900"]}
+       [:div {:class ["min-h-screen" "bg-city-blue-900" "w-full"
+                      "flex" "flex-row"]}
         [:div
-         {:class ["font-nes"
-                  "pt-3" "pl-3"
-                  "text-city-pink-200"
-                  "capitalize"]}
-         current-page-name]
+         {:class ["flex flex-col" "w-full"]}
 
-        [:div
-         {:class ["ml-auto"]}
          [:div
-          {:class    ["p-3" "text-city-pink-100"
-                      "cursor-pointer"
-                      "hover:text-city-pink-400"]
-           :on-click #(swap! *menu-clicked? not)}
-          [components.icons/icon-comp
-           {:text "Menu"
-            :icon
-            (if @*menu-clicked?
-              octicons/chevron-left
-              octicons/list-unordered)}]]]]]
+          {:class ["bg-city-brown-600"
+                   "shadow"
+                   "shadow-city-brown-900"
+                   "font-nes"
+                   "pt-3" "pl-3"
+                   "text-city-pink-200"
+                   "capitalize"]}
+          current-page-name]
 
-      [:div
-       {:class ["flex" "flex-row"]}
-       (when main [main page-opts])
-       (when @*menu-clicked?
          [:div
-          {:class ["ml-auto"
-                   "bg-city-blue-800"
-                   "shadow-lg"
-                   "shadow-city-pink-800"]}
-          [menu menu-opts]])]])))
+          {:class ["bg-city-blue-900" "w-full"]}
+
+          (when main [main page-opts])]]
+
+        [expanding-menu menu-opts]]]])))
