@@ -17,12 +17,11 @@
        (assoc icon-opts :icon octicons/alert))]))
 
 
-(defn menu [{:keys [expanded? toggle-expanded route-defs]}]
+(defn menu [{:keys [expanded? route-defs]}]
   (when (seq route-defs)
     (let [current-page-name
           (-> #_{:clj-kondo/ignore [:unresolved-var]}
-              router/*match* uix/context :data :name)
-          timer (uix/state nil)]
+              router/*match* uix/context :data :name)]
       [:div
        {:class ["flex" "flex-col" "py-6" "px-3"]}
        (for [[i {:keys [page-name] :as route-def}]
@@ -31,28 +30,19 @@
                   (map-indexed vector))]
 
          (let [icon-comp (route-def->icon route-def)]
-           [:a {:key            i
-                ;; maybe move this up to expanding-menu
-                :on-mouse-enter (fn [_]
-                                  (reset! timer
-                                          (js/setTimeout
-                                            (fn []
-                                              (toggle-expanded true)
-                                              (js/clearTimeout @timer))
-                                            300)))
-                :on-mouse-leave (fn [_] (js/clearTimeout @timer))
-                :class          (concat
-                                  ["flex" "flex-row"
-                                   (when-not expanded? "justify-center")
-                                   "items-center"
-                                   "text-city-pink-100"
-                                   "text-xl"
-                                   "font-nes"
-                                   "hover:text-city-pink-500"]
-                                  (cond (#{current-page-name} page-name)
-                                        ["text-city-pink-400" "text-bold"
-                                         "whitespace-nowrap"]))
-                :href           (router/href page-name)}
+           [:a {:key   i
+                :class (concat
+                         ["flex" "flex-row"
+                          (when-not expanded? "justify-center")
+                          "items-center"
+                          "text-city-pink-100"
+                          "text-xl"
+                          "font-nes"
+                          "hover:text-city-pink-500"]
+                         (cond (#{current-page-name} page-name)
+                               ["text-city-pink-400" "text-bold"
+                                "whitespace-nowrap"]))
+                :href  (router/href page-name)}
             (when icon-comp icon-comp)
 
             (when expanded?
@@ -63,17 +53,26 @@
 (defn expanding-menu [route-defs]
   (let [expanded?       (uix/state false)
         toggle-expanded (fn ([] (swap! expanded? not))
-                          ([val] (reset! expanded? val)))]
+                          ([val] (reset! expanded? val)))
+        expand-timer    (uix/state nil)]
     [:div
      {:class
       (concat ["flex" "flex-col"
-               ;; "ml-auto"
                "transition-all ease-in-out"
                "overflow-hidden"
                "duration-300"]
               (if @expanded? ["w-96"] ["w-16"]))
 
-      :on-mouse-leave #(toggle-expanded false)}
+      :on-mouse-enter (fn [_]
+                        (reset! expand-timer
+                                (js/setTimeout
+                                  (fn []
+                                    (toggle-expanded true)
+                                    (js/clearTimeout @expand-timer))
+                                  150)))
+      :on-mouse-leave (fn [_]
+                        (js/clearTimeout @expand-timer)
+                        (toggle-expanded false))}
 
      ;; top bar menu icon
      [:div
