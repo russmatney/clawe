@@ -56,8 +56,8 @@
    {:route "/garden" :page-name :page/garden :label "Garden" :comp pages.garden/page}
    {:route "/posts" :page-name :page/posts :label "Posts" :comp pages.posts/page}
    {:route "/journal" :page-name :page/journal :label "Journal" :comp pages.journal/page}
-   {:route "/focus" :page-name :page/focus :label "Focus Widget" :comp views.focus/widget :comp-only true}
-   {:route "/blog" :page-name :page/blog :label "Blog Widget" :comp views.blog/widget :comp-only true}])
+   {:route "/focus" :page-name :page/focus :label "Focus Widget" :comp views.focus/widget :hide-header true}
+   {:route "/blog" :page-name :page/blog :label "Blog Widget" :comp views.blog/widget :hide-header true}])
 
 (def routes
   (->> route-defs
@@ -65,19 +65,21 @@
        (into [])))
 
 (defn view [opts]
-  (let [page-name                (->
-                                   #_{:clj-kondo/ignore [:unresolved-var]}
-                                   router/*match* uix/context :data :name)
-        by-page-name             (w/index-by :page-name route-defs)
-        {:keys [comp comp-only]} (by-page-name page-name)
+  (let [page-name         (->
+                            #_{:clj-kondo/ignore [:unresolved-var]}
+                          router/*match* uix/context :data :name)
+        by-page-name      (w/index-by :page-name route-defs)
+        {:keys [comp comp-only]
+         :as   page-opts} (by-page-name page-name)
 
         ;; create fe db and pass it to every page
         {:keys [conn]} (hooks.db/use-db)
-        opts           (assoc opts
-                              :conn conn
-                              :comp-only comp-only)]
+        opts           (-> opts (assoc :conn conn)
+                           (merge page-opts))]
     (if comp
-      [pages/page route-defs comp opts]
+      (if comp-only
+        [comp opts]
+        [pages/page route-defs comp opts])
       [:div "no page"])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

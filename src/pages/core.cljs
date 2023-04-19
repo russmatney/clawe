@@ -6,15 +6,15 @@
    [components.icons :as components.icons]))
 
 
-(defn menu-opt->icon [{:keys [page-name label]}]
+(defn route-def->icon [{:keys [page-name label]}]
   [components.icons/icon-comp
    (case page-name
      nil {:icon octicons/alert}
      {:text label})])
 
 
-(defn menu [{:keys [expanded? menu-opts]}]
-  (when menu-opts
+(defn menu [{:keys [expanded? route-defs]}]
+  (when (seq route-defs)
     (let [current-page-name (->
                               #_{:clj-kondo/ignore [:unresolved-var]}
                               router/*match* uix/context :data :name)]
@@ -24,17 +24,19 @@
          "text-city-pink-100"
          "text-xxl"
          "font-nes"]}
-       (for [[i {:keys [page-name] :as menu-opt}]
-             (->> menu-opts (map-indexed vector))]
+       (for [[i {:keys [page-name] :as route-def}]
+             (->> route-defs
+                  (remove :comp-only)
+                  (map-indexed vector))]
          [:a {:key   i
               :class (concat
                        ["hover:text-city-pink-500"]
                        (cond (#{current-page-name} page-name)
                              ["text-city-pink-400" "text-bold"]))
               :href  (router/href page-name)}
-          (menu-opt->icon (assoc menu-opt :expanded? expanded?))])])))
+          (route-def->icon (assoc route-def :expanded? expanded?))])])))
 
-(defn expanding-menu [menu-opts]
+(defn expanding-menu [route-defs]
   (let [expanded? (uix/state true)]
     [:div
      {:class
@@ -59,8 +61,8 @@
       {:class ["bg-city-blue-800"
                "shadow-lg"
                "shadow-city-pink-800"]}
-      [menu {:menu-opts menu-opts
-             :expanded? @expanded?}]]]))
+      [menu {:route-defs route-defs
+             :expanded?  @expanded?}]]]))
 
 (def page-error-boundary
   "Not sure if this is working yet....
@@ -86,7 +88,7 @@
   ;; TODO reduce this crazy arity nonsense
   ([main] [page [] main {}])
   ([main opts] [page [] main opts])
-  ([menu-opts main {:keys [comp-only] :as page-opts}]
+  ([route-defs main {:keys [hide-header] :as page-opts}]
    (let [_params           (router/use-route-parameters)
          current-page-name (->
                              #_{:clj-kondo/ignore [:unresolved-var]}
@@ -97,7 +99,7 @@
        [:div
         {:class ["flex flex-col" "w-full"]}
 
-        (when-not comp-only
+        (when-not hide-header
           [:div
            {:class ["bg-city-brown-600"
                     "shadow"
@@ -113,4 +115,4 @@
 
          (when main [main page-opts])]]
 
-       [expanding-menu menu-opts]]])))
+       [expanding-menu route-defs]]])))
