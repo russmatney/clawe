@@ -143,6 +143,20 @@
          "ensure-uuid"]
         "####"])]))
 
+(defn db-id [it]
+  (when (:db/id it)
+    [:div
+     {:class
+      (concat
+        ["flex" "text-sm" "font-nes" "ml-2"
+         "text-city-green-300"
+         "hover:text-slate-400"
+         "cursor-pointer" "tooltip"])
+      :on-click #(handlers/delete-from-db it)}
+     [:span {:class ["tooltip-text" "-mt-12" "-ml-12"]}
+      "delete-from-db"]
+     (->> it :db/id str (apply str))]))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; current item header
 
@@ -206,6 +220,7 @@
 
      [level it]
      [todo-status it]
+     [db-id it]
      [item-id-hash it]
      [:div {:class ["ml-auto"]}
       [tags-list it]]
