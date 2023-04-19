@@ -33,6 +33,7 @@
       [:span
        {:class          ["ml-2" "whitespace-nowrap" "font-nes"
                          "cursor-pointer"
+                         "text-slate-300"
                          "hover:opacity-50"]
         :on-mouse-enter (fn [_] (reset! hovering? true))
         :on-mouse-leave (fn [_] (reset! hovering? false))
@@ -103,21 +104,24 @@
 
 (defn parent-names
   ([it] (parent-names nil it))
-  ([{:keys [header?]} it]
+  ([{:keys [header? n]} it]
    (let [p-names      (-> it :org/parent-names)
+         p-names      (cond->> p-names
+                        n (take n))
          p-name       (-> p-names first)
          rest-p-names (-> p-names rest)]
      (if-not header?
        [breadcrumbs p-names]
        [:div
-        {:class ["flex" "flex-col"]}
+        {:class ["flex" "flex-row" "items-center"]}
         [breadcrumbs rest-p-names]
         [:span
-         {:class ["font-nes" "text-3xl" "p-3"
+         {:class ["text-city-blue-dark-200" "px-4"]}
+         " > "]
+        [:span
+         {:class ["font-nes" "text-xl" "p-3"
                   "text-city-green-400"]}
-         p-name]
-        [:div
-         {:class ["flex" "flex-"]}]]))))
+         p-name]]))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; item-id-hash
@@ -243,7 +247,7 @@
         (str (:org/closed-since it) " ago")])
 
      (when-not hide-parent-names?
-       [parent-names it])]
+       [parent-names {:n 2} it])]
 
     ;; bottom meta
     [:div
@@ -363,20 +367,34 @@
         ^{:key (str pnames)}
         [:div {:class (concat ["flex" "flex-col"]
                               (when children?
-                                ["border-city-green-400" "border"]))}
-         [:div {:class ["px-3" "pt-2"]}
+                                ["border-city-green-400" "border"
+                                 "bg-city-blue-900"
+                                 "py-3"
+                                 ]))}
+         [:div {:class ["p-2"]}
           (when children?
             [:div
-             {:class ["flex" "flex-row"]}
-             [parent-names {:header? true} (first grouped-todos)]
+             {:class ["flex" "flex-col"]}
+             [:div
+              {:class ["flex" "flex-row" "items-center"]}
 
-             ;; actions list
-             [:span
-              {:class ["ml-auto"]}
-              [components.actions/actions-list
-               {:actions       (handlers/->actions item (handlers/todo->actions item))
-                :nowrap        true
-                :hide-disabled true}]]])]
+              [todo-status item]
+              [db-id item]
+              [item-id-hash item]
+              [:div {:class ["ml-auto"]}
+               [tags-list item]]
+              [todo/priority-label {:on-click (fn [_] (use-focus/remove-priority item))} item]]
+
+             [:div
+              {:class ["flex" "flex-row" "items-center" "px-3"]}
+              [parent-names {:header? true} (first grouped-todos)]
+
+              [:span
+               {:class ["ml-auto"]}
+               [components.actions/actions-list
+                {:actions       (handlers/->actions item (handlers/todo->actions item))
+                 :nowrap        true
+                 :hide-disabled true}]]]])]
 
          (if children?
            [:div
@@ -388,7 +406,7 @@
                [item-card {:hide-parent-names? true} td]])]
            [:div
             {:class ["p-2"]}
-            [item-card {:hide-parent-names? true} item]])])])))
+            [item-card {:hide-parent-names? false} item]])])])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; current stack
