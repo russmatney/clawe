@@ -85,14 +85,12 @@
 
 (defn page
   "Accepts a main component and wraps it in page helpers with a menu."
-  ;; TODO reduce this crazy arity nonsense
-  ([main] [page [] main {}])
-  ([main opts] [page [] main opts])
-  ([route-defs main {:keys [hide-header] :as page-opts}]
-   (let [_params           (router/use-route-parameters)
-         current-page-name (->
-                             #_{:clj-kondo/ignore [:unresolved-var]}
-                             router/*match* uix/context :data :name)]
+  ([main] [page main nil])
+  ([main {:keys [hide-header route-defs] :as page-opts}]
+   (let [params            (router/use-route-parameters)
+         page-opts         (assoc page-opts :params params)
+         current-page-name (-> #_{:clj-kondo/ignore [:unresolved-var]}
+                               router/*match* uix/context :data :name)]
      [page-error-boundary
       [:div {:class ["min-h-screen" "bg-city-blue-900"
                      "w-full" "flex" "flex-row"]}

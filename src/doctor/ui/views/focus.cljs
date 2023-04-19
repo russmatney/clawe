@@ -1,12 +1,14 @@
 (ns doctor.ui.views.focus
   (:require
-   [doctor.ui.hooks.use-focus :as use-focus]
    [uix.core.alpha :as uix]
    [tick.core :as t]
+   ;; [taoensso.timbre :as log]
+
    [dates.tick :as dates]
+   [doctor.ui.hooks.use-focus :as use-focus]
    [doctor.ui.pomodoros :as pomodoros]
-   [components.actions :as components.actions]
    [doctor.ui.handlers :as handlers]
+   [components.actions :as components.actions]
    [components.colors :as colors]
    [components.filter :as components.filter]
    [components.garden :as components.garden]
@@ -510,6 +512,7 @@
 ;; main widget
 
 (defn widget [opts]
+  ;; (log/info (:params opts))
   (let [focus-data      (use-focus/use-focus-data)
         {:keys [todos]} @focus-data
 
