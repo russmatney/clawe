@@ -33,11 +33,10 @@
         children          (->> note (org-crud/nested-item->flattened-items))
         children-with-ids (->> children (filter :org/id))
 
-        all-link-ids (->>
-                       (concat (or (some->> note :org/links-to (map :link/id)) [])
-                               (->> children
-                                    (mapcat :org/links-to)
-                                    (map :link/id))))]
+        all-link-ids (concat (or (some->> note :org/links-to (map :link/id)) [])
+                             (->> children
+                                  (mapcat :org/links-to)
+                                  (map :link/id)))]
     (cond-> db
       blog-def (update :published-by-id assoc (:org/id note) note)
       true     (update :root-notes-by-id assoc (:org/id note) note)

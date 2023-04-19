@@ -91,10 +91,13 @@
         (if error
           [:div
            {:class ["bg-city-blue-900"
+                    "text-slate-200"
                     "min-h-screen"
                     "w-full"]}
            [:span "i'm the ghost of an error boundary"]
-           [:pre error]]
+           [:br]
+           [:pre {:class ["whitespace-pre-wrap"]}
+            error]]
           child)))))
 
 (defn page
@@ -106,8 +109,8 @@
          current-page-name (-> #_{:clj-kondo/ignore [:unresolved-var]}
                                router/*match* uix/context :data :name)]
      [page-error-boundary
-      [:div {:class ["min-h-screen" "bg-city-blue-800"
-                     "w-full" "flex" "flex-row"]}
+      [:div {:class ["min-h-screen"
+                     "flex" "flex-row"]}
        [:div
         {:class ["flex flex-col" "w-full"]}
 
@@ -123,8 +126,7 @@
            current-page-name])
 
         [:div
-         {:class ["bg-city-blue-800" "w-full"]}
-
+         {:class ["bg-city-blue-800"]}
          (when main [main page-opts])]]
 
        [expanding-menu route-defs]]])))

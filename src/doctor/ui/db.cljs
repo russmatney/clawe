@@ -23,10 +23,10 @@
      (->> (d/q '[:find (pull ?e [*])
                  :in $ ?event-types
                  :where
-                 [?e :doctor/type ?type]
-                 [?e :event/timestamp ?ts]
                  ;; TODO consider lower bound/min time here
-                 ]
+                 [?e :event/timestamp ?ts]
+                 [?e :doctor/type ?type]
+                 [(contains? ?event-types ?type)]]
                conn event-types)
           (map first)
           (sort-by :event/timestamp t/>)
