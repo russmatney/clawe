@@ -42,9 +42,7 @@
       (when (and (not (#{:delete} (:action event)))
                  (should-sync-file? (:file event)))
         (log/debug "Syncing file" (str (fs/file-name (:file event))))
-        (garden.db/sync-garden-paths-to-db
-          {:page-size 200} ;; decent page size, fewer transactions
-          [(:file event)]))
+        (garden.db/sync-and-purge-for-path (:file event)))
 
       (when (should-push-focus-data? (:file event))
         (log/debug "Pushing focus data" (str (fs/file-name (:file event))))

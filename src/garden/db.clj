@@ -147,42 +147,46 @@
 (comment
   (-on-error-log-notes []))
 
+(defn sync-db-notes
+  "`db-notes` are garden-notes already mapped via `garden-note->db-item`."
+  [opts db-notes]
+  (let [page-size (:page-size opts 5)]
+    (doall
+      (->>
+        db-notes
+        (sort-by :org/source-file)
+        (sort-by :org/fallback-id)
+        (partition-all page-size)
+        (map (fn transact-garden-notes [notes]
+               (db/transact
+                 notes
+                 {:on-error -on-error-log-notes
+                  :verbose? true
+                  :on-unsupported-type
+                  (fn [note]
+                    (log/debug "Unsupported type on note" note))
+                  ;; retry logic that narrows in on bad records
+                  ;; NOTE not ideal if we care about things belonging to the same transaction
+                  :on-retry
+                  (fn [notes]
+                    (let [size (count notes)
+                          half (/ size 2)]
+                      (if (> size 1)
+                        (do
+                          (log/info "\n\nRetrying with smaller groups." (count notes))
+                          (transact-garden-notes (->> notes (take half)))
+                          (transact-garden-notes (->> notes (drop half) (take half))))
+                        (log/info "\n\nProblemmatic record:" (some->>
+                                                               notes first
+                                                               :org/name-string)))))})))))))
+
 (defn sync-garden-notes-to-db
   "Adds the passed garden notes to the db, after mapping them via `garden-note->db-item`."
   ([notes] (sync-garden-notes-to-db nil notes))
   ([opts garden-notes]
-   (let [page-size (:page-size opts 5)]
-     (doall
-       (->>
-         garden-notes
-         (map garden-note->db-item)
-         ;; (mapcat (fn [item]
-         ;;           (concat [item] (other-db-updates item))))
-         (sort-by :org/source-file)
-         (sort-by :org/fallback-id)
-         (partition-all page-size)
-         (map (fn transact-garden-notes [notes]
-                (db/transact
-                  notes
-                  {:on-error -on-error-log-notes
-                   :verbose? true
-                   :on-unsupported-type
-                   (fn [note]
-                     (log/debug "Unsupported type on note" note))
-                   ;; retry logic that narrows in on bad records
-                   ;; NOTE not ideal if we care about things belonging to the same transaction
-                   :on-retry
-                   (fn [notes]
-                     (let [size (count notes)
-                           half (/ size 2)]
-                       (if (> size 1)
-                         (do
-                           (log/info "\n\nRetrying with smaller groups." (count notes))
-                           (transact-garden-notes (->> notes (take half)))
-                           (transact-garden-notes (->> notes (drop half) (take half))))
-                         (log/info "\n\nProblemmatic record:" (some->>
-                                                                notes first
-                                                                :org/name-string)))))}))))))))
+   (->> garden-notes
+        (map garden-note->db-item)
+        (sync-db-notes opts))))
 
 (comment
   (let [x         [2 3 4 5 6 7 8]
@@ -250,6 +254,45 @@
   (count
     (garden/all-garden-notes-flattened)))
 
+(declare fetch-notes-for-source-file)
+
+(defn sync-and-purge-for-path [garden-path]
+  (let [notes-to-sync
+        (->> [garden-path]
+             garden.core/paths->flattened-garden-notes
+             (map garden-note->db-item))
+        db-note-ids    (->> notes-to-sync (map :org/id) (into #{}))
+        db-note-fb-ids (->> notes-to-sync (map :org/fallback-id) (into #{}))]
+
+    (sync-db-notes {:page-size 200} notes-to-sync)
+
+    ;; retract notes with this source-file that are not in db-notes
+    (let [all-db-notes   (fetch-notes-for-source-file garden-path)
+          notes-to-purge (->> all-db-notes
+                              (remove (fn [db-note]
+                                        (or (and (:org/id db-note)
+                                                 (db-note-ids (:org/id db-note)))
+                                            (and (:org/fallback-id db-note)
+                                                 (db-note-fb-ids (:org/fallback-id db-note)))))))]
+      (when (seq notes-to-purge)
+        (log/info "Purging" (count notes-to-purge) "/" (count all-db-notes) "notes from the db"
+                  (->> notes-to-purge (map :org/name-string))))
+      (->> notes-to-purge
+           (map :db/id)
+           (remove nil?)
+           (db/retract)))))
+
+(comment
+  (def note
+    (->>
+      (garden/all-garden-notes-flattened)
+      (filter (comp #(string/includes? % "clawe doctor org dedup") :org/name-string))
+      first))
+
+  (sync-and-purge-for-path (:org/source-file note))
+  )
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; fetch
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -267,7 +310,29 @@
     (fetch-db-garden-notes)
     (map :org/source-file)
     dedupe
-    count
+    count))
+
+(defn fetch-notes-for-source-file
+  [source-file]
+  (->>
+    (db/query '[:find (pull ?e [*])
+                :in $ ?source-file
+                :where [?e :org/source-file ?source-file]
+                ]
+              (str source-file))
+    (map first)))
+
+(comment
+  (def note
+    (->>
+      (garden/all-garden-notes-flattened)
+      (filter (comp #(string/includes? % "clawe doctor org dedup") :org/name-string))
+      first))
+
+  (->>
+    (fetch-notes-for-source-file (:org/source-file note))
+    (map :org/name-string)
+    sort
     )
   )
 
@@ -325,9 +390,7 @@
                 [?e :org/urls ?urls]])
     (map first)
     (sort-by (comp count :org/urls) >)
-    (take 5)
-    )
-  )
+    (take 5)))
 
 (defn fetch-matching-db-item
   "Attempts to fetch a db item using the passed org item."
