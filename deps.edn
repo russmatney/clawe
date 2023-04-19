@@ -24,7 +24,7 @@
 
 
   russmatney/org-crud {:git/url "https://github.com/russmatney/org-crud"
-                       :git/sha "0073d95f23b1edc36ba0991fcf178278a9701e4a"}
+                       :git/sha "33356d21e14471394c5f94b36ddc1fc4f73dc59b"}
   kkinnear/zprint     {:git/url "https://github.com/kkinnear/zprint"
                        :git/tag "1.2.5"
                        :git/sha "52efc5a"}
