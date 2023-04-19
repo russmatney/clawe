@@ -2,8 +2,6 @@
   (:require
    [uix.core.alpha :as uix]
    [tick.core :as t]
-   ;; [taoensso.timbre :as log]
-
    [dates.tick :as dates]
    [doctor.ui.hooks.use-focus :as use-focus]
    [doctor.ui.pomodoros :as pomodoros]
@@ -41,6 +39,7 @@
         :on-click
         (fn [_]
           ;; TODO refactor this logic into...something?
+          ;; needs to support going from one state to another... maybe via a popup menu, with a default
           (handlers/todo-set-new-status
             it (cond
                  (todo/completed? it)   :status/not-started
@@ -512,7 +511,6 @@
 ;; main widget
 
 (defn widget [opts]
-  ;; (log/info (:params opts))
   (let [focus-data      (use-focus/use-focus-data)
         {:keys [todos]} @focus-data
 

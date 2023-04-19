@@ -1,11 +1,13 @@
 (ns components.filter
   (:require
+   [clojure.string :as string]
+   [uix.core.alpha :as uix]
+   [wing.uix.router :as router]
+
    [components.floating :as floating]
    [components.table :as components.table]
    [components.actions :as components.actions]
-   [uix.core.alpha :as uix]
    [util :as util]
-   [clojure.string :as string]
    [components.pill :as pill]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -368,13 +370,19 @@
 
 (defn use-filter
   [{:keys [items all-filter-defs filter-items sort-items] :as config}]
-  ;; TODO cut off this default usage with local storage read/write for last-set preset
-  (let [[preset-key default]
+  (let [param-preset-key (router/use-route-parameters [:query :preset])
+        [preset-key default]
         (or
+          ;; preset matching key in route query params
+          (and @param-preset-key
+               (some->> config :presets
+                        (filter (comp #{(keyword @param-preset-key)}
+                                      first)) first))
           ;; first preset with {:default true} in desc
           (some->> config :presets (filter (comp :default second)) first)
           ;; preset with :default as key
           (some->> config :presets (filter (comp #{:default} first)) first))
+
         initial-filters         (or (some-> default :filters) #{})
         initial-group-by-key    (or (some-> default :group-by)
                                     (some-> all-filter-defs first first))
@@ -425,7 +433,9 @@
              :active-filters         @active-filters
              :group-by-key           @group-by-key
              :sort-groups-key        @sort-groups-key
-             :set-current-preset-key #(reset! current-preset-key %)
+             :set-current-preset-key (fn [k]
+                                       (reset! param-preset-key k)
+                                       (reset! current-preset-key k))
              :set-group-by-key       #(reset! group-by-key %)
              :set-sort-groups-key    #(reset! sort-groups-key %)
              :set-filters            #(reset! active-filters %)
