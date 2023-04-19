@@ -6,63 +6,100 @@
    [components.icons :as components.icons]))
 
 
-(defn route-def->icon [{:keys [page-name label]}]
-  [components.icons/icon-comp
-   (case page-name
-     nil {:icon octicons/alert}
-     {:text label})])
+(defn route-def->icon [{:keys [icon label]}]
+  (let [icon-opts {:class ["px-1 py-2 pr-2"]
+                   :text  label}]
+    [components.icons/icon-comp
+     (cond
+       icon (assoc icon-opts :icon icon)
+
+       :else
+       (assoc icon-opts :icon octicons/alert))]))
 
 
-(defn menu [{:keys [expanded? route-defs]}]
+(defn menu [{:keys [expanded? toggle-expanded route-defs]}]
   (when (seq route-defs)
-    (let [current-page-name (->
-                              #_{:clj-kondo/ignore [:unresolved-var]}
-                              router/*match* uix/context :data :name)]
+    (let [current-page-name
+          (-> #_{:clj-kondo/ignore [:unresolved-var]}
+              router/*match* uix/context :data :name)
+          timer (uix/state nil)]
       [:div
-       {:class
-        ["flex" "flex-col" "p-6"
-         "text-city-pink-100"
-         "text-xxl"
-         "font-nes"]}
+       {:class ["flex" "flex-col" "py-6" "px-3"]}
        (for [[i {:keys [page-name] :as route-def}]
              (->> route-defs
                   (remove :comp-only)
                   (map-indexed vector))]
-         [:a {:key   i
-              :class (concat
-                       ["hover:text-city-pink-500"]
-                       (cond (#{current-page-name} page-name)
-                             ["text-city-pink-400" "text-bold"]))
-              :href  (router/href page-name)}
-          (route-def->icon (assoc route-def :expanded? expanded?))])])))
+
+         (let [icon-comp (route-def->icon route-def)]
+           [:a {:key            i
+                ;; maybe move this up to expanding-menu
+                :on-mouse-enter (fn [_]
+                                  (reset! timer
+                                          (js/setTimeout
+                                            (fn []
+                                              (toggle-expanded true)
+                                              (js/clearTimeout @timer))
+                                            300)))
+                :on-mouse-leave (fn [_] (js/clearTimeout @timer))
+                :class          (concat
+                                  ["flex" "flex-row"
+                                   (when-not expanded? "justify-center")
+                                   "items-center"
+                                   "text-city-pink-100"
+                                   "text-xl"
+                                   "font-nes"
+                                   "hover:text-city-pink-500"]
+                                  (cond (#{current-page-name} page-name)
+                                        ["text-city-pink-400" "text-bold"
+                                         "whitespace-nowrap"]))
+                :href           (router/href page-name)}
+            (when icon-comp icon-comp)
+
+            (when expanded?
+              [:span
+               {:class ["pl-2"]}
+               (:label route-def)])]))])))
 
 (defn expanding-menu [route-defs]
-  (let [expanded? (uix/state true)]
+  (let [expanded?       (uix/state false)
+        toggle-expanded (fn ([] (swap! expanded? not))
+                          ([val] (reset! expanded? val)))]
     [:div
      {:class
       (concat ["flex" "flex-col"
-               "ml-auto"
+               ;; "ml-auto"
                "transition-all ease-in-out"
                "overflow-hidden"
                "duration-300"]
-              (if @expanded? [] ["w-12"]))}
+              (if @expanded? ["w-96"] ["w-16"]))
+
+      :on-mouse-leave #(toggle-expanded false)}
+
+     ;; top bar menu icon
      [:div
-      {:class    ["p-3" "text-city-pink-100"
-                  "cursor-pointer"
-                  "hover:text-city-pink-400"]
-       :on-click #(swap! expanded? not)}
+      {:class ["p-3" "text-city-pink-100"
+               "cursor-pointer"
+               "hover:text-city-pink-400"
+
+               "flex flex-row"
+               (when-not @expanded? "justify-center")]
+       :on-click #(toggle-expanded)}
       [components.icons/icon-comp
-       {:text "Menu"
+       {:text  "Menu"
+        :class ["text-center"]
         :icon
         (if @expanded?
           octicons/chevron-right
           octicons/list-unordered)}]]
+
+     ;; menu body items
      [:div
-      {:class ["bg-city-blue-800"
-               "shadow-lg"
-               "shadow-city-pink-800"]}
-      [menu {:route-defs route-defs
-             :expanded?  @expanded?}]]]))
+      {:class ["bg-city-blue-900"
+               "shadow"
+               "shadow-city-blue-400"]}
+      [menu {:route-defs      route-defs
+             :expanded?       @expanded?
+             :toggle-expanded toggle-expanded}]]]))
 
 (def page-error-boundary
   "Not sure if this is working yet....

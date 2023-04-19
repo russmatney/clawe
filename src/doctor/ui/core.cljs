@@ -11,6 +11,7 @@
    [wing.core :as w]
    [wing.uix.router :as router]
    [datascript.transit :as dt]
+   [hiccup-icons.octicons :as octicons]
 
    [pages.core :as pages]
    [pages.todos :as pages.todos]
@@ -41,23 +42,37 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def route-defs
-  [{:route "/" :page-name :page/home :label "Dashboard" :comp views.dashboard/widget}
-   {:route "/db" :page-name :page/db :label "DB" :comp pages.db/page}
-   {:route "/todo" :page-name :page/todos :label "Todos" :comp pages.todos/page}
-   {:route "/commits" :page-name :page/commits :label "Commits" :comp pages.commits/page}
-   {:route "/events" :page-name :page/events :label "Events" :comp pages.events/page}
-   {:route "/topbar" :page-name :page/topbar :label "Top Bar" :comp views.topbar/widget :comp-only true}
+  [{:route "/" :page-name :page/home :label "Dashboard" :comp views.dashboard/widget
+    :icon  octicons/beaker16}
+   {:route "/focus" :page-name :page/focus :label "Focus" :comp views.focus/widget :hide-header true
+    :icon  octicons/light-bulb16}
+   {:route "/blog" :page-name :page/blog :label "Blog" :comp views.blog/widget :hide-header true
+    :icon  octicons/comment-discussion16}
+   {:route "/wallpapers" :page-name :page/wallpapers :label "Wallpapers" :comp pages.wallpapers/page
+    :icon  octicons/image16}
+   {:route "/events" :page-name :page/events :label "Events" :comp pages.events/page
+    :icon  octicons/calendar16}
+   {:route "/todo" :page-name :page/todos :label "Todos" :comp pages.todos/page
+    :icon  octicons/checklist16}
+   {:route "/db" :page-name :page/db :label "DB" :comp pages.db/page
+    :icon  octicons/archive16}
+   {:route "/screenshots" :page-name :page/screenshots :label "Screenshots" :comp pages.screenshots/page
+    :icon  octicons/screen-full16}
+   {:route "/commits" :page-name :page/commits :label "Commits" :comp pages.commits/page
+    :icon  octicons/commit}
    ;; {:route "/topbarbg":page-name :page/topbar-bg :label "Top Bar BG" :comp views.topbar/widget}
-   {:route "/counter" :page-name :page/counter :label "Counter" :comp pages.counter/page}
-   {:route "/counts" :page-name :page/counts :label "Counts" :comp pages.counts/page}
-   {:route "/screenshots" :page-name :page/screenshots :label "Screenshots" :comp pages.screenshots/page}
-   {:route "/workspaces" :page-name :page/workspaces :label "Workspaces" :comp pages.workspaces/page}
-   {:route "/wallpapers" :page-name :page/wallpapers :label "Wallpapers" :comp pages.wallpapers/page}
-   {:route "/garden" :page-name :page/garden :label "Garden" :comp pages.garden/page}
-   {:route "/posts" :page-name :page/posts :label "Posts" :comp pages.posts/page}
-   {:route "/journal" :page-name :page/journal :label "Journal" :comp pages.journal/page}
-   {:route "/focus" :page-name :page/focus :label "Focus Widget" :comp views.focus/widget :hide-header true}
-   {:route "/blog" :page-name :page/blog :label "Blog Widget" :comp views.blog/widget :hide-header true}])
+   ;; {:route "/counter" :page-name :page/counter :label "Counter" :comp pages.counter/page}
+   {:route "/garden" :page-name :page/garden :label "Garden" :comp pages.garden/page
+    :icon  octicons/workflow16}
+   {:route "/posts" :page-name :page/posts :label "Posts" :comp pages.posts/page
+    :icon  octicons/comment16}
+   {:route "/workspaces" :page-name :page/workspaces :label "Workspaces" :comp pages.workspaces/page
+    :icon  octicons/clippy16}
+   {:route "/journal" :page-name :page/journal :label "Journal" :comp pages.journal/page
+    :icon  octicons/book16}
+   {:route "/counts" :page-name :page/counts :label "Counts" :comp pages.counts/page
+    :icon  octicons/bug16}
+   {:route "/topbar" :page-name :page/topbar :label "Top Bar" :comp views.topbar/widget :comp-only true}])
 
 (def routes
   (->> route-defs

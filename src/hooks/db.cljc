@@ -1,6 +1,7 @@
 (ns hooks.db
   (:require
    [plasma.core :refer [defhandler defstream]]
+   [taoensso.timbre :as log]
    #?@(:clj [[api.db :as api.db]]
        :cljs [[datascript.core :as d]
               [plasma.uix :as plasma.uix :refer [with-rpc with-stream]]
@@ -18,6 +19,7 @@
   (let [datoms      (api.db/datoms-for-frontend)
         first-batch (->> datoms (take datoms-in-first-batch))
         _rest       (->> datoms (drop datoms-in-first-batch))]
+    (log/info "get-db handler firing first batch")
     ;; fire the rest in streamed batches
 
     ;; NOTE disabled for now - should move to requesting specific data
@@ -40,7 +42,7 @@
    (defn use-db []
      (let [conn        (plasma.uix/state nil)
            handle-resp (fn [items]
-                         (println "new datoms" (count items))
+                         (log/info "new datoms" (count items))
                          (if @conn
                            (d/transact! conn items)
                            (-> (d/empty-db schema)
