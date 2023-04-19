@@ -369,8 +369,7 @@
                               (when children?
                                 ["border-city-green-400" "border"
                                  "bg-city-blue-900"
-                                 "py-3"
-                                 ]))}
+                                 "py-3"]))}
          [:div {:class ["p-2"]}
           (when children?
             [:div

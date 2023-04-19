@@ -23,7 +23,7 @@
           (-> #_{:clj-kondo/ignore [:unresolved-var]}
               router/*match* uix/context :data :name)]
       [:div
-       {:class ["flex" "flex-col" "py-6" "px-3"]}
+       {:class ["flex" "flex-col" "p-3"]}
        (for [[i {:keys [page-name] :as route-def}]
              (->> route-defs
                   (remove :comp-only)
@@ -60,41 +60,20 @@
       (concat ["flex" "flex-col"
                "transition-all ease-in-out"
                "overflow-hidden"
-               "duration-300" "bg-city-blue-900"]
-              (if @expanded? ["w-96"] ["w-16"]))
+               "duration-300" "bg-city-blue-900"
 
-      :on-mouse-enter (fn [_]
-                        (reset! expand-timer
-                                (js/setTimeout
-                                  (fn []
-                                    (toggle-expanded true)
-                                    (js/clearTimeout @expand-timer))
-                                  150)))
-      :on-mouse-leave (fn [_]
-                        (js/clearTimeout @expand-timer)
-                        (toggle-expanded false))}
-
-     ;; top bar menu icon
-     [:div
-      {:class    ["p-3" "text-city-pink-100"
-                  "cursor-pointer"
-                  "hover:text-city-pink-400"
-                  "flex flex-row"
-                  (when-not @expanded? "justify-center")]
-       :on-click #(toggle-expanded)}
-      [components.icons/icon-comp
-       {:text  "Menu"
-        :class ["text-center"]
-        :icon
-        (if @expanded?
-          octicons/chevron-right
-          octicons/list-unordered)}]]
-
-     ;; menu body items
-     [:div
-      {:class ["bg-city-blue-900"
                "shadow"
-               "shadow-city-blue-400"]}
+               "shadow-city-blue-400"]
+              (if @expanded? ["w-96"] ["w-16"]))
+      :on-mouse-enter #(do (reset! expand-timer
+                                   (js/setTimeout
+                                     (fn []
+                                       (toggle-expanded true)
+                                       (js/clearTimeout @expand-timer))
+                                     150)))
+      :on-mouse-leave #(do (js/clearTimeout @expand-timer)
+                           (toggle-expanded false))}
+     [:div {:class ["fixed"]}
       [menu {:route-defs      route-defs
              :expanded?       @expanded?
              :toggle-expanded toggle-expanded}]]]))
