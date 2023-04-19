@@ -23,8 +23,11 @@
     {:root-notes (->> db :root-notes-by-id
                       vals
                       (filter (fn [note]
-                                (t/> (-> note :file/last-modified dates/parse-time-string)
-                                     month-ago)))
+                                (when-not (some-> note :file/last-modified)
+                                  (log/info "Note without :file/last-modified" note))
+                                (when (some-> note :file/last-modified)
+                                  (t/> (-> note :file/last-modified dates/parse-time-string)
+                                       month-ago))))
                       (sort-by :org/name-string))}))
 
 (defsys ^:dynamic *blog-data-stream*
