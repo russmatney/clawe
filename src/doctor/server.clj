@@ -126,7 +126,6 @@
    ;; db.listeners/*garden->blog*
    garden.watcher/*garden-watcher*
    ;; this is also disabled in the impl
-   ;; db.listeners/*garden->expo*
    db.listeners/*data-expander*
    db/*conn*]
   :start

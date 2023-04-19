@@ -48,13 +48,6 @@ public/assets/wallpapers
 .lsp/
 
 
-expo/public/js/
-expo/public/css/main-built.css
-expo/public/assets/candy-icons
-expo/public/assets/screenshots
-expo/public/assets/wallpapers
-expo/public/expo-db.edn
-
 .clerk
 /cljs-test-runner-out/
 /out/

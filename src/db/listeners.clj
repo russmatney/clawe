@@ -13,43 +13,6 @@
    [item.core :as item]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; expo consumer
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defsys ^:dynamic *garden->expo*
-  :start (do
-           (sys/start! `db/*conn*)
-           (d/listen!
-             db/*conn* :garden->expo
-             (fn [tx]
-               (try
-                 ;; TODO disabled for now - will re-think when approaching expo again
-                 ;; (log/info "garden note transacted!")
-                 ;; (expo/update-posts)
-                 (catch Exception e
-                   (log/warn "Error in garden->expo db listener" e)
-                   tx)))))
-  :stop
-  (try
-    (log/debug "Removing :garden->expo db listener")
-    (d/unlisten! db/*conn* :garden->expo)
-    (catch Exception e
-      (log/debug "err removing listener" e)
-      nil)))
-
-;; (defn start-garden->expo-listener []
-;;   (sys/start! `*garden->expo*))
-
-;; (defn stop-garden->expo-listener []
-;;   (sys/stop! `*garden->expo*))
-
-(comment
-  (sys/start! `*garden->expo*)
-  (sys/stop! `*garden->expo*)
-
-  (d/db db/*conn*))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; data expander
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
