@@ -1,12 +1,14 @@
 (ns api.focus
-  (:require [garden.core :as garden]
-            [org-crud.core :as org-crud]
-            [org-crud.update :as org-crud.update]
-            [systemic.core :as sys :refer [defsys]]
-            [manifold.stream :as s]
-            [dates.tick :as dates.tick]
-            [clojure.string :as string]
-            [babashka.fs :as fs]))
+  (:require
+   [garden.core :as garden]
+   [garden.db :as garden.db]
+   [org-crud.core :as org-crud]
+   [org-crud.update :as org-crud.update]
+   [systemic.core :as sys :refer [defsys]]
+   [manifold.stream :as s]
+   [dates.tick :as dates.tick]
+   [clojure.string :as string]
+   [babashka.fs :as fs]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; domain
@@ -74,6 +76,7 @@
     ;;             ((comp seq #(set/intersection opt-in-tags %) :org/tags) it))))
     (mapcat org-crud/nested-item->flattened-items)
     (filter :org/status)
+    (map garden.db/merge-db-item)
     (map prep-todo)))
 
 (comment

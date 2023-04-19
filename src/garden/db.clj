@@ -20,9 +20,9 @@
   source-file is ingested, then try to match-up/combine/re-link the missing ones
   when things move around...
   "
-  [{:org/keys [short-path name parent-name relative-index]}]
-  (when (and short-path name)
-    (str name " " relative-index " " parent-name " > " short-path)))
+  [{:org/keys [source-file short-path name-string parent-name relative-index]}]
+  (when (and (or short-path source-file) name-string)
+    (str name-string " " relative-index " " parent-name " > " (or short-path source-file))))
 
 (defn ensure-list [xs]
   (if (string? xs) [xs] xs))
@@ -30,7 +30,9 @@
 (defn garden-note->db-item
   [{:org/keys [id links-to parent-ids urls tags] :as item}]
   (let [fallback (fallback-id item)]
-    (if (or id fallback)
+    (if-not (or id fallback)
+      (log/info "Could not create fallback id for org item" (:org/name-string item))
+
       (cond-> item
         id (assoc :org/id id)
 
@@ -80,9 +82,8 @@
                 :org/items
                 :org.prop/link-ids ;; old linking props
                 :org.prop/begin-src ;; TODO proper source block handling
-                :org.prop/end-src))
-      (log/info "Could not create fallback id for org item"
-                (:org/name item)))))
+                :org.prop/end-src)))
+    ))
 
 ;; this should not be necessary
 ;; (defn other-db-updates
@@ -181,7 +182,7 @@
                            (transact-garden-notes (->> notes (drop half) (take half))))
                          (log/info "\n\nProblemmatic record:" (some->>
                                                                 notes first
-                                                                :org/name)))))}))))))))
+                                                                :org/name-string)))))}))))))))
 
 (comment
   (let [x         [2 3 4 5 6 7 8]
@@ -327,3 +328,48 @@
     (take 5)
     )
   )
+
+(defn fetch-matching-db-item
+  "Attempts to fetch a db item using the passed org item."
+  [item]
+  (let [id    (:org/id item)
+        fb-id (fallback-id item)
+        matches
+        (->>
+          (db/query '[:find (pull ?e [*])
+                      :in $ ?id ?fb-id
+                      :where
+                      (or
+                        [?e :org/id ?id]
+                        [?e :org/fallback-id ?fb-id])]
+                    id fb-id)
+          (map first))]
+    (when (> (count matches) 1)
+      (log/warn "Multiple matches found for org item" id fb-id))
+
+    (some->> matches first)))
+
+(comment
+  (first (fetch-db-garden-notes))
+  (def note
+    (->>
+      (garden/all-garden-notes-flattened)
+      (filter (comp #(string/includes? % "clawe doctor org dedup") :org/name-string))
+      first))
+  (fallback-id note)
+  (fetch-matching-db-item note))
+
+(defn merge-db-item
+  "Attempts to fetch and merge a db item using the passed org item."
+  [item]
+  (let [match (fetch-matching-db-item item)]
+    (merge match item)))
+
+(comment
+  (def note
+    #_(first (fetch-db-garden-notes))
+    (->>
+      (garden/all-garden-notes-flattened)
+      (filter (comp #(string/includes? % "clawe doctor org dedup") :org/name-string))
+      first))
+  (merge-db-item note))
