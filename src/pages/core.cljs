@@ -60,7 +60,7 @@
       (concat ["flex" "flex-col"
                "transition-all ease-in-out"
                "overflow-hidden"
-               "duration-300"]
+               "duration-300" "bg-city-blue-900"]
               (if @expanded? ["w-96"] ["w-16"]))
 
       :on-mouse-enter (fn [_]
@@ -76,12 +76,11 @@
 
      ;; top bar menu icon
      [:div
-      {:class ["p-3" "text-city-pink-100"
-               "cursor-pointer"
-               "hover:text-city-pink-400"
-
-               "flex flex-row"
-               (when-not @expanded? "justify-center")]
+      {:class    ["p-3" "text-city-pink-100"
+                  "cursor-pointer"
+                  "hover:text-city-pink-400"
+                  "flex flex-row"
+                  (when-not @expanded? "justify-center")]
        :on-click #(toggle-expanded)}
       [components.icons/icon-comp
        {:text  "Menu"
@@ -128,7 +127,7 @@
          current-page-name (-> #_{:clj-kondo/ignore [:unresolved-var]}
                                router/*match* uix/context :data :name)]
      [page-error-boundary
-      [:div {:class ["min-h-screen" "bg-city-blue-900"
+      [:div {:class ["min-h-screen" "bg-city-blue-800"
                      "w-full" "flex" "flex-row"]}
        [:div
         {:class ["flex flex-col" "w-full"]}
@@ -145,7 +144,7 @@
            current-page-name])
 
         [:div
-         {:class ["bg-city-blue-900" "w-full"]}
+         {:class ["bg-city-blue-800" "w-full"]}
 
          (when main [main page-opts])]]
 

@@ -14,7 +14,8 @@
 (defn page [{:keys [conn]}]
   (let [todos    (ui.db/garden-todos conn {:n 1000})
         selected (uix/state (first todos))
-        {:keys [filtered-item-groups filtered-items filter-grouper]}
+        {:keys [filtered-items filter-grouper]
+         :as   filter-data}
         (components.filter/use-filter
           (assoc filter-defs/fg-config :items todos))]
     [:div
@@ -46,13 +47,5 @@
                       (-> todo :org/status #{:status/cancelled
                                              :status/done})))))))]
 
-      (for [[i {:keys [item-group label]}]
-            (->> filtered-item-groups
-                 (sort-by :label >)
-                 (map-indexed vector))]
-        ^{:key i}
-        [components.todo/todo-list {:label     (str label " (" (count item-group) ")")
-                                    :on-select (fn [it] (reset! selected it))
-                                    :selected  @selected
-                                    :n         9}
-         item-group])]]))
+      [components.filter/items-by-group
+       (assoc filter-data :item->comp components.todo/todo-row)]]]))

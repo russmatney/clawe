@@ -123,11 +123,25 @@
 ;; item-id-hash
 
 (defn item-id-hash [it]
-  (when (:org/id it)
+  (let [hovering? (uix/state nil)]
     [:div
-     {:class ["flex" "text-sm" "font-nes"
-              "text-city-red-300" "ml-2"]}
-     (->> it :org/id str (take 4) (apply str))]))
+     {:class
+      (concat
+        ["flex" "text-sm" "font-nes"
+         "text-city-red-300" "ml-2"
+         "hover:opacity-100"]
+        (when-not (:org/id it)
+          ["opacity-50" "cursor-pointer" "tooltip"]))
+      :on-mouse-enter (fn [_] (reset! hovering? true))
+      :on-mouse-leave (fn [_] (reset! hovering? false))
+      :on-click       (fn [_] (when-not (:org/id it)
+                                (handlers/ensure-uuid it)))}
+     (if (:org/id it)
+       (->> it :org/id str (take 4) (apply str))
+       [:span
+        [:span {:class ["tooltip-text" "-mt-12" "-ml-12"]}
+         "ensure-uuid"]
+        "####"])]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; current item header

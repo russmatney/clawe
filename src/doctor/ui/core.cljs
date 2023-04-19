@@ -21,8 +21,6 @@
    [pages.screenshots :as pages.screenshots]
    [pages.wallpapers :as pages.wallpapers]
    [pages.workspaces :as pages.workspaces]
-   [pages.counter :as pages.counter]
-   [pages.counts :as pages.counts]
    [pages.garden :as pages.garden]
    [pages.posts :as pages.posts]
    [pages.journal :as pages.journal]
@@ -70,8 +68,6 @@
     :icon  octicons/clippy16}
    {:route "/journal" :page-name :page/journal :label "Journal" :comp pages.journal/page
     :icon  octicons/book16}
-   {:route "/counts" :page-name :page/counts :label "Counts" :comp pages.counts/page
-    :icon  octicons/bug16}
    {:route "/topbar" :page-name :page/topbar :label "Top Bar" :comp views.topbar/widget :comp-only true}])
 
 (def routes
