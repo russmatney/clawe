@@ -8,7 +8,11 @@
    [uix.core.alpha :as uix]
    [components.actions :as components.actions]
    [clojure.string :as string]
-   [components.filter-defs :as filter-defs]))
+   [components.filter-defs :as filter-defs]
+
+   [doctor.ui.views.focus :as focus]
+   [doctor.ui.views.blog :as blog]
+   [hiccup-icons.octicons :as octicons]))
 
 (def all-todos-initial-filters
   #{{:filter-key :short-path
@@ -20,12 +24,53 @@
     ;; i wanna filter out todo/queued-at too
     })
 
+(defn widget-bar [{:keys [comp label opts initial-show]}]
+  (let [show? (uix/state initial-show)]
+    [:div {:class ["flex flex-col"]}
+     [:div
+      {:class ["flex flex-row"
+               "items-center"
+               "bg-city-orange-900"
+               "sticky" "top-0"]}
+      [:span {:class ["font-nes"]} label]
+      [:div
+       {:class ["ml-auto"]}
+       [components.actions/actions-list
+        {:actions [{:action/on-click (fn [_] (swap! show? not))
+                    :action/label    "Show"
+                    :action/icon     octicons/chevron-down16
+                    :action/disabled @show?}
+                   {:action/on-click (fn [_] (swap! show? not))
+                    :action/label    "Hide"
+                    :action/icon     octicons/chevron-up16
+                    :action/disabled (not @show?)}]}]]]
+     (when @show? [comp opts])]))
+
 (defn widget [opts]
   [:div
    {:class ["text-city-pink-200"]}
 
-   [ingest/ingest-buttons]
-   [ingest/commit-ingest-buttons (:conn opts)]
+   [:div
+    {:class ["relative"]}
+
+    [widget-bar {:comp  (fn [_opts]
+                          [:div
+                           [ingest/ingest-buttons]
+                           [ingest/commit-ingest-buttons (:conn opts)]])
+                 :opts  opts
+                 :label :ingestors}]
+
+    [widget-bar {:comp         focus/widget
+                 :opts         (assoc opts :only-current-stack true)
+                 :label        :current
+                 :initial-show true}]
+    [widget-bar {:comp         focus/widget
+                 :opts         opts
+                 :label        :focus
+                 :initial-show true}]
+    [widget-bar {:comp  blog/widget
+                 :opts  opts
+                 :label :blog}]]
 
    (let [queued-todos  (ui.db/queued-todos (:conn opts))
          recent-events (ui.db/events (:conn opts))

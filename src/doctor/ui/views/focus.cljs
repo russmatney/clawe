@@ -560,8 +560,8 @@
   (let [focus-data      (use-focus/use-focus-data)
         {:keys [todos]} @focus-data
 
-        hide-completed (uix/state nil)
-        only-current   (uix/state nil #_(if current true nil))
+        hide-completed (uix/state (:hide-completed opts))
+        only-current   (uix/state (:only-current opts))
         pills
         [{:on-click #(swap! hide-completed not)
           :label    (if @hide-completed "Show completed" "Hide completed")
@@ -591,32 +591,31 @@
 
     [:div
      {:class ["bg-city-blue-800"
-              "bg-opacity-90"
-              "min-h-screen"
-              "flex" "flex-col"]}
+              "bg-opacity-90"]}
 
-     [bar (assoc opts :time @time)]
-
-     [current-stack current]
-
-     [:hr {:class ["mb-6" "border-city-blue-900"]}]
-     [:div
-      {:class ["px-6"
-               "text-city-blue-400"]}
-
-      (:filter-grouper filter-data)]
-
-     (when (seq (:filtered-items filter-data))
-       [:div {:class ["pt-6"]}
-        [components.filter/items-by-group
-         (assoc filter-data :item->comp item-todo-cards)]])
-
-     (when (not (seq todos))
+     (if (:only-current-stack opts)
+       [current-stack current]
        [:div
-        {:class ["text-bold" "text-city-pink-300" "p-4"]}
-        [:h1
-         {:class ["text-4xl" "font-nes"]}
-         "no todos found!"]
-        [:p
-         {:class ["text-2xl" "pt-4"]}
-         ""]])]))
+        {:class ["flex" "flex-col" "min-h-screen"]}
+
+        [:hr {:class ["mb-6" "border-city-blue-900"]}]
+        [:div
+         {:class ["px-6"
+                  "text-city-blue-400"]}
+
+         (:filter-grouper filter-data)]
+
+        (when (seq (:filtered-items filter-data))
+          [:div {:class ["pt-6"]}
+           [components.filter/items-by-group
+            (assoc filter-data :item->comp item-todo-cards)]])
+
+        (when (not (seq todos))
+          [:div
+           {:class ["text-bold" "text-city-pink-300" "p-4"]}
+           [:h1
+            {:class ["text-4xl" "font-nes"]}
+            "no todos found!"]
+           [:p
+            {:class ["text-2xl" "pt-4"]}
+            ""]])])]))
