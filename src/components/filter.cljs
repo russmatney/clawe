@@ -36,6 +36,7 @@
                                   (fn [label] (or (str label) "None")))
         label-comp            (some-> group-by-key all-filter-defs :group-by-label-comp)
         label                 (label->group-by-label label)
+        group-comp-open?      (uix/state true)
         item-group-open?      (uix/state true)
         table-open?           (uix/state true)
         items                 (cond->> item-group
@@ -67,7 +68,10 @@
                 :action/label    (str (if @table-open? "Hide table" "Show table"))})
              (when (not hide-all-groups)
                {:action/on-click (fn [_] (swap! item-group-open? not))
-                :action/label    (str (if @item-group-open? "Hide group" "Show group"))})]
+                :action/label    (str (if @item-group-open? "Hide items" "Show items"))})
+             (when (not hide-all-groups)
+               {:action/on-click (fn [_] (swap! group-comp-open? not))
+                :action/label    (str (if @group-comp-open? "Hide group" "Show group"))})]
             (when-not (and hide-all-tables hide-all-groups)
               (pagination-actions {:page-size page-size :step 4 :total (count items)})))}]]]]
 
@@ -88,7 +92,9 @@
            (-> table-def
                (assoc :n @page-size)
                (assoc :rows (->> items (map (:->row table-def)))))])])
-     ]))
+
+     (when (and @group-comp-open? (:group->comp opts))
+       ((:group->comp opts) (->> items (take @page-size))))]))
 
 (defn items-by-group [filter-data]
   [:div

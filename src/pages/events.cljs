@@ -18,4 +18,4 @@
      [ingest/ingest-buttons]
      [ingest/commit-ingest-buttons conn]
 
-     [components.events/events-cluster nil events]]))
+     [components.events/events-cluster events]]))

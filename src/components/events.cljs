@@ -186,42 +186,43 @@
        [tables/table-for-doctor-type opts :type/screenshot screenshots])
 
      ;; tags table
-     (when (seq garden-notes)
-       [components.table/table (tables/garden-by-tag-table-def garden-notes)])
+     #_(when (seq garden-notes)
+         [components.table/table (tables/garden-by-tag-table-def garden-notes)])
 
      ;; per note
      (when (seq garden-notes)
        [tables/table-for-doctor-type opts :type/garden garden-notes])]))
 
 (defn event-clusters
-  [opts events]
-  (let [{:keys [grouped-events]}
-        (grouped-event-data opts events)]
-    [:div
-     (for [[i [bucket evts]] (->> grouped-events (map-indexed vector))]
-       (let [{:keys [start end]} bucket
-             start               (dates.tick/add-tz start)
-             end                 (dates.tick/add-tz end)
-             show-end?           (cond
-                                   (t/= start end)                 false
-                                   (t/< (t/between start end)
-                                        (t/new-duration 1 :hours)) false
-                                   :else                           true)]
-         [:div
-          {:key   (str start)
-           :class [(when (odd? i) "bg-yo-blue-800") "p-4"]}
+  ([events] [event-clusters nil events])
+  ([opts events]
+   (let [{:keys [grouped-events]}
+         (grouped-event-data opts events)]
+     [:div
+      (for [[i [bucket evts]] (->> grouped-events (map-indexed vector))]
+        (let [{:keys [start end]} bucket
+              start               (dates.tick/add-tz start)
+              end                 (dates.tick/add-tz end)
+              show-end?           (cond
+                                    (t/= start end)                 false
+                                    (t/< (t/between start end)
+                                         (t/new-duration 1 :hours)) false
+                                    :else                           true)]
+          [:div
+           {:key   (str start)
+            :class [(when (odd? i) "bg-yo-blue-800") "p-4"]}
 
-          [:span
-           {:class ["text-xl"]}
-           (str (t/format "EEEE d ha" start)
-                (when show-end?
-                  (str " - " (t/format "ha" end))))]
+           [:span
+            {:class ["text-xl"]}
+            (str (t/format "EEEE MMMM d, ha" start)
+                 (when show-end?
+                   (str " - " (t/format "ha" end))))]
 
-          [event-count-list evts]
+           [event-count-list evts]
 
-          [event-cluster opts evts]
+           [event-cluster opts evts]
 
-          #_[basic-event-list {} events]]))]))
+           #_[basic-event-list {} events]]))])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; event-timeline-popover

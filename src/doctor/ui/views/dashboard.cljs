@@ -60,28 +60,34 @@
                  :opts  opts
                  :label :ingestors}]
 
-    [widget-bar {:comp         focus/widget
-                 :opts         (assoc opts :only-current-stack true)
-                 :label        :current
-                 :initial-show true}]
-    [widget-bar {:comp         focus/widget
-                 :opts         opts
-                 :label        :focus
-                 :initial-show true}]
+    [widget-bar {:comp  focus/widget
+                 :opts  (assoc opts :only-current-stack true)
+                 :label :current}]
+    [widget-bar {:comp  focus/widget
+                 :opts  opts
+                 :label :focus}]
     [widget-bar {:comp  blog/widget
                  :opts  opts
-                 :label :blog}]]
+                 :label :blog}]
+    [widget-bar {:initial-show true
+                 :comp
+                 (fn [opts]
+                   (let [recent-events (ui.db/events (:conn opts))
+                         filter-data
+                         (components.filter/use-filter
+                           (assoc filter-defs/fg-config :items recent-events))]
+                     [:div
+                      [:div "Events Cluster (" (count (:filtered-items filter-data)) ")"]
+                      [:div
+                       (:filter-grouper filter-data)
 
-   (let [queued-todos  (ui.db/queued-todos (:conn opts))
-         recent-events (ui.db/events (:conn opts))
+                       [components.filter/items-by-group
+                        (assoc filter-data :group->comp components.events/event-clusters)]]]))
+                 :opts  opts
+                 :label :events}]]
 
-         event-filter-results
-         (components.filter/use-filter
-           (assoc filter-defs/fg-config
-                  :items recent-events
-                  :presets
-                  {:default {:filters  #{}
-                             :group-by :tags}}))
+   (let [queued-todos (ui.db/queued-todos (:conn opts))
+
          all-todos (ui.db/garden-todos
                      (:conn opts) {:n 200 ;; TODO support fetching more
                                    :filter-pred
@@ -117,22 +123,4 @@
             (:filter-grouper todo-filter-results)
             [components.todo/todo-list
              {:n 5}
-             (:filtered-items todo-filter-results)]])])
-
-      (let [expanded (uix/state nil)]
-        [:div
-         [:div "Events Cluster (" (count (:filtered-items event-filter-results)) ")"]
-         [components.actions/actions-list
-          {:actions [{:action/on-click (fn [_] (swap! expanded not))
-                      :action/label    "Expand"
-                      :action/disabled @expanded}
-                     {:action/on-click (fn [_] (swap! expanded not))
-                      :action/label    "Collapse"
-                      :action/disabled (not @expanded)}]}]
-         (when @expanded
-           [:div
-            (:filter-grouper event-filter-results)
-            ;; show filtered-item-groups?
-            [components.events/event-clusters
-             nil
-             (:filtered-items event-filter-results)]])])])])
+             (:filtered-items todo-filter-results)]])])])])
