@@ -3,7 +3,10 @@
    [clojure.string :as string]
    [hooks.workspaces :as hooks.workspaces]
    [components.icons :as icons]
-   [components.debug :as debug]))
+   [components.debug :as debug]
+   [components.actions :as actions]
+
+   [hiccup-icons.octicons :as octicons]))
 
 (defn dir [s]
   (-> s (string/replace #"/home/russ" "~")))
@@ -41,7 +44,8 @@
    {:class ["bg-yo-blue-500" "p-6" "text-white" "w-full"]}
    (when (seq active-workspaces)
      (for [wsp active-workspaces]
-       (let [{:keys [git/repo
+       (let [{:keys [;; TODO restore these git features
+                     git/repo
                      git/needs-push?
                      git/dirty?
                      git/needs-pull?
@@ -54,17 +58,23 @@
 
          ^{:key title}
          [:div
-          {:class ["text-left"]}
           [:div
            {:class ["flex flex-row justify-between items-center"]}
            [:span {:class ["text-xl font-nes"]}
             (:workspace/title wsp)]
 
            [:span {:class ["ml-auto"]}
-            (str
-              (when needs-push? (str "#needs-push"))
-              (when needs-pull? (str "#needs-pull"))
-              (when dirty? (str "#dirty")))]]
+            (str (when needs-push? "#needs-push")
+                 (when needs-pull? "#needs-pull")
+                 (when dirty? "#dirty"))]
+
+           [actions/actions-list
+            {:actions
+             ;; TODO create workspace/client actions lists/handlers
+             [{:action/label "Close"
+               :action/icon  octicons/trash
+               :action/on-click
+               #(hooks.workspaces/close-workspaces wsp)}]}]]
 
           [:div
            {:class ["mb-4" "font-mono"]}
