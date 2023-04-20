@@ -5,7 +5,6 @@
    [uix.core.alpha :as uix]
 
    [components.timeline :as components.timeline]
-   [components.table :as components.table]
    [dates.tick :as dates.tick]
    [pages.db.tables :as tables]))
 
