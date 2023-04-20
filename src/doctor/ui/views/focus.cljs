@@ -67,7 +67,6 @@
   (when (seq (:org/tags it))
     [:span
      {:class ["text-md" "font-mono"
-              "px-2"
               "flex" "flex-row" "flex-wrap"]}
      ":"
      (for [[i t] (->> it :org/tags (map-indexed vector))]
@@ -93,7 +92,10 @@
      reverse
      (map-indexed
        (fn [i nm]
-         [:span {:class (colors/color-wheel-classes {:type :line :i i})}
+         [:span {:class
+                 (concat
+                   (colors/color-wheel-classes {:type :line :i i})
+                   ["whitespace-nowrap"])}
           " " nm]))
      (interpose [:span
                  {:class ["text-city-blue-dark-200" "px-4"]}
@@ -113,14 +115,16 @@
      (if-not header?
        [breadcrumbs p-names]
        [:div
-        {:class ["flex" "flex-row" "items-center"]}
+        {:class ["flex" "flex-row" "flex-wrap" "items-center"]}
         [breadcrumbs rest-p-names]
         [:span
          {:class ["text-city-blue-dark-200" "px-4"]}
          " > "]
         [:span
          {:class ["font-nes" "text-xl" "p-3"
-                  "text-city-green-400"]}
+                  "text-city-green-400"
+                  "whitespace-nowrap"
+                  ]}
          p-name]]))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -227,12 +231,13 @@
      [db-id it]
      [item-id-hash it]
      [:div {:class ["ml-auto"]}
-      [tags-list it]]
-     [todo/priority-label {:on-click (fn [_] (use-focus/remove-priority it))} it]]
+      [todo/priority-label {:on-click (fn [_] (use-focus/remove-priority it))} it]]]
 
     ;; middle content
     [:div
      {:class ["flex" "flex-col" "pb-2"]}
+
+     [tags-list it]
 
      ;; name
      [:span
