@@ -17,7 +17,9 @@
        :cljs [[hiccup-icons.fa :as fa]
               [components.icons :as components.icons]
               [components.colors :as colors]
-              ["@heroicons/react/20/solid" :as HIMini]])))
+              ["@heroicons/react/20/solid" :as HIMini]
+              [hooks.workspaces :as hooks.workspaces]
+              [hiccup-icons.octicons :as octicons]])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; db items
@@ -399,6 +401,19 @@
       {:action/on-click #(delete-from-db item)
        :action/label    "delete-from-db"
        :action/icon     fa/trash-alt-solid}]))
+
+#?(:cljs
+   (defn workspace->actions [wsp]
+     [{:action/label "Close"
+       :action/icon  octicons/trash
+       :action/on-click
+       #(hooks.workspaces/close-workspaces wsp)}]))
+
+#?(:cljs
+   (defn client->actions [client]
+     [{:action/label    "focus"
+       :action/icon     nil
+       :action/on-click #(hooks.workspaces/focus-client client)}]))
 
 #?(:cljs
    (defn ->actions

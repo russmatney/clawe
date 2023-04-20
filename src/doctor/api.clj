@@ -25,8 +25,8 @@
 
     (= uri "/topbar/update")
     (do
-      (workspaces/update-workspaces)
-      (topbar/update-topbar-metadata)
+      (workspaces/push-updated-workspaces)
+      (topbar/push-topbar-metadata)
       {:status 200 :body "updated topbar"})
 
     (= uri "/rerender/notebooks")

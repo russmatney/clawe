@@ -1,7 +1,8 @@
 (ns hooks.workspaces
   (:require
    [plasma.core :refer [defhandler defstream]]
-   #?@(:clj [[api.workspaces]
+   #?@(:clj [[api.workspaces :as api.workspaces]
+             [api.topbar :as api.topbar]
              [clawe.wm :as wm]
              [taoensso.timbre :as log]]
        :cljs [[wing.core :as w]
@@ -13,7 +14,13 @@
 
 (defhandler close-workspaces [w]
   (log/info "Closing workspace" (:workspace/title w))
-  (wm/delete-workspace w))
+  (wm/delete-workspace w)
+  (api.workspaces/push-updated-workspaces)
+  (api.topbar/push-topbar-metadata))
+
+(defhandler focus-client [c]
+  (log/info "Focusing client" (:client/window-title c))
+  (wm/focus-client c))
 
 (defhandler get-active-workspaces [] (api.workspaces/active-workspaces))
 (defstream workspaces-stream [] api.workspaces/*workspaces-stream*)

@@ -24,9 +24,8 @@
 (comment
   (sys/start! `*workspaces-stream*))
 
-(defn update-workspaces []
+(defn push-updated-workspaces []
   (println "pushing to workspaces stream (updating topbar)!")
   (s/put! *workspaces-stream* (active-workspaces)))
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

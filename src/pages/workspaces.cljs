@@ -2,11 +2,10 @@
   (:require
    [clojure.string :as string]
    [hooks.workspaces :as hooks.workspaces]
+   [doctor.ui.handlers :as handlers]
    [components.icons :as icons]
    [components.debug :as debug]
-   [components.actions :as actions]
-
-   [hiccup-icons.octicons :as octicons]))
+   [components.actions :as actions]))
 
 (defn dir [s]
   (-> s (string/replace #"/home/russ" "~")))
@@ -23,25 +22,41 @@
   ([opts client]
    (let [{:client/keys [app-name window-title]} client]
      [:div
-      {:class ["flex" "flex-col" "mb-6"]}
+      {:class ["flex" "flex-col" "mb-3" "mr-3" "p-3"
+               "rounded" "border" "border-city-green-400"
+               "bg-emerald-900"
+               "w-96"]}
 
       [:div.mb-4
-       {:class ["flex" "flex-row"]}
+       {:class ["flex" "flex-row" "items-center"]}
        [icons/icon-comp
         (assoc (icons/client->icon client nil)
                :class ["w-8" "mr-4"])]
 
        [:span.text-xl
         (string/lower-case
-          (str window-title " | " app-name))]]
+          (str window-title " | " app-name))]
 
-      [debug/raw-metadata
-       (merge {:label "Raw Client Metadata"} opts)
-       (->> client (sort-by first))]])))
+       [:div
+        {:class ["ml-auto"]}
+        [debug/raw-metadata
+         (merge {:label "RAW"} opts)
+         (->> client (sort-by first))]]]
+
+      [:div
+       {:class ["flex" "flex-row" "items-center"]}
+
+       [:div
+        {:class ["ml-auto"]}
+        [actions/actions-list
+         (handlers/client->actions client)]]]])))
 
 (defn active-workspace [active-workspaces]
   [:div
-   {:class ["bg-yo-blue-500" "p-6" "text-white" "w-full"]}
+   {:class ["bg-yo-blue-500"
+            "m-2" "p-6"
+            "border" "rounded"
+            "text-white" "w-full"]}
    (when (seq active-workspaces)
      (for [wsp active-workspaces]
        (let [{:keys [;; TODO restore these git features
@@ -68,13 +83,9 @@
                  (when needs-pull? "#needs-pull")
                  (when dirty? "#dirty"))]
 
-           [actions/actions-list
-            {:actions
-             ;; TODO create workspace/client actions lists/handlers
-             [{:action/label "Close"
-               :action/icon  octicons/trash
-               :action/on-click
-               #(hooks.workspaces/close-workspaces wsp)}]}]]
+           [:span {:class ["ml-auto"]}
+            [actions/actions-list
+             (handlers/workspace->actions wsp)]]]
 
           [:div
            {:class ["mb-4" "font-mono"]}
@@ -95,9 +106,11 @@
             (str (count clients) " client(s)")]]
 
           (when (seq clients)
-            (for [client clients]
-              ^{:key (:client/key client (:client/window-title client))}
-              [client-detail client]))])))])
+            [:div
+             {:class ["flex flex-row flex-wrap" "items-center"]}
+             (for [client clients]
+               ^{:key (:client/key client (:client/window-title client))}
+               [client-detail client])])])))])
 
 ;; TODO restore
 ;; (defn topbar-metadata []

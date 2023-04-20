@@ -11,7 +11,7 @@
    [dates.tick :as dates.tick]
    [tick.core :as t]))
 
-(declare update-topbar-metadata)
+(declare push-topbar-metadata)
 
 (def topbar-id #uuid "5d4a6099-4c5c-4c0d-843b-54c48c34caee")
 
@@ -33,7 +33,7 @@
 (defn start-timer []
   (db/transact {:topbar/started-at (t/inst (dates.tick/now))
                 :topbar/id         topbar-id})
-  (update-topbar-metadata))
+  (push-topbar-metadata))
 
 (comment
   (active-timer)
@@ -63,7 +63,7 @@
 (defn set-background-mode [bg-mode]
   (db/transact {:topbar/background-mode bg-mode
                 :topbar/id              topbar-id})
-  (update-topbar-metadata))
+  (push-topbar-metadata))
 
 (comment
   (set-background-mode :bg/dark)
@@ -106,7 +106,7 @@
 (comment
   (sys/start! `*topbar-metadata-stream*))
 
-(defn update-topbar-metadata []
+(defn push-topbar-metadata []
   (s/put! *topbar-metadata-stream* (build-topbar-metadata)))
 
 (comment
@@ -115,4 +115,4 @@
     (sort-by :workspace/index)
     first)
 
-  (update-topbar-metadata))
+  (push-topbar-metadata))
