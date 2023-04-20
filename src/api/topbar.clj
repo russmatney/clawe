@@ -112,7 +112,7 @@
 (comment
   (->>
     (build-topbar-metadata)
-    (sort-by :awesome.tag/index)
+    (sort-by :workspace/index)
     first)
 
   (update-topbar-metadata))

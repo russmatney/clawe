@@ -57,9 +57,10 @@
           {:class ["text-left"]}
           [:div
            {:class ["flex flex-row justify-between items-center"]}
-           [:span.text-xl.font-nes (:workspace/title wsp)]
+           [:span {:class ["text-xl font-nes"]}
+            (:workspace/title wsp)]
 
-           [:span.ml-auto
+           [:span {:class ["ml-auto"]}
             (str
               (when needs-push? (str "#needs-push"))
               (when needs-pull? (str "#needs-pull"))
@@ -80,7 +81,8 @@
 
           [:div
            {:class ["flex flex-row justify-between items-center" "py-2"]}
-           [:span.text-lg.font-nes (str (count clients) " client(s)")]]
+           [:span {:class ["text-lg font-mono"]}
+            (str (count clients) " client(s)")]]
 
           (when (seq clients)
             (for [client clients]
