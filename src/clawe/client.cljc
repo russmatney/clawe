@@ -28,6 +28,9 @@
 ;; consider enforcing this schema against clawe.edn via clj-kondo
 (def schema
   [:map
+   ;; TODO perhaps not optional?
+   [:client/id {:optional true} :string]
+
    [:client/app-name {:optional true} :string]
    [:client/window-title {:optional true} :string]
    [:client/focused {:optional true} [:maybe :boolean]]

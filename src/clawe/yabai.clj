@@ -6,8 +6,9 @@
 
 ;; TODO refactor in malli transforms?
 (defn window->clawe-client
-  [{:yabai.window/keys [has-focus app title] :as window}]
+  [{:yabai.window/keys [has-focus app title window-id] :as window}]
   (-> window
+      (assoc :client/id window-id)
       (assoc :client/focused has-focus)
       (assoc :client/window-title (some-> title string/lower-case))
       (assoc :client/app-name (some-> app string/lower-case))))

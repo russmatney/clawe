@@ -11,12 +11,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; TODO dry this up across views
-(defn is-bar-app? [client]
-  (and
-    (-> client :awesome.client/name #{"tauri-doctor-topbar"})
-    (-> client :awesome.client/focused not)))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Detail window
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -24,9 +18,7 @@
 (defn client-detail
   ([client] [client-detail nil client])
   ([opts client]
-   (let [{:keys [awesome.client/name
-                 awesome.client/class
-                 awesome.client/instance]} client]
+   (let [{:client/keys [app-name window-title]} client]
      [:div
       {:class ["flex" "flex-col" "mb-6"]}
 
@@ -37,12 +29,8 @@
                :class ["w-8" "mr-4"])]
 
        [:span.text-xl
-        (cond
-          (#{(string/lower-case class)} (string/lower-case instance))
-          (str class " | " name)
-
-          :else
-          (str class " | " instance " | " name))]]
+        (string/lower-case
+          (str window-title " | " app-name))]]
 
       [debug/raw-metadata
        (merge {:label "Raw Client Metadata"} opts)
@@ -53,18 +41,16 @@
    {:class ["bg-yo-blue-500" "p-6" "text-white" "w-full"]}
    (when (seq active-workspaces)
      (for [wsp active-workspaces]
-       (let [{:keys [workspace/directory
-                     git/repo
+       (let [{:keys [git/repo
                      git/needs-push?
                      git/dirty?
                      git/needs-pull?
+                     workspace/directory
                      workspace/title
-                     awesome.tag/clients
-                     tmux/session
-                     ]} wsp
+                     workspace/clients
+                     tmux/session]} wsp
 
-             dir     (or directory repo)
-             clients (->> clients (remove is-bar-app?))]
+             dir (or directory repo)]
 
          ^{:key title}
          [:div
@@ -98,7 +84,7 @@
 
           (when (seq clients)
             (for [client clients]
-              ^{:key (:awesome.client/window client)}
+              ^{:key (:client/key client (:client/window-title client))}
               [client-detail client]))])))])
 
 ;; TODO restore
@@ -113,12 +99,11 @@
 (defn workspace-comp
   ([wsp] (workspace-comp nil wsp))
   ([_opts wsp]
-   (let [{:keys [git/repo
-                 workspace/directory
+   (let [{:keys [workspace/directory
                  workspace/color
                  workspace/title-hiccup
-                 awesome.tag/index
-                 awesome.tag/clients]} wsp]
+                 workspace/index
+                 workspace/clients]} wsp]
      [:div
       {:class ["m-1"
                "p-4"
@@ -132,24 +117,20 @@
        (when color {:style {:color color}})
        (str "(" index ") " (:workspace/title wsp))]
 
-      [:div
-       (when repo
-         (str "#repo"))]
-
       (when (seq clients)
         [:ul
          {:class ["truncate"]}
          (for [c (->> clients)]
-           ^{:key (:awesome.client/window c)}
+           ^{:key (:client/id c)}
            [:li
-            (str (:awesome.client/class c) " | "
-                 (:awesome.client/name c))])])
+            (str (:client/window-title c) " | "
+                 (:client/app-name c))])])
 
       (when title-hiccup
         [:div title-hiccup])
 
-      (when (or repo directory)
-        [:div (dir (or repo directory))])])))
+      (when directory
+        [:div (dir directory)])])))
 
 (defn page [_opts]
   (let [{:keys [selected-workspaces active-workspaces]} (hooks.workspaces/use-workspaces)]

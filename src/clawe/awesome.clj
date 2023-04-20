@@ -8,6 +8,7 @@
 
 (defn awesome-client->clawe-client [client]
   (-> client
+      (assoc :client/id (:awesome.client/window client))
       (assoc :client/window-title (some-> (:awesome.client/name client) string/lower-case))
       (assoc :client/app-name (some-> (:awesome.client/class client) string/lower-case))
       (assoc :client/focused (:awesome.client/focused client))))

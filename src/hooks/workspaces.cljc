@@ -1,7 +1,9 @@
 (ns hooks.workspaces
   (:require
    [plasma.core :refer [defhandler defstream]]
-   #?@(:clj [[api.workspaces]]
+   #?@(:clj [[api.workspaces]
+             [clawe.wm :as wm]
+             [taoensso.timbre :as log]]
        :cljs [[wing.core :as w]
               [plasma.uix :refer [with-rpc with-stream]]])))
 
@@ -9,13 +11,12 @@
 ;; Workspaces
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defhandler close-workspaces [w]
+  (log/info "Closing workspace" (:workspace/title w))
+  (wm/delete-workspace w))
+
 (defhandler get-active-workspaces [] (api.workspaces/active-workspaces))
 (defstream workspaces-stream [] api.workspaces/*workspaces-stream*)
-
-(defn skip-bar-app? [client]
-  (and
-    (-> client :awesome.client/focused not)
-    (-> client :awesome.client/name #{"tauri-doctor-topbar"})))
 
 #?(:cljs
    (defn use-workspaces []
@@ -31,9 +32,9 @@
        (with-stream [] (workspaces-stream) handle-resp)
 
        {:active-clients      (->> @workspaces
-                                  (filter :awesome.tag/selected)
-                                  (mapcat :awesome.tag/clients)
-                                  (remove skip-bar-app?)
-                                  (w/distinct-by :awesome.client/window))
+                                  (filter :workspace/focused)
+                                  (mapcat :workspace/clients))
+        :all-clients         (->> @workspaces
+                                  (mapcat :workspace/clients))
         :active-workspaces   @workspaces
-        :selected-workspaces (->> @workspaces (filter :awesome.tag/selected))})))
+        :selected-workspaces (->> @workspaces (filter :workspace/focused))})))
