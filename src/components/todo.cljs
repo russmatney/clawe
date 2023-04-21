@@ -1,6 +1,7 @@
 (ns components.todo
   (:require
    [tick.core :as t]
+   [components.colors :as colors]
    [components.floating :as floating]
    [components.garden :as components.garden]
    [components.debug :as components.debug]
@@ -54,6 +55,66 @@
                     (#{"B"} priort)       ["text-city-pink-400"]
                     (#{"C"} priort)       ["text-city-green-400"]))})
         (str "#" priort " ")]))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; level
+
+(defn level [it]
+  (let [level (:org/level it 0)
+        level (if (#{:level/root} level) 0 level)]
+    [:div
+     {:class ["whitespace-nowrap" "font-nes"]}
+     (->> (repeat level "*") (apply str))]))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; status
+
+(defn status
+  ([it] [status nil it])
+  ([opts it]
+   (when (:org/status it)
+     (let [hovering? (uix/state nil)]
+       [:span
+        {:class          ["ml-2" "whitespace-nowrap" "font-nes"
+                          "cursor-pointer"
+                          "text-slate-300"
+                          "hover:opacity-50"]
+         :on-mouse-enter (fn [_] (reset! hovering? true))
+         :on-mouse-leave (fn [_] (reset! hovering? false))
+         :on-click       (:on-click opts)}
+        (cond
+          (and (completed? it) (not @hovering?))   "[X]"
+          (and (completed? it) @hovering?)         "[ ]"
+          (and (skipped? it) (not @hovering?))     "SKIP"
+          (and (skipped? it) @hovering?)           "[ ]"
+          (and (current? it) (not @hovering?))     "[-]"
+          (and (current? it) @hovering?)           "[X]"
+          (and (in-progress? it) (not @hovering?)) "[-]"
+          (and (in-progress? it) @hovering?)       "[X]"
+          (and (not-started? it) (not @hovering?)) "[ ]"
+          (and (not-started? it) @hovering?)       "[-]")]))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; tags-list
+
+(defn tags-list
+  ([it] [tags-list nil it])
+  ([opts it]
+   (when (seq (:org/tags it))
+     [:span
+      {:class ["text-md" "font-mono"
+               "flex" "flex-row" "flex-wrap"]}
+      ":"
+      (for [[i tag] (->> it :org/tags (map-indexed vector))]
+        ^{:key tag}
+        [:span
+         [:span
+          {:class
+           (concat ["cursor-pointer" "hover:line-through"]
+                   (colors/color-wheel-classes {:type :line :i (+ 2 i)}))
+           :on-click #((:on-click opts) tag)}
+          tag]
+         ":"])])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; todo-row

@@ -13,71 +13,22 @@
    [components.filter-defs :as filter-defs]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; level
-
-(defn level [it]
-  (let [level (:org/level it 0)
-        level (if (#{:level/root} level) 0 level)]
-    [:div
-     {:class ["whitespace-nowrap" "font-nes"]}
-     (->> (repeat level "*") (apply str))]))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; todo status
 
 (defn todo-status [it]
-  (when (:org/status it)
-    (let [hovering? (uix/state nil)]
-      [:span
-       {:class          ["ml-2" "whitespace-nowrap" "font-nes"
-                         "cursor-pointer"
-                         "text-slate-300"
-                         "hover:opacity-50"]
-        :on-mouse-enter (fn [_] (reset! hovering? true))
-        :on-mouse-leave (fn [_] (reset! hovering? false))
-        :on-click
-        (fn [_]
-          ;; TODO refactor this logic into...something?
-          ;; needs to support going from one state to another... maybe via a popup menu, with a default
-          (handlers/todo-set-new-status
-            it (cond
-                 (todo/completed? it)   :status/not-started
-                 (todo/skipped? it)     :status/not-started
-                 (todo/current? it)     :status/done
-                 (todo/in-progress? it) :status/done
-                 (todo/not-started? it) :status/in-progress)))}
-       (cond
-         (and (todo/completed? it) (not @hovering?))   "[X]"
-         (and (todo/completed? it) @hovering?)         "[ ]"
-         (and (todo/skipped? it) (not @hovering?))     "SKIP"
-         (and (todo/skipped? it) @hovering?)           "[ ]"
-         (and (todo/current? it) (not @hovering?))     "[-]"
-         (and (todo/current? it) @hovering?)           "[X]"
-         (and (todo/in-progress? it) (not @hovering?)) "[-]"
-         (and (todo/in-progress? it) @hovering?)       "[X]"
-         (and (todo/not-started? it) (not @hovering?)) "[ ]"
-         (and (todo/not-started? it) @hovering?)       "[-]")])))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; tags-list
-
-(defn tags-list [it]
-  (when (seq (:org/tags it))
-    [:span
-     {:class ["text-md" "font-mono"
-              "flex" "flex-row" "flex-wrap"]}
-     ":"
-     (for [[i t] (->> it :org/tags (map-indexed vector))]
-       ^{:key t}
-       [:span
-        [:span
-         {:class
-          (concat ["cursor-pointer" "hover:line-through"]
-                  (colors/color-wheel-classes {:type :line :i (+ 2 i)}))
-          :on-click (fn [_ev] (use-focus/remove-tag it t))}
-         t]
-        ":"])]))
-
+  (todo/status
+    {:on-click
+     (fn [_]
+       ;; TODO refactor this logic into...something?
+       ;; needs to support going from one state to another... maybe via a popup menu, with a default
+       (handlers/todo-set-new-status
+         it (cond
+              (todo/completed? it)   :status/not-started
+              (todo/skipped? it)     :status/not-started
+              (todo/current? it)     :status/done
+              (todo/in-progress? it) :status/done
+              (todo/not-started? it) :status/in-progress)))}
+    it))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; parent-names
@@ -129,35 +80,32 @@
 ;; item-id-hash
 
 (defn item-id-hash [it]
-  (let [hovering? (uix/state nil)]
-    [:div
-     {:class
-      (concat
-        ["flex" "text-sm" "font-nes"
-         "text-city-red-300" "ml-2"
-         "hover:opacity-100"]
-        (when-not (:org/id it)
-          ["opacity-50" "cursor-pointer" "tooltip"]))
-      :on-mouse-enter (fn [_] (reset! hovering? true))
-      :on-mouse-leave (fn [_] (reset! hovering? false))
-      :on-click       (fn [_] (when-not (:org/id it)
-                                (handlers/ensure-uuid it)))}
-     (if (:org/id it)
-       (->> it :org/id str (take 4) (apply str))
-       [:span
-        [:span {:class ["tooltip-text" "-mt-12" "-ml-12"]}
-         "ensure-uuid"]
-        "####"])]))
+  [:div
+   {:class
+    (concat
+      ["flex" "text-sm" "font-nes"
+       "text-city-red-300" "ml-2"
+       "hover:opacity-100"]
+      (when-not (:org/id it)
+        ["opacity-50" "cursor-pointer" "tooltip"]))
+    :on-click (fn [_] (when-not (:org/id it)
+                        (handlers/ensure-uuid it)))}
+   (if (:org/id it)
+     (->> it :org/id str (take 4) (apply str))
+     [:span
+      [:span {:class ["tooltip-text" "-mt-12" "-ml-12"]}
+       "ensure-uuid"]
+      "####"])])
 
 (defn db-id [it]
   (when (:db/id it)
     [:div
      {:class
-      (concat
-        ["flex" "text-sm" "font-nes" "ml-2"
-         "text-city-green-300"
-         "hover:text-slate-400"
-         "cursor-pointer" "tooltip"])
+      ["flex" "text-sm" "font-nes" "ml-2"
+       "text-city-green-300"
+       "hover:text-slate-400"
+       "hover:line-through"
+       "cursor-pointer" "tooltip"]
       :on-click #(handlers/delete-from-db it)}
      [:span {:class ["tooltip-text" "-mt-12" "-ml-12"]}
       "delete-from-db"]
@@ -172,12 +120,15 @@
             "text-city-green-400" "text-xl"]}
 
    [:div {:class ["flex" "flex-row" "items-center"]}
-    [level it]
+    [todo/level it]
     [todo-status it]
     [item-id-hash it]
     [:div {:class ["ml-auto"]}
-     [tags-list it]]
-    [todo/priority-label {:on-click (fn [_] (use-focus/remove-priority it))}
+     [todo/tags-list
+      {:on-click (fn [tag] (use-focus/remove-tag it tag))}
+      it]]
+    [todo/priority-label
+     {:on-click (fn [_] (use-focus/remove-priority it))}
      it]]
 
    [:div {:class ["flex" "flex-row"]}
@@ -224,7 +175,7 @@
     [:div
      {:class ["flex" "flex-row" "w-full" "items-center"]}
 
-     [level it]
+     [todo/level it]
      [todo-status it]
      [db-id it]
      [item-id-hash it]
@@ -235,7 +186,9 @@
     [:div
      {:class ["flex" "flex-col" "pb-2"]}
 
-     [tags-list it]
+     [todo/tags-list
+      {:on-click (fn [tag] (use-focus/remove-tag it tag))}
+      it]
 
      ;; name
      [:span
@@ -336,7 +289,9 @@
               [db-id item]
               [item-id-hash item]
               [:div {:class ["ml-auto"]}
-               [tags-list item]]
+               [todo/tags-list
+                {:on-click (fn [tag] (use-focus/remove-tag item tag))}
+                item]]
               [todo/priority-label {:on-click (fn [_] (use-focus/remove-priority item))} item]]
 
              [:div
