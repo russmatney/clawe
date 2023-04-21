@@ -25,8 +25,10 @@
    :file/full-path
    {:db/unique :db.unique/identity}
 
-   :file/last-modified
-   {:db/index true}
+   ;; indexes
+   :file/last-modified      {:db/index true}
+   :wallpaper/last-time-set {:db/index true}
+   :event/timestamp         {:db/index true}
 
    ;; :time/rn
    ;; {:db/valueType :db.type/instant}

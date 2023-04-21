@@ -15,18 +15,33 @@
     (map :e)))
 
 (comment
-  (->>
-    (d/datoms @db/*conn* :avet :file/last-modified)
-    reverse)
+  (->> (d/datoms @db/*conn* :avet :file/last-modified) reverse)
+  (->> (last-modified-files->es 5)
+       (d/pull-many @db/*conn* '[*])))
 
+(defn recent-wallpapers->es
+  [n]
   (->>
-    (last-modified-files->es 5)
-    (d/pull-many @db/*conn* '[*])))
+    (d/datoms @db/*conn* :avet :wallpaper/last-time-set)
+    reverse
+    (take n)
+    (map :e)))
+
+(defn recent-events->es
+  [n]
+  (->>
+    (d/datoms @db/*conn* :avet :event/timestamp)
+    reverse
+    (take n)
+    (map :e)))
 
 (defn datoms-for-frontend []
   (->>
     (concat
-      (last-modified-files->es 40))
+      (last-modified-files->es 40)
+      (recent-wallpapers->es 20)
+      (recent-events->es 100))
+    dedupe
     (mapcat #(d/datoms @db/*conn* :eavt %)))
 
   ;; (d/schema @db/*conn*)
