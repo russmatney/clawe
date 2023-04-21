@@ -2,8 +2,7 @@
   (:require
    [plasma.core :refer [defhandler defstream]]
    [taoensso.timbre :as log]
-   #?@(:clj [[api.db :as api.db]
-             [manifold.stream :as s]]
+   #?@(:clj [[api.db :as api.db]]
        :cljs [[datascript.core :as d]
               [plasma.uix :as plasma.uix :refer [with-rpc with-stream]]
               [db.schema :refer [schema]]])))
@@ -14,12 +13,6 @@
 
 
 (defstream db-stream [] api.db/*db-stream*)
-
-#?(:clj
-   (defn push-to-fe-db [data]
-     (log/info "pushing data to fe-db")
-     (s/put! api.db/*db-stream* data)))
-
 
 (def datoms-in-first-batch 30000)
 (def datoms-per-batch 50000)
@@ -38,8 +31,9 @@
       (->> rest-data
            (partition-all datoms-per-batch)
            (take n-batches)
-           (map push-to-fe-db)
+           (map api.db/push-to-fe-db)
            doall))
+
     first-batch))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

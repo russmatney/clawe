@@ -207,6 +207,7 @@
 ;; Current task
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; TODO move to views/focus
 (defn current-task [{:keys [conn]}]
   (let [todos         (ui.db/queued-todos conn)
         current-todos (ui.db/garden-current-todos conn)]

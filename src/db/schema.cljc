@@ -25,6 +25,9 @@
    :file/full-path
    {:db/unique :db.unique/identity}
 
+   :file/last-modified
+   {:db/index true}
+
    ;; :time/rn
    ;; {:db/valueType :db.type/instant}
 
