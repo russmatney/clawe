@@ -66,10 +66,11 @@
                      git/needs-push?
                      git/dirty?
                      git/needs-pull?
+                     ;; TODO restore this tmux feat
+                     tmux/session
                      workspace/directory
                      workspace/title
-                     workspace/clients
-                     tmux/session]} wsp]
+                     workspace/clients]} wsp]
 
          ^{:key title}
          [:div

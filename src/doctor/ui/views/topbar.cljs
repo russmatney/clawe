@@ -70,7 +70,8 @@
    {:keys [is-last]}]
   (let [urgent      false
         clients     (->> clients (remove skip-bar-app?))
-        show-number (or urgent focused (zero? (count clients)) is-last)]
+        show-number (or urgent focused (zero? (count clients)) is-last)
+        hovering?   (uix/state nil)]
     [:div
      {:class ["grid" "grid-flow-col" "place-items-center"
               "space-x-2" "px-1"
@@ -79,7 +80,11 @@
               "border" "border-city-blue-600"
               "rounded" "border-opacity-50"
               "text-white"
-              (cond focused "bg-opacity-60" :else "bg-opacity-30")]}
+              (cond focused "bg-opacity-60" :else "bg-opacity-30")]
+
+      :on-mouse-enter #(reset! hovering? true)
+      :on-mouse-leave #(reset! hovering? false)}
+
      [client-icon-list (assoc topbar-state :workspace wsp) clients]
 
      ;; number/index
@@ -89,7 +94,14 @@
                             focused "text-city-orange-400"
                             :else   "text-yo-blue-300")
                       "font-nes" "text-lg"]}
-        [:span (str "[" index "]")]])]))
+        [:span (str "[" index "]")]])
+
+     (when @hovering?
+       [:div
+        {:class ["transition-all"
+                 "overflow-hidden"
+                 #_(if @hovering? "w-32" "w-0")]}
+        [components.actions/actions-list {:actions (handlers/->actions wsp) :n 2}]])]))
 
 (defn workspace-list [topbar-state wspcs]
   [:div
@@ -237,8 +249,7 @@
              (handlers/->actions current))}]]))))
 
 (defn widget [_opts]
-  (let [;; TODO move metadata/workspaces into use-topbar
-        metadata                                      (hooks.topbar/use-topbar-metadata)
+  (let [metadata                                      (hooks.topbar/use-topbar-metadata)
         {:keys [topbar/background-mode] :as metadata} @metadata
         {:keys [active-workspaces]}                   (hooks.workspaces/use-workspaces)
         topbar-state                                  (use-topbar/use-topbar-state)]
