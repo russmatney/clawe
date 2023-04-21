@@ -86,7 +86,7 @@
 
    :filters/last-modified-date
    {:label          "Last Modified Date"
-    :group-by       (fn [it] (some-> it :file/last-modified t/date))
+    :group-by       (fn [it] (some-> it :file/last-modified dates.tick/parse-time-string t/date))
     :sort-groups-fn (fn [item-groups]
                       (->> item-groups (sort-by :label dates.tick/sort-latest-first)))
     :filter-options [{:label    "Today"

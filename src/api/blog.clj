@@ -26,8 +26,9 @@
                                 (when-not (some-> note :file/last-modified)
                                   (log/info "Note without :file/last-modified" note))
                                 (when (some-> note :file/last-modified)
-                                  (t/> (-> note :file/last-modified dates/parse-time-string)
-                                       month-ago))))
+                                  (dates/sort-latest-first
+                                    (some-> note :file/last-modified dates/parse-time-string)
+                                    month-ago))))
                       (sort-by :org/name-string))}))
 
 (defsys ^:dynamic *blog-data-stream*

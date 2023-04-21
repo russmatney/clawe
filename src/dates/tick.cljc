@@ -56,15 +56,19 @@
 
 (defn parse-time-string
   [time-string]
-  (when (and time-string
-             (or (and (string? time-string) (seq (string/trim time-string)))
-                 (int? time-string)))
-    (if-let [time ((apply some-fn wrapped-parse-attempts) time-string)]
-      time
-      (do
-        #?(:clj (println "Error parsing time string" time-string)
-           :cljs (println "Error parsing time string" time-string))
-        nil))))
+  (if (and time-string
+           (or (t/instant? time-string) (t/date-time? time-string) (t/zoned-date-time? time-string)))
+    ;; support passing already parsed time through
+    time-string
+    (when (and time-string
+               (or (and (string? time-string) (seq (string/trim time-string)))
+                   (int? time-string)))
+      (if-let [time ((apply some-fn wrapped-parse-attempts) time-string)]
+        time
+        (do
+          #?(:clj (println "Error parsing time string" time-string)
+             :cljs (println "Error parsing time string" time-string))
+          nil)))))
 
 (comment
   (t/parse-zoned-date-time
@@ -84,6 +88,7 @@
 
   (t/instant 1650486902722)
   (parse-time-string 1650486902722)
+  (parse-time-string (parse-time-string 1650486902722))
 
   (parse-time-string "20220722:105834")
 
@@ -93,7 +98,8 @@
   (parse-time-string "2022-04-24 Sun")
   (parse-time-string "Fri, 10 Dec 2021 00:35:56 -0500")
   (parse-time-string "Fri, 4 Feb 2022 15:38:14 -0500")
-  (parse-time-string "2021-12-30T17:52:12Z"))
+  (parse-time-string "2021-12-30T17:52:12Z")
+  (parse-time-string "2023-04-04T21:11:15Z"))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

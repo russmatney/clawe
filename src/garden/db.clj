@@ -5,6 +5,7 @@
    [garden.core :as garden]
    [clojure.string :as string]
    [taoensso.timbre :as log]
+   [babashka.fs :as fs]
    [item.core :as item]
    [api.db :as api.db]))
 
@@ -209,6 +210,12 @@
      {:page-size 20}
      (->> (garden/last-modified-paths) (take n)))))
 
+(defn sync-all-garden-files []
+  (sync-garden-paths-to-db
+    {:page-size 2000}
+    ;; oldest first
+    (->> (garden/last-modified-paths) reverse)))
+
 (comment
   api.db/*tx->fe-db*
   (api.db/start-tx->fe-listener)
@@ -299,8 +306,7 @@
 ;; fetch
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn fetch-db-garden-notes
-  []
+(defn fetch-db-garden-notes []
   (->>
     (db/query '[:find (pull ?e [*])
                 :where [?e :doctor/type :type/note]])
@@ -314,8 +320,7 @@
     dedupe
     count))
 
-(defn fetch-notes-for-source-file
-  [source-file]
+(defn fetch-notes-for-source-file [source-file]
   (->>
     (db/query '[:find (pull ?e [*])
                 :in $ ?source-file
@@ -330,13 +335,10 @@
       (garden/all-garden-notes-flattened)
       (filter (comp #(string/includes? % "clawe doctor org dedup") :org/name-string))
       first))
-
   (->>
     (fetch-notes-for-source-file (:org/source-file note))
     (map :org/name-string)
-    sort
-    )
-  )
+    sort))
 
 (defn notes-with-tags [tags]
   (->>
@@ -415,7 +417,6 @@
     (some->> matches first)))
 
 (comment
-
   (->>
     (garden/daily-paths 1)
     (garden/paths->nested-garden-notes)

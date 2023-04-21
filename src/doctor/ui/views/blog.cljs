@@ -27,14 +27,18 @@
 (defn is-garden-note? [note]
   (re-seq #"^garden/" (:org/short-path note)))
 
+(defn blog-actions []
+  [{:action/label    "Republish Blog"
+    :action/on-click (fn [_] (use-blog/rebuild-all))}
+   {:action/label    "Ingest Garden Full"
+    :action/on-click (fn [_] (handlers/ingest-garden-full))}])
 
 (defn bar []
   [:div
    {:class ["bg-yo-blue-800" "w-full"
             "flex" "flex-row"]}
    [:div
-    {:class ["flex" "flex-col"
-             "justify-center"
+    {:class ["flex" "flex-col" "items-center" "justify-center"
              "p-3"]}
     [:span {:class ["font-nes" "text-city-blue-600"]}
      ":clawe/blog"]]
@@ -42,10 +46,7 @@
    [:div
     {:class ["ml-auto" "p-2"]}
     [components.actions/actions-list
-     {:actions
-      [{:action/label    "Republish Blog"
-        :action/on-click (fn [_]
-                           (use-blog/rebuild-all))}]}]]])
+     {:actions (blog-actions)}]]])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; note-comp
@@ -272,50 +273,55 @@
         hide-all-tables      (uix/state nil)
         hide-all-groups      (uix/state nil)
 
-        pills       [{:on-click (fn [_]
-                                  (swap! sort-published-first not)
-                                  (reset! sort-published-last nil))
-                      :label    "sort-published-first"
-                      :active   @sort-published-first}
-                     {:on-click (fn [_]
-                                  (swap! sort-published-last not)
-                                  (reset! sort-published-first nil))
-                      :label    "sort-published-last"
-                      :active   @sort-published-last}
-                     {:on-click #(swap! only-notes not)
-                      :label    "only-garden-notes"
-                      :active   @only-notes}
-                     {:on-click #(swap! only-workspaces not)
-                      :label    "only-workspaces"
-                      :active   @only-workspaces}
-                     {:on-click #(swap! hide-workspaces not)
-                      :label    "hide-workspaces"
-                      :active   @hide-workspaces}
-                     {:on-click #(swap! only-dailies not)
-                      :label    "only-dailies"
-                      :active   @only-dailies}
-                     {:on-click #(swap! hide-dailies not)
-                      :label    "hide-dailies"
-                      :active   @hide-dailies}
-                     {:on-click #(swap! hide-all-tables not)
-                      :label    "hide-all-tables"
-                      :active   @hide-all-tables}
-                     {:on-click #(swap! hide-all-groups not)
-                      :label    "hide-all-groups"
-                      :active   @hide-all-groups}]
-        filter-data (components.filter/use-filter
-                      (-> filter-defs/fg-config
-                          (assoc :extra-preset-pills pills
-                                 :items root-notes
-                                 :filter-items
-                                 (fn [items]
-                                   (cond->> items
-                                     @hide-workspaces (remove is-workspace-note?)
-                                     @only-workspaces (filter is-workspace-note?)
-                                     @only-notes      (filter is-garden-note?)
-                                     @hide-dailies    (remove is-daily?)
-                                     @only-dailies    (filter is-daily?))))
-                          (update :presets merge (presets))))]
+        pills [{:on-click (fn [_]
+                            (swap! sort-published-first not)
+                            (reset! sort-published-last nil))
+                :label    "sort-published-first"
+                :active   @sort-published-first}
+               {:on-click (fn [_]
+                            (swap! sort-published-last not)
+                            (reset! sort-published-first nil))
+                :label    "sort-published-last"
+                :active   @sort-published-last}
+               {:on-click #(swap! only-notes not)
+                :label    "only-garden-notes"
+                :active   @only-notes}
+               {:on-click #(swap! only-workspaces not)
+                :label    "only-workspaces"
+                :active   @only-workspaces}
+               {:on-click #(swap! hide-workspaces not)
+                :label    "hide-workspaces"
+                :active   @hide-workspaces}
+               {:on-click #(swap! only-dailies not)
+                :label    "only-dailies"
+                :active   @only-dailies}
+               {:on-click #(swap! hide-dailies not)
+                :label    "hide-dailies"
+                :active   @hide-dailies}
+               {:on-click #(swap! hide-all-tables not)
+                :label    "hide-all-tables"
+                :active   @hide-all-tables}
+               {:on-click #(swap! hide-all-groups not)
+                :label    "hide-all-groups"
+                :active   @hide-all-groups}]
+
+        filter-data
+        (components.filter/use-filter
+          (-> filter-defs/fg-config
+              (assoc
+
+                :label (str (count root-notes) " Notes")
+                :extra-preset-pills pills
+                :items root-notes
+                :filter-items
+                (fn [items]
+                  (cond->> items
+                    @hide-workspaces (remove is-workspace-note?)
+                    @only-workspaces (filter is-workspace-note?)
+                    @only-notes      (filter is-garden-note?)
+                    @hide-dailies    (remove is-daily?)
+                    @only-dailies    (filter is-daily?))))
+              (update :presets merge (presets))))]
 
     [:div
      {:class ["bg-city-blue-800"

@@ -41,7 +41,11 @@
   (api.todos/reingest-todos)
   :ok)
 
-(defhandler ingest-garden []
+(defhandler ingest-garden-full []
+  (garden.db/sync-all-garden-files)
+  :ok)
+
+(defhandler ingest-garden-latest []
   (garden.db/sync-last-touched-garden-files {:n 20})
   :ok)
 
@@ -83,6 +87,8 @@
   :ok)
 
 (defhandler remove-tag [item tag]
+  (->> [[:db/retract (:db/id item) :org/tags tag]]
+       (d/transact db/*conn*))
   (org-crud.api/update! item {:org/tags [:remove tag]}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
