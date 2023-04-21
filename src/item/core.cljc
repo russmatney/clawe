@@ -35,7 +35,13 @@
    :type/screenshot   #{:screenshot/time}
    :type/lichess-game #{:lichess.game/created-at
                         :lichess.game/last-move-at}
-   :type/garden       #{:org.prop/created-at
+   :type/todo         #{:org.prop/created-at
+                        :org.prop/archive-time
+                        :org/scheduled
+                        :org/deadline
+                        :org/closed
+                        :file/last-modified}
+   :type/note         #{:org.prop/created-at
                         :org.prop/archive-time
                         :org/scheduled
                         :org/deadline
@@ -44,16 +50,18 @@
 
 (defn ->latest-timestamp
   "Returns the latest timestamp for the passed item."
-  [{:keys [doctor/type] :as item}]
-  (let [ks (ts-keys type)]
-    (some->> ks
-             (map (fn [k]
-                    (when-let [maybe-time (item k)]
-                      (when-let [maybe-time
-                                 (if (string? maybe-time)
-                                   (dates.tick/parse-time-string maybe-time)
-                                   maybe-time)]
-                        (dates.tick/add-tz maybe-time)))))
-             (remove nil?)
-             (sort-by t/>)
-             first)))
+  ([item] (->latest-timestamp nil item))
+  ([type item]
+   (let [type (or type (:doctor/type item))
+         ks   (ts-keys type)]
+     (some->> ks
+              (map (fn [k]
+                     (when-let [maybe-time (item k)]
+                       (when-let [maybe-time
+                                  (if (string? maybe-time)
+                                    (dates.tick/parse-time-string maybe-time)
+                                    maybe-time)]
+                         (dates.tick/add-tz maybe-time)))))
+              (remove nil?)
+              (sort-by t/>)
+              first))))

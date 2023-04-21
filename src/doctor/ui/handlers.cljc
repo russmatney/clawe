@@ -439,12 +439,11 @@
           (client->actions item)
 
           ;; todos
-          (and (#{:type/garden} (:doctor/type item))
-               (:org/status item))
+          (#{:type/todo} (:doctor/type item))
           (todo->actions item)
 
           ;; garden note
-          (#{:type/garden} (:doctor/type item))
+          (#{:type/note} (:doctor/type item))
           (garden-file->actions item)
 
           ;; repo actions

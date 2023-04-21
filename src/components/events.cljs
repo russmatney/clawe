@@ -27,7 +27,8 @@
   (let [count-by (fn [t] (->> events (filter (comp #{t} :doctor/type)) count))]
     {:screenshot-count (count-by :type/screenshot)
      :commit-count     (count-by :type/commit)
-     :org-note-count   (count-by :type/garden)
+     :org-note-count   (count-by :type/note)
+     :todo-count       (count-by :type/todo)
      :chess-game-count (count-by :type/lichess-game)}))
 
 (defn event-count-comp [{:keys [label count]}]
@@ -170,8 +171,8 @@
   (let [screenshots  (->> events (filter (comp #{:type/screenshot} :doctor/type)))
         commits      (->> events (filter (comp #{:type/commit} :doctor/type)))
         chess-games  (->> events (filter (comp #{:type/lichess-game} :doctor/type)))
-        garden-notes (->> events (filter (comp #{:type/garden} :doctor/type)))
-        ]
+        garden-notes (->> events (filter (comp #{:type/note} :doctor/type)))
+        _todos       (->> events (filter (comp #{:type/todo} :doctor/type)))]
     [:div
      {:class ["flex" "flex-col"]}
 
@@ -184,13 +185,15 @@
      (when (seq screenshots)
        [tables/table-for-doctor-type opts :type/screenshot screenshots])
 
+     ;; TODO table for todos
+
      ;; tags table
      #_(when (seq garden-notes)
          [components.table/table (tables/garden-by-tag-table-def garden-notes)])
 
      ;; per note
      (when (seq garden-notes)
-       [tables/table-for-doctor-type opts :type/garden garden-notes])]))
+       [tables/table-for-doctor-type opts :type/note garden-notes])]))
 
 (defn event-clusters
   ([events] [event-clusters nil events])

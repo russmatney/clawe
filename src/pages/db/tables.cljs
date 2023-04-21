@@ -32,7 +32,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn garden-by-tag-table-def [entities]
-  (let [notes (->> entities (filter (comp #{:type/garden} :doctor/type)))]
+  (let [notes (->> entities (filter (comp #{:type/note} :doctor/type)))]
     {:headers ["Tag" "Count" "Example"]
      :rows    (->>
                 notes
@@ -52,7 +52,7 @@
                          (first group)]])))}) )
 
 (defn garden-note-table-def [entities]
-  (let [notes (->> entities (filter (comp #{:type/garden} :doctor/type)))]
+  (let [notes (->> entities (filter (comp #{:type/note} :doctor/type)))]
     {:headers ["File" "Name" "Parent" "Words" "Raw" "Actions"]
      :n       5
      :rows
@@ -83,13 +83,14 @@
                [actions-cell note]])))}))
 
 (defn garden-file-table-def [entities]
-  (let [notes (->> entities (filter (comp #{:type/garden} :doctor/type)))]
+  (let [notes (->> entities
+                   (filter (comp #{:type/note} :doctor/type))
+                   (filter (comp #{:level/root} :org/level)))]
     {:headers ["File" "Name" "Raw" "Actions"]
      :n       5
      :rows
      (->>
        notes
-       (filter (comp #{:level/root} :org/level) )
        (sort-by :file/last-modified >)
        (map (fn [note]
               [[floating/popover
@@ -259,7 +260,9 @@
   ([type entities] (table-def-for-doctor-type nil type entities))
   ([opts doctor-type entities]
    (cond
-     (#{:type/garden} doctor-type)
+     ;; TODO table for :type/todo
+
+     (#{:type/note} doctor-type)
      (garden-note-table-def entities)
 
      (#{:type/wallpaper} doctor-type)

@@ -14,7 +14,8 @@
   #{:type/commit
     :type/screenshot
     :type/lichess-game
-    :type/garden})
+    :type/note
+    :type/todo})
 
 (defn events
   ([conn] (events conn event-types))
@@ -116,7 +117,7 @@
        (->>
          (d/q '[:find (pull ?e [*])
                 :where
-                [?e :doctor/type :type/garden]]
+                [?e :doctor/type :type/note]]
               conn)
          (map first)
          (sort-by :org/created-at >)
@@ -131,7 +132,7 @@
        (->>
          (d/q '[:find (pull ?e [:org/source-file :file/last-modified])
                 :where
-                [?e :doctor/type :type/garden]
+                [?e :doctor/type :type/note]
                 [?e :org/source-file ?source-file]]
               conn)
          (map first)
@@ -148,7 +149,7 @@
        (->>
          (d/q '[:find (pull ?e [*])
                 :where
-                [?e :doctor/type :type/garden]
+                [?e :doctor/type :type/todo]
                 [?e :org/status ?status]]
               conn)
          (map first)
@@ -170,7 +171,8 @@
   (->>
     (d/q '[:find (pull ?e [*])
            :where
-           [?e :doctor/type :type/garden]
+           [?e :doctor/type ?type]
+           [(contains? #{:type/note :type/todo} ?type)]
            ;; TODO debug this, seems like it should work
            [?e :org/tags "current"]
            #_[(contains? ?tags "current")]]

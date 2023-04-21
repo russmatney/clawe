@@ -54,36 +54,28 @@
                                         {:org/id parent-id}))
                                  (into [])))
 
-        true
-        (->>
-          ;; quick attempt to un-lazy some seqs
-          (map (fn [[k v]]
-                 [k (if (coll? v) (->> v (into []))
-                        v)]))
-          (into {}))
+        true ;; quick attempt to un-lazy some seqs
+        (->> (map (fn [[k v]]
+                    [k (if (coll? v) (->> v (into []))
+                           v)]))
+             (into {}))
 
+        (:org/status item)       (assoc :doctor/type :type/todo)
+        (not (:org/status item)) (assoc :doctor/type :type/note)
 
-        true (assoc :doctor/type :type/garden)
         true (assoc :org/urls (ensure-list urls))
         true (assoc :org/tags (ensure-list tags))
 
-        ;; if this can be calced...
-        (item/->latest-timestamp
-          ;; kind of annoying item depends on this type
-          (assoc item :doctor/type :type/garden))
-        ;; then assoc it
-        (assoc :event/timestamp
-               (item/->latest-timestamp
-                 ;; kind of annoying item depends on this type
-                 (assoc item :doctor/type :type/garden)))
+        ;; if this can be calced, assoc it
+        (item/->latest-timestamp :type/note item)
+        (assoc :event/timestamp (item/->latest-timestamp :type/note item))
 
         true
         (dissoc :org/body
                 :org/items
                 :org.prop/link-ids ;; old linking props
                 :org.prop/begin-src ;; TODO proper source block handling
-                :org.prop/end-src)))
-    ))
+                :org.prop/end-src)))))
 
 ;; this should not be necessary
 ;; (defn other-db-updates
@@ -207,12 +199,7 @@
   ([{:keys [n]}]
    (sync-garden-paths-to-db
      {:page-size 20}
-     ;; probably a more performant way to get the last 20 touched, haha
-     (->> (garden/all-garden-notes-nested)
-          (sort-by :file/last-modified)
-          (reverse)
-          (take n)
-          (map :org/source-file)))))
+     (->> (garden/last-modified-paths) (take n)))))
 
 (comment
   api.db/*tx->fe-db*
@@ -301,7 +288,7 @@
   []
   (->>
     (db/query '[:find (pull ?e [*])
-                :where [?e :doctor/type :type/garden]])
+                :where [?e :doctor/type :type/note]])
     (map first)))
 
 (comment
@@ -341,7 +328,7 @@
     (db/query '[:find (pull ?e [*])
                 :in $ ?tags
                 :where
-                [?e :doctor/type :type/garden]
+                [?e :doctor/type :type/note]
                 [?e :org/tags ?tag]
                 [(?tags ?tag)]]
               tags)
@@ -356,7 +343,7 @@
   (->>
     (db/query '[:find (pull ?e [*])
                 :where
-                [?e :doctor/type :type/garden]
+                [?e :doctor/type :type/note]
                 [?e :org.prop/archive-time ?atime]])
     (map first)
     (map :org/source-file))
@@ -365,7 +352,7 @@
   (->>
     (db/query '[:find ?e
                 :where
-                [?e :doctor/type :type/garden]
+                [?e :doctor/type :type/note]
                 [?e :org/source-file ?file]
                 [(string/includes? ?file "/archive/")]
                 ])

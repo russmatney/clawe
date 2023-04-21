@@ -124,7 +124,9 @@
 (defn notes-table-def []
   {:headers ["Published" "Name" "Tags (incl. nested)" "Actions" "Raw"]
    :->row   (fn [note]
-              (let [note (assoc note :doctor/type :type/garden)]
+              (let [note
+                    ;; TODO remove when we merge blog datas with db
+                    (assoc note :doctor/type :type/note)]
                 [[:span
                   (when (:blog/published note) "Published")]
                  [floating/popover

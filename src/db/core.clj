@@ -201,9 +201,13 @@
    (doall
      (->>
        (query '[:find (pull ?e [*])
-                :where [?e :doctor/type :type/garden]])
-       (take 3)
-       (map println)))))
+                :where
+                [?e :doctor/type ?type]
+                [(contains? #{:type/note :type/todo
+                              ;; include other types?
+                              } ?type)]
+                ])
+       (take 3)))))
 
 (comment
   (query-db))
