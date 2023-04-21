@@ -421,8 +421,17 @@
      ([item actions]
       (->>
         (cond
+          ;; huh? should these be concated with the defaults?
           (seq actions)
           actions
+
+          ;; workspace
+          (:workspace/index item)
+          (workspace->actions item)
+
+          ;; client
+          (:client/id item (:client/window-title item))
+          (client->actions item)
 
           ;; todos
           (and (#{:type/garden} (:doctor/type item))
