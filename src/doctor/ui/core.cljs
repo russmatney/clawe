@@ -86,9 +86,8 @@
 
         ;; create fe db and pass it to every page
         {:keys [conn]} (hooks.db/use-db)
-        opts           (-> opts
-                           (assoc :conn conn
-                                  :route-defs route-defs)
+        opts           (-> opts (assoc :conn conn
+                                       :route-defs route-defs)
                            (merge page-opts))]
     (if comp
       (if comp-only [comp opts] [pages/page comp opts])
@@ -137,11 +136,7 @@
        :on-close on-close
        :on-error on-error
        :transit-write-handlers
-       (merge
-         ttl/write-handlers
-         dt/write-handlers)
+       (merge ttl/write-handlers dt/write-handlers)
        :transit-read-handlers
-       (merge
-         ttl/read-handlers
-         dt/read-handlers)}))
+       (merge ttl/read-handlers dt/read-handlers)}))
   (mount-root))

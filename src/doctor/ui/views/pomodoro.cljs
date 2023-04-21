@@ -16,7 +16,7 @@
   (let [time     (uix/state (t/zoned-date-time))
         interval (atom nil)]
     (uix/with-effect [@interval]
-      (reset! interval (js/setInterval #(reset! time (t/zoned-date-time)) 1000))
+      (reset! interval (js/setInterval #(reset! time (t/zoned-date-time)) 5000))
       (fn [] (js/clearInterval @interval)))
 
     [:div
