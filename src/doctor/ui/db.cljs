@@ -1,7 +1,7 @@
 (ns doctor.ui.db
   (:require
    [datascript.core :as d]
-   [tick.core :as t]
+   [dates.tick :as dt]
    [wing.core :as w]))
 
 ;; TODO tests for this namespace
@@ -30,7 +30,7 @@
                  [(contains? ?event-types ?type)]]
                conn event-types)
           (map first)
-          (sort-by :event/timestamp t/>)
+          (sort-by :event/timestamp dt/sort-latest-first)
           (take 200)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -83,7 +83,7 @@
                 [?e :doctor/type :type/screenshot]]
               conn)
          (map first)
-         (sort-by :screenshot/time t/>)
+         (sort-by :screenshot/time dt/sort-latest-first)
          (take n))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -120,7 +120,7 @@
                 [?e :doctor/type :type/note]]
               conn)
          (map first)
-         (sort-by :org/created-at t/>)
+         (sort-by :org/created-at dt/sort-latest-first)
          (take n))))))
 
 (defn garden-files
@@ -137,7 +137,7 @@
               conn)
          (map first)
          (w/distinct-by :org/source-file)
-         (sort-by :file/last-modified t/>)
+         (sort-by :file/last-modified dt/sort-latest-first)
          (map :org/source-file)
          (take n))))))
 
@@ -152,7 +152,7 @@
                 [?e :doctor/type :type/todo]]
               conn)
          (map first)
-         (sort-by :org/created-at t/>)
+         (sort-by :org/created-at dt/sort-latest-first)
          ((fn [todos] (if filter-pred (->> todos (filter filter-pred)) todos)))
          (take n))))))
 
@@ -164,7 +164,7 @@
          conn)
     (map first)
     (remove (comp #{:status/cancelled :status/done} :org/status))
-    (sort-by :todo/queued-at t/>)))
+    (sort-by :todo/queued-at dt/sort-latest-first)))
 
 (defn garden-current-todos [conn]
   (->>
@@ -178,7 +178,7 @@
          conn)
     (map first)
     (remove (comp #{:status/cancelled :status/done} :org/status))
-    (sort-by :todo/queued-at t/>)))
+    (sort-by :todo/queued-at dt/sort-latest-first)))
 
 ;; TODO write fe unit tests for this and this whole ns
 (defn garden-tags

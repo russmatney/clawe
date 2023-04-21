@@ -212,3 +212,17 @@
 (comment
   (months)
   (months 5))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; sort
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn sort-chrono [a b]
+  (cond (and a b) (t/< a b)
+        a         true
+        :else     false))
+
+(defn sort-latest-first [a b]
+  (cond (and a b) (t/> a b)
+        a         true
+        :else     false))
