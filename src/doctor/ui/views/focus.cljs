@@ -2,10 +2,62 @@
   (:require
    [doctor.ui.hooks.use-todos :as use-todos]
    [doctor.ui.handlers :as handlers]
+   [doctor.ui.db :as ui.db]
    [components.actions :as components.actions]
    [components.garden :as components.garden]
    [components.todo :as todo]
-   [components.item :as item]))
+   [components.item :as item]
+   [wing.core :as w]
+   [uix.core.alpha :as uix]
+   [dates.tick :as dt]
+   [hiccup-icons.fa :as fa]))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; current task (for topbar)
+
+;; TODO move to views/focus
+(defn current-task [{:keys [conn]}]
+  (let [todos         (ui.db/queued-todos conn)
+        current-todos (ui.db/garden-current-todos conn)]
+    (if-not (or (seq todos) (seq current-todos))
+      [:span "--"]
+      (let [queued  (->> todos
+                         (concat current-todos)
+                         (w/dedupe-by :db/id)
+                         (sort-by :todo/queued-at dt/sort-latest-first)
+                         (into []))
+            n       (uix/state 0)
+            current (get queued @n)
+            ct      (count queued)]
+        [:div
+         {:class ["flex" "flex-wrap" "place-self-center"
+                  "items-center" "space-x-4"
+                  "h-full"]}
+
+         [:span
+          {:class ["pl-3" "font-mono"]}
+          (str (inc @n) "/" ct)]
+
+         [:div
+          {:class ["font-mono pr-3" "whitespace-nowrap"]}
+          [components.garden/text-with-links (:org/name current)]]
+
+         [components.actions/actions-list
+          {:actions
+           (concat
+             (when (> ct 0)
+               [{:action/label    "next"
+                 :action/icon     fa/chevron-up-solid
+                 :action/disabled (>= @n (dec ct))
+                 :action/on-click (fn [_] (swap! n inc))
+                 :action/priority 5}
+                {:action/label    "prev"
+                 :action/icon     fa/chevron-down-solid
+                 :action/disabled (zero? @n)
+                 :action/on-click (fn [_] (swap! n dec))
+                 :action/priority 5}])
+             (handlers/->actions current))
+           :hide-disabled true}]]))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; current item header
