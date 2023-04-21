@@ -18,6 +18,14 @@
    {:class ["flex" "flex-col" "px-4"
             "text-city-green-400" "text-xl"]}
 
+   [:div {:class ["pb-2" "flex" "flex-row"
+                  "items-center" "justify-between"]}
+    [item/parent-names it]
+    [components.actions/actions-list
+     {:actions       (handlers/->actions it (handlers/todo->actions it))
+      :nowrap        true
+      :hide-disabled true}]]
+
    [:div {:class ["flex" "flex-row" "items-center"]}
     [todo/level it]
     [todo/status it]
@@ -42,106 +50,7 @@
     {:class ["text-yo-blue-200" "font-mono"]}
     ;; TODO include sub items + bodies
     #_[:pre (:org/body-string it)]
-    [components.garden/org-body it]]
-
-   [:div {:class ["py-4" "flex" "flex-row" "justify-between"]}
-    [item/parent-names it]
-    [components.actions/actions-list
-     {:actions
-      (handlers/->actions it (handlers/todo->actions it))
-      :nowrap        true
-      :hide-disabled true}]]])
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; sort todos
-
-(defn sort-todos [its]
-  (->> its
-       (sort-by
-         (fn [it]
-           (cond->
-               0
-             ;; move finished to back
-             (or (todo/completed? it)
-                 (todo/skipped? it)) (+ 1000)
-
-             ;; sort by priority
-             (:org/priority it)
-             (+ (components.filter/label->comparable-int (:org/priority it)))
-
-             (not (:org/priority it))
-             (+ 100)
-
-             ;; move current to front
-             (or (todo/current? it)
-                 (todo/in-progress? it)) (- 100)))
-         ;; lower number means earlier in the order
-         <)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; item todo cards
-
-(defn todo-cards
-  "Renders the passed todo as a card.
-  If it has children (i.e. sub-tasks) they will be rendered as a group of cards."
-  ([item] [todo-cards nil item])
-  ([{:keys [filter-by]} item]
-   (let [todos             (->> item
-                                (tree-seq (comp seq :org/items) :org/items)
-                                (remove nil?)
-                                (remove #(#{item} %))
-                                (filter :org/status)
-                                seq)
-         [children? todos] (if (seq todos) [true todos] [false [item]])
-         todos             (if filter-by (filter filter-by todos) todos)
-         groups            (group-by (fn [it] (-> it :org/parent-names str)) todos)]
-
-     [:div {:class ["flex" "flex-col"]}
-      (for [[pnames grouped-todos] groups]
-        ^{:key (str pnames)}
-        [:div {:class (concat ["flex" "flex-col"]
-                              (when children?
-                                ["border-city-green-400" "border"
-                                 "bg-city-blue-900"
-                                 "py-3"]))}
-         [:div {:class ["p-2"]}
-          (when children?
-            [:div
-             {:class ["flex" "flex-col"]}
-             [:div
-              {:class ["flex" "flex-row" "items-center"]}
-
-              [todo/status item]
-              [item/db-id item]
-              [item/id-hash item]
-              [:div {:class ["ml-auto"]}
-               [todo/tags-list
-                {:on-click (fn [tag] (handlers/remove-tag item tag))}
-                item]]
-              [todo/priority-label {:on-click (fn [_] (handlers/remove-priority item))} item]]
-
-             [:div
-              {:class ["flex" "flex-row" "items-center" "px-3"]}
-              [item/parent-names {:header? true} (first grouped-todos)]
-
-              [:span
-               {:class ["ml-auto"]}
-               [components.actions/actions-list
-                {:actions       (handlers/->actions item (handlers/todo->actions item))
-                 :nowrap        true
-                 :hide-disabled true}]]]])]
-
-         (if children?
-           [:div
-            {:class ["flex" "flex-row" "flex-wrap" "justify-around"]}
-            (for [[i td] (->> grouped-todos sort-todos (map-indexed vector))]
-              ^{:key i}
-              [:div
-               {:class ["p-2"]}
-               [todo/card {:hide-parent-names? true} td]])]
-           [:div
-            {:class ["p-2"]}
-            [todo/card {:hide-parent-names? false} item]])])])))
+    [components.garden/org-body it]]])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; current stack
@@ -152,13 +61,13 @@
    (let [todos (or todos [])]
      [:div
       (when current
-        (for [[i c] (->> current sort-todos (map-indexed vector))]
+        (for [[i c] (->> current todo/sort-todos (map-indexed vector))]
           ^{:key i}
           [:div
            {:class ["bg-city-blue-800"]}
            [:hr {:class ["border-city-blue-900" "pb-4"]}]
            [item-header c]
-           [todo-cards
+           [todo/card-or-card-group
             {:filter-by
              (comp not #{:status/skipped :status/done} :org/status)}
             c]
@@ -316,7 +225,7 @@
                                                  (cond->> items
                                                    @hide-completed (remove todo/completed?)
                                                    @only-current   (filter todo/current?)))
-                                 :sort-items sort-todos)
+                                 :sort-items todo/sort-todos)
                           (update :presets merge (presets))))
         current     (some->> todos (filter todo/current?) seq)]
     [:div
@@ -338,7 +247,7 @@
         (when (seq (:filtered-items filter-data))
           [:div {:class ["pt-6"]}
            [components.filter/items-by-group
-            (assoc filter-data :item->comp todo-cards)]])
+            (assoc filter-data :item->comp todo/card-or-card-group)]])
 
         (when (not (seq todos))
           [:div

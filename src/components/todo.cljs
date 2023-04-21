@@ -10,7 +10,8 @@
    [doctor.ui.handlers :as handlers]
    [dates.tick :as dates.tick]
    [uix.core.alpha :as uix]
-   [clojure.set :as set]))
+   [clojure.set :as set]
+   [util :as util]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; preds
@@ -29,6 +30,34 @@
 
 (defn current? [it]
   (seq (set/intersection #{"current"} (:org/tags it))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; sort todos
+
+(defn sort-todos
+  "Sorts todos according to status and priority"
+  [its]
+  (->> its
+       (sort-by
+         (fn [it]
+           (cond->
+               0
+             ;; move finished to back
+             (or (completed? it)
+                 (skipped? it)) (+ 1000)
+
+             ;; sort by priority
+             (:org/priority it)
+             (+ (util/label->comparable-int (:org/priority it)))
+
+             (not (:org/priority it))
+             (+ 100)
+
+             ;; move current to front
+             (or (current? it)
+                 (in-progress? it)) (- 100)))
+         ;; lower number means earlier in the order
+         <)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; priority-label
@@ -207,6 +236,71 @@
         :nowrap        true
         :hide-disabled true}]]]]))
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; todo cards
+
+(defn card-or-card-group
+  "Renders the passed todo as a card.
+  If it has children (i.e. sub-tasks) they will be rendered as a group of cards."
+  ([item] [card-or-card-group nil item])
+  ([{:keys [filter-by]} item]
+   (let [todos             (->> item
+                                (tree-seq (comp seq :org/items) :org/items)
+                                (remove nil?)
+                                (remove #(#{item} %))
+                                (filter :org/status)
+                                seq)
+         [children? todos] (if (seq todos) [true todos] [false [item]])
+         todos             (if filter-by (filter filter-by todos) todos)
+         groups            (group-by (fn [it] (-> it :org/parent-names str)) todos)]
+
+     [:div {:class ["flex" "flex-col"]}
+      (for [[pnames grouped-todos] groups]
+        ^{:key (str pnames)}
+        [:div {:class (concat ["flex" "flex-col"]
+                              (when children?
+                                ["border-city-green-400" "border"
+                                 "bg-city-blue-900"
+                                 "py-3"]))}
+         [:div {:class ["p-2"]}
+          (when children?
+            [:div
+             {:class ["flex" "flex-col"]}
+             [:div
+              {:class ["flex" "flex-row" "items-center"]}
+
+              [status item]
+              [item/db-id item]
+              [item/id-hash item]
+              [:div {:class ["ml-auto"]}
+               [tags-list
+                {:on-click (fn [tag] (handlers/remove-tag item tag))}
+                item]]
+              [priority-label {:on-click (fn [_] (handlers/remove-priority item))} item]]
+
+             [:div
+              {:class ["flex" "flex-row" "items-center" "px-3"]}
+              [item/parent-names {:header? true} (first grouped-todos)]
+
+              [:span
+               {:class ["ml-auto"]}
+               [components.actions/actions-list
+                {:actions       (handlers/->actions item (handlers/todo->actions item))
+                 :nowrap        true
+                 :hide-disabled true}]]]])]
+
+         (if children?
+           [:div
+            {:class ["flex" "flex-row" "flex-wrap" "justify-around"]}
+            (for [[i td] (->> grouped-todos sort-todos (map-indexed vector))]
+              ^{:key i}
+              [:div
+               {:class ["p-2"]}
+               [card {:hide-parent-names? true} td]])]
+           [:div
+            {:class ["p-2"]}
+            [card {:hide-parent-names? false} item]])])])))
 
 
 

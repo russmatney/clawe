@@ -362,18 +362,6 @@
 ;; use-filter
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn label->comparable-int [p]
-  (cond
-    (and p (string? p)) (.charCodeAt p)
-    (int? p)            p
-    (keyword? p)        (label->comparable-int (name p))
-
-    ;; TODO compare dates
-
-    ;; some high val
-    :else 1000))
-
-
 (defn use-filter
   [{:keys [items all-filter-defs filter-items sort-items] :as config}]
   (let [param-preset-key (router/use-route-parameters [:query :preset])
@@ -428,7 +416,7 @@
         sort-groups-f        (some-> @sort-groups-key all-filter-defs :sort-groups-fn)
         filtered-item-groups (if sort-groups-f
                                (sort-groups-f filtered-item-groups)
-                               (sort-by (comp label->comparable-int :label) < filtered-item-groups))]
+                               (sort-by (comp util/label->comparable-int :label) < filtered-item-groups))]
 
     {:filter-grouper
      [filter-grouper

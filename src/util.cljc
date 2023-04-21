@@ -146,3 +146,16 @@
     (map (fn [[k xs]]
            [k (->> xs (map :n))]))
     (into {})))
+
+
+(defn label->comparable-int [p]
+  (cond
+    ;; TODO cljc impl?
+    (and p (string? p)) (.charCodeAt p)
+    (int? p)            p
+    (keyword? p)        (label->comparable-int (name p))
+
+    ;; TODO compare dates
+
+    ;; some high val
+    :else 1000))
