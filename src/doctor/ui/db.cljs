@@ -148,8 +148,7 @@
      (let [n (or n 100)]
        (->>
          (d/q '[:find (pull ?e [*])
-                :where
-                [?e :doctor/type :type/todo]]
+                :where [?e :doctor/type :type/todo]]
               conn)
          (map first)
          (sort-by :org/created-at dt/sort-latest-first)

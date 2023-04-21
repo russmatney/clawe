@@ -108,6 +108,7 @@
 
     [widget-bar {:label "events"
                  :icon  octicons/calendar16
+                 :opts  opts
                  :comp
                  (fn [opts]
                    (let [recent-events (ui.db/events (:conn opts))
@@ -128,6 +129,7 @@
     [widget-bar
      {:label "old-todos"
       :icon  octicons/checklist16
+      :opts  opts
       :comp
       (fn [opts]
         (let [queued-todos (ui.db/queued-todos (:conn opts))

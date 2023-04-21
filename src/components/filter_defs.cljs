@@ -35,8 +35,9 @@
   (let [[f s & _rest]
         (some-> fname (string/split #"/") reverse)]
     (->>
-      [s f] (map #(-> % (string/replace #".org" "")
-                      (->> (take 10) (apply str))))
+      [s f]
+      (remove nil?)
+      (map #(-> % (string/replace #".org" "") (->> (take 10) (apply str))))
       (string/join "/"))))
 
 (def all-filter-defs
