@@ -69,8 +69,7 @@
     [widget-bar {:comp  blog/widget
                  :opts  opts
                  :label :blog}]
-    [widget-bar {:initial-show true
-                 :comp
+    [widget-bar {:comp
                  (fn [opts]
                    (let [recent-events (ui.db/events (:conn opts))
                          filter-data
@@ -84,43 +83,50 @@
                        [components.filter/items-by-group
                         (assoc filter-data :group->comp components.events/event-clusters)]]]))
                  :opts  opts
-                 :label :events}]]
+                 :label :events}]
 
-   (let [queued-todos (ui.db/queued-todos (:conn opts))
+    [widget-bar
+     {:comp
+      (fn [opts]
+        (let [queued-todos (ui.db/queued-todos (:conn opts))
 
-         all-todos (ui.db/garden-todos
-                     (:conn opts) {:n 200 ;; TODO support fetching more
-                                   :filter-pred
-                                   (fn [{:org/keys [status]}]
-                                     (#{:status/not-started} status))})
-         todo-filter-results
-         (components.filter/use-filter
-           (assoc filter-defs/fg-config
-                  :items all-todos
-                  :presets
-                  {:default {:filters  all-todos-initial-filters
-                             :group-by :tags}}))]
-     [:div
-      [:div
-       [:div "Todo list (" (count queued-todos) ")"]
-       [components.todo/todo-list {:n 5} queued-todos]]
-
-      (let [expanded (uix/state
-                       ;; default to hiding all todos if some are queued
-                       (< (count queued-todos) 2))]
-        [:div
-         [:div "All todos (" (count (:filtered-items todo-filter-results)) ")"
-          (count all-todos)]
-         [components.actions/actions-list
-          {:actions [{:action/on-click (fn [_] (swap! expanded not))
-                      :action/label    "Expand"
-                      :action/disabled @expanded}
-                     {:action/on-click (fn [_] (swap! expanded not))
-                      :action/label    "Collapse"
-                      :action/disabled (not @expanded)}]}]
-         (when @expanded
+              all-todos (ui.db/garden-todos
+                          (:conn opts) {:n 200 ;; TODO support fetching more
+                                        :filter-pred
+                                        (fn [{:org/keys [status]}]
+                                          (#{:status/not-started} status))})
+              todo-filter-results
+              (components.filter/use-filter
+                (assoc filter-defs/fg-config
+                       :items all-todos
+                       :presets
+                       {:default {:filters  all-todos-initial-filters
+                                  :group-by :tags}}))]
+          [:div
            [:div
-            (:filter-grouper todo-filter-results)
-            [components.todo/todo-list
-             {:n 5}
-             (:filtered-items todo-filter-results)]])])])])
+            [:div "Todo list (" (count queued-todos) ")"]
+            [components.todo/todo-list {:n 5} queued-todos]]
+
+           (let [expanded (uix/state
+                            ;; default to hiding all todos if some are queued
+                            (< (count queued-todos) 2))]
+             [:div
+              [:div "All todos (" (count (:filtered-items todo-filter-results)) ")"
+               (count all-todos)]
+              [components.actions/actions-list
+               {:actions [{:action/on-click (fn [_] (swap! expanded not))
+                           :action/label    "Expand"
+                           :action/disabled @expanded}
+                          {:action/on-click (fn [_] (swap! expanded not))
+                           :action/label    "Collapse"
+                           :action/disabled (not @expanded)}]}]
+              (when @expanded
+                [:div
+                 (:filter-grouper todo-filter-results)
+                 [components.todo/todo-list
+                  {:n 5}
+                  (:filtered-items todo-filter-results)]])])]))
+      :opts  opts
+      :label :todos}]]
+
+   ])
