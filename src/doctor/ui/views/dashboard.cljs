@@ -43,8 +43,8 @@
              :else (assoc icon-opts :icon octicons/alert))]
 
       [:span
-       {:class ["font-nes" "pl-2"]}
-       (str label)]
+       {:class ["font-mono" "pl-2"]}
+       (str ":doctor/" label)]
       [:div
        {:class ["ml-auto"]}
        [components.actions/actions-list
@@ -73,35 +73,39 @@
                             [:div
                              [ingest/ingest-buttons]
                              [ingest/commit-ingest-buttons (:conn opts)]])
-                 :label   :ingestors
+                 :label   "ingestors"
                  :actions (ingest/ingest-actions)}]
 
     [widget-bar {:comp         focus/widget
                  :opts         (assoc opts :only-current-stack true)
-                 :label        :current-focus
+                 :label        "current-focus"
                  :initial-show true
+                 :icon         octicons/light-bulb16
                  :actions
                  [{:action/label    "Clear Current Todos"
                    :action/on-click #(js/alert "todo")}]}]
 
     [widget-bar {:comp  focus/widget
-                 :label :todos
+                 :label "todos"
+                 :icon  octicons/checklist16
                  :actions
                  [{:action/label    "Process Prioritized Actions"
                    :action/on-click #(js/alert "todo")}]}]
 
     [widget-bar {:comp  blog/widget
-                 :label :blog
+                 :label "blog"
                  :icon  blog/icon
                  :actions
                  [{:action/label    "Publish N Updated notes"
                    :action/on-click #(js/alert "todo")}]}]
 
     [widget-bar {:comp    workspaces/widget
-                 :label   :workspaces
+                 :label   "workspaces"
+                 :icon    octicons/clippy16
                  :actions (hooks.workspaces/actions)}]
 
-    [widget-bar {:label :events
+    [widget-bar {:label "events"
+                 :icon  octicons/calendar16
                  :comp
                  (fn [opts]
                    (let [recent-events (ui.db/events (:conn opts))
@@ -120,7 +124,8 @@
                            {:action/label "Today's screenshots"}]}]
 
     [widget-bar
-     {:label :old-todos
+     {:label "old-todos"
+      :icon  octicons/checklist16
       :comp
       (fn [opts]
         (let [queued-todos (ui.db/queued-todos (:conn opts))
