@@ -2,13 +2,16 @@
   (:require
    [clojure.string :as string]
    [hooks.workspaces :as hooks.workspaces]
+   [hooks.topbar :as hooks.topbar]
    [doctor.ui.handlers :as handlers]
    [components.icons :as icons]
    [components.debug :as debug]
    [components.actions :as actions]))
 
 (defn dir [s]
-  (-> s (string/replace #"/home/russ" "~")))
+  (-> s
+      (string/replace #"/Users/russ" "~")
+      (string/replace #"/home/russ" "~")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -48,8 +51,7 @@
 
        [:div
         {:class ["ml-auto"]}
-        [actions/actions-list
-         (handlers/client->actions client)]]]])))
+        [actions/actions-list (handlers/->actions client)]]]])))
 
 (defn active-workspace [active-workspaces]
   [:div
@@ -60,16 +62,13 @@
    (when (seq active-workspaces)
      (for [wsp active-workspaces]
        (let [{:keys [;; TODO restore these git features
-                     git/repo
                      git/needs-push?
                      git/dirty?
                      git/needs-pull?
                      workspace/directory
                      workspace/title
                      workspace/clients
-                     tmux/session]} wsp
-
-             dir (or directory repo)]
+                     tmux/session]} wsp]
 
          ^{:key title}
          [:div
@@ -84,12 +83,11 @@
                  (when dirty? "#dirty"))]
 
            [:span {:class ["ml-auto"]}
-            [actions/actions-list
-             (handlers/workspace->actions wsp)]]]
+            [actions/actions-list (handlers/->actions wsp)]]]
 
           [:div
            {:class ["mb-4" "font-mono"]}
-           dir]
+           directory]
 
           (when session
             [debug/raw-metadata
@@ -112,11 +110,13 @@
                ^{:key (:client/key client (:client/window-title client))}
                [client-detail client])])])))])
 
-;; TODO restore
-;; (defn topbar-metadata []
-;;   (let [metadata (topbar/use-topbar)]
-;;     [debug/raw-metadata {:label "Raw Topbar Metadata"}
-;;      (->> metadata (sort-by first))]))
+(defn topbar-metadata []
+  (let [metadata (hooks.topbar/use-topbar-metadata)]
+    [:span
+     {:class ["text-slate-200"]}
+     [debug/raw-metadata
+      {:label "Topbar Metadata"}
+      (some->> @metadata (sort-by first))]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -133,14 +133,22 @@
       {:class ["m-1"
                "p-4"
                "border"
+               "rounded"
                "border-city-blue-600"
                "bg-yo-blue-700"
                "text-white"
                "w-96"
                ]}
       [:div
-       (when color {:style {:color color}})
-       (str "(" index ") " (:workspace/title wsp))]
+       {:class ["flex flex-row" "items-center"]}
+       [:div
+        (merge
+          (when color {:style {:color color}})
+          {:class ["font-nes"]})
+        (str "(" index ") " (:workspace/title wsp))]
+
+       [:span {:class ["ml-auto"]}
+        [actions/actions-list (handlers/->actions wsp)]]]
 
       (when (seq clients)
         [:ul
@@ -148,22 +156,37 @@
          (for [c (->> clients)]
            ^{:key (:client/id c)}
            [:li
+            {:class ["flex flex-row" "items-center"]}
             (str (:client/window-title c) " | "
-                 (:client/app-name c))])])
+                 (:client/app-name c))
+            [:span {:class ["ml-auto"]}
+             [actions/actions-popup
+              {:comp
+               [:span {:class ["font-nes" "text-xs"]} "axs"]
+               :actions
+               (handlers/->actions c)}]]])])
 
       (when title-hiccup
         [:div title-hiccup])
 
       (when directory
-        [:div (dir directory)])])))
+        [:span
+         {:class ["font-mono"]}
+         (dir directory)])])))
 
 (defn page [_opts]
   (let [{:keys [selected-workspaces active-workspaces]} (hooks.workspaces/use-workspaces)]
     [:div
      {:class ["p-4"]}
-     [:h1
-      {:class ["font-nes" "text-2xl" "text-white" "pb-2"]}
-      (str "Workspaces (" (count active-workspaces) ")")]
+     [:div
+      {:class ["flex flex-row" "items-center"]}
+      [:h1
+       {:class ["font-nes" "text-2xl" "text-white" "pb-2"]}
+       (str "Workspaces (" (count active-workspaces) ")")]
+
+      [:div
+       {:class ["ml-auto"]}
+       [topbar-metadata]]]
 
      [:div
       {:class ["flex" "flex-row" "pt-4"]}
