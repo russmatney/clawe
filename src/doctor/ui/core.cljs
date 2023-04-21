@@ -20,7 +20,6 @@
    [pages.events :as pages.events]
    [pages.screenshots :as pages.screenshots]
    [pages.wallpapers :as pages.wallpapers]
-   [pages.workspaces :as pages.workspaces]
    [pages.garden :as pages.garden]
    [pages.posts :as pages.posts]
    [pages.journal :as pages.journal]
@@ -29,7 +28,9 @@
    [doctor.ui.views.blog :as views.blog]
    [doctor.ui.views.focus :as views.focus]
    [doctor.ui.views.topbar :as views.topbar]
-   [doctor.ui.views.dashboard :as views.dashboard]))
+   [doctor.ui.views.dashboard :as views.dashboard]
+   [doctor.ui.views.workspaces :as views.workspaces]
+   ))
 
 (comment
   :hello)
@@ -64,7 +65,7 @@
     :icon  octicons/workflow16}
    {:route "/posts" :page-name :page/posts :label "Posts" :comp pages.posts/page
     :icon  octicons/comment16}
-   {:route "/workspaces" :page-name :page/workspaces :label "Workspaces" :comp pages.workspaces/page
+   {:route "/workspaces" :page-name :page/workspaces :label "Workspaces" :comp views.workspaces/widget
     :icon  octicons/clippy16}
    {:route "/journal" :page-name :page/journal :label "Journal" :comp pages.journal/page
     :icon  octicons/book16}

@@ -12,6 +12,7 @@
 
    [doctor.ui.views.focus :as focus]
    [doctor.ui.views.blog :as blog]
+   [doctor.ui.views.workspaces :as workspaces]
    [hiccup-icons.octicons :as octicons]))
 
 (def all-todos-initial-filters
@@ -69,6 +70,9 @@
     [widget-bar {:comp  blog/widget
                  :opts  opts
                  :label :blog}]
+    [widget-bar {:comp  workspaces/widget
+                 :opts  opts
+                 :label :workspaces}]
     [widget-bar {:comp
                  (fn [opts]
                    (let [recent-events (ui.db/events (:conn opts))

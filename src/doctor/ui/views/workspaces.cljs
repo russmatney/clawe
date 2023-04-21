@@ -1,4 +1,4 @@
-(ns pages.workspaces
+(ns doctor.ui.views.workspaces
   (:require
    [clojure.string :as string]
    [hooks.workspaces :as hooks.workspaces]
@@ -179,7 +179,7 @@
          {:class ["font-mono"]}
          (dir directory)])])))
 
-(defn page [_opts]
+(defn widget [_opts]
   (let [{:keys [selected-workspaces active-workspaces]} (hooks.workspaces/use-workspaces)]
     [:div
      {:class ["p-4"]}
