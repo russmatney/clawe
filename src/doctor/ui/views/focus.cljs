@@ -10,6 +10,7 @@
    [components.garden :as components.garden]
    [components.debug :as components.debug]
    [components.todo :as todo]
+   [components.item :as item]
    [components.filter-defs :as filter-defs]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -76,40 +77,6 @@
                   ]}
          p-name]]))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; item-id-hash
-
-(defn item-id-hash [it]
-  [:div
-   {:class
-    (concat
-      ["flex" "text-sm" "font-nes"
-       "text-city-red-300" "ml-2"
-       "hover:opacity-100"]
-      (when-not (:org/id it)
-        ["opacity-50" "cursor-pointer" "tooltip"]))
-    :on-click (fn [_] (when-not (:org/id it)
-                        (handlers/ensure-uuid it)))}
-   (if (:org/id it)
-     (->> it :org/id str (take 4) (apply str))
-     [:span
-      [:span {:class ["tooltip-text" "-mt-12" "-ml-12"]}
-       "ensure-uuid"]
-      "####"])])
-
-(defn db-id [it]
-  (when (:db/id it)
-    [:div
-     {:class
-      ["flex" "text-sm" "font-nes" "ml-2"
-       "text-city-green-300"
-       "hover:text-slate-400"
-       "hover:line-through"
-       "cursor-pointer" "tooltip"]
-      :on-click #(handlers/delete-from-db it)}
-     [:span {:class ["tooltip-text" "-mt-12" "-ml-12"]}
-      "delete-from-db"]
-     (->> it :db/id str (apply str))]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; current item header
@@ -122,7 +89,8 @@
    [:div {:class ["flex" "flex-row" "items-center"]}
     [todo/level it]
     [todo-status it]
-    [item-id-hash it]
+    [item/db-id it]
+    [item/id-hash it]
     [:div {:class ["ml-auto"]}
      [todo/tags-list
       {:on-click (fn [tag] (use-focus/remove-tag it tag))}
@@ -177,8 +145,8 @@
 
      [todo/level it]
      [todo-status it]
-     [db-id it]
-     [item-id-hash it]
+     [item/db-id it]
+     [item/id-hash it]
      [:div {:class ["ml-auto"]}
       [todo/priority-label {:on-click (fn [_] (use-focus/remove-priority it))} it]]]
 
@@ -286,8 +254,8 @@
               {:class ["flex" "flex-row" "items-center"]}
 
               [todo-status item]
-              [db-id item]
-              [item-id-hash item]
+              [item/db-id item]
+              [item/id-hash item]
               [:div {:class ["ml-auto"]}
                [todo/tags-list
                 {:on-click (fn [tag] (use-focus/remove-tag item tag))}
