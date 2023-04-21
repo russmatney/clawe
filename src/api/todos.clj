@@ -1,5 +1,6 @@
 (ns api.todos
   (:require
+   [taoensso.timbre :as log]
    [systemic.core :refer [defsys] :as sys]
    [manifold.stream :as s]
    [garden.db :as garden.db]
@@ -11,7 +12,22 @@
 ;; DB todo crud
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn list-todos-db []
+(defn list-current-db-todos []
+  (some->>
+    (db/query
+      '[:find (pull ?e [*])
+        :where
+        [?e :doctor/type :type/todo]
+        (or
+          [?e :org/status :status/in-progress]
+          ;; TODO remove tags from db when removed from org items
+          #_[?e :org/tags "current"])])
+    (map first)))
+
+(comment
+  (count (list-current-db-todos)))
+
+(defn list-db-todos []
   (some->>
     (db/query
       '[:find (pull ?e [*])
@@ -19,7 +35,7 @@
     (map first)))
 
 (comment
-  (count (list-todos-db)))
+  (count (list-db-todos)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; org helpers
@@ -43,7 +59,7 @@
 
 (defn build-todos []
   (let [org-todos (relevant-org-todos)
-        db-todos  (list-todos-db)
+        db-todos  (list-db-todos)
         ;; TODO merge instead of concat/dedupe
         all       (->> (concat org-todos db-todos)
                        (w/distinct-by :org/name-string))]
@@ -53,6 +69,11 @@
   :start (s/stream)
   :stop (s/close! *todos-stream*))
 
-(defn push-todos
-  ([] (push-todos nil))
-  ([todos] (s/put! *todos-stream* (or todos (build-todos)))))
+(defsys ^:dynamic *current-todos-stream*
+  :start (s/stream)
+  :stop (s/close! *current-todos-stream*))
+
+(defn push-todos []
+  (log/info "Pushing todo data")
+  (s/put! *current-todos-stream* (list-current-db-todos))
+  (s/put! *todos-stream* (build-todos)))

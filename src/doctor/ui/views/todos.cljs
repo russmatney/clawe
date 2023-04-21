@@ -122,29 +122,24 @@
 ;; main widget
 
 (defn widget [opts]
-  (let [{:keys [todos]} (use-todos/use-todos-data)
-
+  (let [todos          (use-todos/use-todos-data)
         hide-completed (uix/state (:hide-completed opts))
-        only-current   (uix/state (:only-current opts))
         pills
         [{:on-click #(swap! hide-completed not)
           :label    (if @hide-completed "Show completed" "Hide completed")
-          :active   @hide-completed}
-         {:on-click #(swap! only-current not)
-          :label    (if @only-current "Show all" "Show only current")
-          :active   @only-current}]
+          :active   @hide-completed}]
 
-        filter-data (components.filter/use-filter
-                      (-> filter-defs/fg-config
-                          (assoc :items todos
-                                 :show-filters-inline true
-                                 :extra-preset-pills pills
-                                 :filter-items (fn [items]
-                                                 (cond->> items
-                                                   @hide-completed (remove todo/completed?)
-                                                   @only-current   (filter todo/current?)))
-                                 :sort-items todo/sort-todos)
-                          (update :presets merge (presets))))]
+        filter-data
+        (components.filter/use-filter
+          (-> filter-defs/fg-config
+              (assoc :items @todos
+                     :show-filters-inline true
+                     :extra-preset-pills pills
+                     :filter-items (fn [items]
+                                     (cond->> items
+                                       @hide-completed (remove todo/completed?)))
+                     :sort-items todo/sort-todos)
+              (update :presets merge (presets))))]
     [:div
      {:class ["bg-city-blue-800"
               "bg-opacity-90"]}
@@ -164,7 +159,7 @@
          [components.filter/items-by-group
           (assoc filter-data :item->comp todo/card-or-card-group)]])
 
-      (when (not (seq todos))
+      (when (not (seq @todos))
         [:div
          {:class ["text-bold" "text-city-pink-300" "p-4"]}
          [:h1

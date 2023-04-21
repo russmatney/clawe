@@ -29,7 +29,9 @@
   (-> it :org/status #{:status/in-progress}))
 
 (defn current? [it]
-  (seq (set/intersection #{"current"} (:org/tags it))))
+  (seq (set/intersection #{"current"} (->> it :org/tags
+                                           ;; ugh, tags from db are not sets
+                                           (into #{})))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; sort todos

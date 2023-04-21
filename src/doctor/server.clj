@@ -118,6 +118,7 @@
   [api.workspaces/*workspaces-stream*
    api.topbar/*topbar-metadata-stream*
    api.todos/*todos-stream*
+   api.todos/*current-todos-stream*
    api.db/*db-stream*
    ;; some of these should maybe be db/*conn* deps, not server deps
    ;; api.db/*tx->fe-db*

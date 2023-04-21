@@ -132,24 +132,23 @@
       :opts  opts
       :comp
       (fn [opts]
-        (let [queued-todos (ui.db/queued-todos (:conn opts))
-
-              all-todos (ui.db/garden-todos
-                          (:conn opts) {:n 200 ;; TODO support fetching more
-                                        :filter-pred
-                                        (fn [{:org/keys [status]}]
-                                          (#{:status/not-started} status))})
+        (let [current-todos (ui.db/current-todos (:conn opts))
+              all-todos     (ui.db/garden-todos
+                              (:conn opts) {:n 200 ;; TODO support fetching more
+                                            :filter-pred
+                                            (fn [{:org/keys [status]}]
+                                              (#{:status/not-started} status))})
               todo-filter-results
               (components.filter/use-filter
                 (assoc filter-defs/fg-config :items all-todos))]
           [:div
            [:div
-            [:div "Todo list (" (count queued-todos) ")"]
-            [components.todo/todo-list {:n 5} queued-todos]]
+            [:div "Todo list (" (count current-todos) ")"]
+            [components.todo/todo-list {:n 5} current-todos]]
 
            (let [expanded (uix/state
                             ;; default to hiding all todos if some are queued
-                            (< (count queued-todos) 2))]
+                            (< (count current-todos) 2))]
              [:div
               [:div "All todos (" (count (:filtered-items todo-filter-results)) ")"
                (count all-todos)]

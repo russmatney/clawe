@@ -15,4 +15,15 @@
        (with-rpc [] (get-todos-data) handle-resp)
        (with-stream [] (todos-stream) handle-resp)
 
-       {:todos @todos})))
+       todos)))
+
+(defhandler get-current-todos [] (api.todos/list-current-db-todos))
+(defstream current-todos-stream [] api.todos/*current-todos-stream*)
+
+#?(:cljs
+   (defn use-current-todos []
+     (let [todos       (plasma.uix/state [])
+           handle-resp #(reset! todos %)]
+       (with-rpc [] (get-current-todos) handle-resp)
+       (with-stream [] (current-todos-stream) handle-resp)
+       todos)))

@@ -49,7 +49,7 @@
                           k)))
               first))))
 
-(defn should-push-focus-data? [file]
+(defn should-push-updated-data? [file]
   (or
     (string/includes? (str file) "daily")
     (string/includes? (str file) "garden")))
@@ -65,8 +65,8 @@
         (log/debug "Syncing file" (str (fs/file-name (:file event))))
         (garden.db/sync-and-purge-for-path (:file event)))
 
-      (when (should-push-focus-data? (:file event))
-        (log/debug "Pushing focus data" (str (fs/file-name (:file event))))
+      (when (should-push-updated-data? (:file event))
+        (log/debug "Pushing updated todos" (str (fs/file-name (:file event))))
         (api.todos/push-todos)))
     (garden-dir-path))
 

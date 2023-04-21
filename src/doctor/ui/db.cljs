@@ -155,25 +155,15 @@
          ((fn [todos] (if filter-pred (->> todos (filter filter-pred)) todos)))
          (take n))))))
 
-(defn queued-todos [conn]
+(defn current-todos [conn]
   (->>
     (d/q '[:find (pull ?e [*])
            :where
-           [?e :todo/queued-at ?queued-at]]
-         conn)
-    (map first)
-    (remove (comp #{:status/cancelled :status/done} :org/status))
-    (sort-by :todo/queued-at dt/sort-latest-first)))
-
-(defn garden-current-todos [conn]
-  (->>
-    (d/q '[:find (pull ?e [*])
-           :where
-           [?e :doctor/type ?type]
-           [(contains? #{:type/note :type/todo} ?type)]
-           ;; TODO debug this, seems like it should work
-           [?e :org/tags "current"]
-           #_[(contains? ?tags "current")]]
+           [?e :doctor/type :type/todo]
+           (or
+             [?e :org/status :status/in-progress]
+             ;; TODO remove tags from db when removed from org items
+             #_[?e :org/tags "current"])]
          conn)
     (map first)
     (remove (comp #{:status/cancelled :status/done} :org/status))

@@ -17,12 +17,10 @@
 
 ;; TODO move to views/focus
 (defn current-task [{:keys [conn]}]
-  (let [todos         (ui.db/queued-todos conn)
-        current-todos (ui.db/garden-current-todos conn)]
-    (if-not (or (seq todos) (seq current-todos))
+  (let [current-todos (ui.db/current-todos conn)]
+    (if-not (seq current-todos)
       [:span "--"]
-      (let [queued  (->> todos
-                         (concat current-todos)
+      (let [queued  (->> current-todos
                          (w/dedupe-by :db/id)
                          (sort-by :todo/queued-at dt/sort-latest-first)
                          (into []))
@@ -140,6 +138,6 @@
 ;; main widget
 
 (defn widget [_opts]
-  (let [{:keys [todos]} (use-todos/use-todos-data)
-        current-todos   (some->> todos (filter todo/current?) seq)]
+  (let [todos         (use-todos/use-current-todos)
+        current-todos (some->> @todos (filter todo/current?) seq)]
     [current-stack current-todos]))
