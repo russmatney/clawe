@@ -1,7 +1,7 @@
 (ns doctor.ui.views.todos
   (:require
    [uix.core.alpha :as uix]
-   [doctor.ui.hooks.use-focus :as use-focus]
+   [doctor.ui.hooks.use-todos :as use-todos]
    [components.filter :as components.filter]
    [components.todo :as todo]
    [components.filter-defs :as filter-defs]))
@@ -122,8 +122,7 @@
 ;; main widget
 
 (defn widget [opts]
-  (let [focus-data      (use-focus/use-focus-data)
-        {:keys [todos]} @focus-data
+  (let [{:keys [todos]} (use-todos/use-todos-data)
 
         hide-completed (uix/state (:hide-completed opts))
         only-current   (uix/state (:only-current opts))

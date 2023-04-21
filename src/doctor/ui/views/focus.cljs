@@ -1,6 +1,6 @@
 (ns doctor.ui.views.focus
   (:require
-   [doctor.ui.hooks.use-focus :as use-focus]
+   [doctor.ui.hooks.use-todos :as use-todos]
    [doctor.ui.handlers :as handlers]
    [components.actions :as components.actions]
    [components.garden :as components.garden]
@@ -88,7 +88,6 @@
 ;; main widget
 
 (defn widget [_opts]
-  (let [focus-data      (use-focus/use-focus-data)
-        {:keys [todos]} @focus-data
+  (let [{:keys [todos]} (use-todos/use-todos-data)
         current-todos   (some->> todos (filter todo/current?) seq)]
     [current-stack current-todos]))

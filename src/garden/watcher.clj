@@ -5,7 +5,7 @@
    [taoensso.timbre :as log]
    [babashka.fs :as fs]
    [garden.db :as garden.db]
-   [api.focus :as api.focus]
+   [api.todos :as api.todos]
    [clojure.string :as string]))
 
 (defn ->repo-root [repo-id]
@@ -67,7 +67,7 @@
 
       (when (should-push-focus-data? (:file event))
         (log/debug "Pushing focus data" (str (fs/file-name (:file event))))
-        (api.focus/update-focus-data)))
+        (api.todos/push-todos)))
     (garden-dir-path))
 
   :stop

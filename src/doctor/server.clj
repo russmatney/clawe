@@ -13,7 +13,6 @@
 
    [dates.transit-time-literals :as ttl]
    [api.db :as api.db]
-   [api.focus :as api.focus]
    [api.topbar :as api.topbar]
    [api.todos :as api.todos]
    [api.workspaces :as api.workspaces]
@@ -118,7 +117,6 @@
   :extra-deps
   [api.workspaces/*workspaces-stream*
    api.topbar/*topbar-metadata-stream*
-   api.focus/*focus-data-stream*
    api.todos/*todos-stream*
    api.db/*db-stream*
    ;; some of these should maybe be db/*conn* deps, not server deps
