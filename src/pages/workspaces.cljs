@@ -58,7 +58,8 @@
    {:class ["bg-yo-blue-500"
             "m-2" "p-6"
             "border" "rounded"
-            "text-white" "w-full"]}
+            "text-white" "w-full"
+            "flex flex-col"]}
    (when (seq active-workspaces)
      (for [wsp active-workspaces]
        (let [{:keys [;; TODO restore these git features
@@ -72,6 +73,7 @@
 
          ^{:key title}
          [:div
+          {:class ["flex flex-col"]}
           [:div
            {:class ["flex flex-row justify-between items-center"]}
            [:span {:class ["text-xl font-nes"]}
@@ -87,16 +89,12 @@
 
           [:div
            {:class ["mb-4" "font-mono"]}
-           directory]
+           (dir directory)]
 
           (when session
             [debug/raw-metadata
-             {:label "Raw Tmux Session Metadata"}
+             {:label "Tmux Metadata"}
              session])
-
-          [debug/raw-metadata
-           {:label "Raw Workspace Metadata"}
-           wsp]
 
           [:div
            {:class ["flex flex-row justify-between items-center" "py-2"]}
@@ -108,7 +106,13 @@
              {:class ["flex flex-row flex-wrap" "items-center"]}
              (for [client clients]
                ^{:key (:client/key client (:client/window-title client))}
-               [client-detail client])])])))])
+               [client-detail client])])
+
+          [:div
+           {:class ["ml-auto"]}
+           [debug/raw-metadata
+            {:label "RAW"}
+            wsp]]])))])
 
 (defn topbar-metadata []
   (let [metadata (hooks.topbar/use-topbar-metadata)]
