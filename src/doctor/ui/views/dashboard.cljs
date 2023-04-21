@@ -13,6 +13,7 @@
    [doctor.ui.views.focus :as focus]
    [doctor.ui.views.blog :as blog]
    [doctor.ui.views.workspaces :as workspaces]
+   [hooks.workspaces :as hooks.workspaces]
    [hiccup-icons.octicons :as octicons]))
 
 (def all-todos-initial-filters
@@ -25,7 +26,7 @@
     ;; i wanna filter out todo/queued-at too
     })
 
-(defn widget-bar [{:keys [comp label opts initial-show]}]
+(defn widget-bar [{:keys [comp label opts initial-show actions]}]
   (let [show? (uix/state initial-show)]
     [:div {:class ["flex flex-col"]}
      [:div
@@ -37,14 +38,17 @@
       [:div
        {:class ["ml-auto"]}
        [components.actions/actions-list
-        {:actions [{:action/on-click (fn [_] (swap! show? not))
-                    :action/label    "Show"
-                    :action/icon     octicons/chevron-down16
-                    :action/disabled @show?}
-                   {:action/on-click (fn [_] (swap! show? not))
-                    :action/label    "Hide"
-                    :action/icon     octicons/chevron-up16
-                    :action/disabled (not @show?)}]}]]]
+        {:n 5
+         :actions
+         (concat [{:action/on-click (fn [_] (swap! show? not))
+                   :action/label    "Show"
+                   :action/icon     octicons/chevron-down16
+                   :action/disabled @show?}
+                  {:action/on-click (fn [_] (swap! show? not))
+                   :action/label    "Hide"
+                   :action/icon     octicons/chevron-up16
+                   :action/disabled (not @show?)}]
+                 actions)}]]]
      (when @show? [comp opts])]))
 
 (defn widget [opts]
@@ -54,25 +58,31 @@
    [:div
     {:class ["relative"]}
 
-    [widget-bar {:comp  (fn [_opts]
-                          [:div
-                           [ingest/ingest-buttons]
-                           [ingest/commit-ingest-buttons (:conn opts)]])
-                 :opts  opts
-                 :label :ingestors}]
+    [widget-bar {:comp    (fn [_opts]
+                            [:div
+                             [ingest/ingest-buttons]
+                             [ingest/commit-ingest-buttons (:conn opts)]])
+                 :opts    opts
+                 :label   :ingestors
+                 :actions (ingest/ingest-actions)}]
 
     [widget-bar {:comp  focus/widget
                  :opts  (assoc opts :only-current-stack true)
-                 :label :current}]
+                 :label :current-focus}]
+
     [widget-bar {:comp  focus/widget
                  :opts  opts
-                 :label :focus}]
+                 :label :todos}]
+
     [widget-bar {:comp  blog/widget
                  :opts  opts
                  :label :blog}]
-    [widget-bar {:comp  workspaces/widget
-                 :opts  opts
-                 :label :workspaces}]
+
+    [widget-bar {:comp    workspaces/widget
+                 :opts    opts
+                 :label   :workspaces
+                 :actions (hooks.workspaces/actions)}]
+
     [widget-bar {:comp
                  (fn [opts]
                    (let [recent-events (ui.db/events (:conn opts))
@@ -131,6 +141,6 @@
                   {:n 5}
                   (:filtered-items todo-filter-results)]])])]))
       :opts  opts
-      :label :todos}]]
+      :label :old-todos}]]
 
    ])

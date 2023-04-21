@@ -4,13 +4,25 @@
    #?@(:clj [[api.workspaces :as api.workspaces]
              [api.topbar :as api.topbar]
              [clawe.wm :as wm]
+             [clawe.rules :as clawe.rules]
              [taoensso.timbre :as log]]
        :cljs [[wing.core :as w]
               [plasma.uix :refer [with-rpc with-stream]]])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Workspaces
+;; Actions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defhandler clean-up-workspaces []
+  (log/info "Cleaning up workspaces")
+  (clawe.rules/clean-up-workspaces)
+  (api.workspaces/push-updated-workspaces)
+  (api.topbar/push-topbar-metadata))
+
+#?(:cljs
+   (defn actions []
+     [{:action/label    "Clean up"
+       :action/on-click #(clean-up-workspaces)}]))
 
 (defhandler close-workspaces [w]
   (log/info "Closing workspace" (:workspace/title w))
