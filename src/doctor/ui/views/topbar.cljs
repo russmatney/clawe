@@ -247,7 +247,8 @@
                  :action/disabled (zero? @n)
                  :action/on-click (fn [_] (swap! n dec))
                  :action/priority 5}])
-             (handlers/->actions current))}]]))))
+             (handlers/->actions current))
+           :hide-disabled true}]]))))
 
 (defn widget [opts]
   (let [metadata                                      (hooks.topbar/use-topbar-metadata)
@@ -277,12 +278,12 @@
            [:span
             {:class ["font-nes" "text-city-blue-500"]}
             (:workspace/title current-workspace)]
-           [:span
-            {:class ["text-city-blue-500" "font-mono"]}
-            (-> current-workspace
-                :workspace/directory
-                (string/replace "/home/russ" "~")
-                (string/replace "/Users/russ" "~"))]]))
+           #_[:span
+              {:class ["text-city-blue-500" "font-mono"]}
+              (-> current-workspace
+                  :workspace/directory
+                  (string/replace "/home/russ" "~")
+                  (string/replace "/Users/russ" "~"))]]))
 
       [:div
        {:class ["ml-auto"]}
