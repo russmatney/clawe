@@ -86,12 +86,9 @@
 
    :filters/last-modified-date
    {:label          "Last Modified Date"
-    :group-by       (fn [it]
-                      (-> it :file/last-modified
-                          dates.tick/parse-time-string
-                          t/date))
+    :group-by       (fn [it] (some-> it :file/last-modified t/date))
     :sort-groups-fn (fn [item-groups]
-                      (->> item-groups (sort-by :label t/>)))
+                      (->> item-groups (sort-by :label dates.tick/sort-latest-first)))
     :filter-options [{:label    "Today"
                       :match-fn (fn [lm] (t/>= lm (t/today)))}
                      {:label    "Yesterday"
