@@ -27,17 +27,25 @@
 (defn ensure-list [xs]
   (if (string? xs) [xs] xs))
 
+(declare fetch-matching-db-item)
+
 (defn garden-note->db-item
   [{:org/keys [id links-to parent-ids urls tags] :as item}]
-  (let [fallback (fallback-id item)]
+  (let [fallback (fallback-id item)
+        db-match (fetch-matching-db-item item)]
     (if-not (or id fallback)
       (log/info "Could not create fallback id for org item" (:org/name-string item))
 
       (cond-> item
         id (assoc :org/id id)
 
-        fallback
+        (and fallback
+             ;; might be the wrong move, but syncing/upsert conflicts are a headache rn
+             (not id))
         (assoc :org/fallback-id fallback)
+
+        db-match
+        (assoc :db/id (:db/id db-match))
 
         (seq links-to)
         (assoc :org/links-to (->> links-to
@@ -143,34 +151,34 @@
   "`db-notes` are garden-notes already mapped via `garden-note->db-item`."
   [opts db-notes]
   (let [page-size (:page-size opts 5)]
-    (doall
-      (->>
-        db-notes
-        (sort-by :org/source-file)
-        (sort-by :org/fallback-id)
-        (partition-all page-size)
-        (map (fn transact-garden-notes [notes]
-               (db/transact
-                 notes
-                 {:on-error -on-error-log-notes
-                  :verbose? true
-                  :on-unsupported-type
-                  (fn [note]
-                    (log/debug "Unsupported type on note" note))
-                  ;; retry logic that narrows in on bad records
-                  ;; NOTE not ideal if we care about things belonging to the same transaction
-                  :on-retry
-                  (fn [notes]
-                    (let [size (count notes)
-                          half (/ size 2)]
-                      (if (> size 1)
-                        (do
-                          (log/info "\n\nRetrying with smaller groups." (count notes))
-                          (transact-garden-notes (->> notes (take half)))
-                          (transact-garden-notes (->> notes (drop half) (take half))))
-                        (log/info "\n\nProblemmatic record:" (some->>
-                                                               notes first
-                                                               :org/name-string)))))})))))))
+    (->>
+      db-notes
+      (sort-by :org/source-file)
+      (sort-by :org/fallback-id)
+      (partition-all page-size)
+      (map (fn transact-garden-notes [notes]
+             (db/transact
+               notes
+               {:on-error -on-error-log-notes
+                :verbose? true
+                :on-unsupported-type
+                (fn [note]
+                  (log/debug "Unsupported type on note" note))
+                ;; retry logic that narrows in on bad records
+                ;; NOTE not ideal if we care about things belonging to the same transaction
+                :on-retry
+                (fn [notes]
+                  (let [size (count notes)
+                        half (/ size 2)]
+                    (if (> size 1)
+                      (do
+                        (log/info "\n\nRetrying with smaller groups." (count notes))
+                        (transact-garden-notes (->> notes (take half)))
+                        (transact-garden-notes (->> notes (drop half) (take half))))
+                      (log/info "\n\nProblemmatic record:" (some->>
+                                                             notes first
+                                                             :org/name-string)))))})))
+      doall)))
 
 (defn sync-garden-notes-to-db
   "Adds the passed garden notes to the db, after mapping them via `garden-note->db-item`."
@@ -247,6 +255,9 @@
   (let [notes-to-sync
         (->> [garden-path]
              garden.core/paths->flattened-garden-notes
+             ;; do we need this? remove children so they don't get synced early?
+             ;; OR maybe don't flatten and rely on the children syncing?
+             ;; (map #(dissoc % :org/items))
              (map garden-note->db-item))
         db-note-ids    (->> notes-to-sync (map :org/id) (into #{}))
         db-note-fb-ids (->> notes-to-sync (map :org/fallback-id) (into #{}))]
@@ -267,7 +278,10 @@
       (->> notes-to-purge
            (map :db/id)
            (remove nil?)
-           (db/retract)))))
+           (db/retract))
+
+      ;; TODO also need to purge removed tags, changed parent-names... probably all lists
+      )))
 
 (comment
   (def note
@@ -277,8 +291,9 @@
       first))
 
   (sync-and-purge-for-path (:org/source-file note))
-  )
 
+  (-> (garden/daily-path 1)
+      sync-and-purge-for-path))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; fetch
@@ -395,11 +410,19 @@
                     id fb-id)
           (map first))]
     (when (> (count matches) 1)
-      (log/warn "Multiple matches found for org item" id fb-id))
+      (log/info "Multiple matches found for org item" id fb-id (->> matches (map :db/id))))
 
     (some->> matches first)))
 
 (comment
+
+  (->>
+    (garden/daily-paths 1)
+    (garden/paths->nested-garden-notes)
+    #_ (filter (comp #(string/includes? % "clawe hacking") :org/name-string))
+    first
+    fetch-matching-db-item)
+
   (first (fetch-db-garden-notes))
   (def note
     (->>

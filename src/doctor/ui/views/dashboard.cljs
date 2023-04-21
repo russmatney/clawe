@@ -90,6 +90,7 @@
     [widget-bar {:comp  todos/widget
                  :label "todos"
                  :icon  octicons/checklist16
+                 :opts  opts
                  :actions
                  [{:action/label    "Process Prioritized Actions"
                    :action/on-click #(js/alert "todo")}]}]
@@ -133,7 +134,7 @@
       :comp
       (fn [opts]
         (let [current-todos (ui.db/current-todos (:conn opts))
-              all-todos     (ui.db/garden-todos
+              all-todos     (ui.db/list-todos
                               (:conn opts) {:n 200 ;; TODO support fetching more
                                             :filter-pred
                                             (fn [{:org/keys [status]}]

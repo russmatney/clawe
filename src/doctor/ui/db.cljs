@@ -141,8 +141,8 @@
          (map :org/source-file)
          (take n))))))
 
-(defn garden-todos
-  ([conn] (garden-todos conn nil))
+(defn list-todos
+  ([conn] (list-todos conn nil))
   ([conn {:keys [n filter-pred]}]
    (when conn
      (let [n (or n 100)]

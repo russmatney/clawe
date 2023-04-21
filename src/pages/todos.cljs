@@ -12,7 +12,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn page [{:keys [conn]}]
-  (let [todos    (ui.db/garden-todos conn {:n 1000})
+  (let [todos    (ui.db/list-todos conn {:n 1000})
         selected (uix/state (first todos))
         {:keys [filtered-items filter-grouper]
          :as   filter-data}

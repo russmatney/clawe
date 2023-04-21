@@ -5,7 +5,6 @@
    [manifold.stream :as s]
    [garden.db :as garden.db]
    [db.core :as db]
-   [wing.core :as w]
    [garden.core :as garden]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -53,17 +52,15 @@
 (comment
   (count (relevant-org-todos)))
 
+(defn ingest-relevant-org-todos []
+  (db/transact (relevant-org-todos)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; get-todos
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn build-todos []
-  (let [org-todos (relevant-org-todos)
-        db-todos  (list-db-todos)
-        ;; TODO merge instead of concat/dedupe
-        all       (->> (concat org-todos db-todos)
-                       (w/distinct-by :org/name-string))]
-    all))
+  (list-db-todos))
 
 (defsys ^:dynamic *todos-stream*
   :start (s/stream)

@@ -73,11 +73,7 @@
   :ok)
 
 (defhandler add-tag [item tag]
-  (org-crud.api/update! item
-                        (cond->
-                            {:org/tags tag}
-                          (not (:org/id item))
-                          (assoc :org/id (random-uuid))))
+  (org-crud.api/update! item {:org/tags tag})
   :ok)
 
 (defhandler remove-tag [item tag]

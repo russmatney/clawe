@@ -1,7 +1,7 @@
 (ns doctor.ui.views.todos
   (:require
    [uix.core.alpha :as uix]
-   [doctor.ui.hooks.use-todos :as use-todos]
+   [doctor.ui.db :as ui.db]
    [components.filter :as components.filter]
    [components.todo :as todo]
    [components.filter-defs :as filter-defs]))
@@ -122,7 +122,8 @@
 ;; main widget
 
 (defn widget [opts]
-  (let [todos          (use-todos/use-todos-data)
+  (let [;;todos          (use-todos/use-todos-data)
+        todos          (ui.db/list-todos (:conn opts))
         hide-completed (uix/state (:hide-completed opts))
         pills
         [{:on-click #(swap! hide-completed not)
@@ -132,7 +133,7 @@
         filter-data
         (components.filter/use-filter
           (-> filter-defs/fg-config
-              (assoc :items @todos
+              (assoc :items todos
                      :show-filters-inline true
                      :extra-preset-pills pills
                      :filter-items (fn [items]
@@ -159,7 +160,7 @@
          [components.filter/items-by-group
           (assoc filter-data :item->comp todo/card-or-card-group)]])
 
-      (when (not (seq @todos))
+      (when (not (seq todos))
         [:div
          {:class ["text-bold" "text-city-pink-300" "p-4"]}
          [:h1
