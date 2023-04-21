@@ -4,8 +4,7 @@
    [systemic.core :as sys :refer [defsys]]
    [taoensso.timbre :as log]
    [babashka.fs :as fs]
-   [garden.db :as garden.db]
-   [clojure.string :as string]))
+   [garden.db :as garden.db]))
 
 (defn ->repo-root [repo-id]
   (str (fs/home) "/" repo-id))
@@ -47,11 +46,6 @@
                           (log/debug "File matches pattern" k)
                           k)))
               first))))
-
-(defn should-push-updated-data? [file]
-  (or
-    (string/includes? (str file) "daily")
-    (string/includes? (str file) "garden")))
 
 (defsys ^:dynamic *garden-watcher*
   :start

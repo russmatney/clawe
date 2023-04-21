@@ -117,10 +117,11 @@
        (->>
          (d/q '[:find (pull ?e [*])
                 :where
-                [?e :doctor/type :type/note]]
+                [?e :doctor/type :type/note]
+                [?e :org/level :level/root]]
               conn)
          (map first)
-         (sort-by :org/created-at dt/sort-latest-first)
+         (sort-by :file/last-modified dt/sort-latest-first)
          (take n))))))
 
 (defn garden-files

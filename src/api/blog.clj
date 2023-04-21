@@ -20,16 +20,16 @@
 (defn build-blog-data []
   (let [db        (blog.db/get-db)
         month-ago (t/<< (dates/now) (t/new-period 2 :months))]
-    {:root-notes (->> db :root-notes-by-id
-                      vals
-                      (filter (fn [note]
-                                (when-not (some-> note :file/last-modified)
-                                  (log/info "Note without :file/last-modified" note))
-                                (when (some-> note :file/last-modified)
-                                  (dates/sort-latest-first
-                                    (some-> note :file/last-modified dates/parse-time-string)
-                                    month-ago))))
-                      (sort-by :org/name-string))}))
+    {:root-notes
+     (->> db :root-notes-by-id vals
+          (filter (fn [note]
+                    (when-not (some-> note :file/last-modified)
+                      (log/info "Note without :file/last-modified" note))
+                    (when (some-> note :file/last-modified)
+                      (dates/sort-latest-first
+                        (-> note :file/last-modified dates/parse-time-string)
+                        month-ago))))
+          (sort-by :org/name-string))}))
 
 (defsys ^:dynamic *blog-data-stream*
   :start (s/stream)

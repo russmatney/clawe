@@ -13,7 +13,8 @@
    [tick.core :as t]
    [dates.tick :as dates.tick]
    [components.colors :as colors]
-   [hiccup-icons.octicons :as octicons]))
+   [hiccup-icons.octicons :as octicons]
+   [doctor.ui.db :as ui.db]))
 
 (def icon
   octicons/comment-discussion16)
@@ -30,6 +31,8 @@
 (defn blog-actions []
   [{:action/label    "Republish Blog"
     :action/on-click (fn [_] (use-blog/rebuild-all))}
+   {:action/label    "Ingest Garden Recent"
+    :action/on-click (fn [_] (handlers/ingest-garden-latest))}
    {:action/label    "Ingest Garden Full"
     :action/on-click (fn [_] (handlers/ingest-garden-full))}])
 
@@ -259,9 +262,14 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; main widget
 
-(defn widget [_opts]
+(defn widget [opts]
   (let [blog-data            (use-blog/use-blog-data)
         {:keys [root-notes]} @blog-data
+
+        notes (ui.db/garden-notes (:conn opts))
+
+        _ (println "root notes" (count root-notes))
+        _ (println "fe db notes" (count notes))
 
         sort-published-first (uix/state nil)
         sort-published-last  (uix/state nil)

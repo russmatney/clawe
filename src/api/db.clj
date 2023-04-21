@@ -15,6 +15,12 @@
     (map :e)))
 
 (comment
+  (count (last-modified-files->es 40))
+  (->> (last-modified-files->es 40)
+       sort
+       (d/pull-many @db/*conn* '[*])
+       count
+       )
   (->> (d/datoms @db/*conn* :avet :file/last-modified) reverse)
   (->> (last-modified-files->es 5)
        (d/pull-many @db/*conn* '[*])))
@@ -38,7 +44,7 @@
 (defn datoms-for-frontend []
   (->>
     (concat
-      (last-modified-files->es 40)
+      (last-modified-files->es 200)
       (recent-wallpapers->es 20)
       (recent-events->es 100))
     dedupe
@@ -65,8 +71,7 @@
 
 (comment
   (sys/start! `*db-stream*)
-  (sys/restart! `*db-stream*)
-  )
+  (sys/restart! `*db-stream*))
 
 (defn push-to-fe-db [txs]
   (s/put! *db-stream* txs))

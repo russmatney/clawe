@@ -212,7 +212,7 @@
 
 (defn sync-all-garden-files []
   (sync-garden-paths-to-db
-    {:page-size 2000}
+    {:page-size 200}
     ;; oldest first
     (->> (garden/last-modified-paths) reverse)))
 
