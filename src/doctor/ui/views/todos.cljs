@@ -138,7 +138,8 @@
                      :filter-items (fn [items]
                                      (cond->> items
                                        @hide-completed (remove todo/completed?)))
-                     :sort-items todo/sort-todos)
+                     :sort-items todo/sort-todos
+                     :label (str (count todos) " Todos"))
               (update :presets merge (presets))))]
     [:div
      {:class ["bg-city-blue-800"

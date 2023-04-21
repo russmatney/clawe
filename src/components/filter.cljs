@@ -7,6 +7,7 @@
    [components.floating :as floating]
    [components.table :as components.table]
    [components.actions :as components.actions]
+   [components.debug :as components.debug]
    [util :as util]
    [components.pill :as pill]))
 
@@ -214,62 +215,56 @@
            set-filters
            set-current-preset-key
            set-group-by-key
-           set-sort-groups-key]
+           set-sort-groups-key
+           label]
     :as   config}]
   (let [filter-detail-open? (uix/state false)]
     [:div
      {:class ["flex flex-col"]}
 
      [:div
-      {:class ["pb-3" "flex" "flex-row"]}
+      {:class ["flex" "flex-col"]}
       [:div
-       {:class ["flex" "flex-col"]}
-       [:div
-        {:class ["flex" "flex-row"]}
-        [:span {:class ["font-nes" "text-xl"
-                        "cursor-pointer"
-                        "pb-2"]}
-         "Filters"]
-
-        [:div
-         {:class ["ml-auto"]}
-         [:button {:on-click #(swap! filter-detail-open? not)
-                   :class    ["whitespace-nowrap"]}
-          (str (if @filter-detail-open? "Hide" "Show") " filter detail")]]]
-
-       ;; active group-by, sort-groups
-       [:div
-        {:class ["flex" "flex-row" "space-x-4"]}
-        [:pre (str ":group-by-key " group-by-key)]
-        [:pre (str ":sort-groups-key " sort-groups-key)]]
-
-       ;; active filters
-       [:div
-        [:pre ":active-filters "]
-        (for [[i f] (->> active-filters (map-indexed vector))]
-          ^{:key i} [:div
-                     {:class ["font-mono"]}
-                     (str f)])]
+       {:class ["pb-4" "flex" "flex-row" "items-center"]}
+       (when label
+         [:span {:class ["font-nes" "text-xl"]}
+          label])
 
        [:div
-        {:class ["py-2"]}
+        {:class ["pl-4"]}
+        (let [meta {:group-by-key    group-by-key
+                    :sort-groups-key sort-groups-key
+                    :active-filters  active-filters}]
+          [components.debug/raw-metadata {:label "Metadata"}
+           meta])]
+
+       [:div
+        {:class ["pl-4"]}
+        [:button {:on-click #(swap! filter-detail-open? not)
+                  :class    ["whitespace-nowrap"
+                             "text-sm"
+                             "hover:text-city-pink-400"]}
+         (str (if @filter-detail-open? "Hide" "Show") " filter detail")]]
+
+       [:div
+        {:class ["ml-auto"]}
         (when (seq extra-preset-pills)
-          [pill/cluster extra-preset-pills])]
+          [pill/cluster extra-preset-pills])]]
 
-       (when (seq presets)
-         [pill/cluster
-          (->> presets
-               (sort-by first)
-               (map
-                 (fn [[k {:keys [filters group-by sort-groups label]}]]
-                   {:label  (or label k)
-                    :active (#{current-preset-key} k)
-                    :on-click
-                    (fn [_]
-                      (set-current-preset-key k)
-                      (set-filters filters)
-                      (set-group-by-key group-by)
-                      (set-sort-groups-key sort-groups))})))])]]
+      (when (and (seq presets) (> (count presets) 1))
+        [pill/cluster
+         (->> presets
+              (sort-by first)
+              (map
+                (fn [[k {:keys [filters group-by sort-groups label]}]]
+                  {:label  (or label k)
+                   :active (#{current-preset-key} k)
+                   :on-click
+                   (fn [_]
+                     (set-current-preset-key k)
+                     (set-filters filters)
+                     (set-group-by-key group-by)
+                     (set-sort-groups-key sort-groups))})))])]
 
      (when @filter-detail-open?
        ;; edit filters

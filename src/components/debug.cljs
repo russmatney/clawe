@@ -44,7 +44,7 @@
                 (not (:no-sort opts)) map-key-sort
                 true                  (map (partial colorized-metadata (inc level) opts)))
 
-              (and (list? v) (seq v))
+              (and (or (list? v) (set? v)) (seq v))
               (->> v (map (partial colorized-metadata (inc level) opts)))
 
               :else
