@@ -165,8 +165,11 @@
              (not (:todo/queued-at it))
            (assoc :todo/queued-at (dates.tick/now))
            true (assoc :org/tags "current"))
-         (#{:status/done} status) (assoc :org/tags [:remove "current"])
-         (not (:org/id it))       (assoc :org/id (random-uuid)))))
+         (#{:status/done :status/not-started
+            :status/skipped :status/cancelled}
+           status)
+         (assoc :org/tags [:remove "current"])
+         (not (:org/id it)) (assoc :org/id (random-uuid)))))
 
 (defhandler cancel-todo [todo]
   (todo-set-new-status todo :status/cancelled)
@@ -182,6 +185,10 @@
 
 (defhandler skip-todo [todo]
   (todo-set-new-status todo :status/skipped)
+  :ok)
+
+(defhandler mark-not-started [todo]
+  (todo-set-new-status todo :status/not-started)
   :ok)
 
 (defhandler clear-status [todo]
@@ -359,6 +366,12 @@
            :action/on-click #(cancel-todo todo)
            :action/disabled (#{:status/cancelled} status)
            :action/icon     fa/ban-solid}
+
+          ;; mark-not-started
+          {:action/label    "mark-not-started"
+           :action/on-click #(mark-not-started todo)
+           :action/disabled (#{:status/not-started} status)
+           :action/icon     fa/box-open-solid}
 
           ;; mark not-a-todo (clear todo status)
           {:action/label    "clear-todo-status"
