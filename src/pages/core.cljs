@@ -110,7 +110,8 @@
                                router/*match* uix/context :data :name)]
      [page-error-boundary
       [:div {:class ["min-h-screen"
-                     "flex" "flex-row"]}
+                     "flex" "flex-row"
+                     "bg-city-blue-800"]}
        [:div
         {:class ["flex flex-col" "w-full"]}
 
@@ -125,8 +126,6 @@
                     "capitalize"]}
            current-page-name])
 
-        [:div
-         {:class ["bg-city-blue-800"]}
-         (when main [main page-opts])]]
+        (when main [main page-opts])]
 
        [expanding-menu route-defs]]])))

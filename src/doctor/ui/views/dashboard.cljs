@@ -33,8 +33,12 @@
       {:class ["flex flex-row"
                "items-center"
                "bg-city-orange-900"
-               "sticky" "top-0"]}
-      [:span {:class ["font-nes"]} label]
+               "sticky" "top-0"
+               "py-1"
+               "px-2"]}
+      [:span
+       {:class ["font-nes"]}
+       label]
       [:div
        {:class ["ml-auto"]}
        [components.actions/actions-list
@@ -53,7 +57,8 @@
 
 (defn widget [opts]
   [:div
-   {:class ["text-city-pink-200"]}
+   {:class ["text-city-pink-200"
+            "text-bg-yo-blue-800"]}
 
    [:div
     {:class ["relative"]}
@@ -66,17 +71,27 @@
                  :label   :ingestors
                  :actions (ingest/ingest-actions)}]
 
-    [widget-bar {:comp  focus/widget
-                 :opts  (assoc opts :only-current-stack true)
-                 :label :current-focus}]
+    [widget-bar {:comp         focus/widget
+                 :opts         (assoc opts :only-current-stack true)
+                 :label        :current-focus
+                 :initial-show true
+                 :actions
+                 [{:action/label    "Clear Current Todos"
+                   :action/on-click #(js/alert "todo")}]}]
 
     [widget-bar {:comp  focus/widget
                  :opts  opts
-                 :label :todos}]
+                 :label :todos
+                 :actions
+                 [{:action/label    "Process Prioritized Actions"
+                   :action/on-click #(js/alert "todo")}]}]
 
     [widget-bar {:comp  blog/widget
                  :opts  opts
-                 :label :blog}]
+                 :label :blog
+                 :actions
+                 [{:action/label    "Publish N Updated notes"
+                   :action/on-click #(js/alert "todo")}]}]
 
     [widget-bar {:comp    workspaces/widget
                  :opts    opts
@@ -96,11 +111,16 @@
 
                        [components.filter/items-by-group
                         (assoc filter-data :group->comp components.events/event-clusters)]]]))
-                 :opts  opts
-                 :label :events}]
+                 :opts    opts
+                 :label   :events
+                 :actions [{:action/label "Today's events"}
+                           {:action/label "This week's events"}
+                           {:action/label "Today's screenshots"}]}]
 
     [widget-bar
-     {:comp
+     {:opts  opts
+      :label :old-todos
+      :comp
       (fn [opts]
         (let [queued-todos (ui.db/queued-todos (:conn opts))
 
@@ -139,8 +159,4 @@
                  (:filter-grouper todo-filter-results)
                  [components.todo/todo-list
                   {:n 5}
-                  (:filtered-items todo-filter-results)]])])]))
-      :opts  opts
-      :label :old-todos}]]
-
-   ])
+                  (:filtered-items todo-filter-results)]])])]))}]]])
