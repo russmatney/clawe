@@ -27,13 +27,13 @@
 
    [doctor.ui.views.blog :as views.blog]
    [doctor.ui.views.focus :as views.focus]
+   [doctor.ui.views.todos :as views.todos]
    [doctor.ui.views.topbar :as views.topbar]
    [doctor.ui.views.dashboard :as views.dashboard]
    [doctor.ui.views.workspaces :as views.workspaces]))
 
 (comment
   :hello)
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; routes, home
@@ -44,13 +44,15 @@
     :icon  octicons/beaker16}
    {:route "/focus" :page-name :page/focus :label "Focus" :comp views.focus/widget :hide-header true
     :icon  octicons/light-bulb16}
+   {:route "/todos" :page-name :page/todos :label "Todos" :comp views.todos/widget
+    :icon  octicons/checklist16}
    {:route "/blog" :page-name :page/blog :label "Blog" :comp views.blog/widget :hide-header true
     :icon  views.blog/icon}
    {:route "/wallpapers" :page-name :page/wallpapers :label "Wallpapers" :comp pages.wallpapers/page
     :icon  octicons/image16}
    {:route "/events" :page-name :page/events :label "Events" :comp pages.events/page
     :icon  octicons/calendar16}
-   {:route "/todo" :page-name :page/todos :label "Todos" :comp pages.todos/page
+   {:route "/old-todo" :page-name :page/old-todos :label "Old Todos" :comp pages.todos/page
     :icon  octicons/checklist16}
    {:route "/db" :page-name :page/db :label "DB" :comp pages.db/page
     :icon  octicons/archive16}
