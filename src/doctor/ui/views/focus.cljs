@@ -25,10 +25,10 @@
     [item/id-hash it]
     [:div {:class ["ml-auto"]}
      [todo/tags-list
-      {:on-click (fn [tag] (use-focus/remove-tag it tag))}
+      {:on-click (fn [tag] (handlers/remove-tag it tag))}
       it]]
     [todo/priority-label
-     {:on-click (fn [_] (use-focus/remove-priority it))}
+     {:on-click (fn [_] (handlers/remove-priority it))}
      it]]
 
    [:div {:class ["flex" "flex-row"]}
@@ -81,17 +81,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; item todo cards
 
-(defn todo-card
-  ([it] [todo-card nil it])
-  ([opts it]
-   [todo/card
-    (assoc opts
-           :actions (handlers/->actions it (handlers/todo->actions it))
-           :on-click-tag (fn [tag] (use-focus/remove-tag it tag))
-           :on-click-priority #(use-focus/remove-priority it)
-           :on-click-status nil)
-    it]))
-
 (defn todo-cards
   "Renders the passed todo as a card.
   If it has children (i.e. sub-tasks) they will be rendered as a group of cards."
@@ -127,9 +116,9 @@
               [item/id-hash item]
               [:div {:class ["ml-auto"]}
                [todo/tags-list
-                {:on-click (fn [tag] (use-focus/remove-tag item tag))}
+                {:on-click (fn [tag] (handlers/remove-tag item tag))}
                 item]]
-              [todo/priority-label {:on-click (fn [_] (use-focus/remove-priority item))} item]]
+              [todo/priority-label {:on-click (fn [_] (handlers/remove-priority item))} item]]
 
              [:div
               {:class ["flex" "flex-row" "items-center" "px-3"]}
@@ -149,10 +138,10 @@
               ^{:key i}
               [:div
                {:class ["p-2"]}
-               [todo-card {:hide-parent-names? true} td]])]
+               [todo/card {:hide-parent-names? true} td]])]
            [:div
             {:class ["p-2"]}
-            [todo-card {:hide-parent-names? false} item]])])])))
+            [todo/card {:hide-parent-names? false} item]])])])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; current stack

@@ -13,7 +13,8 @@
              [datascript.core :as d]
              [org-crud.api :as org-crud.api]
              [garden.db :as garden.db]
-             [api.blog :as api.blog]]
+             [api.blog :as api.blog]
+             [api.focus :as api.focus]]
        :cljs [[hiccup-icons.fa :as fa]
               [components.icons :as components.icons]
               [components.colors :as colors]
@@ -70,6 +71,16 @@
       (map first)
       db/retract))
   :ok)
+
+(defhandler add-tag [item tag]
+  (org-crud.api/update! item
+                        (cond->
+                            {:org/tags tag}
+                          (not (:org/id item))
+                          (assoc :org/id (random-uuid))))
+  :ok)
+
+(defhandler remove-tag [item tag] (api.focus/remove-tag item tag))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; screenshots
@@ -175,13 +186,7 @@
   (org-crud.api/update! todo {:org/status nil})
   :ok)
 
-(defhandler add-tag [item tag]
-  (org-crud.api/update! item
-                        (cond->
-                            {:org/tags tag}
-                          (not (:org/id item))
-                          (assoc :org/id (random-uuid))))
-  :ok)
+(defhandler remove-priority [item] (api.focus/remove-priority item))
 
 (defhandler increase-priority [todo]
   (let [priority

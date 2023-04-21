@@ -132,11 +132,7 @@
 
 (defn card
   ([it] (card nil it))
-  ([{:keys [hide-parent-names?
-            on-click-tag
-            on-click-priority
-            actions]}
-    it]
+  ([{:keys [hide-parent-names?]} it]
    [:div
     {:class
      (concat
@@ -163,7 +159,7 @@
      [item/id-hash it]
      [:div {:class ["ml-auto"]}
       [priority-label
-       {:on-click on-click-priority}
+       {:on-click #(handlers/remove-priority it)}
        it]]]
 
     ;; middle content
@@ -171,7 +167,7 @@
      {:class ["flex" "flex-col" "pb-2"]}
 
      [tags-list
-      {:on-click on-click-tag}
+      {:on-click (fn [tag] (handlers/remove-tag it tag))}
       it]
 
      ;; name
@@ -207,7 +203,7 @@
      [:span
       {:class ["ml-auto"]}
       [components.actions/actions-list
-       {:actions       actions
+       {:actions       (handlers/->actions it (handlers/todo->actions it))
         :nowrap        true
         :hide-disabled true}]]]]))
 
