@@ -42,7 +42,7 @@
                 (or
                   (-> todo :org/status #{:status/in-progress})
                   (and
-                    (-> todo :todo/queued-at)
+                    #_(-> todo :todo/queued-at) true
                     (not
                       (-> todo :org/status #{:status/cancelled
                                              :status/done})))))))]

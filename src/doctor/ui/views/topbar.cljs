@@ -124,34 +124,35 @@
       (if (#{:bg/dark} background-mode)
         :bg/light :bg/dark))))
 
+(defn topbar-actions-list [metadata]
+  [components.actions/actions-list
+   {:actions
+    [{:action/on-click (fn [_] (hooks.topbar/rerender-notebooks))
+      :action/label    "rerender"}
+
+     ;; bg toggle
+     {:action/on-click (toggle-background-mode metadata)
+      :action/label    "toggle"
+      :action/icon
+
+      (if (#{:bg/dark} (:topbar/background-mode metadata))
+        [:> HIMini/SunIcon {:class ["w-6" "h-6"]}]
+        [:> HIMini/MoonIcon {:class ["w-6" "h-6"]}])}
+
+     ;; reload
+     {:action/on-click (fn [_] (js/location.reload))
+      :action/label    "reload"
+      :action/icon     [:> HIMini/ArrowPathIcon {:class ["w-6" "h-6"]}]}
+
+     {:action/on-click (fn [_]
+                         ;; TODO toggle mute
+                         )
+      :action/icon     (if (:microphone/muted metadata)
+                         fa/microphone-slash-solid fa/microphone-solid)}]}])
+
 (defn clock-host-metadata [{:keys [time]} metadata]
   [:div
    {:class ["flex" "flex-row" "justify-end" "items-center"]}
-
-   [:div
-    [components.actions/actions-list
-     {:actions [{:action/on-click (fn [_] (hooks.topbar/rerender-notebooks))
-                 :action/label    "rerender"}
-
-                ;; bg toggle
-                {:action/on-click (toggle-background-mode metadata)
-                 :action/label    "toggle"
-                 :action/icon
-
-                 (if (#{:bg/dark} (:topbar/background-mode metadata))
-                   [:> HIMini/SunIcon {:class ["w-6" "h-6"]}]
-                   [:> HIMini/MoonIcon {:class ["w-6" "h-6"]}])}
-
-                ;; reload
-                {:action/on-click (fn [_] (js/location.reload))
-                 :action/label    "reload"
-                 :action/icon     [:> HIMini/ArrowPathIcon {:class ["w-6" "h-6"]}]}
-
-                {:action/on-click (fn [_]
-                                    ;; TODO toggle mute
-                                    )
-                 :action/icon     (if (:microphone/muted metadata)
-                                    fa/microphone-slash-solid fa/microphone-solid)}]}]]
 
    [sep]
 
@@ -207,22 +208,21 @@
 
 (defn current-task [{:keys [conn]}]
   (let [todos         (ui.db/queued-todos conn)
-        current-items (ui.db/garden-current-items conn)]
-    (when (seq todos)
+        current-todos (ui.db/garden-current-todos conn)]
+    (if-not (or (seq todos) (seq current-todos))
+      [:span "--"]
       (let [queued  (->> todos
-                         (concat current-items)
+                         (concat current-todos)
                          (w/dedupe-by :db/id)
-                         (sort-by :todo/queued-at >) (into []))
+                         (sort-by :todo/queued-at t/>)
+                         (into []))
             n       (uix/state 0)
             current (get queued @n)
             ct      (count queued)]
         [:div
          {:class ["flex" "flex-wrap" "place-self-center"
-                  "h-full"
-                  "items-center"
-                  "space-x-4"
-                  ;; "w-[1100px]"
-                  ]}
+                  "items-center" "space-x-4"
+                  "h-full"]}
 
          [:span
           {:class ["pl-3" "font-mono"]}
@@ -248,7 +248,7 @@
                  :action/priority 5}])
              (handlers/->actions current))}]]))))
 
-(defn widget [_opts]
+(defn widget [opts]
   (let [metadata                                      (hooks.topbar/use-topbar-metadata)
         {:keys [topbar/background-mode] :as metadata} @metadata
         {:keys [active-workspaces]}                   (hooks.workspaces/use-workspaces)
@@ -258,7 +258,8 @@
               (when (#{:bg/dark} background-mode) "bg-gray-700")
               (when (#{:bg/dark} background-mode) "bg-opacity-50")]}
      [:div
-      {:class ["flex" "flex-row" "h-full" "justify-between"]}
+      {:class ["flex" "flex-row" "h-full"
+               "justify-between" "items-center"]}
 
       ;; workspaces
       [workspace-list topbar-state active-workspaces]
@@ -266,23 +267,29 @@
       ;; current task
       (let [current-workspace
             (some->> active-workspaces
-                     (filter :workspace/focused)
-                     first)]
+                     (filter :workspace/focused) first)]
         (when current-workspace
           [:div
            {:class ["flex" "flex-row" "space-x-4"
-                    "items-center"
-                    "mx-8"]}
+                    "justify-between" "items-center"
+                    "ml-auto" "mx-8"]}
            [:span
             {:class ["font-nes" "text-city-blue-500"]}
             (:workspace/title current-workspace)]
-           #_[current-task opts]
            [:span
             {:class ["text-city-blue-500" "font-mono"]}
             (-> current-workspace
                 :workspace/directory
                 (string/replace "/home/russ" "~")
                 (string/replace "/Users/russ" "~"))]]))
+
+      [:div
+       {:class ["ml-auto"]}
+       [current-task opts]]
+
+      [:div
+       {:class ["ml-auto"]}
+       [topbar-actions-list metadata]]
 
       ;; clock/host/metadata
       [clock-host-metadata topbar-state metadata]]]))

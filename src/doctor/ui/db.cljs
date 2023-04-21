@@ -167,7 +167,7 @@
     (remove (comp #{:status/cancelled :status/done} :org/status))
     (sort-by :todo/queued-at >)))
 
-(defn garden-current-items [conn]
+(defn garden-current-todos [conn]
   (->>
     (d/q '[:find (pull ?e [*])
            :where

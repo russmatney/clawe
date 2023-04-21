@@ -1,6 +1,7 @@
 (ns doctor.ui.handlers
   (:require
    [plasma.core :refer [defhandler]]
+   [dates.tick :as dates.tick]
    #?@(:clj [[garden.core :as garden]
              [ralphie.emacs :as emacs]
              [git.core :as git]
@@ -159,9 +160,13 @@
   ;;     db/transact)
   (update-todo
     it (cond-> {:org/status status}
-         (#{:status/in-progress} status) (assoc :org/tags "current")
-         (#{:status/done} status)        (assoc :org/tags [:remove "current"])
-         (not (:org/id it))              (assoc :org/id (random-uuid)))))
+         (#{:status/in-progress} status)
+         (cond->
+             (not (:todo/queued-at it))
+           (assoc :todo/queued-at (dates.tick/now))
+           true (assoc :org/tags "current"))
+         (#{:status/done} status) (assoc :org/tags [:remove "current"])
+         (not (:org/id it))       (assoc :org/id (random-uuid)))))
 
 (defhandler cancel-todo [todo]
   (todo-set-new-status todo :status/cancelled)
