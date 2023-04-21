@@ -143,21 +143,56 @@
                     (filter fs/exists?))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; date parse helper
+
+(def org-item-date-keys
+  #{:org/closed
+    :org/scheduled
+    :org/deadline
+    :org.prop/archive-time
+    :org.prop/created-at
+    :file/last-modified})
+
+(defn item->parsed-date-fields [item]
+  (->> org-item-date-keys
+       (map (fn [k] [k (some-> item k dates.tick/parse-time-string)]))
+       (remove (comp nil? second))
+       (into {})))
+
+(defn merge-parsed-datetimes [item]
+  ;; TODO recursively apply to item children
+  (merge item (item->parsed-date-fields item)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; paths -> org items
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn path->nested-item
+  "Wraps org-crud/path->nested-item, applying date parsing."
+  [path]
+  (-> path
+      org-crud/path->nested-item
+      ;; TODO consider/test performance hit
+      merge-parsed-datetimes))
+
+(defn path->flattened-items
+  "Wraps org-crud/path->flattened-items, applying date parsing."
+  [path]
+  (->> path
+       org-crud/path->flattened-items
+       ;; TODO consider/test performance hit
+       (map merge-parsed-datetimes)))
+
 (defn paths->nested-garden-notes [paths]
-  (->> paths
-       org-file-paths
-       (map org-crud/path->nested-item)))
+  (->> paths org-file-paths
+       (map path->nested-item)))
 
 (comment
   (paths->nested-garden-notes (daily-paths)))
 
 (defn paths->flattened-garden-notes [paths]
-  (->> paths
-       org-file-paths
-       (mapcat org-crud/path->flattened-items)))
+  (->> paths org-file-paths
+       (mapcat path->flattened-items)))
 
 (comment
   (paths->flattened-garden-notes (daily-paths)))
@@ -174,7 +209,7 @@
   (->>
     (all-garden-paths)
     (org-file-paths)
-    (map org-crud/path->nested-item)
+    (map path->nested-item)
     (remove nil?)))
 
 (defn all-garden-notes-flattened
@@ -183,7 +218,7 @@
   (->>
     (all-garden-paths)
     (org-file-paths)
-    (mapcat org-crud/path->flattened-items)
+    (mapcat path->flattened-items)
     (remove nil?)))
 
 (comment
@@ -225,7 +260,7 @@
                         first
                         :org/source-file))]
     (if source-file
-      (org-crud/path->nested-item source-file)
+      (path->nested-item source-file)
 
       ;; TODO in this case, get the source-file from the org-roam db and ingest it
       ;; we may not have a source-file if we're requesting a full-item with some partial data
@@ -268,7 +303,7 @@
   (->>
     "~/todo/garden/websites/*.org"
     r.zsh/expand-many
-    (map org-crud/path->nested-item)
+    (map path->nested-item)
     (remove nil?)
     (map (fn [website-note]
            (str (:org/name-string website-note)
@@ -276,7 +311,7 @@
     (string/join "\n\n--\n\n")
     (spit (str (fs/home) "/todo/garden/old_website_notes.org")))
 
-  (org-crud/path->nested-item
+  (path->nested-item
     (str (fs/expand-home "~/todo/garden/this_roam_linked_nodes_ui_is_backwards.org")))
 
   (slurp
