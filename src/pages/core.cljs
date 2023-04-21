@@ -109,19 +109,18 @@
       [:div {:class ["min-h-screen"
                      "flex" "flex-row"
                      "bg-city-blue-800"]}
-       [:div
-        {:class ["flex flex-col" "w-full"]}
-
+       [:div {:class ["flex flex-col" "w-full"]}
         (when-not hide-header
           [:div
-           {:class ["bg-city-brown-600"
+           {:class ["bg-city-blue-gray-600"
                     "shadow"
                     "shadow-city-brown-900"
                     "font-nes"
-                    "pt-3" "pl-3"
+                    "p-3"
                     "text-city-pink-200"
-                    "capitalize"]}
-           current-page-name])
+                    "capitalize"
+                    "flex flex-row" "items-center"]}
+           (or (:label page-opts) current-page-name)])
 
         (when main [main page-opts])]
 

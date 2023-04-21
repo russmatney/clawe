@@ -26,10 +26,15 @@
      [:div
       {:class ["flex flex-row"
                "items-center"
-               "bg-city-orange-900"
-               "sticky" "top-0"
+               "bg-city-aqua-light-900"
+               "border-city-aqua-light-500"
+               "border-t"
+               "sticky"
+               "top-0"
                "py-1"
-               "px-2"]}
+               "px-2"
+               "z-10"
+               ]}
 
       [components.icons/icon-comp
        (cond icon  (assoc icon-opts :icon icon)
