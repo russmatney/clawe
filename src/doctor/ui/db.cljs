@@ -120,7 +120,7 @@
                 [?e :doctor/type :type/note]]
               conn)
          (map first)
-         (sort-by :org/created-at >)
+         (sort-by :org/created-at t/>)
          (take n))))))
 
 (defn garden-files
@@ -137,7 +137,7 @@
               conn)
          (map first)
          (w/distinct-by :org/source-file)
-         (sort-by :file/last-modified >)
+         (sort-by :file/last-modified t/>)
          (map :org/source-file)
          (take n))))))
 
@@ -149,11 +149,10 @@
        (->>
          (d/q '[:find (pull ?e [*])
                 :where
-                [?e :doctor/type :type/todo]
-                [?e :org/status ?status]]
+                [?e :doctor/type :type/todo]]
               conn)
          (map first)
-         (sort-by :org/created-at >)
+         (sort-by :org/created-at t/>)
          ((fn [todos] (if filter-pred (->> todos (filter filter-pred)) todos)))
          (take n))))))
 
@@ -165,7 +164,7 @@
          conn)
     (map first)
     (remove (comp #{:status/cancelled :status/done} :org/status))
-    (sort-by :todo/queued-at >)))
+    (sort-by :todo/queued-at t/>)))
 
 (defn garden-current-todos [conn]
   (->>
@@ -179,7 +178,7 @@
          conn)
     (map first)
     (remove (comp #{:status/cancelled :status/done} :org/status))
-    (sort-by :todo/queued-at >)))
+    (sort-by :todo/queued-at t/>)))
 
 ;; TODO write fe unit tests for this and this whole ns
 (defn garden-tags
