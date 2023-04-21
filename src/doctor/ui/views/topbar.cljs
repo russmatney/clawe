@@ -3,6 +3,7 @@
    [clojure.string :as string]
    [hiccup-icons.fa :as fa]
    [tick.core :as t]
+   [dates.tick :as dt]
    [uix.core.alpha :as uix]
 
    [components.icons :as icons]
@@ -214,7 +215,7 @@
       (let [queued  (->> todos
                          (concat current-todos)
                          (w/dedupe-by :db/id)
-                         (sort-by :todo/queued-at t/>)
+                         (sort-by :todo/queued-at dt/sort-latest-first)
                          (into []))
             n       (uix/state 0)
             current (get queued @n)

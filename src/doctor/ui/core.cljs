@@ -58,7 +58,6 @@
     :icon  octicons/screen-full16}
    {:route "/commits" :page-name :page/commits :label "Commits" :comp pages.commits/page
     :icon  octicons/commit}
-   ;; {:route "/topbarbg":page-name :page/topbar-bg :label "Top Bar BG" :comp views.topbar/widget}
    ;; {:route "/counter" :page-name :page/counter :label "Counter" :comp pages.counter/page}
    {:route "/garden" :page-name :page/garden :label "Garden" :comp pages.garden/page
     :icon  octicons/workflow16}
@@ -68,7 +67,8 @@
     :icon  octicons/clippy16}
    {:route "/journal" :page-name :page/journal :label "Journal" :comp pages.journal/page
     :icon  octicons/book16}
-   {:route "/topbar" :page-name :page/topbar :label "Top Bar" :comp views.topbar/widget :comp-only true}])
+   {:route "/topbar" :page-name :page/topbar :label "Top Bar" :comp views.topbar/widget :comp-only true}
+   {:route "/topbar-bg" :page-name :page/topbar-bg :label "Top Bar BG" :comp views.topbar/widget}])
 
 (def routes
   (->> route-defs
