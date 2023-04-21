@@ -8,6 +8,27 @@
    [api.focus :as api.focus]
    [clojure.string :as string]))
 
+(defn ->repo-root [repo-id]
+  (str (fs/home) "/" repo-id))
+
+;; TODO support repo todo/readme.orgs in garden watcher
+(defn repo-todo-files []
+  ;; TODO pull roots from clawe workspace config
+  (let [repo-roots ["russmatney/dino"
+                    "russmatney/org-crud"
+                    "russmatney/clawe"
+                    "teknql/fabb"]]
+    (->> repo-roots
+         (map ->repo-root)
+         (mapcat (fn [root-path]
+                   [(str root-path "/todo.org")
+                    (str root-path "/readme.org")
+                    ;; one day, source todos from code files
+                    ]))
+         (filter fs/exists?))))
+
+
+
 (defn garden-dir-path []
   (fs/file (str (fs/home) "/todo")))
 

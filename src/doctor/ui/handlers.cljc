@@ -14,8 +14,7 @@
              [datascript.core :as d]
              [org-crud.api :as org-crud.api]
              [garden.db :as garden.db]
-             [api.blog :as api.blog]
-             [api.focus :as api.focus]]
+             [api.blog :as api.blog]]
        :cljs [[hiccup-icons.fa :as fa]
               [components.icons :as components.icons]
               [components.colors :as colors]
@@ -81,7 +80,8 @@
                           (assoc :org/id (random-uuid))))
   :ok)
 
-(defhandler remove-tag [item tag] (api.focus/remove-tag item tag))
+(defhandler remove-tag [item tag]
+  (org-crud.api/update! item {:org/tags [:remove tag]}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; screenshots
@@ -191,7 +191,12 @@
   (org-crud.api/update! todo {:org/status nil})
   :ok)
 
-(defhandler remove-priority [item] (api.focus/remove-priority item))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; tag crud
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defhandler remove-priority [item]
+  (org-crud.api/update! item {:org/priority nil}))
 
 (defhandler increase-priority [todo]
   (let [priority
