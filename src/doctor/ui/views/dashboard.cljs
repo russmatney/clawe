@@ -81,6 +81,7 @@
 
     [widget-bar {:comp         focus/widget
                  :label        "current-focus"
+                 :opts         opts
                  :initial-show true
                  :icon         octicons/light-bulb16
                  :actions

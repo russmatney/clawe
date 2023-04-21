@@ -5,7 +5,6 @@
    [taoensso.timbre :as log]
    [babashka.fs :as fs]
    [garden.db :as garden.db]
-   [api.todos :as api.todos]
    [clojure.string :as string]))
 
 (defn ->repo-root [repo-id]
@@ -63,11 +62,7 @@
       (when (and (not (#{:delete} (:action event)))
                  (should-sync-file? (:file event)))
         (log/debug "Syncing file" (str (fs/file-name (:file event))))
-        (garden.db/sync-and-purge-for-path (:file event)))
-
-      (when (should-push-updated-data? (:file event))
-        (log/debug "Pushing updated todos" (str (fs/file-name (:file event))))
-        (api.todos/push-todos)))
+        (garden.db/sync-and-purge-for-path (:file event))))
     (garden-dir-path))
 
   :stop

@@ -14,7 +14,6 @@
    [dates.transit-time-literals :as ttl]
    [api.db :as api.db]
    [api.topbar :as api.topbar]
-   [api.todos :as api.todos]
    [api.workspaces :as api.workspaces]
    [db.core :as db]
    [db.listeners :as db.listeners]
@@ -117,8 +116,6 @@
   :extra-deps
   [api.workspaces/*workspaces-stream*
    api.topbar/*topbar-metadata-stream*
-   api.todos/*todos-stream*
-   api.todos/*current-todos-stream*
    api.db/*db-stream*
    ;; some of these should maybe be db/*conn* deps, not server deps
    ;; api.db/*tx->fe-db*

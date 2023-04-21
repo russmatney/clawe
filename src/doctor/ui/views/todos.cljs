@@ -122,8 +122,7 @@
 ;; main widget
 
 (defn widget [opts]
-  (let [;;todos          (use-todos/use-todos-data)
-        todos          (ui.db/list-todos (:conn opts))
+  (let [todos          (ui.db/list-todos (:conn opts))
         hide-completed (uix/state (:hide-completed opts))
         pills
         [{:on-click #(swap! hide-completed not)

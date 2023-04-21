@@ -14,7 +14,9 @@
              [datascript.core :as d]
              [org-crud.api :as org-crud.api]
              [garden.db :as garden.db]
-             [api.blog :as api.blog]]
+             [api.blog :as api.blog]
+             [api.todos :as api.todos]
+             ]
        :cljs [[hiccup-icons.fa :as fa]
               [components.icons :as components.icons]
               [components.colors :as colors]
@@ -34,6 +36,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; garden
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defhandler reingest-todos []
+  (api.todos/reingest-todos)
+  :ok)
 
 (defhandler ingest-garden []
   (garden.db/sync-last-touched-garden-files {:n 20})

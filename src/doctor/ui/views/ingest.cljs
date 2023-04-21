@@ -10,7 +10,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn ingest-actions []
-  [{:action/label    "Ingest garden latest"
+  [{:action/label    "Reingest todos"
+    :action/on-click (fn [_] (handlers/reingest-todos))}
+   {:action/label    "Ingest garden latest"
     :action/on-click (fn [_] (handlers/ingest-garden))}
    {:action/label    "Ingest clawe repos"
     :action/on-click (fn [_] (handlers/ingest-clawe-repos))}

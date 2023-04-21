@@ -47,7 +47,7 @@
 
     (= uri "/todos/update")
     (do
-      (todos/push-todos)
+      (todos/reingest-todos)
       {:status 200 :body "updated todos"})
 
     (= uri "/blog/rebuild")
