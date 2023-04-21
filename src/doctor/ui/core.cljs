@@ -46,7 +46,7 @@
    {:route "/focus" :page-name :page/focus :label "Focus" :comp views.focus/widget :hide-header true
     :icon  octicons/light-bulb16}
    {:route "/blog" :page-name :page/blog :label "Blog" :comp views.blog/widget :hide-header true
-    :icon  octicons/comment-discussion16}
+    :icon  views.blog/icon}
    {:route "/wallpapers" :page-name :page/wallpapers :label "Wallpapers" :comp pages.wallpapers/page
     :icon  octicons/image16}
    {:route "/events" :page-name :page/events :label "Events" :comp pages.events/page

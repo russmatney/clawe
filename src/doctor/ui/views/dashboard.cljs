@@ -9,6 +9,7 @@
    [components.actions :as components.actions]
    [clojure.string :as string]
    [components.filter-defs :as filter-defs]
+   [components.icons :as components.icons]
 
    [doctor.ui.views.focus :as focus]
    [doctor.ui.views.blog :as blog]
@@ -22,12 +23,12 @@
      :label      "Dailies"}
     {:filter-key :short-path :match "todo/journal.org"}
     {:filter-key :short-path :match "todo/project.org"}
-    {:filter-key :status :match :status/not-started}
-    ;; i wanna filter out todo/queued-at too
-    })
+    {:filter-key :status :match :status/not-started}})
 
-(defn widget-bar [{:keys [comp label opts initial-show actions]}]
-  (let [show? (uix/state initial-show)]
+(defn widget-bar [{:keys [comp label opts initial-show actions icon]}]
+  (let [show?     (uix/state initial-show)
+        icon-opts {:class ["px-1 py-2 pr-2"]
+                   :text  label}]
     [:div {:class ["flex flex-col"]}
      [:div
       {:class ["flex flex-row"
@@ -36,9 +37,14 @@
                "sticky" "top-0"
                "py-1"
                "px-2"]}
+
+      [components.icons/icon-comp
+       (cond icon  (assoc icon-opts :icon icon)
+             :else (assoc icon-opts :icon octicons/alert))]
+
       [:span
-       {:class ["font-nes"]}
-       label]
+       {:class ["font-nes" "pl-2"]}
+       (str label)]
       [:div
        {:class ["ml-auto"]}
        [components.actions/actions-list
@@ -53,7 +59,7 @@
                    :action/icon     octicons/chevron-up16
                    :action/disabled (not @show?)}]
                  actions)}]]]
-     (when @show? [comp opts])]))
+     (when @show? [comp (or opts {})])]))
 
 (defn widget [opts]
   [:div
@@ -67,7 +73,6 @@
                             [:div
                              [ingest/ingest-buttons]
                              [ingest/commit-ingest-buttons (:conn opts)]])
-                 :opts    opts
                  :label   :ingestors
                  :actions (ingest/ingest-actions)}]
 
@@ -80,25 +85,24 @@
                    :action/on-click #(js/alert "todo")}]}]
 
     [widget-bar {:comp  focus/widget
-                 :opts  opts
                  :label :todos
                  :actions
                  [{:action/label    "Process Prioritized Actions"
                    :action/on-click #(js/alert "todo")}]}]
 
     [widget-bar {:comp  blog/widget
-                 :opts  opts
                  :label :blog
+                 :icon  blog/icon
                  :actions
                  [{:action/label    "Publish N Updated notes"
                    :action/on-click #(js/alert "todo")}]}]
 
     [widget-bar {:comp    workspaces/widget
-                 :opts    opts
                  :label   :workspaces
                  :actions (hooks.workspaces/actions)}]
 
-    [widget-bar {:comp
+    [widget-bar {:label :events
+                 :comp
                  (fn [opts]
                    (let [recent-events (ui.db/events (:conn opts))
                          filter-data
@@ -111,15 +115,12 @@
 
                        [components.filter/items-by-group
                         (assoc filter-data :group->comp components.events/event-clusters)]]]))
-                 :opts    opts
-                 :label   :events
                  :actions [{:action/label "Today's events"}
                            {:action/label "This week's events"}
                            {:action/label "Today's screenshots"}]}]
 
     [widget-bar
-     {:opts  opts
-      :label :old-todos
+     {:label :old-todos
       :comp
       (fn [opts]
         (let [queued-todos (ui.db/queued-todos (:conn opts))

@@ -12,7 +12,11 @@
    [doctor.ui.handlers :as handlers]
    [tick.core :as t]
    [dates.tick :as dates.tick]
-   [components.colors :as colors]))
+   [components.colors :as colors]
+   [hiccup-icons.octicons :as octicons]))
+
+(def icon
+  octicons/comment-discussion16)
 
 (defn is-daily? [note]
   (re-seq #"^daily/" (:org/short-path note)))
@@ -42,7 +46,6 @@
       [{:action/label    "Republish Blog"
         :action/on-click (fn [_]
                            (use-blog/rebuild-all))}]}]]])
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; note-comp

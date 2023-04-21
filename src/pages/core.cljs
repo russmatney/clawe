@@ -10,11 +10,8 @@
   (let [icon-opts {:class ["px-1 py-2 pr-2"]
                    :text  label}]
     [components.icons/icon-comp
-     (cond
-       icon (assoc icon-opts :icon icon)
-
-       :else
-       (assoc icon-opts :icon octicons/alert))]))
+     (cond icon  (assoc icon-opts :icon icon)
+           :else (assoc icon-opts :icon octicons/alert))]))
 
 
 (defn menu [{:keys [expanded? route-defs]}]
