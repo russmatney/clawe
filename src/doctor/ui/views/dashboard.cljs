@@ -12,6 +12,7 @@
    [components.icons :as components.icons]
 
    [doctor.ui.views.focus :as focus]
+   [doctor.ui.views.todos :as todos]
    [doctor.ui.views.blog :as blog]
    [doctor.ui.views.pomodoro :as pomodoro]
    [doctor.ui.views.workspaces :as workspaces]
@@ -88,7 +89,6 @@
                    :action/on-click #(js/alert "todo")}]}]
 
     [widget-bar {:comp         focus/widget
-                 :opts         (assoc opts :only-current-stack true)
                  :label        "current-focus"
                  :initial-show true
                  :icon         octicons/light-bulb16
@@ -96,7 +96,7 @@
                  [{:action/label    "Clear Current Todos"
                    :action/on-click #(js/alert "todo")}]}]
 
-    [widget-bar {:comp  focus/widget
+    [widget-bar {:comp  todos/widget
                  :label "todos"
                  :icon  octicons/checklist16
                  :actions
