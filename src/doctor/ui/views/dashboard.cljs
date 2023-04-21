@@ -13,6 +13,7 @@
 
    [doctor.ui.views.focus :as focus]
    [doctor.ui.views.blog :as blog]
+   [doctor.ui.views.pomodoro :as pomodoro]
    [doctor.ui.views.workspaces :as workspaces]
    [hooks.workspaces :as hooks.workspaces]
    [hiccup-icons.octicons :as octicons]))
@@ -75,6 +76,16 @@
                              [ingest/commit-ingest-buttons (:conn opts)]])
                  :label   "ingestors"
                  :actions (ingest/ingest-actions)}]
+
+    [widget-bar {:comp         pomodoro/widget
+                 :label        "pomodoro"
+                 :initial-show true
+                 :icon         octicons/clock16
+                 :actions
+                 [{:action/label    "Stop Pomodoro"
+                   :action/on-click #(js/alert "todo")}
+                  {:action/label    "Start Pomodoro"
+                   :action/on-click #(js/alert "todo")}]}]
 
     [widget-bar {:comp         focus/widget
                  :opts         (assoc opts :only-current-stack true)

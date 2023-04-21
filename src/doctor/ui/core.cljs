@@ -29,8 +29,7 @@
    [doctor.ui.views.focus :as views.focus]
    [doctor.ui.views.topbar :as views.topbar]
    [doctor.ui.views.dashboard :as views.dashboard]
-   [doctor.ui.views.workspaces :as views.workspaces]
-   ))
+   [doctor.ui.views.workspaces :as views.workspaces]))
 
 (comment
   :hello)

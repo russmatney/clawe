@@ -1,10 +1,8 @@
 (ns doctor.ui.views.focus
   (:require
    [uix.core.alpha :as uix]
-   [tick.core :as t]
    [dates.tick :as dates]
    [doctor.ui.hooks.use-focus :as use-focus]
-   [doctor.ui.pomodoros :as pomodoros]
    [doctor.ui.handlers :as handlers]
    [components.actions :as components.actions]
    [components.colors :as colors]
@@ -246,10 +244,14 @@
        (:org/name-string it)]]
 
      ;; time ago
-     (when (and (todo/completed? it) (:org/closed-since it))
+     (when (and (todo/completed? it) (:org/closed it))
        [:span
         {:class ["font-mono"]}
-        (str (:org/closed-since it) " ago")])
+        (str
+          (some-> it :org/closed
+                  dates.tick/parse-time-string
+                  dates.tick/human-time-since)
+          " ago")])
 
      (when-not hide-parent-names?
        [parent-names {:n 2} it])]
@@ -272,58 +274,6 @@
         (handlers/->actions it (handlers/todo->actions it))
         :nowrap        true
         :hide-disabled true}]]]]))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; bar
-
-(defn bar [{:keys [time]}]
-  [:div
-   {:class ["flex flex-row" "items-center"
-            "bg-city-blue-700"
-            "text-city-green-200"]}
-   [:div
-    {:class ["text-2xl" "font-nes" "pl-4"]}
-    (str
-      (t/format
-        (t/formatter "h:mma")
-        (dates/add-tz time)))]
-
-   (let [p-state                (pomodoros/get-state)
-         {:keys [current last]} p-state]
-     [:div
-      {:class ["ml-auto" "flex" "flex-row"]}
-
-      (when last
-        (let [{:keys [started-at finished-at]} last]
-          [:div
-           {:class ["py-2" "px-4"]}
-           [:span
-            "Last: " (dates/human-time-since started-at finished-at)]]))
-
-      (when last
-        (let [{:keys [finished-at]} last
-              latest                (:started-at current)]
-          [:div
-           {:class ["py-2" "px-4"]}
-           [:span
-            "Break: " (dates/human-time-since finished-at latest)]]))
-
-      (when current
-        (let [{:keys [started-at]} current
-              minutes              (t/minutes (dates/duration-since started-at))
-              too-long?            (> minutes 40)]
-          [:div
-           {:class ["py-2" "px-4"]}
-           "Current: "
-           [:span
-            {:class (when too-long? ["text-city-pink-400" "font-nes" "font-bold"
-                                     "pl-2" "text-lg" "whitespace-nowrap"])}
-            (dates/human-time-since started-at)
-            (when too-long? "!!")]]))
-
-      ;; buttons
-      [components.actions/actions-list
-       {:actions (pomodoros/actions)}]])])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; sort todos
@@ -586,14 +536,7 @@
                                                    @only-current   (filter todo/current?)))
                                  :sort-items sort-todos)
                           (update :presets merge (presets))))
-        current     (some->> todos (filter todo/current?) seq)
-
-        time     (uix/state (t/zoned-date-time))
-        interval (atom nil)]
-    (uix/with-effect [@interval]
-      (reset! interval (js/setInterval #(reset! time (t/zoned-date-time)) 1000))
-      (fn [] (js/clearInterval @interval)))
-
+        current     (some->> todos (filter todo/current?) seq)]
     [:div
      {:class ["bg-city-blue-800"
               "bg-opacity-90"]}

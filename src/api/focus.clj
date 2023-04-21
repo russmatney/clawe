@@ -6,7 +6,6 @@
    [org-crud.update :as org-crud.update]
    [systemic.core :as sys :refer [defsys]]
    [manifold.stream :as s]
-   [dates.tick :as dates.tick]
    [clojure.string :as string]
    [babashka.fs :as fs]))
 
@@ -46,38 +45,14 @@
     (distinct)
     (map org-crud/path->nested-item)))
 
-(defn prep-todo [item]
-  (cond
-    (:org/closed item)
-    (assoc item
-           ;; TODO this immediately falls out of date, heh
-           ;; need to calc and include a timer on the FE
-           :org/closed-since
-           (-> item :org/closed
-               dates.tick/parse-time-string
-               dates.tick/human-time-since))
-
-    :else item))
-
-;; (def opt-in-tags #{"goal" "goals" "focus"})
-
 (defn todays-goals
   "Top level items tagged 'focus' or 'goals'"
   []
   (->>
     (relevant-org-items)
-    ;; (mapcat :org/items)
-    ;; include everything?
-    ;; (filter (fn [it]
-    ;;           (or
-    ;;             ;; include any todos
-    ;;             (:org/status it)
-    ;;             ;; or any child of an opt-in tag
-    ;;             ((comp seq #(set/intersection opt-in-tags %) :org/tags) it))))
     (mapcat org-crud/nested-item->flattened-items)
     (filter :org/status)
-    (map garden.db/merge-db-item)
-    (map prep-todo)))
+    (map garden.db/merge-db-item)))
 
 (comment
   (todays-goals))
