@@ -53,6 +53,7 @@
                  (and (map? v) (empty? v))  "{}"
                  (and (list? v) (empty? v)) "[]"
                  (nil? v)                   "nil"
+                 (false? v)                 "false"
                  :else
                  (when v (format/s-shortener (str v))))])
 
