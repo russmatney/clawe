@@ -7,7 +7,6 @@
    [components.filter :as components.filter]
    [uix.core.alpha :as uix]
    [components.actions :as components.actions]
-   [clojure.string :as string]
    [components.filter-defs :as filter-defs]
    [components.icons :as components.icons]
 
@@ -18,14 +17,6 @@
    [doctor.ui.views.workspaces :as workspaces]
    [hooks.workspaces :as hooks.workspaces]
    [hiccup-icons.octicons :as octicons]))
-
-(def all-todos-initial-filters
-  #{{:filter-key :short-path
-     :match-fn   #(some-> % (string/split #"/") first #{"daily"})
-     :label      "Dailies"}
-    {:filter-key :short-path :match "todo/journal.org"}
-    {:filter-key :short-path :match "todo/project.org"}
-    {:filter-key :status :match :status/not-started}})
 
 (defn widget-bar [{:keys [comp label opts initial-show actions icon]}]
   (let [show?     (uix/state initial-show)
@@ -148,11 +139,7 @@
                                           (#{:status/not-started} status))})
               todo-filter-results
               (components.filter/use-filter
-                (assoc filter-defs/fg-config
-                       :items all-todos
-                       :presets
-                       {:default {:filters  all-todos-initial-filters
-                                  :group-by :tags}}))]
+                (assoc filter-defs/fg-config :items all-todos))]
           [:div
            [:div
             [:div "Todo list (" (count queued-todos) ")"]
