@@ -6,6 +6,7 @@
    [components.garden :as components.garden]
    [components.debug :as components.debug]
    [components.actions :as components.actions]
+   [components.item :as item]
    [doctor.ui.handlers :as handlers]
    [dates.tick :as dates.tick]
    [uix.core.alpha :as uix]
@@ -71,7 +72,7 @@
 
 (defn status
   ([it] [status nil it])
-  ([opts it]
+  ([_opts it]
    (when (:org/status it)
      (let [hovering? (uix/state nil)]
        [:span
@@ -81,7 +82,17 @@
                           "hover:opacity-50"]
          :on-mouse-enter (fn [_] (reset! hovering? true))
          :on-mouse-leave (fn [_] (reset! hovering? false))
-         :on-click       (:on-click opts)}
+         :on-click
+         (fn [_]
+           ;; TODO refactor this logic into...something?
+           ;; needs to support going from one state to another... maybe via a popup menu, with a default
+           (handlers/todo-set-new-status
+             it (cond
+                  (completed? it)   :status/not-started
+                  (skipped? it)     :status/not-started
+                  (current? it)     :status/done
+                  (in-progress? it) :status/done
+                  (not-started? it) :status/in-progress)))}
         (cond
           (and (completed? it) (not @hovering?))   "[X]"
           (and (completed? it) @hovering?)         "[ ]"
@@ -115,6 +126,96 @@
            :on-click #((:on-click opts) tag)}
           tag]
          ":"])])))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; card
+
+(defn card
+  ([it] (card nil it))
+  ([{:keys [hide-parent-names?
+            on-click-tag
+            on-click-priority
+            actions]}
+    it]
+   [:div
+    {:class
+     (concat
+       ["flex" "flex-col"
+        "py-2" "px-3"
+        "m-1"
+        "rounded-lg"
+        "w-96"
+        "text-lg"
+        "bg-yo-blue-700"]
+       (cond
+         (completed? it) ["text-city-blue-dark-400"]
+         (skipped? it)   ["text-city-blue-dark-600"]
+         ;; (not-started? it) []
+         :else           ["text-city-blue-dark-200"]))}
+
+    ;; top meta
+    [:div
+     {:class ["flex" "flex-row" "w-full" "items-center"]}
+
+     [level it]
+     [status it]
+     [item/db-id it]
+     [item/id-hash it]
+     [:div {:class ["ml-auto"]}
+      [priority-label
+       {:on-click on-click-priority}
+       it]]]
+
+    ;; middle content
+    [:div
+     {:class ["flex" "flex-col" "pb-2"]}
+
+     [tags-list
+      {:on-click on-click-tag}
+      it]
+
+     ;; name
+     [:span
+      [:span
+       {:class (when (or (completed? it) (skipped? it)) ["line-through"])}
+       (:org/name-string it)]]
+
+     ;; time ago
+     (when (and (completed? it) (:org/closed it))
+       [:span
+        {:class ["font-mono"]}
+        (str
+          (some-> it :org/closed
+                  dates.tick/parse-time-string
+                  dates.tick/human-time-since)
+          " ago")])
+
+     (when-not hide-parent-names?
+       [item/parent-names {:n 2} it])]
+
+    ;; bottom meta
+    [:div
+     {:class ["flex" "flex-row"
+              "items-center"
+              "text-sm"
+              "mt-auto"
+              "pb-2"]}
+
+     [components.debug/raw-metadata {:label "RAW"} it]
+
+     ;; actions list
+     [:span
+      {:class ["ml-auto"]}
+      [components.actions/actions-list
+       {:actions       actions
+        :nowrap        true
+        :hide-disabled true}]]]]))
+
+
+
+
+
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; todo-row

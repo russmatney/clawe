@@ -1,6 +1,7 @@
 (ns components.item
   (:require
-   [doctor.ui.handlers :as handlers]))
+   [doctor.ui.handlers :as handlers]
+   [components.colors :as colors]))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -37,3 +38,49 @@
      [:span {:class ["tooltip-text" "-mt-12" "-ml-12"]}
       "delete-from-db"]
      (->> it :db/id str (apply str))]))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; parent-names
+
+(defn breadcrumbs [bcrumbs]
+  [:span
+   {:class ["flex" "flex-row"]}
+   (->>
+     bcrumbs
+     reverse
+     (map-indexed
+       (fn [i nm]
+         [:span {:class
+                 (concat
+                   (colors/color-wheel-classes {:type :line :i i})
+                   ["whitespace-nowrap"])}
+          " " nm]))
+     (interpose [:span
+                 {:class ["text-city-blue-dark-200" "px-4"]}
+                 " > "])
+     ;; kind of garbage, but :shrug:
+     (map-indexed (fn [i sp] ^{:key i}
+                    [:span sp])))])
+
+(defn parent-names
+  ([it] (parent-names nil it))
+  ([{:keys [header? n]} it]
+   (let [p-names      (-> it :org/parent-names)
+         p-names      (cond->> p-names
+                        n (take n))
+         p-name       (-> p-names first)
+         rest-p-names (-> p-names rest)]
+     (if-not header?
+       [breadcrumbs p-names]
+       [:div
+        {:class ["flex" "flex-row" "flex-wrap" "items-center"]}
+        [breadcrumbs rest-p-names]
+        [:span
+         {:class ["text-city-blue-dark-200" "px-4"]}
+         " > "]
+        [:span
+         {:class ["font-nes" "text-xl" "p-3"
+                  "text-city-green-400"
+                  "whitespace-nowrap"
+                  ]}
+         p-name]]))))

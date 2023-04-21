@@ -1,82 +1,14 @@
 (ns doctor.ui.views.focus
   (:require
    [uix.core.alpha :as uix]
-   [dates.tick :as dates]
    [doctor.ui.hooks.use-focus :as use-focus]
    [doctor.ui.handlers :as handlers]
    [components.actions :as components.actions]
-   [components.colors :as colors]
    [components.filter :as components.filter]
    [components.garden :as components.garden]
-   [components.debug :as components.debug]
    [components.todo :as todo]
    [components.item :as item]
    [components.filter-defs :as filter-defs]))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; todo status
-
-(defn todo-status [it]
-  (todo/status
-    {:on-click
-     (fn [_]
-       ;; TODO refactor this logic into...something?
-       ;; needs to support going from one state to another... maybe via a popup menu, with a default
-       (handlers/todo-set-new-status
-         it (cond
-              (todo/completed? it)   :status/not-started
-              (todo/skipped? it)     :status/not-started
-              (todo/current? it)     :status/done
-              (todo/in-progress? it) :status/done
-              (todo/not-started? it) :status/in-progress)))}
-    it))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; parent-names
-
-(defn breadcrumbs [bcrumbs]
-  [:span
-   {:class ["flex" "flex-row"]}
-   (->>
-     bcrumbs
-     reverse
-     (map-indexed
-       (fn [i nm]
-         [:span {:class
-                 (concat
-                   (colors/color-wheel-classes {:type :line :i i})
-                   ["whitespace-nowrap"])}
-          " " nm]))
-     (interpose [:span
-                 {:class ["text-city-blue-dark-200" "px-4"]}
-                 " > "])
-     ;; kind of garbage, but :shrug:
-     (map-indexed (fn [i sp] ^{:key i}
-                    [:span sp])))])
-
-(defn parent-names
-  ([it] (parent-names nil it))
-  ([{:keys [header? n]} it]
-   (let [p-names      (-> it :org/parent-names)
-         p-names      (cond->> p-names
-                        n (take n))
-         p-name       (-> p-names first)
-         rest-p-names (-> p-names rest)]
-     (if-not header?
-       [breadcrumbs p-names]
-       [:div
-        {:class ["flex" "flex-row" "flex-wrap" "items-center"]}
-        [breadcrumbs rest-p-names]
-        [:span
-         {:class ["text-city-blue-dark-200" "px-4"]}
-         " > "]
-        [:span
-         {:class ["font-nes" "text-xl" "p-3"
-                  "text-city-green-400"
-                  "whitespace-nowrap"
-                  ]}
-         p-name]]))))
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; current item header
@@ -88,7 +20,7 @@
 
    [:div {:class ["flex" "flex-row" "items-center"]}
     [todo/level it]
-    [todo-status it]
+    [todo/status it]
     [item/db-id it]
     [item/id-hash it]
     [:div {:class ["ml-auto"]}
@@ -100,7 +32,7 @@
      it]]
 
    [:div {:class ["flex" "flex-row"]}
-    [:div {:class ["font-nes"]}
+    [:span {:class ["font-nes"]}
      (:org/name-string it)]]])
 
 (defn item-body [it]
@@ -108,93 +40,17 @@
    {:class ["text-xl" "p-4" "flex" "flex-col"]}
    [:div
     {:class ["text-yo-blue-200" "font-mono"]}
-    ;; TODO include sub todos
+    ;; TODO include sub items + bodies
     #_[:pre (:org/body-string it)]
     [components.garden/org-body it]]
 
    [:div {:class ["py-4" "flex" "flex-row" "justify-between"]}
-    [parent-names it]
+    [item/parent-names it]
     [components.actions/actions-list
      {:actions
       (handlers/->actions it (handlers/todo->actions it))
       :nowrap        true
       :hide-disabled true}]]])
-
-(defn item-card
-  ([it] (item-card nil it))
-  ([{:keys [hide-parent-names?]} it]
-   [:div
-    {:class
-     (concat
-       ["flex" "flex-col"
-        "py-2" "px-3"
-        "m-1"
-        "rounded-lg"
-        "w-96"
-        "text-lg"
-        "bg-yo-blue-700"]
-       (cond
-         (todo/completed? it) ["text-city-blue-dark-400"]
-         (todo/skipped? it)   ["text-city-blue-dark-600"]
-         ;; (not-started? it) []
-         :else                ["text-city-blue-dark-200"]))}
-
-    ;; top meta
-    [:div
-     {:class ["flex" "flex-row" "w-full" "items-center"]}
-
-     [todo/level it]
-     [todo-status it]
-     [item/db-id it]
-     [item/id-hash it]
-     [:div {:class ["ml-auto"]}
-      [todo/priority-label {:on-click (fn [_] (use-focus/remove-priority it))} it]]]
-
-    ;; middle content
-    [:div
-     {:class ["flex" "flex-col" "pb-2"]}
-
-     [todo/tags-list
-      {:on-click (fn [tag] (use-focus/remove-tag it tag))}
-      it]
-
-     ;; name
-     [:span
-      [:span
-       {:class (when (or (todo/completed? it) (todo/skipped? it)) ["line-through"])}
-       (:org/name-string it)]]
-
-     ;; time ago
-     (when (and (todo/completed? it) (:org/closed it))
-       [:span
-        {:class ["font-mono"]}
-        (str
-          (some-> it :org/closed
-                  dates.tick/parse-time-string
-                  dates.tick/human-time-since)
-          " ago")])
-
-     (when-not hide-parent-names?
-       [parent-names {:n 2} it])]
-
-    ;; bottom meta
-    [:div
-     {:class ["flex" "flex-row"
-              "items-center"
-              "text-sm"
-              "mt-auto"
-              "pb-2"]}
-
-     [components.debug/raw-metadata {:label "RAW"} it]
-
-     ;; actions list
-     [:span
-      {:class ["ml-auto"]}
-      [components.actions/actions-list
-       {:actions
-        (handlers/->actions it (handlers/todo->actions it))
-        :nowrap        true
-        :hide-disabled true}]]]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; sort todos
@@ -225,8 +81,21 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; item todo cards
 
-(defn item-todo-cards
-  ([item] [item-todo-cards nil item])
+(defn todo-card
+  ([it] [todo-card nil it])
+  ([opts it]
+   [todo/card
+    (assoc opts
+           :actions (handlers/->actions it (handlers/todo->actions it))
+           :on-click-tag (fn [tag] (use-focus/remove-tag it tag))
+           :on-click-priority #(use-focus/remove-priority it)
+           :on-click-status nil)
+    it]))
+
+(defn todo-cards
+  "Renders the passed todo as a card.
+  If it has children (i.e. sub-tasks) they will be rendered as a group of cards."
+  ([item] [todo-cards nil item])
   ([{:keys [filter-by]} item]
    (let [todos             (->> item
                                 (tree-seq (comp seq :org/items) :org/items)
@@ -253,7 +122,7 @@
              [:div
               {:class ["flex" "flex-row" "items-center"]}
 
-              [todo-status item]
+              [todo/status item]
               [item/db-id item]
               [item/id-hash item]
               [:div {:class ["ml-auto"]}
@@ -264,7 +133,7 @@
 
              [:div
               {:class ["flex" "flex-row" "items-center" "px-3"]}
-              [parent-names {:header? true} (first grouped-todos)]
+              [item/parent-names {:header? true} (first grouped-todos)]
 
               [:span
                {:class ["ml-auto"]}
@@ -280,10 +149,10 @@
               ^{:key i}
               [:div
                {:class ["p-2"]}
-               [item-card {:hide-parent-names? true} td]])]
+               [todo-card {:hide-parent-names? true} td]])]
            [:div
             {:class ["p-2"]}
-            [item-card {:hide-parent-names? false} item]])])])))
+            [todo-card {:hide-parent-names? false} item]])])])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; current stack
@@ -300,8 +169,9 @@
            {:class ["bg-city-blue-800"]}
            [:hr {:class ["border-city-blue-900" "pb-4"]}]
            [item-header c]
-           [item-todo-cards
-            {:filter-by (comp not #{:status/skipped :status/done} :org/status)}
+           [todo-cards
+            {:filter-by
+             (comp not #{:status/skipped :status/done} :org/status)}
             c]
            [item-body c]]))
 
@@ -479,7 +349,7 @@
         (when (seq (:filtered-items filter-data))
           [:div {:class ["pt-6"]}
            [components.filter/items-by-group
-            (assoc filter-data :item->comp item-todo-cards)]])
+            (assoc filter-data :item->comp todo-cards)]])
 
         (when (not (seq todos))
           [:div
