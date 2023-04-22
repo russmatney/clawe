@@ -96,7 +96,6 @@
                   :actions
                   [{:action/label    "Clear Current Todos"
                     :action/on-click #(js/alert "todo")}]
-                  ;; :w-class "w-1/2"
                   }]
 
      [widget-bar {:comp  todos/widget
@@ -106,28 +105,26 @@
                   :actions
                   [{:action/label    "Process Prioritized Actions"
                     :action/on-click #(js/alert "todo")}]
-                  ;; :w-class "w-1/2"
                   }]
 
-     [widget-bar {:comp         blog/widget
-                  :label        "blog"
-                  :initial-show true
-                  :icon         blog/icon
+     [widget-bar {:comp  blog/widget
+                  :label "blog"
+                  :opts  opts
+                  ;; :initial-show true
+                  :icon  blog/icon
                   :actions
                   [{:action/label    "Publish N Updated notes"
                     :action/on-click #(js/alert "todo")}]
-                  :w-class      "w-1/2"
                   }]
 
-     [widget-bar {:comp         screenshots/page
-                  :label        "screenshots"
-                  :initial-show true
-                  :opts         opts
-                  :icon         octicons/image16
+     [widget-bar {:comp  screenshots/page
+                  :label "screenshots"
+                  ;; :initial-show true
+                  :opts  opts
+                  :icon  octicons/image16
                   :actions
                   [{:action/label    "Ingest screenshots"
                     :action/on-click #(handlers/ingest-screenshots)}]
-                  :w-class      "w-1/2"
                   }]
 
      [widget-bar {:comp    workspaces/widget
