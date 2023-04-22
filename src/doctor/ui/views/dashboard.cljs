@@ -72,18 +72,16 @@
                  :label   "ingestors"
                  :actions (ingest/ingest-actions)}]
 
-    [widget-bar {:comp         pomodoro/widget
-                 :label        "pomodoro"
-                 :initial-show true
-                 :opts         opts
-                 :icon         octicons/clock16
-                 :actions      (pomodoros/actions)}]
+    [widget-bar {:comp    pomodoro/widget
+                 :label   "pomodoro"
+                 :opts    opts
+                 :icon    octicons/clock16
+                 :actions (pomodoros/actions)}]
 
-    [widget-bar {:comp         focus/widget
-                 :label        "current-focus"
-                 :opts         opts
-                 :initial-show true
-                 :icon         octicons/light-bulb16
+    [widget-bar {:comp  focus/widget
+                 :label "current-focus"
+                 :opts  opts
+                 :icon  octicons/light-bulb16
                  :actions
                  [{:action/label    "Clear Current Todos"
                    :action/on-click #(js/alert "todo")}]}]
@@ -108,17 +106,20 @@
                  :icon    octicons/clippy16
                  :actions (hooks.workspaces/actions)}]
 
-    [widget-bar {:label "events"
-                 :icon  octicons/calendar16
-                 :opts  opts
+    [widget-bar {:label        "events"
+                 :icon         octicons/calendar16
+                 :opts         opts
+                 :initial-show true
                  :comp
                  (fn [opts]
                    (let [recent-events (ui.db/events (:conn opts))
                          filter-data
                          (components.filter/use-filter
-                           (assoc filter-defs/fg-config :items recent-events))]
+                           (assoc filter-defs/fg-config
+                                  :items recent-events
+                                  :label (str (count recent-events) " Events")))]
                      [:div
-                      [:div "Events Cluster (" (count (:filtered-items filter-data)) ")"]
+                      {:class ["p-4"]}
                       [:div
                        (:filter-grouper filter-data)
 
