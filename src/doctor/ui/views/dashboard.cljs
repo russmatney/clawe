@@ -10,6 +10,7 @@
    [components.filter-defs :as filter-defs]
    [components.icons :as components.icons]
 
+   [doctor.ui.pomodoros :as pomodoros]
    [doctor.ui.views.focus :as focus]
    [doctor.ui.views.todos :as todos]
    [doctor.ui.views.blog :as blog]
@@ -74,12 +75,9 @@
     [widget-bar {:comp         pomodoro/widget
                  :label        "pomodoro"
                  :initial-show true
+                 :opts         opts
                  :icon         octicons/clock16
-                 :actions
-                 [{:action/label    "Stop Pomodoro"
-                   :action/on-click #(js/alert "todo")}
-                  {:action/label    "Start Pomodoro"
-                   :action/on-click #(js/alert "todo")}]}]
+                 :actions      (pomodoros/actions)}]
 
     [widget-bar {:comp         focus/widget
                  :label        "current-focus"
