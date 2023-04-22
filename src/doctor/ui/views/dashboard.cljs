@@ -15,6 +15,7 @@
    [doctor.ui.views.todos :as todos]
    [doctor.ui.views.blog :as blog]
    [doctor.ui.views.pomodoro :as pomodoro]
+   [doctor.ui.views.chess-games :as chess-games]
    [doctor.ui.views.workspaces :as workspaces]
    [hooks.workspaces :as hooks.workspaces]
    [hiccup-icons.octicons :as octicons]))
@@ -105,6 +106,12 @@
                  :label   "workspaces"
                  :icon    octicons/clippy16
                  :actions (hooks.workspaces/actions)}]
+
+    [widget-bar {:comp    chess-games/widget
+                 :label   "chess games"
+                 :opts    opts
+                 :icon    octicons/moon16
+                 :actions (chess-games/actions)}]
 
     [widget-bar {:label        "events"
                  :icon         octicons/calendar16

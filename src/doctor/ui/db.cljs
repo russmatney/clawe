@@ -33,6 +33,17 @@
           (sort-by :event/timestamp dt/sort-latest-first)
           (take 200)))))
 
+(defn chess-games [conn]
+  (when conn
+    (->> (d/q '[:find (pull ?e [*])
+                :where
+                ;; TODO consider lower bound/min time here
+                [?e :doctor/type :type/lichess-game]]
+              conn)
+         (map first)
+         (sort-by :event/timestamp dt/sort-latest-first)
+         (take 200))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; repos/commits
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

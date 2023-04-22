@@ -29,6 +29,7 @@
    [doctor.ui.views.focus :as views.focus]
    [doctor.ui.views.todos :as views.todos]
    [doctor.ui.views.topbar :as views.topbar]
+   [doctor.ui.views.chess-games :as views.chess-games]
    [doctor.ui.views.dashboard :as views.dashboard]
    [doctor.ui.views.workspaces :as views.workspaces]))
 
@@ -69,6 +70,8 @@
     :icon  octicons/clippy16}
    {:route "/journal" :page-name :page/journal :label "Journal" :comp pages.journal/page
     :icon  octicons/book16}
+   {:route "/chess-games" :page-name :page/chess :label "Chess Games" :comp views.chess-games/widget
+    :icon  octicons/moon16}
    {:route "/topbar" :page-name :page/topbar :label "Top Bar" :comp views.topbar/widget :comp-only true}
    {:route "/topbar-bg" :page-name :page/topbar-bg :label "Top Bar BG" :comp views.topbar/widget}])
 

@@ -68,8 +68,7 @@
   (let [{:lichess.game/keys
          [white-player black-player
           white-rating-diff black-rating-diff
-          perf analysis
-          ]} game]
+          perf analysis]} game]
     [:div
      {:class ["py-2"]}
 
