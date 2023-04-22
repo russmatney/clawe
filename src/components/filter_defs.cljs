@@ -84,6 +84,24 @@
                                    (if (:blog/published note)
                                      "Published" "Unpublished"))}
 
+
+   :filters/event-timestamp
+   {:label          "Event Timestamp"
+    :group-by       (fn [it] (some-> it :event/timestamp dates.tick/parse-time-string t/date))
+    :sort-groups-fn (fn [item-groups]
+                      (->> item-groups (sort-by :label dates.tick/sort-latest-first)))
+    :filter-options [{:label    "Today"
+                      :match-fn (fn [lm] (t/>= lm (t/today)))}
+                     {:label    "Yesterday"
+                      :match-fn (fn [lm] (t/>= lm
+                                               (t/date (t/<< (dates.tick/now) (t/new-duration 1 :days)))))}
+                     {:label    "Last 3 days"
+                      :match-fn (fn [lm] (t/>= lm
+                                               (t/date (t/<< (dates.tick/now) (t/new-duration 4 :days)))))}
+                     {:label    "Last 7 days"
+                      :match-fn (fn [lm] (t/>= lm
+                                               (t/date (t/<< (dates.tick/now) (t/new-duration 8 :days)))))}]}
+
    :filters/last-modified-date
    {:label          "Last Modified Date"
     :group-by       (fn [it] (some-> it :file/last-modified dates.tick/parse-time-string t/date))
@@ -112,4 +130,9 @@
    {:all
     {:filters     #{}
      :group-by    :filters/last-modified-date
-     :sort-groups :filters/last-modified-date}}})
+     :sort-groups :filters/last-modified-date}
+    :events
+    {:filters     #{}
+     :group-by    :filters/event-timestamp
+     :sort-groups :filters/event-timestamp}
+    }})
