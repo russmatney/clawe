@@ -122,12 +122,12 @@
 ;; main widget
 
 (defn widget [opts]
-  (let [todos          (ui.db/list-todos (:conn opts))
-        hide-completed (uix/state (:hide-completed opts))
+  (let [todos           (ui.db/list-todos (:conn opts))
+        only-incomplete (uix/state (:only-incomplete opts))
         pills
-        [{:on-click #(swap! hide-completed not)
-          :label    (if @hide-completed "Show completed" "Hide completed")
-          :active   @hide-completed}]
+        [{:on-click #(swap! only-incomplete not)
+          :label    (if @only-incomplete "All" "Only Incomplete")
+          :active   @only-incomplete}]
 
         filter-data
         (components.filter/use-filter
@@ -137,7 +137,9 @@
                      :extra-preset-pills pills
                      :filter-items (fn [items]
                                      (cond->> items
-                                       @hide-completed (remove todo/completed?)))
+                                       @only-incomplete
+                                       (filter #(or (todo/not-started? %)
+                                                    (todo/in-progress? %)))))
                      :sort-items todo/sort-todos
                      :label (str (count todos) " Todos"))
               (update :presets merge (presets))))]
