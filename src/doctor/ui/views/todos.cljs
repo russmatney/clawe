@@ -122,7 +122,7 @@
 ;; main widget
 
 (defn widget [opts]
-  (let [todos           (ui.db/list-todos (:conn opts))
+  (let [todos           (ui.db/list-todos-with-children (:conn opts))
         only-incomplete (uix/state (:only-incomplete opts))
         pills
         [{:on-click #(swap! only-incomplete not)

@@ -153,6 +153,29 @@
          (map :org/source-file)
          (take n))))))
 
+(defn list-todos-with-children
+  ([conn] (list-todos-with-children conn nil))
+  ([conn {:keys [n filter-pred] :as _opts}]
+   (cond->>
+       (d/q '[:find (pull ?e [*])
+              :where [?e :doctor/type :type/todo]]
+            conn)
+     true        (map first)
+     filter-pred (filter filter-pred)
+     n           (take n)
+
+     true
+     (map (fn [td]
+            (let [children
+                  (->>
+                    (d/q '[:find (pull ?c [*])
+                           :in $ ?db-id
+                           :where [?c :org/parents ?db-id]]
+                         conn
+                         (:db/id td))
+                    (map first))]
+              (assoc td :org/items children)))))))
+
 (defn list-todos
   ([conn] (list-todos conn nil))
   ([conn {:keys [n filter-pred]}]
