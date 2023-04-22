@@ -447,3 +447,83 @@
       (filter (comp #(string/includes? % "clawe doctor org dedup") :org/name-string))
       first))
   (merge-db-item note))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; list todos
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn list-todos-with-children
+  [{:keys [n filter-pred] :as opts}]
+  (cond->>
+      (db/query
+        '[:find (pull ?e [*])
+          :where
+          [?e :doctor/type :type/todo]])
+    true        (map first)
+    filter-pred (filter filter-pred)
+    n           (take n)
+
+    true ((fn [todos]
+            (let []
+              (println "todos found" todos)
+              (->> todos
+                   (map (fn [td]
+                          (db/query
+                            '[:find (pull ?e [*])
+                              :in $ ?db-id
+                              :where [?e :org/parents ?db-id]]
+                            (:db/id td))))))))))
+
+(comment
+  (list-todos-with-children
+    {:n 3
+     :filter-pred
+     (fn [item] (string/includes?
+                  (:org/name-string item)
+                  "saturday"))})
+
+  (db/datoms :eavt 20373)
+
+  (db/query
+    '[:find (pull ?e [*])
+      :in $ ?db-id
+      :where [?e :org/parents ?db-id]]
+    20362)
+
+  (db/query
+    '[:find (pull ?e [*])
+      :in $ ?id
+      :where [?e :org/parent-ids ?id]]
+    #uuid "690b842f-a579-44a2-97cc-6cc31bef41ee")
+
+  (->
+    (garden/daily-path)
+    (garden/path->nested-item)))
+
+(defn list-todos
+  ([] (list-todos nil))
+  ([{:keys [n filter-pred join-children] :as opts}]
+   (if join-children
+     (list-todos-with-children opts)
+     (cond->>
+         (db/query '[:find (pull ?e [*])
+                     :where [?e :doctor/type :type/todo]])
+       true        (map first)
+       filter-pred (filter filter-pred)
+       n           (take n)))))
+
+(comment
+  (count (list-todos))
+  (->>
+    (list-todos)
+    (filter :org/name-string)
+    #_(map :org/name-string)
+    #_sort
+    (filter
+      (fn [item] (string/includes?
+                   (:org/name-string item)
+                   "saturday")))
+    first
+    :db/id
+    )
+  )
