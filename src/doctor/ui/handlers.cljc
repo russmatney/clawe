@@ -241,6 +241,9 @@
           (do
             (println "dec-pri - unexpected priority found, overwriting:" (:org/priority todo))
             nil))]
+    (when-not priority
+      (->> [[:db.fn/retractAttribute (:db/id todo) :org/priority]]
+           (d/transact db/*conn*)))
     (org-crud.api/update! todo
                           (cond->
                               {:org/priority priority}
