@@ -144,30 +144,27 @@
                      :label (str (count todos) " Todos"))
               (update :presets merge (presets))))]
     [:div
-     {:class ["bg-city-blue-800"
-              "bg-opacity-90"]}
+     {:class ["bg-city-blue-800" "bg-opacity-90"
+              "flex" "flex-col" "mb-8"]}
 
+     [:hr {:class ["mb-6" "border-city-blue-900"]}]
      [:div
-      {:class ["flex" "flex-col" "min-h-screen"]}
+      {:class ["px-6"
+               "text-city-blue-400"]}
 
-      [:hr {:class ["mb-6" "border-city-blue-900"]}]
-      [:div
-       {:class ["px-6"
-                "text-city-blue-400"]}
+      (:filter-grouper filter-data)]
 
-       (:filter-grouper filter-data)]
+     (when (seq (:filtered-items filter-data))
+       [:div {:class ["pt-6"]}
+        [components.filter/items-by-group
+         (assoc filter-data :item->comp todo/card-or-card-group)]])
 
-      (when (seq (:filtered-items filter-data))
-        [:div {:class ["pt-6"]}
-         [components.filter/items-by-group
-          (assoc filter-data :item->comp todo/card-or-card-group)]])
-
-      (when (not (seq todos))
-        [:div
-         {:class ["text-bold" "text-city-pink-300" "p-4"]}
-         [:h1
-          {:class ["text-4xl" "font-nes"]}
-          "no todos found!"]
-         [:p
-          {:class ["text-2xl" "pt-4"]}
-          ""]])]]))
+     (when (not (seq todos))
+       [:div
+        {:class ["text-bold" "text-city-pink-300" "p-4"]}
+        [:h1
+         {:class ["text-4xl" "font-nes"]}
+         "no todos found!"]
+        [:p
+         {:class ["text-2xl" "pt-4"]}
+         ""]])]))
