@@ -50,9 +50,6 @@
    {:db/cardinality :db.cardinality/many
     :db/valueType   :db.type/ref}
 
-   :org/parent-ids
-   {:db/cardinality :db.cardinality/many
-    :db/valueType   :db.type/ref}
    :org/parents
    {:db/cardinality :db.cardinality/many
     :db/valueType   :db.type/ref}

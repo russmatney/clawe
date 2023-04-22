@@ -5,7 +5,6 @@
    [garden.core :as garden]
    [clojure.string :as string]
    [taoensso.timbre :as log]
-   [babashka.fs :as fs]
    [item.core :as item]
    [api.db :as api.db]))
 
@@ -452,27 +451,47 @@
 ;; list todos
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn list-only-todos-with-children
+  ;; TODO figure out how to optionally join children
+  [{:keys [n filter-pred] :as _opts}]
+  (cond->>
+      (db/query
+        '[:find (pull ?e [*]) (pull ?c [*])
+          :where
+          [?e :doctor/type :type/todo]
+          [?c :org/parents ?e]])
+    filter-pred (filter (comp filter-pred first))
+    true
+    (reduce (fn [acc [todo child]]
+              (update acc
+                      (:db/id todo)
+                      (fn [td]
+                        (if-not td
+                          (assoc todo :org/items [child])
+                          (update td :org/items concat [child])))))
+            {})
+    true        vals
+    n           (take n)))
+
+
 (defn list-todos-with-children
-  [{:keys [n filter-pred] :as opts}]
+  [{:keys [n filter-pred] :as _opts}]
   (cond->>
       (db/query
         '[:find (pull ?e [*])
-          :where
-          [?e :doctor/type :type/todo]])
+          :where [?e :doctor/type :type/todo]])
     true        (map first)
     filter-pred (filter filter-pred)
     n           (take n)
 
-    true ((fn [todos]
-            (let []
-              (println "todos found" todos)
-              (->> todos
-                   (map (fn [td]
-                          (db/query
-                            '[:find (pull ?e [*])
-                              :in $ ?db-id
-                              :where [?e :org/parents ?db-id]]
-                            (:db/id td))))))))))
+    true
+    (map (fn [td]
+           (let [children
+                 (db/query '[:find (pull ?c [*])
+                             :in $ ?db-id
+                             :where [?c :org/parents ?db-id]]
+                           (:db/id td))]
+             (assoc td :org/items children))))))
 
 (comment
   (list-todos-with-children
@@ -524,6 +543,4 @@
                    (:org/name-string item)
                    "saturday")))
     first
-    :db/id
-    )
-  )
+    :db/id))
