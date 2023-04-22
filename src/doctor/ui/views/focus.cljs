@@ -139,4 +139,9 @@
 (defn widget [opts]
   (let [todos         (ui.db/current-todos (:conn opts))
         current-todos (some->> todos (filter todo/current?) seq)]
-    [current-stack current-todos]))
+    (if (seq current-todos)
+      [current-stack current-todos]
+      [:div
+       {:class ["text-center" "my-36" "text-slate-200"]}
+       [:div {:class ["font-nes"]} "No current task!"]
+       [:div {:class ["font-mono"]} "Maybe take a load off?"]])))
