@@ -168,6 +168,7 @@
     "clove" {:workspace/directory "~/russmatney/clove"}
     "clover" {:workspace/directory "~/russmatney/clover"}
     "cybermonday" {:workspace/directory "~/kiranshila/cybermonday"}
+    "datascript-playground" {:workspace/directory "~/markbastian/datascript-playground"}
     "dice-nine" {:workspace/directory "~/russmatney/dice-nine"}
     "dino" {:workspace/directory "~/russmatney/dino" :workspace/preferred-index 2}
     "dotfiles" {:workspace/directory "~/russmatney/dotfiles" :workspace/preferred-index 1}

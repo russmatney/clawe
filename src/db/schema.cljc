@@ -49,20 +49,24 @@
    :org/links-to
    {:db/cardinality :db.cardinality/many
     :db/valueType   :db.type/ref}
+
+   :org/parent-ids
+   {:db/cardinality :db.cardinality/many
+    :db/valueType   :db.type/ref}
    :org/parents
    {:db/cardinality :db.cardinality/many
     :db/valueType   :db.type/ref}
-
-   ;; TODO how to do many, but still unique?
    :org/parent-names
    {:db/cardinality :db.cardinality/many}
 
    ;; TODO one day create unique tag entities with metadata
    :org/tags
-   {:db/cardinality :db.cardinality/many}
+   {:db/cardinality :db.cardinality/many
+    :db/index       true}
    ;; TODO one day create unique url entities with metadata
    :org/urls
-   {:db/cardinality :db.cardinality/many}})
+   {:db/cardinality :db.cardinality/many
+    :db/index       true}})
 
 (comment
   (d/empty-db schema))

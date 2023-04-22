@@ -43,6 +43,7 @@
   :stop
   (d/unlisten! *conn* :db-backup-writer))
 
+
 (defn print-db []
   (sys/start! `*conn*)
   (pr-str (d/db *conn*)))
@@ -139,14 +140,21 @@
 ;; Query
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn datoms [& args]
+  (sys/start! `*conn*)
+  (apply d/datoms (d/db *conn*) args))
+
 (defn query [q & args]
   (sys/start! `*conn*)
-  (let [res (if args
-              (apply d/q q (d/db *conn*) args)
-              (d/q q (d/db *conn*)))]
-    res))
+  (if args
+    (apply d/q q (d/db *conn*) args)
+    (d/q q (d/db *conn*))))
 
 (comment
+  (->
+    (d/datoms (d/db *conn*) :eavt)
+    reverse)
+
   *conn*
   (->>
     (query '[:find (pull ?e [*]) :where [?e _ _]])
@@ -194,10 +202,10 @@
 
 (defn query-db
   "Query the datascript db"
+  ;; no args supported yet - but this is here to be tested from the cli
   ([] (query-db nil))
   ([args]
-   ;; no args supported yet, but this is here to be called from the cli
-   (println "db.core/query-db called" args)
+   (log/info "db.core/query-db called" args)
    (doall
      (->>
        (query '[:find (pull ?e [*])
