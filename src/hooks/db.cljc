@@ -44,12 +44,20 @@
    (defn use-db []
      (let [conn        (plasma.uix/state nil)
            handle-resp (fn [items]
-                         (log/info "new datoms" (count items))
                          (if @conn
                            (d/transact! conn items)
                            (-> (d/empty-db schema)
                                (d/db-with items)
-                               (#(reset! conn %)))))]
+                               (#(reset! conn %))))
+
+                         (->> items
+                              (map :e)
+                              distinct
+                              (map #(d/entity @conn %))
+                              (map :doctor/type)
+                              frequencies
+                              (log/info "received data: "
+                                        "datoms: " (count items))))]
 
        (with-stream [] (db-stream) handle-resp)
        (with-rpc [] (get-db) handle-resp)
