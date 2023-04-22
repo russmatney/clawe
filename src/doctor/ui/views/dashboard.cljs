@@ -10,6 +10,9 @@
    [components.filter-defs :as filter-defs]
    [components.icons :as components.icons]
 
+   ;; TODO move to doctor.ui.view
+   [pages.screenshots :as screenshots]
+
    [doctor.ui.pomodoros :as pomodoros]
    [doctor.ui.views.focus :as focus]
    [doctor.ui.views.todos :as todos]
@@ -18,13 +21,16 @@
    [doctor.ui.views.chess-games :as chess-games]
    [doctor.ui.views.workspaces :as workspaces]
    [hooks.workspaces :as hooks.workspaces]
-   [hiccup-icons.octicons :as octicons]))
+   [hiccup-icons.octicons :as octicons]
+   [doctor.ui.handlers :as handlers]))
 
-(defn widget-bar [{:keys [comp label opts initial-show actions icon]}]
+(defn widget-bar [{:keys [comp label opts initial-show actions icon
+                          w-class]}]
   (let [show?     (uix/state initial-show)
         icon-opts {:class ["px-1 py-2 pr-2"]
                    :text  label}]
-    [:div {:class ["flex flex-col"]}
+    [:div
+     {:class ["flex flex-col" (or w-class "w-full")]}
      [:div
       {:class ["flex flex-row"
                "items-center"
@@ -33,7 +39,8 @@
                "border-t"
                "sticky" "top-0"
                "py-1" "px-2"
-               "z-5"]}
+               "z-5"
+               ]}
 
       [components.icons/icon-comp
        (cond icon  (assoc icon-opts :icon icon)
@@ -66,112 +73,132 @@
    [:div
     {:class ["relative"]}
 
-    [widget-bar {:comp    (fn [_opts]
-                            [:div
-                             [ingest/ingest-buttons]
-                             [ingest/commit-ingest-buttons (:conn opts)]])
-                 :label   "ingestors"
-                 :actions (ingest/ingest-actions)}]
+    [:div
+     {:class ["flex" "flex-row" "flex-wrap"]}
 
-    [widget-bar {:comp    pomodoro/widget
-                 :label   "pomodoro"
-                 :opts    opts
-                 :icon    octicons/clock16
-                 :actions (pomodoros/actions)}]
+     [widget-bar {:comp    (fn [_opts]
+                             [:div
+                              [ingest/ingest-buttons]
+                              [ingest/commit-ingest-buttons (:conn opts)]])
+                  :label   "ingestors"
+                  :actions (ingest/ingest-actions)}]
 
-    [widget-bar {:comp  focus/widget
-                 :label "current-focus"
-                 :opts  opts
-                 :icon  octicons/light-bulb16
-                 :actions
-                 [{:action/label    "Clear Current Todos"
-                   :action/on-click #(js/alert "todo")}]}]
+     [widget-bar {:comp    pomodoro/widget
+                  :label   "pomodoro"
+                  :opts    opts
+                  :icon    octicons/clock16
+                  :actions (pomodoros/actions)}]
 
-    [widget-bar {:comp  todos/widget
-                 :label "todos"
-                 :icon  octicons/checklist16
-                 :opts  opts
-                 :actions
-                 [{:action/label    "Process Prioritized Actions"
-                   :action/on-click #(js/alert "todo")}]}]
+     [widget-bar {:comp  focus/widget
+                  :label "current-focus"
+                  :opts  opts
+                  :icon  octicons/light-bulb16
+                  :actions
+                  [{:action/label    "Clear Current Todos"
+                    :action/on-click #(js/alert "todo")}]
+                  ;; :w-class "w-1/2"
+                  }]
 
-    [widget-bar {:comp  blog/widget
-                 :label "blog"
-                 :icon  blog/icon
-                 :actions
-                 [{:action/label    "Publish N Updated notes"
-                   :action/on-click #(js/alert "todo")}]}]
+     [widget-bar {:comp  todos/widget
+                  :label "todos"
+                  :icon  octicons/checklist16
+                  :opts  opts
+                  :actions
+                  [{:action/label    "Process Prioritized Actions"
+                    :action/on-click #(js/alert "todo")}]
+                  ;; :w-class "w-1/2"
+                  }]
 
-    [widget-bar {:comp    workspaces/widget
-                 :label   "workspaces"
-                 :icon    octicons/clippy16
-                 :actions (hooks.workspaces/actions)}]
+     [widget-bar {:comp         blog/widget
+                  :label        "blog"
+                  :initial-show true
+                  :icon         blog/icon
+                  :actions
+                  [{:action/label    "Publish N Updated notes"
+                    :action/on-click #(js/alert "todo")}]
+                  :w-class      "w-1/2"
+                  }]
 
-    [widget-bar {:comp    chess-games/widget
-                 :label   "chess games"
-                 :opts    opts
-                 :icon    octicons/moon16
-                 :actions (chess-games/actions)}]
+     [widget-bar {:comp         screenshots/page
+                  :label        "screenshots"
+                  :initial-show true
+                  :opts         opts
+                  :icon         octicons/image16
+                  :actions
+                  [{:action/label    "Ingest screenshots"
+                    :action/on-click #(handlers/ingest-screenshots)}]
+                  :w-class      "w-1/2"
+                  }]
 
-    [widget-bar {:label        "events"
-                 :icon         octicons/calendar16
-                 :opts         opts
-                 :initial-show true
-                 :comp
-                 (fn [opts]
-                   (let [recent-events (ui.db/events (:conn opts))
-                         filter-data
-                         (components.filter/use-filter
-                           (assoc filter-defs/fg-config
-                                  :items recent-events
-                                  :label (str (count recent-events) " Events")))]
-                     [:div
-                      {:class ["p-4"]}
+     [widget-bar {:comp    workspaces/widget
+                  :label   "workspaces"
+                  :icon    octicons/clippy16
+                  :actions (hooks.workspaces/actions)}]
+
+     [widget-bar {:comp    chess-games/widget
+                  :label   "chess games"
+                  :opts    opts
+                  :icon    octicons/moon16
+                  :actions (chess-games/actions)}]
+
+     [widget-bar {:label "events"
+                  :icon  octicons/calendar16
+                  :opts  opts
+                  :comp
+                  (fn [opts]
+                    (let [recent-events (ui.db/events (:conn opts))
+                          filter-data
+                          (components.filter/use-filter
+                            (assoc filter-defs/fg-config
+                                   :items recent-events
+                                   :label (str (count recent-events) " Events")))]
                       [:div
-                       (:filter-grouper filter-data)
+                       {:class ["p-4"]}
+                       [:div
+                        (:filter-grouper filter-data)
 
-                       [components.filter/items-by-group
-                        (assoc filter-data :group->comp components.events/event-clusters)]]]))
-                 :actions [{:action/label "Today's events"}
-                           {:action/label "This week's events"}
-                           {:action/label "Today's screenshots"}]}]
+                        [components.filter/items-by-group
+                         (assoc filter-data :group->comp components.events/event-clusters)]]]))
+                  :actions [{:action/label "Today's events"}
+                            {:action/label "This week's events"}
+                            {:action/label "Today's screenshots"}]}]
 
-    [widget-bar
-     {:label "old-todos"
-      :icon  octicons/checklist16
-      :opts  opts
-      :comp
-      (fn [opts]
-        (let [current-todos (ui.db/current-todos (:conn opts))
-              all-todos     (ui.db/list-todos
-                              (:conn opts) {:n 200 ;; TODO support fetching more
-                                            :filter-pred
-                                            (fn [{:org/keys [status]}]
-                                              (#{:status/not-started} status))})
-              todo-filter-results
-              (components.filter/use-filter
-                (assoc filter-defs/fg-config :items all-todos))]
-          [:div
+     [widget-bar
+      {:label "old-todos"
+       :icon  octicons/checklist16
+       :opts  opts
+       :comp
+       (fn [opts]
+         (let [current-todos (ui.db/current-todos (:conn opts))
+               all-todos     (ui.db/list-todos
+                               (:conn opts) {:n 200 ;; TODO support fetching more
+                                             :filter-pred
+                                             (fn [{:org/keys [status]}]
+                                               (#{:status/not-started} status))})
+               todo-filter-results
+               (components.filter/use-filter
+                 (assoc filter-defs/fg-config :items all-todos))]
            [:div
-            [:div "Todo list (" (count current-todos) ")"]
-            [components.todo/todo-list {:n 5} current-todos]]
+            [:div
+             [:div "Todo list (" (count current-todos) ")"]
+             [components.todo/todo-list {:n 5} current-todos]]
 
-           (let [expanded (uix/state
-                            ;; default to hiding all todos if some are queued
-                            (< (count current-todos) 2))]
-             [:div
-              [:div "All todos (" (count (:filtered-items todo-filter-results)) ")"
-               (count all-todos)]
-              [components.actions/actions-list
-               {:actions [{:action/on-click (fn [_] (swap! expanded not))
-                           :action/label    "Expand"
-                           :action/disabled @expanded}
-                          {:action/on-click (fn [_] (swap! expanded not))
-                           :action/label    "Collapse"
-                           :action/disabled (not @expanded)}]}]
-              (when @expanded
-                [:div
-                 (:filter-grouper todo-filter-results)
-                 [components.todo/todo-list
-                  {:n 5}
-                  (:filtered-items todo-filter-results)]])])]))}]]])
+            (let [expanded (uix/state
+                             ;; default to hiding all todos if some are queued
+                             (< (count current-todos) 2))]
+              [:div
+               [:div "All todos (" (count (:filtered-items todo-filter-results)) ")"
+                (count all-todos)]
+               [components.actions/actions-list
+                {:actions [{:action/on-click (fn [_] (swap! expanded not))
+                            :action/label    "Expand"
+                            :action/disabled @expanded}
+                           {:action/on-click (fn [_] (swap! expanded not))
+                            :action/label    "Collapse"
+                            :action/disabled (not @expanded)}]}]
+               (when @expanded
+                 [:div
+                  (:filter-grouper todo-filter-results)
+                  [components.todo/todo-list
+                   {:n 5}
+                   (:filtered-items todo-filter-results)]])])]))}]]]])
