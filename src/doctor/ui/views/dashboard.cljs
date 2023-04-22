@@ -29,12 +29,9 @@
                "bg-city-aqua-light-900"
                "border-city-aqua-light-500"
                "border-t"
-               "sticky"
-               "top-0"
-               "py-1"
-               "px-2"
-               "z-10"
-               ]}
+               "sticky" "top-0"
+               "py-1" "px-2"
+               "z-5"]}
 
       [components.icons/icon-comp
        (cond icon  (assoc icon-opts :icon icon)

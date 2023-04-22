@@ -159,6 +159,21 @@
          ":"])])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; content popover
+
+(defn content [item]
+  [floating/popover
+   {:hover       true :click true
+    :anchor-comp [:span "content"]
+    :popover-comp
+
+    [:div
+     {:class ["grid" "grid-flow-col"]}
+     ;; TODO show just this item's content
+     #_[components.garden/org-body item]
+     [components.garden/full-note item]]}])
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; card
 
 (defn card
@@ -229,6 +244,10 @@
               "pb-2"]}
 
      [components.debug/raw-metadata {:label "RAW"} it]
+
+     [:div
+      {:class ["ml-4"]}
+      [content it]]
 
      ;; actions list
      [:span
