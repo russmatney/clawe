@@ -73,6 +73,7 @@
                                              :top      (or (.-y floating-state) "")
                                              :left     (or (.-x floating-state) "")
                                              :maxWidth "calc(100vw - 10px)"
-                                             :overflow "scroll"}})))
+                                             :overflow "scroll"
+                                             :zIndex   "50"}})))
             popover-comp-props)
           popover-comp]])]]))

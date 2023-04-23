@@ -38,7 +38,7 @@
                "border-t"
                "sticky" "top-0"
                "py-1" "px-2"
-               "z-5"
+               "z-10"
                ]}
 
       [components.icons/icon-comp
