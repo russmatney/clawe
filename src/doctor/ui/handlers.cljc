@@ -30,7 +30,7 @@
 
 (defhandler delete-from-db [item]
   (println "deleting item from db" item)
-  (db/retract (:db/id item))
+  (db/retract-entities (:db/id item))
   :ok)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -72,14 +72,16 @@
 (defhandler purge-org-source-file [item]
   (println "purging-org-source-file from db" (:org/source-file item))
   (when (:org/source-file item)
+    ;; TODO rewrite to delete without query, using an identifier
     (->>
       (db/query '[:find ?e
                   :in $ ?source-file
                   :where
+                  ;; TODO isn't this on multiple entities (children)?
                   [?e :org/source-file ?source-file]]
                 (:org/source-file item))
       (map first)
-      db/retract))
+      db/retract-entities))
   :ok)
 
 (defhandler add-tag [item tag]
@@ -87,8 +89,7 @@
   :ok)
 
 (defhandler remove-tag [item tag]
-  (->> [[:db/retract (:db/id item) :org/tags tag]]
-       (d/transact db/*conn*))
+  (db/retract! [:db/retract (:db/id item) :org/tags tag])
   (org-crud.api/update! item {:org/tags [:remove tag]}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -6,7 +6,8 @@
    [clojure.string :as string]
    [taoensso.timbre :as log]
    [item.core :as item]
-   [api.db :as api.db]))
+   [api.db :as api.db]
+   [clojure.set :as set]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ->db-item
@@ -272,21 +273,45 @@
 
     ;; retract notes with this source-file that are not in db-notes
     (let [all-db-notes   (fetch-notes-for-source-file garden-path)
-          notes-to-purge (->> all-db-notes
-                              (remove (fn [db-note]
-                                        (or (and (:org/id db-note)
-                                                 (db-note-ids (:org/id db-note)))
-                                            (and (:org/fallback-id db-note)
-                                                 (db-note-fb-ids (:org/fallback-id db-note)))))))]
+          ->should-keep? (fn [db-note]
+                           (or (and (:org/id db-note)
+                                    (db-note-ids (:org/id db-note)))
+                               (and (:org/fallback-id db-note)
+                                    (db-note-fb-ids (:org/fallback-id db-note)))))
+          [_notes-kept
+           notes-to-purge]
+          (->> all-db-notes
+               (reduce
+                 (fn [res db-note]
+                   (if (->should-keep? db-note)
+                     (update res 0 concat [db-note])
+                     (update res 1 concat [db-note])))
+                 []))]
       (when (seq notes-to-purge)
         (log/info "Purging" (count notes-to-purge) "/" (count all-db-notes) "notes from the db"
                   (->> notes-to-purge (map :org/name-string))))
       (->> notes-to-purge
            (map :db/id)
            (remove nil?)
-           (db/retract))
+           (db/retract-entities))
 
-      ;; TODO also need to purge removed tags, changed parent-names... probably all lists
+      ;; NOTE these are coming from parsed org, not the db
+      ;; ideally the data shapes would be the same
+      ;; but there are some nuances (like :org/tags as a set vs lazy list)
+      (->> notes-to-sync
+           (mapcat (fn [note]
+                     (let [keep-tags       (:org/tags note)
+                           existing-tags   (->> (db/datoms :eavt (:db/id note) :org/tags)
+                                                (map :v) (into #{}))
+                           tags-to-retract (set/difference existing-tags keep-tags)]
+                       (->> tags-to-retract
+                            (map
+                              (fn [t]
+                                [:db/retract (:db/id note) :org/tags t]))))))
+           db/retract!)
+
+      ;; TODO purge other lists, like changed parent-names
+      ;; OR diff the parsed note vs db note before transacting
       )))
 
 (comment
@@ -295,10 +320,9 @@
       (garden/all-garden-notes-flattened)
       (filter (comp #(string/includes? % "clawe doctor org dedup") :org/name-string))
       first))
-
   (sync-and-purge-for-path (:org/source-file note))
 
-  (-> (garden/daily-path 1)
+  (-> (garden/daily-path)
       sync-and-purge-for-path))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -311,14 +335,6 @@
                 :where [?e :doctor/type :type/note]])
     (map first)))
 
-(comment
-  (count (fetch-db-garden-notes))
-  (->>
-    (fetch-db-garden-notes)
-    (map :org/source-file)
-    dedupe
-    count))
-
 (defn fetch-notes-for-source-file [source-file]
   (->>
     (db/query '[:find (pull ?e [*])
@@ -327,17 +343,6 @@
                 ]
               (str source-file))
     (map first)))
-
-(comment
-  (def note
-    (->>
-      (garden/all-garden-notes-flattened)
-      (filter (comp #(string/includes? % "clawe doctor org dedup") :org/name-string))
-      first))
-  (->>
-    (fetch-notes-for-source-file (:org/source-file note))
-    (map :org/name-string)
-    sort))
 
 (defn notes-with-tags [tags]
   (->>
@@ -349,51 +354,6 @@
                 [(?tags ?tag)]]
               tags)
     (map first)))
-
-(comment
-  (count (garden/all-garden-notes-flattened))
-  (count (fetch-db-garden-notes))
-
-  (notes-with-tags #{"post"})
-
-  (->>
-    (db/query '[:find (pull ?e [*])
-                :where
-                [?e :doctor/type :type/note]
-                [?e :org.prop/archive-time ?atime]])
-    (map first)
-    (map :org/source-file))
-
-  ;; delete notes
-  (->>
-    (db/query '[:find ?e
-                :where
-                [?e :doctor/type :type/note]
-                [?e :org/source-file ?file]
-                [(string/includes? ?file "/archive/")]
-                ])
-    (map first)
-    ;; (partition-all 200)
-    ;; (map db/retract)
-    ;; (doall)
-    ;; count
-    )
-
-  (->>
-    (db/query '[:find ?e
-                :where
-                [?e :org/source-file ?file]
-                [(string/includes? ?file "conflicted copy")]])
-    (map first)
-    (db/retract))
-
-  (->>
-    (db/query '[:find (pull ?e [:org/urls])
-                :where
-                [?e :org/urls ?urls]])
-    (map first)
-    (sort-by (comp count :org/urls) >)
-    (take 5)))
 
 (defn fetch-matching-db-item
   "Attempts to fetch a db item using the passed org item."
@@ -415,37 +375,11 @@
 
     (some->> matches first)))
 
-(comment
-  (->>
-    (garden/daily-paths 1)
-    (garden/paths->nested-garden-notes)
-    #_ (filter (comp #(string/includes? % "clawe hacking") :org/name-string))
-    first
-    fetch-matching-db-item)
-
-  (first (fetch-db-garden-notes))
-  (def note
-    (->>
-      (garden/all-garden-notes-flattened)
-      (filter (comp #(string/includes? % "clawe doctor org dedup") :org/name-string))
-      first))
-  (fallback-id note)
-  (fetch-matching-db-item note))
-
 (defn merge-db-item
   "Attempts to fetch and merge a db item using the passed org item."
   [item]
   (let [match (fetch-matching-db-item item)]
     (merge match item)))
-
-(comment
-  (def note
-    #_(first (fetch-db-garden-notes))
-    (->>
-      (garden/all-garden-notes-flattened)
-      (filter (comp #(string/includes? % "clawe doctor org dedup") :org/name-string))
-      first))
-  (merge-db-item note))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; list todos
@@ -493,32 +427,6 @@
                            (:db/id td))]
              (assoc td :org/items children))))))
 
-(comment
-  (list-todos-with-children
-    {:n 3
-     :filter-pred
-     (fn [item] (string/includes?
-                  (:org/name-string item)
-                  "saturday"))})
-
-  (db/datoms :eavt 20373)
-
-  (db/query
-    '[:find (pull ?e [*])
-      :in $ ?db-id
-      :where [?e :org/parents ?db-id]]
-    20362)
-
-  (db/query
-    '[:find (pull ?e [*])
-      :in $ ?id
-      :where [?e :org/parent-ids ?id]]
-    #uuid "690b842f-a579-44a2-97cc-6cc31bef41ee")
-
-  (->
-    (garden/daily-path)
-    (garden/path->nested-item)))
-
 (defn list-todos
   ([] (list-todos nil))
   ([{:keys [n filter-pred join-children] :as opts}]
@@ -530,17 +438,3 @@
        true        (map first)
        filter-pred (filter filter-pred)
        n           (take n)))))
-
-(comment
-  (count (list-todos))
-  (->>
-    (list-todos)
-    (filter :org/name-string)
-    #_(map :org/name-string)
-    #_sort
-    (filter
-      (fn [item] (string/includes?
-                   (:org/name-string item)
-                   "saturday")))
-    first
-    :db/id))

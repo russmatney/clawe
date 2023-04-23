@@ -64,10 +64,10 @@
     (map second)
     (map first)
     (map :db/id)
-    (db/retract)
+    (db/retract-entities)
     ;; (filter (comp nil? :file/full-path))
     ;; (map :db/id)
-    ;; (map db/retract)
+    ;; (map db/retract-entites)
     ))
 
 (defn mark-wp-set
