@@ -1,7 +1,8 @@
 (ns components.item
   (:require
    [doctor.ui.handlers :as handlers]
-   [components.colors :as colors]))
+   [components.colors :as colors]
+   [clojure.string :as string]))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -65,7 +66,7 @@
 (defn parent-names
   ([it] (parent-names nil it))
   ([{:keys [header? n]} it]
-   (let [p-names      (-> it :org/parent-names)
+   (let [p-names      (-> it :org/parent-name (string/split #" > "))
          p-names      (cond->> p-names
                         n (take n))
          p-name       (-> p-names first)
