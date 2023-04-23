@@ -200,8 +200,7 @@
            [?e :doctor/type :type/todo]
            (or
              [?e :org/status :status/in-progress]
-             ;; TODO remove tags from db when removed from org items
-             #_[?e :org/tags "current"])]
+             [?e :org/tags "current"])]
          conn)
     (map first)
     (join-children conn)))
