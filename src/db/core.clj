@@ -195,13 +195,9 @@
       (d/transact *conn* txs))))
 
 (defn retract-entities [ent-ids]
-  (sys/start! `*conn*)
   (let [ent-ids (if (coll? ent-ids) ent-ids [ent-ids])]
-    (d/transact *conn*
-                (->> ent-ids
-                     (map (fn [ent-id]
-                            [:db.fn/retractEntity ent-id]))
-                     (into [])))))
+    (->> ent-ids (map (fn [ent-id] [:db.fn/retractEntity ent-id]))
+         retract!)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; cli

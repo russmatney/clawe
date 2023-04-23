@@ -102,17 +102,18 @@
   Useful for creating links to parents/children without uuids."
   [item]
   (let [children (:org/items item)]
-    (->>
-      children
-      (map (fn [ch]
-             (when-let [child-ref
-                        (cond (:org/id ch)
-                              [:org/id (:org/id ch)]
+    (when (:org/id item)
+      (->>
+        children
+        (map (fn [ch]
+               (when-let [child-ref
+                          (cond (:org/id ch)
+                                [:org/id (:org/id ch)]
 
-                              (fallback-id ch)
-                              [:org/fallback-id (fallback-id ch)])]
-               [:db/add child-ref :org/parents [:org/id (:org/id item)]])))
-      (remove nil?))))
+                                (fallback-id ch)
+                                [:org/fallback-id (fallback-id ch)])]
+                 [:db/add child-ref :org/parents [:org/id (:org/id item)]])))
+        (remove nil?)))))
 
 (defn -compare-db-notes
   "Helper for researching :org/fallback-id's implementation/implications."
@@ -254,7 +255,9 @@
         db-note-ids    (->> notes-to-sync (map :org/id) (into #{}))
         db-note-fb-ids (->> notes-to-sync (map :org/fallback-id) (into #{}))]
 
-    (sync-db-notes {:page-size 200} (concat notes-to-sync other-updates))
+    (sync-db-notes {:page-size 200} notes-to-sync)
+    ;; separate transaction to avoid fallback-id idx not found error?
+    (sync-db-notes {:page-size 200} other-updates)
 
     ;; retract notes with this source-file that are not in db-notes
     (let [all-db-notes   (fetch-notes-for-source-file garden-path)
@@ -278,14 +281,17 @@
       ;; but there are some nuances (like :org/tags as a set vs lazy list)
       (->> notes-to-sync
            (mapcat (fn [note]
-                     (let [keep-tags       (:org/tags note)
-                           existing-tags   (->> (db/datoms :eavt (:db/id note) :org/tags)
+                     (let [db-note         (fetch-matching-db-item note)
+                           keep-tags       (:org/tags note)
+                           existing-tags   (->> (db/datoms :eavt (:db/id db-note) :org/tags)
                                                 (map :v) (into #{}))
                            tags-to-retract (set/difference existing-tags keep-tags)]
-                       (->> tags-to-retract
-                            (map
-                              (fn [t]
-                                [:db/retract (:db/id note) :org/tags t]))))))
+                       (when db-note
+                         (->> tags-to-retract
+                              (map
+                                (fn [t]
+                                  [:db/retract (:db/id db-note) :org/tags t])))))))
+           (remove nil?)
            db/retract!)
 
       ;; TODO purge other lists, like changed parent-names
