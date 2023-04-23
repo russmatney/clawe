@@ -31,7 +31,9 @@
 (defn group->comp
   [{:keys [item-group label item->comp group-by-key filter-items sort-items all-filter-defs
            default-page-size table-def
-           hide-all-tables hide-all-groups]
+           hide-all-tables hide-all-groups
+           active-filters-fn
+           ]
     :as   opts}]
   (let [label->group-by-label (or (some-> group-by-key all-filter-defs :group-by-label)
                                   (fn [label] (or (str label) "None")))
@@ -83,7 +85,9 @@
         (when item->comp
           (for [[i it] (->> items (take @page-size) (map-indexed vector))]
             ^{:key (str (:org/name it) i)}
-            [item->comp (assoc opts :i i :page-size @page-size) it]))])
+            [item->comp (assoc opts :i i :page-size @page-size
+                               :filter-by active-filters-fn
+                               :filter-fn filter-items) it]))])
 
      (when (and @table-open? (not hide-all-tables))
        [:div
@@ -382,20 +386,18 @@
         sort-groups-key    (uix/state initial-sort-groups-key)
         current-preset-key (uix/state preset-key)
 
-        filtered-items
-        (if-not (seq @active-filters) items
-                (->> items (filter
-                             (apply every-pred
-                                    ;; every predicate must match
-                                    (->> @active-filters
-                                         (group-by :filter-key)
-                                         (map (partial
-                                                filter-match-fn all-filter-defs)))))))
+        active-filters-fn
+        (->>
+          @active-filters
+          (group-by :filter-key)
+          (map (partial filter-match-fn all-filter-defs))
+          ;; every predicate must match
+          (apply every-pred))
 
-        ;; apply passed filter/sorts, usually based on a per-page atom
-        filtered-items (cond->> filtered-items
-                         filter-items filter-items
-                         sort-items   sort-items)
+        filtered-items (cond->> items
+                         (seq @active-filters) (filter active-filters-fn)
+                         filter-items          filter-items
+                         sort-items            sort-items)
 
         group-by-f (or (some-> @group-by-key all-filter-defs :group-by)
                        (fn [_]
@@ -438,4 +440,6 @@
      :group-by-key         @group-by-key
      :active-filters       @active-filters
      :sort-groups-key      @sort-groups-key
-     :current-preset-key   @current-preset-key}))
+     :current-preset-key   @current-preset-key
+     ;; eventually passed into group by
+     :active-filters-fn    active-filters-fn}))

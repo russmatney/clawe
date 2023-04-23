@@ -1,12 +1,10 @@
 (ns garden.db
   (:require
    [db.core :as db]
-   [db.listeners :as db.listeners]
    [garden.core :as garden]
    [clojure.string :as string]
    [taoensso.timbre :as log]
    [item.core :as item]
-   [api.db :as api.db]
    [clojure.set :as set]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -56,8 +54,6 @@
                                           :org/link-text (:link/text link)}))
                                   (into [])))
 
-        ;; NOTE this means only parents with uuids get added as parents
-        ;; relevant to sub-task logic
         (seq parent-ids)
         (assoc :org/parents (->> parent-ids
                                  (map (fn [parent-id]
@@ -88,23 +84,35 @@
                 :org.prop/begin-src ;; TODO proper source block handling
                 :org.prop/end-src)))))
 
-;; this should not be necessary
-;; (defn other-db-updates
-;;   [{:org/keys [links-to id parent-ids]}]
-;;   ;; TODO if no `id`, we probably want to link to the nearest parent
-;;   (when id
-;;     (concat
+;; old
+#_(concat
+    (->> links-to (map (fn [link]
+                         ;; TODO consider creating a first-class link/edge entity?
+                         {:org/id          (:link/id link)
+                          :org/link-text   (:link/text link)
+                          :org/linked-from id})))
+    (->> parent-ids (map (fn [parent-id]
+                           ;; TODO consider creating a first-class link/edge entity?
+                           {:org/id        parent-id
+                            :org/child-ids id}))))
 
-;;       (->> links-to (map (fn [link]
-;;                            ;; TODO consider creating a first-class link/edge entity?
-;;                            {:org/id          (:link/id link)
-;;                             :org/link-text   (:link/text link)
-;;                             :org/linked-from id})))
-;;       (->> parent-ids (map (fn [parent-id]
-;;                              ;; TODO consider creating a first-class link/edge entity?
-;;                              {:org/id        parent-id
-;;                               :org/child-ids id}))))))
+(defn other-db-updates
+  "Returns a list of additional datoms for the passed org item.
 
+  Useful for creating links to parents/children without uuids."
+  [item]
+  (let [children (:org/items item)]
+    (->>
+      children
+      (map (fn [ch]
+             (when-let [child-ref
+                        (cond (:org/id ch)
+                              [:org/id (:org/id ch)]
+
+                              (fallback-id ch)
+                              [:org/fallback-id (fallback-id ch)])]
+               [:db/add child-ref :org/parents [:org/id (:org/id item)]])))
+      (remove nil?))))
 
 (defn -compare-db-notes
   "Helper for researching :org/fallback-id's implementation/implications."
@@ -178,9 +186,9 @@
                         (log/info "\n\nRetrying with smaller groups." (count notes))
                         (transact-garden-notes (->> notes (take half)))
                         (transact-garden-notes (->> notes (drop half) (take half))))
-                      (log/info "\n\nProblemmatic record:" (some->>
-                                                             notes first
-                                                             :org/name-string)))))})))
+                      (log/info "\n\nProblemmatic record:"
+                                (some-> notes first
+                                        ((fn [x] (:org/name-string x x))))))))})))
       doall)))
 
 (defn sync-garden-notes-to-db
@@ -188,7 +196,9 @@
   ([notes] (sync-garden-notes-to-db nil notes))
   ([opts garden-notes]
    (->> garden-notes
-        (map garden-note->db-item)
+        (mapcat (fn [note]
+                  (concat [(garden-note->db-item note)]
+                          (other-db-updates note))))
         (sync-db-notes opts))))
 
 (comment
@@ -219,59 +229,32 @@
     (->> (garden/last-modified-paths) reverse)))
 
 (comment
-  api.db/*tx->fe-db*
-  (api.db/start-tx->fe-listener)
-  (api.db/stop-tx->fe-listener)
-
-  db.listeners/*garden->blog*
-  (db.listeners/start-garden->blog-listener)
-  (db.listeners/stop-garden->blog-listener)
-
   (sync-garden-paths-to-db
     {:page-size 20}
-    (concat
-      (garden/basic-todo-paths)
-      (garden/daily-paths 30)))
+    (garden/daily-paths 30))
 
+  ;; the big one!!
   (sync-garden-notes-to-db
     {:page-size 2000}
     (->>
-      ;; the big one!!
       (garden/all-garden-notes-flattened)
       ;; (drop 15000)
-      ))
-
-  (sync-garden-notes-to-db
-    {:page-size 20}
-    (->>
-      (garden/all-garden-notes-flattened)
-      (filter (comp #(string/includes? % "bb_cli") :org/source-file))))
-
-  (sync-garden-paths-to-db
-    {:page-size 20}
-    (->> (garden/all-garden-notes-nested)
-         (sort-by :file/last-modified)
-         (reverse)
-         (take 200)
-         (map :org/source-file)))
-
-  (count
-    (garden/all-garden-notes-flattened)))
+      )))
 
 (declare fetch-notes-for-source-file)
 
 (defn sync-and-purge-for-path [garden-path]
-  (let [notes-to-sync
+  (let [parsed-notes-to-sync
         (->> [garden-path]
-             garden.core/paths->flattened-garden-notes
-             ;; do we need this? remove children so they don't get synced early?
-             ;; OR maybe don't flatten and rely on the children syncing?
-             ;; (map #(dissoc % :org/items))
-             (map garden-note->db-item))
+             garden.core/paths->flattened-garden-notes)
+        notes-to-sync
+        (->> parsed-notes-to-sync (map garden-note->db-item))
+        other-updates
+        (->> parsed-notes-to-sync (mapcat other-db-updates))
         db-note-ids    (->> notes-to-sync (map :org/id) (into #{}))
         db-note-fb-ids (->> notes-to-sync (map :org/fallback-id) (into #{}))]
 
-    (sync-db-notes {:page-size 200} notes-to-sync)
+    (sync-db-notes {:page-size 200} (concat notes-to-sync other-updates))
 
     ;; retract notes with this source-file that are not in db-notes
     (let [all-db-notes   (fetch-notes-for-source-file garden-path)
@@ -325,7 +308,8 @@
   (sync-and-purge-for-path (:org/source-file note))
 
   (-> (garden/daily-path)
-      sync-and-purge-for-path))
+      sync-and-purge-for-path)
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; fetch
@@ -410,7 +394,6 @@
     n           (take n)))
 
 (defn join-children [todos]
-  (println "joining children on todos" (count todos))
   (->> todos
        (map (fn [td]
               (let [children
@@ -446,6 +429,7 @@
             (string/includes? "2023-04-23")))
   (list-todos {:filter-pred td-pred})
   (list-todos {:filter-pred    td-pred
-               :join-children? true})
+               :join-children? true
+               :skip-subtasks? true})
   (list-only-todos-with-children {:filter-pred td-pred})
   )

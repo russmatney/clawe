@@ -268,7 +268,7 @@
   "Renders the passed todo as a card.
   If it has children (i.e. sub-tasks) they will be rendered as a group of cards."
   ([item] [card-or-card-group nil item])
-  ([{:keys [filter-by]} item]
+  ([{:keys [filter-by filter-fn]} item]
    (let [todos             (->> item
                                 (tree-seq (comp seq :org/items) :org/items)
                                 (remove nil?)
@@ -276,7 +276,9 @@
                                 (filter :org/status)
                                 seq)
          [children? todos] (if (seq todos) [true todos] [false [item]])
-         todos             (if filter-by (filter filter-by todos) todos)
+         todos             (cond->> todos
+                             filter-by (filter filter-by)
+                             filter-fn filter-fn)
          groups            (group-by (fn [it] (-> it :org/parent-names str)) todos)]
 
      [:div {:class ["flex" "flex-col"]}
