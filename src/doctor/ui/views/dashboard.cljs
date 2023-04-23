@@ -23,13 +23,15 @@
    [doctor.ui.views.workspaces :as workspaces]
    [hooks.workspaces :as hooks.workspaces]
    [hiccup-icons.octicons :as octicons]
-   [doctor.ui.handlers :as handlers]))
+   [doctor.ui.handlers :as handlers]
+   [doctor.ui.localstorage :as localstorage]))
 
-(defn widget-bar [{:keys [comp label opts initial-show actions icon
-                          w-class]}]
-  (let [show?     (uix/state initial-show)
-        icon-opts {:class ["px-1 py-2 pr-2"]
-                   :text  label}]
+(defn widget-bar [{:keys [comp label opts actions icon w-class]}]
+  (let [icon-opts     {:class ["px-1 py-2 pr-2"]
+                       :text  label}
+        storage-label (str  "widget-bar-" label)
+        cached-show   (localstorage/get-item storage-label)
+        show?         (uix/state cached-show)]
     [:div
      {:class ["flex flex-col" (or w-class "w-full")]}
      [:div
@@ -39,9 +41,7 @@
                "border-city-aqua-light-500"
                "border-t"
                "sticky" "top-0"
-               "py-1" "px-2"
-               "z-10"
-               ]}
+               "py-1" "px-2" "z-10"]}
 
       [components.icons/icon-comp
        (cond icon  (assoc icon-opts :icon icon)
@@ -55,11 +55,15 @@
        [components.actions/actions-list
         {:n 5
          :actions
-         (concat [{:action/on-click (fn [_] (swap! show? not))
+         (concat [{:action/on-click (fn [_]
+                                      (reset! show? true)
+                                      (localstorage/set-item! storage-label true))
                    :action/label    "Show"
                    :action/icon     octicons/chevron-down16
                    :action/disabled @show?}
-                  {:action/on-click (fn [_] (swap! show? not))
+                  {:action/on-click (fn [_]
+                                      (reset! show? false)
+                                      (localstorage/remove-item! storage-label))
                    :action/label    "Hide"
                    :action/icon     octicons/chevron-up16
                    :action/disabled (not @show?)}]
@@ -111,7 +115,6 @@
      [widget-bar {:comp  blog/widget
                   :label "blog"
                   :opts  opts
-                  ;; :initial-show true
                   :icon  blog/icon
                   :actions
                   [{:action/label    "Publish N Updated notes"
@@ -130,7 +133,6 @@
 
      [widget-bar {:comp  screenshots/page
                   :label "screenshots-clips"
-                  ;; :initial-show true
                   :opts  opts
                   :icon  octicons/image16
                   :actions
