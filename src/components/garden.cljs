@@ -57,7 +57,7 @@
 (defn tags-list [tags]
   (when (seq tags)
     [:div
-     {:class ["flex flex-row flex-wrap"]}
+     {:class ["flex flex-row flex-wrap" "justify-center"]}
      (for [[i t] (->> tags (map-indexed vector))]
        ^{:key t}
        [:span {:class
@@ -96,7 +96,7 @@
 (defn full-note [item]
   (let [{:keys [note]} (use-full-garden-note item)]
     [:div
-     {:class ["bg-city-blue-900"]}
+     {:class ["bg-city-blue-900" "p-4"]}
      [org-file note]]))
 
 (defn link-text-with-popover
@@ -213,7 +213,6 @@
     {:org/keys [body body-string items] :as item}]
    (when (or (seq body-string) (seq items))
      [:div {:class ["font-mono" "max-w-[900px]"]}
-
       ;; checking for a body-string, which accounts for 'empty' body content blocks
       (when (seq body-string)
         [:div
@@ -244,6 +243,7 @@
            [:div
             {:class
              (concat
+               ["pt-2"]
                (when (and (:org/level item) (= (:org/level item) 2))
                  ["border" "border-city-blue-800"])
                (cond
@@ -256,21 +256,25 @@
             (when (:org/name item)
               [:div
                {:class
-                ["text-lg" "font-mono" "flex" "flex-row" "items-center" "space-x-2"]}
+                ["font-mono"
+                 "flex" "flex-row" "items-center"
+                 "space-x-2"]}
 
                (when (:org/status item)
                  [:div
-                  {:class ["text-sm"
-                           (when (#{:status/done :status/cancelled :status/skipped}
-                                   (:org/status item)) "text-slate-500")]}
+                  {:class [(when (#{:status/done :status/cancelled :status/skipped}
+                                   (:org/status item))
+                             "text-slate-500")]}
                   [status-icon item]])
 
-               [text-with-links
-                (assoc opts :text-classes [(when (#{:status/done :status/cancelled :status/skipped}
-                                                   (:org/status item)) "line-through")
-                                           (when (#{:status/done :status/cancelled :status/skipped}
-                                                   (:org/status item)) "text-slate-500")])
-                (:org/name item)]])
+               [:span
+                {:class ["pl-2" "text-lg"]}
+                [text-with-links
+                 (assoc opts :text-classes [(when (#{:status/done :status/cancelled :status/skipped}
+                                                    (:org/status item)) "line-through")
+                                            (when (#{:status/done :status/cancelled :status/skipped}
+                                                    (:org/status item)) "text-slate-500")])
+                 (:org/name-string item)]]])
 
             ;; recurse
             [org-body (merge {:nested? true} opts) item]])])])))
@@ -289,7 +293,7 @@
     [:span
      {:class ["font-mono" "text-xl" "text-city-green-200" "p-2"
               "hover:text-city-pink-400"
-              "cursor-pointer"]}
+              "cursor-pointer" "whitespace-nowrap"]}
      (or short-path source-file)]}])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -349,35 +353,35 @@
       {:class ["text-white"]}
 
       [:div
-       {:class ["grid" "grid-flow-col-dense" "mb-8"]}
+       {:class ["flex" "flex-row" "justify-between" "items-start" "mb-8"]}
+
        [source-file-link item]
 
-       [:div {:class ["text-xl"]} name]
+       [:div {:class ["text-xl" "whitespace-nowrap"]}
+        name]
 
-       [components.actions/actions-list
-        {:actions
-         [(when (not @show-raw)
-            {:action/on-click #(reset! show-raw true)
-             :action/label    "show raw"})
-          (when @show-raw
-            {:action/on-click #(reset! show-raw false)
-             :action/label    "hide raw"})]}]]
-
-      [:div
-       {:class ["grid" "grid-flow-col"]}
-
-       ;; file content
-       [org-body
-        (-> opts (assoc :show-raw @show-raw))
-        item]
-
-       ;; metadata (tags, urls, links, etc)
        [:div
-        {:class ["grid"]}
-        [:div
-         [all-nested-tags-comp item]]
-        [:div
-         [urls-list all-urls]]]]])))
+        [components.actions/actions-list
+         {:actions
+          [(when (not @show-raw)
+             {:action/on-click #(reset! show-raw true)
+              :action/label    "show raw"})
+           (when @show-raw
+             {:action/on-click #(reset! show-raw false)
+              :action/label    "hide raw"})]}]]]
+
+      ;; metadata (tags, urls, links, etc)
+      [:div
+       {:class ["flex flex-row" "justify-around" "items-center"]}
+       [:div
+        {:class ["w-1/3"]}
+        [all-nested-tags-comp item]]
+       [urls-list all-urls]]
+
+      ;; file content
+      [org-body
+       (-> opts (assoc :show-raw @show-raw))
+       item]])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; priority-label

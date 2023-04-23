@@ -64,5 +64,5 @@
                                     maybe-time)]
                          (dates.tick/add-tz maybe-time)))))
               (remove nil?)
-              (sort-by dates.tick/sort-latest-first)
+              (sort dates.tick/sort-latest-first)
               first))))
