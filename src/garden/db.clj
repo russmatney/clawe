@@ -405,7 +405,7 @@
 
 (defn list-todos
   ([] (list-todos nil))
-  ([{:keys [n filter-pred join-children? skip-subtasks?] :as opts}]
+  ([{:keys [n filter-pred join-children? skip-subtasks?] :as _opts}]
    (cond->>
        (db/query
          (if skip-subtasks?
