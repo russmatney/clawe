@@ -15,6 +15,7 @@
    [doctor.ui.pomodoros :as pomodoros]
    [doctor.ui.views.focus :as focus]
    [doctor.ui.views.todos :as todos]
+   [doctor.ui.views.today :as today]
    [doctor.ui.views.blog :as blog]
    [doctor.ui.views.pomodoro :as pomodoro]
    [doctor.ui.views.chess-games :as chess-games]
@@ -115,6 +116,11 @@
                   [{:action/label    "Publish N Updated notes"
                     :action/on-click #(js/alert "todo")}]
                   }]
+
+     [widget-bar {:comp  today/widget
+                  :label "today"
+                  :icon  today/icon
+                  :opts  opts}]
 
      [widget-bar {:comp  screenshots/page
                   :label "screenshots"

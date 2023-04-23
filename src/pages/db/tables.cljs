@@ -52,7 +52,7 @@
                          (first group)]])))}) )
 
 (defn garden-note-table-def [entities]
-  (let [notes (->> entities (filter (comp #{:type/note} :doctor/type)))]
+  (let [notes (->> entities (filter (comp #{:type/note :type/todo} :doctor/type)))]
     {:headers ["File" "Name" "Parent" "Words" "Raw" "Actions"]
      :n       5
      :rows

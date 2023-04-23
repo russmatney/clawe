@@ -28,6 +28,7 @@
    [doctor.ui.views.blog :as views.blog]
    [doctor.ui.views.focus :as views.focus]
    [doctor.ui.views.todos :as views.todos]
+   [doctor.ui.views.today :as views.today]
    [doctor.ui.views.topbar :as views.topbar]
    [doctor.ui.views.chess-games :as views.chess-games]
    [doctor.ui.views.dashboard :as views.dashboard]
@@ -49,6 +50,8 @@
     :icon  octicons/checklist16}
    {:route "/blog" :page-name :page/blog :label "Blog" :comp views.blog/widget :hide-header true
     :icon  views.blog/icon}
+   {:route "/today" :page-name :page/today :label "Today" :comp views.today/widget
+    :icon  views.today/icon}
    {:route "/wallpapers" :page-name :page/wallpapers :label "Wallpapers" :comp pages.wallpapers/page
     :icon  octicons/image16}
    {:route "/events" :page-name :page/events :label "Events" :comp pages.events/page

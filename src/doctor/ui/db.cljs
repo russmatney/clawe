@@ -17,7 +17,7 @@
 ;; events
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def event-types
+(def default-event-types
   #{:type/commit
     :type/screenshot
     :type/lichess-game
@@ -25,21 +25,23 @@
     :type/todo})
 
 (defn events
-  ([conn] (events conn event-types))
-  ([conn event-types]
+  ([conn] (events conn nil))
+  ([conn {:keys [event-types filter-by]}]
    (when conn
-     (let [n 200]
-       (->> (d/q '[:find (pull ?e [*])
-                   :in $ ?event-types
-                   :where
-                   ;; TODO consider lower bound/min time here
-                   [?e :event/timestamp ?ts]
-                   [?e :doctor/type ?type]
-                   [(contains? ?event-types ?type)]]
-                 conn event-types)
-            (map first)
-            (sort-by :event/timestamp dt/sort-latest-first)
-            (take-and-log {:n n :label "events"}))))))
+     (let [event-types (or event-types default-event-types)
+           n           200]
+       (cond->> (d/q '[:find (pull ?e [*])
+                       :in $ ?event-types
+                       :where
+                       ;; TODO consider lower bound/min time here
+                       [?e :event/timestamp ?ts]
+                       [?e :doctor/type ?type]
+                       [(contains? ?event-types ?type)]]
+                     conn event-types)
+         true      (map first)
+         filter-by (filter filter-by)
+         true      (sort-by :event/timestamp dt/sort-latest-first)
+         n         (take-and-log {:n n :label "events"}))))))
 
 (defn chess-games [conn]
   (when conn
@@ -96,7 +98,7 @@
   ([conn] (screenshots conn nil))
   ([conn {:keys [n]}]
    (when conn
-     (let [n (or n 30)]
+     (let [n (or n 300)]
        (->>
          (d/q '[:find (pull ?e [*])
                 :where

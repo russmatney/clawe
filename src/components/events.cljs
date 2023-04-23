@@ -42,6 +42,7 @@
       [{:keys [screenshot-count
                commit-count
                org-note-count
+               todo-count
                chess-game-count]}
        (event-counts events)]
     [:div
@@ -54,7 +55,10 @@
       [event-count-comp {:label "commits" :count commit-count}]]
      [:span
       {:class ["whitespace-nowrap"]}
-      [event-count-comp {:label "org-notes" :count org-note-count}]]
+      [event-count-comp {:label "notes" :count org-note-count}]]
+     [:span
+      {:class ["whitespace-nowrap"]}
+      [event-count-comp {:label "todos" :count todo-count}]]
      [:span
       {:class ["whitespace-nowrap"]}
       [event-count-comp {:label "chess games" :count chess-game-count}]]]))
@@ -167,33 +171,36 @@
 
   (cons 1 '(2 3)))
 
-(defn event-cluster [opts events]
-  (let [screenshots  (->> events (filter (comp #{:type/screenshot} :doctor/type)))
-        commits      (->> events (filter (comp #{:type/commit} :doctor/type)))
-        chess-games  (->> events (filter (comp #{:type/lichess-game} :doctor/type)))
-        garden-notes (->> events (filter (comp #{:type/note} :doctor/type)))
-        _todos       (->> events (filter (comp #{:type/todo} :doctor/type)))]
-    [:div
-     {:class ["flex" "flex-col"]}
+(defn event-cluster
+  ([events] (event-cluster nil events))
+  ([opts events]
+   (let [screenshots  (->> events (filter (comp #{:type/screenshot} :doctor/type)))
+         commits      (->> events (filter (comp #{:type/commit} :doctor/type)))
+         chess-games  (->> events (filter (comp #{:type/lichess-game} :doctor/type)))
+         garden-notes (->> events (filter (comp #{:type/note} :doctor/type)))
+         todos        (->> events (filter (comp #{:type/todo} :doctor/type)))]
+     [:div
+      {:class ["flex" "flex-col"]}
 
-     (when (seq chess-games)
-       [tables/table-for-doctor-type opts :type/lichess-game chess-games])
+      (when (seq chess-games)
+        [tables/table-for-doctor-type opts :type/lichess-game chess-games])
 
-     (when (seq commits)
-       [tables/table-for-doctor-type opts :type/commit commits])
+      (when (seq commits)
+        [tables/table-for-doctor-type opts :type/commit commits])
 
-     (when (seq screenshots)
-       [tables/table-for-doctor-type opts :type/screenshot screenshots])
+      (when (seq screenshots)
+        [tables/table-for-doctor-type opts :type/screenshot screenshots])
 
-     ;; TODO table for todos
+      (when (seq todos)
+        [tables/table-for-doctor-type opts :type/note todos])
 
-     ;; tags table
-     #_(when (seq garden-notes)
-         [components.table/table (tables/garden-by-tag-table-def garden-notes)])
+      ;; tags table
+      #_(when (seq garden-notes)
+          [components.table/table (tables/garden-by-tag-table-def garden-notes)])
 
-     ;; per note
-     (when (seq garden-notes)
-       [tables/table-for-doctor-type opts :type/note garden-notes])]))
+      ;; per note
+      (when (seq garden-notes)
+        [tables/table-for-doctor-type opts :type/note garden-notes])])))
 
 (defn event-clusters
   ([events] [event-clusters nil events])
@@ -212,7 +219,8 @@
                                     :else                           true)]
           [:div
            {:key   (str start)
-            :class [(when (odd? i) "bg-yo-blue-800") "p-4"]}
+            :class [(when (odd? i) "bg-yo-blue-800") "p-4"
+                    "text-slate-200"]}
 
            [:span
             {:class ["text-xl"]}

@@ -8,7 +8,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn page [{:keys [conn]}]
-  (let [events (ui.db/events conn #{:type/commit})]
+  (let [events (ui.db/events conn {:event-types #{:type/commit}})]
 
     [:div
      {:class ["flex" "flex-col" "flex-auto"
