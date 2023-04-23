@@ -6,6 +6,7 @@
    [api.todos :as todos]
    [api.blog :as blog]
    [screenshots.core :as screenshots]
+   [clips.core :as clips]
    [wallpapers.core :as wallpapers]
    #_[notebooks.clerk :as notebooks.clerk]
    [clojure.string :as string]
@@ -44,6 +45,11 @@
     (do
       (screenshots/ingest-screenshots)
       {:status 200 :body "updated screenshots"})
+
+    (= uri "/clips/update")
+    (do
+      (clips/ingest-clips)
+      {:status 200 :body "updated clips"})
 
     (= uri "/todos/update")
     (do

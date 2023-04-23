@@ -16,6 +16,7 @@
    "yyyy-MM-dd-HHmmss"
    "yyyy-MM-ddTHH:mm:ss"
    "yyyy-MM-dd HH:mm:ss"
+   "yyyy-MM-dd_HH.mm.ss"
    "yyyy-MM-dd E HH:mm"
    "yyyyMMdd:HHmmss"
    :iso-local-date-time])
@@ -63,7 +64,8 @@
     (when (and time-string
                (or (and (string? time-string) (seq (string/trim time-string)))
                    (int? time-string)))
-      (if-let [time ((apply some-fn wrapped-parse-attempts) time-string)]
+      (if-let [time (-> time-string string/trim
+                        ((apply some-fn wrapped-parse-attempts)))]
         time
         (do
           #?(:clj (println "Error parsing time string" time-string)
@@ -99,7 +101,9 @@
   (parse-time-string "Fri, 10 Dec 2021 00:35:56 -0500")
   (parse-time-string "Fri, 4 Feb 2022 15:38:14 -0500")
   (parse-time-string "2021-12-30T17:52:12Z")
-  (parse-time-string "2023-04-04T21:11:15Z"))
+  (parse-time-string "2023-04-04T21:11:15Z")
+  (parse-time-string "2023-02-28_23.23.07")
+  (parse-time-string "2023-03-17_19.26.15 "))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

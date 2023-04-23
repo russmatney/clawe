@@ -171,6 +171,8 @@ several local dirs are symlinked into public/assets/
 #+begin_src sh
 # from clawe root dir
 ln -s ~/Screenshots public/assets/screenshots
+ln -s ~/gifs public/assets/clips
+ln -s ~/Dropbox/wallpapers public/assets/wallpapers
 #+end_src
 
 #+begin_src
