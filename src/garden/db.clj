@@ -263,15 +263,8 @@
                                     (db-note-ids (:org/id db-note)))
                                (and (:org/fallback-id db-note)
                                     (db-note-fb-ids (:org/fallback-id db-note)))))
-          [_notes-kept
-           notes-to-purge]
-          (->> all-db-notes
-               (reduce
-                 (fn [res db-note]
-                   (if (->should-keep? db-note)
-                     (update res 0 concat [db-note])
-                     (update res 1 concat [db-note])))
-                 []))]
+          notes-to-purge
+          (->> all-db-notes (remove ->should-keep?))]
       (when (seq notes-to-purge)
         (log/info "Purging" (count notes-to-purge) "/" (count all-db-notes) "notes from the db"
                   (->> notes-to-purge (map :org/name-string))))

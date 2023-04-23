@@ -1,6 +1,6 @@
 (ns doctor.api
   (:require
-   [taoensso.timbre :as log]
+   ;; [taoensso.timbre :as log]
    [api.workspaces :as workspaces]
    [api.topbar :as topbar]
    [api.todos :as todos]
@@ -15,7 +15,7 @@
 (defn route
   "Routes an api request."
   [{:keys [uri] :as _req}]
-  (log/info "Routing API req" uri (System/currentTimeMillis))
+  ;; (log/debug "Routing API req" uri (System/currentTimeMillis))
 
   (cond
     (= uri "/reload")
