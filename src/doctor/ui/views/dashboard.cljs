@@ -15,6 +15,7 @@
    [doctor.ui.pomodoros :as pomodoros]
    [doctor.ui.views.focus :as focus]
    [doctor.ui.views.todos :as todos]
+   [doctor.ui.views.commits :as commits]
    [doctor.ui.views.today :as today]
    [doctor.ui.views.blog :as blog]
    [doctor.ui.views.pomodoro :as pomodoro]
@@ -120,6 +121,11 @@
      [widget-bar {:comp  today/widget
                   :label "today"
                   :icon  today/icon
+                  :opts  opts}]
+
+     [widget-bar {:comp  commits/widget
+                  :label "commits"
+                  :icon  commits/icon
                   :opts  opts}]
 
      [widget-bar {:comp  screenshots/page

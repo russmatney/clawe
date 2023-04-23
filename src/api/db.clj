@@ -57,7 +57,7 @@
     (concat
       (last-modified-files->es 200)
       (recent-wallpapers->es 20)
-      (recent-events->es 100)
+      (recent-events->es 300)
       (repos->es))
     dedupe
     (mapcat #(d/datoms @db/*conn* :eavt %))))

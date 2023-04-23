@@ -1,13 +1,16 @@
-(ns pages.commits
+(ns doctor.ui.views.commits
   (:require
    [components.events :as components.events]
-   [doctor.ui.db :as ui.db]))
+   [doctor.ui.db :as ui.db]
+   [hiccup-icons.octicons :as octicons]))
+
+(def icon octicons/commit)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; event page
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn page [{:keys [conn]}]
+(defn widget [{:keys [conn]}]
   (let [events (ui.db/events conn {:event-types #{:type/commit}})]
 
     [:div
