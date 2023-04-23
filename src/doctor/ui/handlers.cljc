@@ -16,7 +16,7 @@
              [garden.db :as garden.db]
              [api.blog :as api.blog]
              [api.todos :as api.todos]
-             ]
+             [taoensso.timbre :as log]]
        :cljs [[hiccup-icons.fa :as fa]
               [components.icons :as components.icons]
               [components.colors :as colors]
@@ -29,7 +29,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defhandler delete-from-db [item]
-  (println "deleting item from db" item)
+  (log/info "deleting item from db" item)
   (db/retract-entities (:db/id item))
   :ok)
 
@@ -70,7 +70,7 @@
   (garden/full-item item))
 
 (defhandler purge-org-source-file [item]
-  (println "purging-org-source-file from db" (:org/source-file item))
+  (log/info "purging-org-source-file from db" (:org/source-file item))
   (when (:org/source-file item)
     ;; TODO rewrite to delete without query, using an identifier
     (->>
@@ -121,7 +121,7 @@
   :ok)
 
 (defhandler ingest-commits-for-repo [repo]
-  (println "ingesting commits for repo" repo)
+  (log/info "ingesting commits for repo" repo)
   (git/ingest-commits-for-repo repo)
   :ok)
 
@@ -223,7 +223,7 @@
             "C" "B"
             nil "C")
           (do
-            (println "inc-pri - unexpected priority found, overwriting:" (:org/priority todo))
+            (log/warn "inc-pri - unexpected priority found, overwriting:" (:org/priority todo))
             "C"))]
     (org-crud.api/update! todo
                           (cond->
@@ -240,7 +240,7 @@
             "B" "C"
             "C" nil)
           (do
-            (println "dec-pri - unexpected priority found, overwriting:" (:org/priority todo))
+            (log/warn "dec-pri - unexpected priority found, overwriting:" (:org/priority todo))
             nil))]
     (when-not priority
       (->> [[:db.fn/retractAttribute (:db/id todo) :org/priority]]

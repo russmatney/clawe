@@ -48,7 +48,7 @@
                    true
                    (do
                      (when-not (nil? v)
-                       (log/debug "unsupported type" t v k)
+                       (log/warn "unsupported type" t v k)
                        (when (:on-unsupported-type opts)
                          ((:on-unsupported-type opts) m)))
                      nil)))))
