@@ -2,6 +2,7 @@
   (:require
    [clojure.string :as string]
    [taoensso.timbre :as log]
+   [taoensso.encore :as enc]
    [systemic.core :as sys :refer [defsys]]
    [plasma.server :as plasma.server]
    [plasma.server.interceptors :as plasma.interceptors]
@@ -26,6 +27,30 @@
    #_[notebooks.clerk :as notebooks.clerk]
    #_[notebooks.core :as notebooks]))
 
+(defn output-fn
+  [data]
+  (let [{:keys [level ?err #_vargs _msg_ ?ns-str ?file _hostname_
+                _timestamp_ ?line output-opts]}
+        data]
+
+    (str
+      #_(when-let [ts (force timestamp_)]
+          (str ts " "))
+      #_ (force hostname_)
+      #_ " "
+      (string/upper-case (name level))  " "
+      "[" (or ?ns-str ?file "?") ":" (or ?line "?") "] - "
+
+      (when-let [msg-fn (get output-opts :msg-fn log/default-output-msg-fn)]
+        (msg-fn data))
+
+      (when-let [_err ?err]
+        (when-let [ef (get output-opts :error-fn log/default-output-error-fn)]
+          (when-not   (get output-opts :no-stacktrace?) ; Back compatibility
+            (str enc/system-newline
+                 (ef data))))))))
+
+(log/merge-config! {:output-fn output-fn})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; transit helpers
