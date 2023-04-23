@@ -1,7 +1,6 @@
 (ns doctor.ui.views.dashboard
   (:require
    [doctor.ui.db :as ui.db]
-   [components.todo :as components.todo]
    [components.events :as components.events]
    [doctor.ui.views.ingest :as ingest]
    [components.filter :as components.filter]
@@ -158,44 +157,4 @@
                          (assoc filter-data :group->comp components.events/event-clusters)]]]))
                   :actions [{:action/label "Today's events"}
                             {:action/label "This week's events"}
-                            {:action/label "Today's screenshots"}]}]
-
-     [widget-bar
-      {:label "old-todos"
-       :icon  octicons/checklist16
-       :opts  opts
-       :comp
-       (fn [opts]
-         (let [current-todos (ui.db/current-todos (:conn opts))
-               all-todos     (ui.db/list-todos
-                               (:conn opts) {:n 200 ;; TODO support fetching more
-                                             :filter-pred
-                                             (fn [{:org/keys [status]}]
-                                               (#{:status/not-started} status))})
-               todo-filter-results
-               (components.filter/use-filter
-                 (assoc filter-defs/fg-config :items all-todos))]
-           [:div
-            [:div
-             [:div "Todo list (" (count current-todos) ")"]
-             [components.todo/todo-list {:n 5} current-todos]]
-
-            (let [expanded (uix/state
-                             ;; default to hiding all todos if some are queued
-                             (< (count current-todos) 2))]
-              [:div
-               [:div "All todos (" (count (:filtered-items todo-filter-results)) ")"
-                (count all-todos)]
-               [components.actions/actions-list
-                {:actions [{:action/on-click (fn [_] (swap! expanded not))
-                            :action/label    "Expand"
-                            :action/disabled @expanded}
-                           {:action/on-click (fn [_] (swap! expanded not))
-                            :action/label    "Collapse"
-                            :action/disabled (not @expanded)}]}]
-               (when @expanded
-                 [:div
-                  (:filter-grouper todo-filter-results)
-                  [components.todo/todo-list
-                   {:n 5}
-                   (:filtered-items todo-filter-results)]])])]))}]]]])
+                            {:action/label "Today's screenshots"}]}]]]])

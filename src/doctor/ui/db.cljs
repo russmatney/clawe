@@ -1,8 +1,15 @@
 (ns doctor.ui.db
   (:require
+   [taoensso.timbre :as log]
    [datascript.core :as d]
    [dates.tick :as dt]
    [wing.core :as w]))
+
+(defn take-and-log [{:keys [n label]} xs]
+  (let [ct (count xs)]
+    (when (> ct n) (log/info ct label "in db, trimming to" n))
+    (->> xs (take n))))
+
 
 ;; TODO tests for this namespace
 
@@ -21,28 +28,30 @@
   ([conn] (events conn event-types))
   ([conn event-types]
    (when conn
-     (->> (d/q '[:find (pull ?e [*])
-                 :in $ ?event-types
-                 :where
-                 ;; TODO consider lower bound/min time here
-                 [?e :event/timestamp ?ts]
-                 [?e :doctor/type ?type]
-                 [(contains? ?event-types ?type)]]
-               conn event-types)
-          (map first)
-          (sort-by :event/timestamp dt/sort-latest-first)
-          (take 200)))))
+     (let [n 200]
+       (->> (d/q '[:find (pull ?e [*])
+                   :in $ ?event-types
+                   :where
+                   ;; TODO consider lower bound/min time here
+                   [?e :event/timestamp ?ts]
+                   [?e :doctor/type ?type]
+                   [(contains? ?event-types ?type)]]
+                 conn event-types)
+            (map first)
+            (sort-by :event/timestamp dt/sort-latest-first)
+            (take-and-log {:n n :label "events"}))))))
 
 (defn chess-games [conn]
   (when conn
-    (->> (d/q '[:find (pull ?e [*])
-                :where
-                ;; TODO consider lower bound/min time here
-                [?e :doctor/type :type/lichess-game]]
-              conn)
-         (map first)
-         (sort-by :event/timestamp dt/sort-latest-first)
-         (take 200))))
+    (let [n 200]
+      (->> (d/q '[:find (pull ?e [*])
+                  :where
+                  ;; TODO consider lower bound/min time here
+                  [?e :doctor/type :type/lichess-game]]
+                conn)
+           (map first)
+           (sort-by :event/timestamp dt/sort-latest-first)
+           (take-and-log {:n n :label "chess games"})))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; repos/commits
@@ -95,7 +104,7 @@
               conn)
          (map first)
          (sort-by :screenshot/time dt/sort-latest-first)
-         (take n))))))
+         (take-and-log {:n n :label "screenshots"}))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; wallpapers
@@ -113,7 +122,7 @@
               conn)
          (map first)
          (sort-by :wallpaper/last-time-set >)
-         (take n))))))
+         (take-and-log {:n n :label "wallpapers"}))))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -133,7 +142,7 @@
               conn)
          (map first)
          (sort-by :file/last-modified dt/sort-latest-first)
-         (take n))))))
+         (take-and-log {:n n :label "garden notes"}))))))
 
 (defn garden-files
   "Returns garden source-files"
@@ -151,7 +160,7 @@
          (w/distinct-by :org/source-file)
          (sort-by :file/last-modified dt/sort-latest-first)
          (map :org/source-file)
-         (take n))))))
+         (take-and-log {:n n :label "garden files"}))))))
 
 (defn join-children [conn items]
   (->> items
@@ -166,31 +175,30 @@
                       (map first))]
                 (assoc td :org/items children))))))
 
-(defn list-todos-with-children
-  ([conn] (list-todos-with-children conn nil))
-  ([conn {:keys [n filter-pred] :as _opts}]
-   (cond->>
-       (d/q '[:find (pull ?e [*])
-              :where [?e :doctor/type :type/todo]]
-            conn)
-     true        (map first)
-     filter-pred (filter filter-pred)
-     n           (take n)
-
-     true (join-children conn))))
-
 (defn list-todos
+  "Returns all todos in the db.
+
+  when `join-children?` is true, subtasks are filtered from the returned
+  list, but included on parent tasks as children.
+  "
   ([conn] (list-todos conn nil))
-  ([conn {:keys [n filter-pred join-children?]}]
+  ([conn {:keys [n filter-pred join-children? skip-subtasks?]}]
    (when conn
-     (let [n (or n 100)]
+     (let [n (or n 1000)]
        (cond->>
-           (d/q '[:find (pull ?e [*])
-                  :where [?e :doctor/type :type/todo]]
-                conn)
+           (d/q
+             (if skip-subtasks?
+               '[:find (pull ?e [*])
+                 :where [?e :doctor/type :type/todo]
+                 ;; skip sub-tasks
+                 (not [?e :org/parents ?p]
+                      [?p :org/status _])]
+               '[:find (pull ?e [*])
+                 :where [?e :doctor/type :type/todo]])
+             conn)
          true           (map first)
          filter-pred    (filter filter-pred)
-         n              (take n)
+         n              (take-and-log {:n n :label "todos"})
          join-children? (join-children conn))))))
 
 (defn current-todos [conn]
@@ -200,7 +208,13 @@
            [?e :doctor/type :type/todo]
            (or
              [?e :org/status :status/in-progress]
-             [?e :org/tags "current"])]
+             [?e :org/tags "current"])
+           ;; filter out todos with lingering 'current' tags but completed statuses
+           (not
+             [?e :org/status ?status]
+             [(contains? #{:status/done
+                           :status/skipped
+                           :status/cancelled} ?status)])]
          conn)
     (map first)
     (join-children conn)))

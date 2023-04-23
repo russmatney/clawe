@@ -56,6 +56,8 @@
                                           :org/link-text (:link/text link)}))
                                   (into [])))
 
+        ;; NOTE this means only parents with uuids get added as parents
+        ;; relevant to sub-task logic
         (seq parent-ids)
         (assoc :org/parents (->> parent-ids
                                  (map (fn [parent-id]
@@ -386,10 +388,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn list-only-todos-with-children
-  ;; TODO figure out how to optionally join children
   [{:keys [n filter-pred] :as _opts}]
   (cond->>
       (db/query
+        ;; TODO figure out how to optionally join (fetch) children in one query
         '[:find (pull ?e [*]) (pull ?c [*])
           :where
           [?e :doctor/type :type/todo]
@@ -407,34 +409,43 @@
     true        vals
     n           (take n)))
 
-
-(defn list-todos-with-children
-  [{:keys [n filter-pred] :as _opts}]
-  (cond->>
-      (db/query
-        '[:find (pull ?e [*])
-          :where [?e :doctor/type :type/todo]])
-    true        (map first)
-    filter-pred (filter filter-pred)
-    n           (take n)
-
-    true
-    (map (fn [td]
-           (let [children
-                 (db/query '[:find (pull ?c [*])
-                             :in $ ?db-id
-                             :where [?c :org/parents ?db-id]]
-                           (:db/id td))]
-             (assoc td :org/items children))))))
+(defn join-children [todos]
+  (println "joining children on todos" (count todos))
+  (->> todos
+       (map (fn [td]
+              (let [children
+                    (db/query '[:find (pull ?c [*])
+                                :in $ ?db-id
+                                :where [?c :org/parents ?db-id]]
+                              (:db/id td))]
+                (assoc td :org/items children))))))
 
 (defn list-todos
   ([] (list-todos nil))
-  ([{:keys [n filter-pred join-children] :as opts}]
-   (if join-children
-     (list-todos-with-children opts)
-     (cond->>
-         (db/query '[:find (pull ?e [*])
-                     :where [?e :doctor/type :type/todo]])
-       true        (map first)
-       filter-pred (filter filter-pred)
-       n           (take n)))))
+  ([{:keys [n filter-pred join-children? skip-subtasks?] :as opts}]
+   (cond->>
+       (db/query
+         (if skip-subtasks?
+           '[:find (pull ?e [*])
+             :where [?e :doctor/type :type/todo]
+             ;; skip sub-tasks
+             ;; NOTE 'parents' require uuids to exist?
+             (not [?e :org/parents ?p]
+                  [?p :org/status _])]
+           '[:find (pull ?e [*])
+             :where [?e :doctor/type :type/todo]]))
+     true           (map first)
+     filter-pred    (filter filter-pred)
+     n              (take n)
+     join-children? join-children)))
+
+
+(comment
+  (defn td-pred [todo]
+    (some-> todo :org/short-path
+            (string/includes? "2023-04-23")))
+  (list-todos {:filter-pred td-pred})
+  (list-todos {:filter-pred    td-pred
+               :join-children? true})
+  (list-only-todos-with-children {:filter-pred td-pred})
+  )

@@ -1,5 +1,6 @@
 (ns api.workspaces
   (:require
+   [taoensso.timbre :as log]
    [systemic.core :refer [defsys] :as sys]
    [manifold.stream :as s]
    [clawe.wm :as wm]
@@ -25,7 +26,7 @@
   (sys/start! `*workspaces-stream*))
 
 (defn push-updated-workspaces []
-  (println "pushing to workspaces stream (updating topbar)!")
+  (log/debug "pushing to workspaces stream (updating topbar)!")
   (s/put! *workspaces-stream* (active-workspaces)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
