@@ -62,7 +62,17 @@
              (or (current? it)
                  (in-progress? it)) (- 100)))
          ;; lower number means earlier in the order
-         <)))
+         <)
+       (sort-by :todo/queued-at dates.tick/sort-latest-first)))
+
+(defn queued [todo]
+  (let [queued-at (:todo/queued-at todo)]
+    (when queued-at
+      [:div
+       {:class ["text-slate-400" "font-mono"]}
+       (str "queued: "
+            (t/format "E h:mma" (dates.tick/add-tz (t/instant queued-at))))])))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; priority-label
@@ -219,6 +229,8 @@
       {:on-click (fn [tag] (handlers/remove-tag it tag))}
       it]
 
+     [queued it]
+
      ;; name
      [:span
       [:span
@@ -329,17 +341,13 @@
             [card {:hide-parent-names? false} item]])])])))
 
 
-
-
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; todo-row
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn todo-row
   ([todo] [todo-row nil todo])
-  ([_opts {:todo/keys [queued-at] :as todo}]
+  ([_opts todo]
    [:div
     {:class ["grid" "grid-flow-col" "grid-cols-8"
              "gap-4"
@@ -360,10 +368,7 @@
 
      [components.garden/text-with-links (:org/name todo)]]
 
-    (when queued-at
-      [:div
-       {:class ["text-slate-400"]}
-       (t/format "E ha" (dates.tick/add-tz (t/instant queued-at)))])
+    [queued todo]
 
     [:div
      {:class ["justify-self-end"]}

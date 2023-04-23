@@ -290,6 +290,7 @@
 
       ;; TODO purge other lists, like changed parent-names
       ;; OR diff the parsed note vs db note before transacting
+      ;; TODO purge priority if removed
       )))
 
 (comment
