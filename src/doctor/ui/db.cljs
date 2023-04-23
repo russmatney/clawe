@@ -153,6 +153,19 @@
          (map :org/source-file)
          (take n))))))
 
+(defn join-children [conn items]
+  (->> items
+       (map (fn [td]
+              (let [children
+                    (->>
+                      (d/q '[:find (pull ?c [*])
+                             :in $ ?db-id
+                             :where [?c :org/parents ?db-id]]
+                           conn
+                           (:db/id td))
+                      (map first))]
+                (assoc td :org/items children))))))
+
 (defn list-todos-with-children
   ([conn] (list-todos-with-children conn nil))
   ([conn {:keys [n filter-pred] :as _opts}]
@@ -164,31 +177,21 @@
      filter-pred (filter filter-pred)
      n           (take n)
 
-     true
-     (map (fn [td]
-            (let [children
-                  (->>
-                    (d/q '[:find (pull ?c [*])
-                           :in $ ?db-id
-                           :where [?c :org/parents ?db-id]]
-                         conn
-                         (:db/id td))
-                    (map first))]
-              (assoc td :org/items children)))))))
+     true (join-children conn))))
 
 (defn list-todos
   ([conn] (list-todos conn nil))
-  ([conn {:keys [n filter-pred]}]
+  ([conn {:keys [n filter-pred join-children?]}]
    (when conn
      (let [n (or n 100)]
-       (->>
-         (d/q '[:find (pull ?e [*])
-                :where [?e :doctor/type :type/todo]]
-              conn)
-         (map first)
-         (sort-by :org/created-at dt/sort-latest-first)
-         ((fn [todos] (if filter-pred (->> todos (filter filter-pred)) todos)))
-         (take n))))))
+       (cond->>
+           (d/q '[:find (pull ?e [*])
+                  :where [?e :doctor/type :type/todo]]
+                conn)
+         true           (map first)
+         filter-pred    (filter filter-pred)
+         n              (take n)
+         join-children? (join-children conn))))))
 
 (defn current-todos [conn]
   (->>
@@ -201,8 +204,7 @@
              #_[?e :org/tags "current"])]
          conn)
     (map first)
-    (remove (comp #{:status/cancelled :status/done} :org/status))
-    (sort-by :todo/queued-at dt/sort-latest-first)))
+    (join-children conn)))
 
 ;; TODO write fe unit tests for this and this whole ns
 (defn garden-tags

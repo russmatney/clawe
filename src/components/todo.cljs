@@ -29,9 +29,11 @@
   (-> it :org/status #{:status/in-progress}))
 
 (defn current? [it]
-  (seq (set/intersection #{"current"} (->> it :org/tags
-                                           ;; ugh, tags from db are not sets
-                                           (into #{})))))
+  (or (in-progress? it)
+      (seq (set/intersection #{"current"}
+                             (->> it :org/tags
+                                  ;; ugh, tags from db are not sets
+                                  (into #{}))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; sort todos
@@ -42,6 +44,7 @@
   (->> its
        (sort-by
          (fn [it]
+           ;; TODO include :todo/queued-at
            (cond->
                0
              ;; move finished to back

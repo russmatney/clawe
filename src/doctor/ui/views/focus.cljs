@@ -6,26 +6,20 @@
    [components.garden :as components.garden]
    [components.todo :as todo]
    [components.item :as item]
-   [wing.core :as w]
    [uix.core.alpha :as uix]
-   [dates.tick :as dt]
    [hiccup-icons.fa :as fa]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; current task (for topbar)
 
-;; TODO move to views/focus
 (defn current-task [{:keys [conn]}]
   (let [current-todos (ui.db/current-todos conn)]
     (if-not (seq current-todos)
       [:span "--"]
-      (let [queued  (->> current-todos
-                         (w/dedupe-by :db/id)
-                         (sort-by :todo/queued-at dt/sort-latest-first)
-                         (into []))
+      (let [todos   (todo/sort-todos current-todos)
             n       (uix/state 0)
-            current (get queued @n)
-            ct      (count queued)]
+            current (get (into [] todos) @n)
+            ct      (count todos)]
         [:div
          {:class ["flex" "flex-wrap" "place-self-center"
                   "items-center" "space-x-4"
@@ -40,7 +34,8 @@
           [components.garden/text-with-links (:org/name current)]]
 
          [components.actions/actions-list
-          {:actions
+          {:n 2 :hide-disabled true
+           :actions
            (concat
              (when (> ct 0)
                [{:action/label    "next"
@@ -53,8 +48,7 @@
                  :action/disabled (zero? @n)
                  :action/on-click (fn [_] (swap! n dec))
                  :action/priority 5}])
-             (handlers/->actions current))
-           :hide-disabled true}]]))))
+             (handlers/->actions current))}]]))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; current item header
@@ -101,46 +95,29 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; current stack
 
-(defn current-stack
-  ([current] [current-stack nil current])
-  ([{:keys [todos]} current]
-   (let [todos (or todos [])]
-     [:div
-      (when current
-        (for [[i c] (->> current todo/sort-todos (map-indexed vector))]
-          ^{:key i}
-          [:div
-           {:class ["bg-city-blue-800"]}
-           [:hr {:class ["border-city-blue-900" "pb-4"]}]
-           [item-header c]
-           [todo/card-or-card-group
-            {:filter-by
-             (comp not #{:status/skipped :status/done} :org/status)}
-            c]
-           [item-body c]]))
-
-      (when
-          ;; this could also check commit status, dirty/unpushed commits, etc
-          (and (seq todos)
-               (->> todos (filter todo/current?) seq not))
-        [:div
-         {:class ["text-bold" "text-city-pink-300" "p-4"]}
-         [:h1
-          {:class ["text-4xl" "font-nes"]}
-          "no :current: todo!"]
-         [:p
-          {:class ["text-2xl" "pt-4"]}
-          "What are ya, taking a load off? GERT BERK TER WORK!"]])])))
+(defn current-stack [todos]
+  (when (seq todos)
+    [:div
+     (for [[i c] (->> todos todo/sort-todos (map-indexed vector))]
+       ^{:key i}
+       [:div
+        {:class ["bg-city-blue-800"]}
+        [:hr {:class ["border-city-blue-900" "pb-4"]}]
+        [item-header c]
+        [todo/card-or-card-group
+         {:filter-by
+          (comp not #{:status/skipped :status/done} :org/status)}
+         c]
+        [item-body c]])]))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; main widget
 
 (defn widget [opts]
-  (let [todos         (ui.db/current-todos (:conn opts))
-        current-todos (some->> todos (filter todo/current?) seq)]
-    (if (seq current-todos)
-      [current-stack current-todos]
+  (let [todos (ui.db/current-todos (:conn opts))]
+    (if (seq todos)
+      [current-stack todos]
       [:div
        {:class ["text-center" "my-36" "text-slate-200"]}
        [:div {:class ["font-nes"]} "No current task!"]
