@@ -188,10 +188,11 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn retract! [txs]
-  (sys/start! `*conn*)
-  (let [txs (if (coll? (first txs)) txs [txs])]
-    ;; hmm just a transact wrapper i guess
-    (d/transact *conn* txs)))
+  (when (seq txs)
+    (sys/start! `*conn*)
+    (let [txs (if (coll? (first txs)) txs [txs])]
+      ;; hmm just a transact wrapper i guess
+      (d/transact *conn* txs))))
 
 (defn retract-entities [ent-ids]
   (sys/start! `*conn*)
