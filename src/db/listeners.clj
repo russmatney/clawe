@@ -27,7 +27,8 @@
              (map (fn [ent]
                     (assoc ent :event/timestamp (item/->latest-timestamp ent))))
              ;; only transact ents that recieved this
-             (filter :event/timestamp))]
+             (filter :event/timestamp)
+             (map (fn [ent] (select-keys ent [:db/id :event/timestamp]))))]
     (when (> (count ent-updates) 0)
       (log/info "[DB] Adding :event/timestamp to " (count ent-updates) " records")
       (db/transact ent-updates))))

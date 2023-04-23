@@ -49,6 +49,9 @@
                   :e))
     (map :e)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; initial data to send to frontend
+
 (defn datoms-for-frontend []
   (->>
     (concat
@@ -57,13 +60,9 @@
       (recent-events->es 100)
       (repos->es))
     dedupe
-    (mapcat #(d/datoms @db/*conn* :eavt %)))
-
-  ;; (d/schema @db/*conn*)
-  #_(d/datoms @db/*conn* :eavt))
+    (mapcat #(d/datoms @db/*conn* :eavt %))))
 
 (comment
-
   (->>
     (d/datoms @db/*conn* :avet :file/last-modified)
     reverse
@@ -74,6 +73,9 @@
 
   (datoms-for-frontend))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; db stream and frontend data push
+
 (defsys ^:dynamic *db-stream*
   :start (s/stream 100000)
   :stop (s/close! *db-stream*))
@@ -83,7 +85,9 @@
   (sys/restart! `*db-stream*))
 
 (defn push-to-fe-db [txs]
-  (s/put! *db-stream* txs))
+  (when (seq txs)
+    (log/debug "Pushing txs to frontend")
+    (s/put! *db-stream* txs)))
 
 (defsys ^:dynamic *tx->fe-db*
   :start (do
@@ -92,9 +96,7 @@
            (d/listen!
              db/*conn* :tx->fe-db
              (fn [tx]
-               #_(def tx tx)
                (try
-                 (log/info "sending datoms to the frontend")
                  (push-to-fe-db (:tx-data tx))
                  (catch Exception e
                    (log/warn "Error in tx->fe-db db listener" e)

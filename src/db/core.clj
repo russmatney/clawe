@@ -49,7 +49,7 @@
   (pr-str (d/db *conn*)))
 
 (defn write-db-to-file []
-  (log/info "Writing Doctor DB to file")
+  #_(log/debug "Writing Doctor DB to file")
   (spit (db.config/db-path) (print-db)))
 
 (defn clear-db []

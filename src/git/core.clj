@@ -4,7 +4,8 @@
    [db.core :as db]
    [babashka.fs :as fs]
    [clawe.wm :as wm]
-   [clojure.string :as string]))
+   [clojure.string :as string]
+   [taoensso.timbre :as log]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; repos
@@ -34,13 +35,12 @@
 
 (comment
   (wm/workspace-defs)
-  (clawe-git-dirs)
-  )
+  (clawe-git-dirs))
 
 (defn ingest-clawe-repos []
   (let [dirs  (clawe-git-dirs)
         repos (->> dirs (map dir->db-repo))]
-    (println "Ingesting" (count repos) "repos from clawe")
+    (log/info "Ingesting" (count repos) "repos from clawe")
     (db/transact repos)))
 
 (defn db-repos
@@ -90,12 +90,14 @@
     true
     (assoc :doctor/type :type/commit)
 
-    ;; TODO proper ref between these
     (:commit/directory commit)
-    (assoc :commit/repo {:repo/directory (:commit/directory commit)})))
+    (assoc :commit/repo [:repo/directory (:commit/directory commit)])
+
+    true
+    ;; TODO support these in the db!
+    (dissoc :commit/stat-lines)))
 
 (defn commits-for-dir [opts]
-  (println "commits-for-dir" opts)
   (let [commits
         (try
           (r.git/commits-for-dir opts)
@@ -129,23 +131,27 @@
                      (map ->db-commit))]
     (if (seq commits)
       (do
-        (println "syncing" (count commits) "commits to the db")
+        (log/info "syncing" (count commits) "commits to the db")
         (db/transact commits))
-      (println "No commits found for opts" opts))))
+      (log/warn "No commits found for opts" opts))))
 
 ;; TODO malli type hints for inputs like these!
-(defn ingest-commits-for-repo [repo]
-  (if-let [db-repo (fetch-repo repo)]
-    (do
-      (println "ingesting commits for repo" db-repo)
-      (sync-commits-to-db
-        {:dirs [(:repo/directory db-repo)]
-         :n    30}))
-    (println "No DB Repo for repo desc" repo)))
+(defn ingest-commits-for-repo
+  ([repo] (ingest-commits-for-repo repo nil))
+  ([repo opts]
+   (let [n (:n opts 100)]
+     (if-let [db-repo (fetch-repo repo)]
+       (do
+         (log/info "ingesting commits for repo" db-repo)
+         (sync-commits-to-db
+           {:dirs [(:repo/directory db-repo)]
+            :n    n}))
+       (log/warn "No DB Repo for repo desc" repo)))))
 
 (comment
+  (fetch-repo {:repo/short-path "russmatney/clawe"})
   (ingest-commits-for-repo {:repo/short-path "russmatney/clawe"})
-  )
+  (ingest-commits-for-repo {:repo/short-path "russmatney/dotfiles"}))
 
 (defn list-db-commits []
   (->>
@@ -158,4 +164,11 @@
 
 (comment
   (count
-    (list-db-commits)))
+    (list-db-commits))
+
+  (db/query
+    '[:find (pull ?c [*]) (pull ?r [*])
+      :where
+      [?c :doctor/type :type/commit]
+      [?c :commit/repo ?r]
+      [?r :doctor/type :type/repo]]))
