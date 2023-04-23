@@ -17,12 +17,18 @@
         :action/on-click (fn [_] (reset! dialog-open? true))}]
       (remove nil?))))
 
-(defn img [{:keys [file/web-asset-path] :as _screenshot}]
-  [:img {:src web-asset-path}])
+(defn img [{:keys [file/web-asset-path]}]
+  (let [ext (->> web-asset-path
+                 ;; TODO do this on backend
+                 reverse (take 3) reverse (apply str))]
+    (case ext
+      "mp4" [:video {:controls true}
+             [:source {:src web-asset-path :type "video/mp4"}]]
+      [:img {:src web-asset-path}])))
 
 (defn screenshot-dialog
   [{:keys [open? on-close]}
-   {:keys [name file/full-path file/web-asset-path]}]
+   {:keys [name file/full-path file/web-asset-path] :as item}]
   [dialog/dialog
    {:open        open?
     :on-close    on-close
@@ -30,9 +36,10 @@
     :description full-path
     :content
     (when web-asset-path
-      [:img {:src      web-asset-path
-             :on-click #(on-close)
-             :class    ["cursor-pointer"]}])}])
+      [:div
+       {:class    ["cursor-pointer"]
+        :on-click #(on-close)}
+       [img item]])}])
 
 
 (defn screenshot-comp
@@ -52,9 +59,9 @@
        :on-mouse-enter #(do (reset! hovering? true))
        :on-mouse-leave #(do (reset! hovering? false))}
       (when web-asset-path
-        [:img {:src      web-asset-path
-               :on-click #(reset! dialog-open? true)
-               :class    ["cursor-pointer"]}])
+        [:div {:on-click #(reset! dialog-open? true)
+               :class    ["cursor-pointer"]}
+         [img item]])
 
       [screenshot-dialog
        {:open?    @dialog-open?
@@ -81,9 +88,9 @@
       {:on-mouse-enter #(do (reset! hovering? true))
        :on-mouse-leave #(do (reset! hovering? false))}
       (when web-asset-path
-        [:img {:src      web-asset-path
-               :on-click #(reset! dialog-open? true)
-               :class    ["cursor-pointer"]}])
+        [:div {:on-click #(reset! dialog-open? true)
+               :class    ["cursor-pointer"]}
+         [img item]])
 
       [screenshot-dialog
        {:open?    @dialog-open?

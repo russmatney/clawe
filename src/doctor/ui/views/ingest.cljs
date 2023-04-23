@@ -24,6 +24,8 @@
     :action/on-click (fn [_] (handlers/clear-lichess-games-cache))}
    {:action/label    "Ingest screenshots"
     :action/on-click (fn [_] (handlers/ingest-screenshots))}
+   {:action/label    "Ingest clips"
+    :action/on-click (fn [_] (handlers/ingest-clips))}
    {:action/label    "Ingest wallpapers"
     :action/on-click (fn [_] (handlers/ingest-wallpapers))}])
 

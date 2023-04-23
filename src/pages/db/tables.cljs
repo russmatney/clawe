@@ -129,18 +129,26 @@
                             [actions-cell wp]])))})))
 
 (defn screenshot-table-def [entities]
-  (let [screenshots (->> entities (filter (comp #{:type/screenshot} :doctor/type)))]
+  (let [screenshots (->> entities (filter (comp #{:type/screenshot
+                                                  :type/clip} :doctor/type)))]
     {:headers ["Img" "Name" "Time" "Raw" "Actions"]
      :n       5
      :rows    (->> screenshots
-                   (sort-by :screenshot/time)
-                   (reverse)
+                   (filter :event/timestamp)
+                   (sort-by :event/timestamp dates.tick/sort-latest-first)
                    (map (fn [scr]
                           [[components.screenshot/cluster-single nil scr]
                            (-> scr :name)
-                           (-> scr :screenshot/time (t/new-duration :millis) t/instant)
+                           (-> scr :event/timestamp (t/new-duration :millis) t/instant)
                            [components.debug/raw-metadata {:label "raw"} scr]
                            [actions-cell scr]])))}))
+
+(comment
+  (->>
+    [{:hi 1 :bye 3}]
+    (filter ((some-fn :bye :hi))))
+
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; lichess
@@ -268,7 +276,7 @@
      (#{:type/wallpaper} doctor-type)
      (wallpaper-table-def opts entities)
 
-     (#{:type/screenshot} doctor-type)
+     (#{:type/screenshot :type/clip} doctor-type)
      (screenshot-table-def entities)
 
      (#{:type/lichess-game} doctor-type)

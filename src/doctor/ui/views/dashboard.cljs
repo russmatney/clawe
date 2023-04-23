@@ -129,14 +129,15 @@
                   :opts  opts}]
 
      [widget-bar {:comp  screenshots/page
-                  :label "screenshots"
+                  :label "screenshots-clips"
                   ;; :initial-show true
                   :opts  opts
                   :icon  octicons/image16
                   :actions
                   [{:action/label    "Ingest screenshots"
-                    :action/on-click #(handlers/ingest-screenshots)}]
-                  }]
+                    :action/on-click #(handlers/ingest-screenshots)}
+                   {:action/label    "Ingest clips"
+                    :action/on-click (fn [_] (handlers/ingest-clips))}]}]
 
      [widget-bar {:comp    workspaces/widget
                   :label   "workspaces"

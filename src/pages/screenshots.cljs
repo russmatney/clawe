@@ -4,8 +4,9 @@
    [doctor.ui.db :as ui.db]))
 
 (defn page [{:keys [conn]}]
-  (let [
-        items (ui.db/screenshots conn {:n 30})]
+  (let [items (ui.db/events conn {:n           30
+                                  :event-types #{:type/screenshot
+                                                 :type/clip}})]
     [:div
      {:class ["flex" "flex-row" "flex-wrap"
               "overflow-hidden"

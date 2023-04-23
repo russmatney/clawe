@@ -1,10 +1,10 @@
 (ns item.core
   (:require
-   [dates.tick :as dates.tick]
-   [tick.core :as t]))
+   [dates.tick :as dates.tick]))
 
 (def time-keys
   #{:screenshot/time-string
+    :clip/time-string
     :commit/author-date
     :org/closed
     :org/scheduled
@@ -33,6 +33,7 @@
 (def ts-keys
   {:type/commit       #{:commit/author-date}
    :type/screenshot   #{:screenshot/time}
+   :type/clip         #{:clip/time}
    :type/lichess-game #{:lichess.game/created-at
                         :lichess.game/last-move-at}
    :type/todo         #{:org.prop/created-at
@@ -63,5 +64,5 @@
                                     maybe-time)]
                          (dates.tick/add-tz maybe-time)))))
               (remove nil?)
-              (sort-by t/>)
+              (sort-by dates.tick/sort-latest-first)
               first))))

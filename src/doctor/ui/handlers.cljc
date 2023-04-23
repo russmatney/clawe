@@ -7,6 +7,7 @@
              [git.core :as git]
              [chess.core :as chess]
              [screenshots.core :as screenshots]
+             [clips.core :as clips]
              [chess.db :as chess.db]
              [wallpapers.core :as wallpapers]
              [clawe.wm :as wm]
@@ -98,6 +99,10 @@
 
 (defhandler ingest-screenshots []
   (screenshots/ingest-screenshots)
+  :ok)
+
+(defhandler ingest-clips []
+  (clips/ingest-clips)
   :ok)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

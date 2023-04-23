@@ -20,6 +20,7 @@
 (def default-event-types
   #{:type/commit
     :type/screenshot
+    :type/clip
     :type/lichess-game
     :type/note
     :type/todo})

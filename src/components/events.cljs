@@ -26,6 +26,7 @@
 (defn event-counts [events]
   (let [count-by (fn [t] (->> events (filter (comp #{t} :doctor/type)) count))]
     {:screenshot-count (count-by :type/screenshot)
+     :clip-count       (count-by :type/clip)
      :commit-count     (count-by :type/commit)
      :org-note-count   (count-by :type/note)
      :todo-count       (count-by :type/todo)
@@ -40,6 +41,7 @@
 (defn event-count-list [events]
   (let
       [{:keys [screenshot-count
+               clip-count
                commit-count
                org-note-count
                todo-count
@@ -50,6 +52,9 @@
      [:span
       {:class ["whitespace-nowrap"]}
       [event-count-comp {:label "screenshots" :count screenshot-count}]]
+     [:span
+      {:class ["whitespace-nowrap"]}
+      [event-count-comp {:label "clips" :count clip-count}]]
      [:span
       {:class ["whitespace-nowrap"]}
       [event-count-comp {:label "commits" :count commit-count}]]
@@ -175,6 +180,7 @@
   ([events] (event-cluster nil events))
   ([opts events]
    (let [screenshots  (->> events (filter (comp #{:type/screenshot} :doctor/type)))
+         clips        (->> events (filter (comp #{:type/clip} :doctor/type)))
          commits      (->> events (filter (comp #{:type/commit} :doctor/type)))
          chess-games  (->> events (filter (comp #{:type/lichess-game} :doctor/type)))
          garden-notes (->> events (filter (comp #{:type/note} :doctor/type)))
@@ -188,8 +194,8 @@
       (when (seq commits)
         [tables/table-for-doctor-type opts :type/commit commits])
 
-      (when (seq screenshots)
-        [tables/table-for-doctor-type opts :type/screenshot screenshots])
+      (when (seq (concat screenshots clips))
+        [tables/table-for-doctor-type opts :type/screenshot (concat screenshots clips)])
 
       (when (seq todos)
         [tables/table-for-doctor-type opts :type/note todos])
