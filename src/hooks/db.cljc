@@ -57,7 +57,11 @@
                               (map :doctor/type)
                               frequencies
                               (log/info "received data: "
-                                        "datoms: " (count items))))]
+                                        "datoms: " (count items)))
+
+                         (->> items (take 5)
+                              (map (fn [dt] [(:a dt) (:v dt)]))
+                              (log/info)))]
 
        (with-stream [] (db-stream) handle-resp)
        (with-rpc [] (get-db) handle-resp)
