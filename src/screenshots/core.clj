@@ -29,6 +29,7 @@
           (-> fname
               (string/replace #"screenshot_" "")
               (string/replace #"Screen Shot " "")
+              (string/replace #"Screenshot " "")
               (string/replace #"_\d{2,4}x\d{2,4}_scrot_000" "")
               (string/replace #"_\d{2,4}x\d{2,4}_scrot_001" "")
               (string/replace #"_\d{2,4}x\d{2,4}_scrot_002" "")
@@ -52,5 +53,5 @@
 
 (defn ingest-screenshots []
   (->> (all-screenshots)
-       (take 30)
+       (take 200)
        (db/transact)))

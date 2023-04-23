@@ -41,12 +41,21 @@
     (take n)
     (map :e)))
 
+(defn repos->es []
+  (->>
+    (d/datoms @db/*conn* :avet :doctor/type :type/repo)
+    (filter (comp #(= % "russmatney") :repo/user-name
+                  #(d/entity @db/*conn* %)
+                  :e))
+    (map :e)))
+
 (defn datoms-for-frontend []
   (->>
     (concat
       (last-modified-files->es 200)
       (recent-wallpapers->es 20)
-      (recent-events->es 100))
+      (recent-events->es 100)
+      (repos->es))
     dedupe
     (mapcat #(d/datoms @db/*conn* :eavt %)))
 

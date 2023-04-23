@@ -2,7 +2,10 @@
   (:require [datascript.core :as d]))
 
 (def schema
-  { ;; uuids
+  {:doctor/type
+   {:db/index true}
+
+   ;; uuids
    :topbar/id
    {:db/unique :db.unique/identity}
    :test/id
