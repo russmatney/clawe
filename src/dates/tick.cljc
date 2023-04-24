@@ -228,16 +228,12 @@
 ;; sort
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn sort-chrono [a b]
+(defn -sort [a b comp]
   (let [a (when a (parse-time-string a))
         b (when b (parse-time-string b))]
-    (cond (and a b) (t/< a b)
+    (cond (and a b) (comp a b)
           a         true
           :else     false)))
 
-(defn sort-latest-first [a b]
-  (let [a (when a (parse-time-string a))
-        b (when b (parse-time-string b))]
-    (cond (and a b) (t/> a b)
-          a         true
-          :else     false)))
+(defn sort-chrono [a b] (-sort a b t/<))
+(defn sort-latest-first [a b] (-sort a b t/>))
