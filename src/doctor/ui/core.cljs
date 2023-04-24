@@ -12,6 +12,8 @@
    [wing.uix.router :as router]
    [datascript.transit :as dt]
    [hiccup-icons.octicons :as octicons]
+   [clojure.string :as string]
+   [taoensso.encore :as enc]
 
    [pages.core :as pages]
    [pages.db :as pages.db]
@@ -32,6 +34,31 @@
    [doctor.ui.views.chess-games :as views.chess-games]
    [doctor.ui.views.dashboard :as views.dashboard]
    [doctor.ui.views.workspaces :as views.workspaces]))
+
+(defn output-fn
+  [data]
+  (let [{:keys [level ?err #_vargs _msg_ ?ns-str ?file _hostname_
+                _timestamp_ ?line output-opts]}
+        data]
+
+    (str
+      #_(when-let [ts (force timestamp_)]
+          (str ts " "))
+      #_ (force hostname_)
+      #_ " "
+      (string/upper-case (name level))  " "
+      "[" (or ?ns-str ?file "?") ":" (or ?line "?") "]: "
+
+      (when-let [msg-fn (get output-opts :msg-fn log/default-output-msg-fn)]
+        (msg-fn data))
+
+      (when-let [_err ?err]
+        (when-let [ef (get output-opts :error-fn log/default-output-error-fn)]
+          (when-not   (get output-opts :no-stacktrace?) ; Back compatibility
+            (str enc/system-newline
+                 (ef data))))))))
+
+(log/merge-config! {:output-fn output-fn})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; routes, home

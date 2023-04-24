@@ -42,26 +42,40 @@
 
 #?(:cljs
    (defn use-db []
-     (let [conn        (plasma.uix/state nil)
-           handle-resp (fn [items]
-                         (if @conn
-                           (d/transact! conn items)
-                           (-> (d/empty-db schema)
-                               (d/db-with items)
-                               (#(reset! conn %))))
+     (let [conn (plasma.uix/state nil)
+           handle-resp
+           (fn [items]
+             (if @conn
+               (d/transact! conn items)
+               (-> (d/empty-db schema)
+                   (d/db-with items)
+                   (#(reset! conn %))))
 
-                         (->> items
-                              (map :e)
-                              distinct
-                              (map #(d/entity @conn %))
-                              (map :doctor/type)
-                              frequencies
-                              (log/info "received data: "
-                                        "datoms: " (count items)))
+             (->> items
+                  (map :e)
+                  distinct
+                  (map #(d/entity @conn %))
+                  (map :doctor/type)
+                  frequencies
+                  (log/info "received data: "
+                            "datoms: " (count items)))
 
-                         (->> items (take 5)
-                              (map (fn [dt] [(:a dt) (:v dt)]))
-                              (log/info)))]
+             (->> items (take 3)
+                  (map (fn [dt] [(:a dt) (:v dt)]))
+                  (log/info))
+
+             (-> (d/empty-db schema)
+                 (d/db-with items)
+                 ((fn [db]
+                    (->>
+                      (d/datoms db :eavt)
+                      (map :e)
+                      (distinct)
+                      (take 3)
+                      (d/pull-many db '[*]))))
+                 (->>
+                   (map (fn [x] (log/info x)))
+                   doall)))]
 
        (with-stream [] (db-stream) handle-resp)
        (with-rpc [] (get-db) handle-resp)

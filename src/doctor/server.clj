@@ -39,7 +39,7 @@
       #_ (force hostname_)
       #_ " "
       (string/upper-case (name level))  " "
-      "[" (or ?ns-str ?file "?") ":" (or ?line "?") "] - "
+      "[" (or ?ns-str ?file "?") ":" (or ?line "?") "]: "
 
       (when-let [msg-fn (get output-opts :msg-fn log/default-output-msg-fn)]
         (msg-fn data))
