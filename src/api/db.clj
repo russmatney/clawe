@@ -7,6 +7,15 @@
    [datascript.core :as d]
    [taoensso.timbre :as log]))
 
+(defn prioritized-todos->es []
+  (->>
+    (db/query
+      '[:find ?e
+        :where
+        [?e :doctor/type :type/todo]
+        [?e :org/priority _]])
+    (map first)))
+
 (defn current-todos->es []
   (->>
     (db/query
@@ -91,6 +100,7 @@
 (defn datoms-for-frontend []
   (->>
     (concat
+      (prioritized-todos->es)
       (current-todos->es)
       (last-n-dailies->es 14)
       (last-modified-files->es 200)
