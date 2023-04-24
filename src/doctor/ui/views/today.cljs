@@ -32,6 +32,7 @@
         filter-data
         (components.filter/use-filter
           (assoc filter-defs/fg-config
+                 :id (:filter-id opts :views-today)
                  :presets (presets)
                  :items (concat events notes)
                  :label (str (count events) " events today")))]

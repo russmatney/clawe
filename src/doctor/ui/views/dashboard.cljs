@@ -100,31 +100,28 @@
                   :icon  octicons/light-bulb16
                   :actions
                   [{:action/label    "Clear Current Todos"
-                    :action/on-click #(js/alert "todo")}]
-                  }]
+                    :action/on-click #(js/alert "todo")}]}]
 
      [widget-bar {:comp  todos/widget
                   :label "todos"
                   :icon  octicons/checklist16
-                  :opts  opts
+                  :opts  (assoc opts :filter-id :dashboard-todos)
                   :actions
                   [{:action/label    "Process Prioritized Actions"
-                    :action/on-click #(js/alert "todo")}]
-                  }]
+                    :action/on-click #(js/alert "todo")}]}]
 
      [widget-bar {:comp  blog/widget
                   :label "blog"
-                  :opts  opts
+                  :opts  (assoc opts :filter-id :dashboard-blog)
                   :icon  blog/icon
                   :actions
                   [{:action/label    "Publish N Updated notes"
-                    :action/on-click #(js/alert "todo")}]
-                  }]
+                    :action/on-click #(js/alert "todo")}]}]
 
      [widget-bar {:comp  today/widget
                   :label "today"
                   :icon  today/icon
-                  :opts  opts}]
+                  :opts  (assoc opts :filter-id :dashboard-today)}]
 
      [widget-bar {:comp  commits/widget
                   :label "commits"
@@ -161,6 +158,7 @@
                           filter-data
                           (components.filter/use-filter
                             (assoc filter-defs/fg-config
+                                   :id :dashboard-events
                                    :items recent-events
                                    :label (str (count recent-events) " Events")))]
                       [:div

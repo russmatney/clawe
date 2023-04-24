@@ -9,7 +9,8 @@
    [components.actions :as components.actions]
    [components.debug :as components.debug]
    [util :as util]
-   [components.pill :as pill]))
+   [components.pill :as pill]
+   [doctor.ui.localstorage :as localstorage]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; grouped filter items component
@@ -361,15 +362,17 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn use-filter
-  [{:keys [items all-filter-defs filter-items sort-items] :as config}]
-  (let [param-preset-key (router/use-route-parameters [:query :preset])
+  "Pass some `id` for unique preset local-storage persistance."
+  [{:keys [items all-filter-defs filter-items sort-items id] :as config}]
+  (let [ls-key           (str "filter-preset-" id)
+        param-preset-key (->> (localstorage/get-item ls-key) rest (apply str) keyword)
+        ;; param-preset-key (router/use-route-parameters [:query :preset])
         [preset-key default]
         (or
-          ;; preset matching key in route query params
-          (and @param-preset-key
+          ;; preset matching key from local storage
+          (and param-preset-key
                (some->> config :presets
-                        (filter (comp #{(keyword @param-preset-key)}
-                                      first)) first))
+                        (filter (comp #{param-preset-key} first)) first))
           ;; first preset with {:default true} in desc
           (some->> config :presets (filter (comp :default second)) first)
           ;; preset with :default as key
@@ -425,7 +428,7 @@
              :group-by-key           @group-by-key
              :sort-groups-key        @sort-groups-key
              :set-current-preset-key (fn [k]
-                                       (reset! param-preset-key k)
+                                       (localstorage/set-item! ls-key k)
                                        (reset! current-preset-key k))
              :set-group-by-key       #(reset! group-by-key %)
              :set-sort-groups-key    #(reset! sort-groups-key %)

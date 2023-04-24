@@ -317,7 +317,7 @@
         (components.filter/use-filter
           (-> filter-defs/fg-config
               (assoc
-
+                :id (:filter-id opts :views-blog)
                 :label (str (count root-notes) " Notes")
                 :extra-preset-pills pills
                 :items root-notes

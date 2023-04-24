@@ -135,16 +135,18 @@
         filter-data
         (components.filter/use-filter
           (-> filter-defs/fg-config
-              (assoc :items todos
-                     :show-filters-inline true
-                     :extra-preset-pills pills
-                     :filter-items (fn [items]
-                                     (cond->> items
-                                       @only-incomplete
-                                       (filter #(or (todo/not-started? %)
-                                                    (todo/in-progress? %)))))
-                     :sort-items todo/sort-todos
-                     :label (str (count todos) " Todos"))
+              (assoc
+                :id (:filter-id opts :views-todos-filter)
+                :label (str (count todos) " Todos")
+                :items todos
+                :show-filters-inline true
+                :extra-preset-pills pills
+                :filter-items (fn [items]
+                                (cond->> items
+                                  @only-incomplete
+                                  (filter #(or (todo/not-started? %)
+                                               (todo/in-progress? %)))))
+                :sort-items todo/sort-todos)
               (update :presets merge (presets))))]
     [:div
      {:class ["bg-city-blue-800" "bg-opacity-90"
