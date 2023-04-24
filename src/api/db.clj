@@ -3,13 +3,49 @@
    [systemic.core :as sys :refer [defsys]]
    [manifold.stream :as s]
    [db.core :as db]
+   [garden.core :as garden]
    [datascript.core :as d]
    [taoensso.timbre :as log]))
+
+(defn current-todos->es []
+  (->>
+    (db/query
+      '[:find ?e
+        :where
+        [?e :doctor/type :type/todo]
+        (or
+          [?e :org/status :status/in-progress]
+          [?e :org/tags "current"])
+        ;; filter out todos with lingering 'current' tags but completed statuses
+        (not
+          [?e :org/status ?status]
+          [(contains? #{:status/done
+                        :status/skipped
+                        :status/cancelled} ?status)])])
+    ;; TODO include their children? maybe just pass all todos?
+    (map first)))
+
+(comment
+  (count (current-todos->es)))
+
+(defn last-n-dailies->es
+  [n]
+  (->>
+    (db/query '[:find ?e
+                :in $ ?paths
+                :where
+                [?e :org/source-file ?f]
+                [(contains? ?paths ?f)]]
+              (->> n garden/daily-paths (into #{})))
+    (map first)))
+
+(comment
+  (count (last-n-dailies->es 7)))
 
 (defn last-modified-files->es
   [n]
   (->>
-    (d/datoms @db/*conn* :avet :file/last-modified)
+    (db/datoms :avet :file/last-modified)
     reverse
     (take n)
     (map :e)))
@@ -28,7 +64,7 @@
 (defn recent-wallpapers->es
   [n]
   (->>
-    (d/datoms @db/*conn* :avet :wallpaper/last-time-set)
+    (db/datoms :avet :wallpaper/last-time-set)
     reverse
     (take n)
     (map :e)))
@@ -36,14 +72,14 @@
 (defn recent-events->es
   [n]
   (->>
-    (d/datoms @db/*conn* :avet :event/timestamp)
+    (db/datoms :avet :event/timestamp)
     reverse
     (take n)
     (map :e)))
 
 (defn repos->es []
   (->>
-    (d/datoms @db/*conn* :avet :doctor/type :type/repo)
+    (db/datoms :avet :doctor/type :type/repo)
     (filter (comp #(= % "russmatney") :repo/user-name
                   #(d/entity @db/*conn* %)
                   :e))
@@ -55,11 +91,13 @@
 (defn datoms-for-frontend []
   (->>
     (concat
+      (current-todos->es)
+      (last-n-dailies->es 14)
       (last-modified-files->es 200)
       (recent-wallpapers->es 20)
       (recent-events->es 300)
       (repos->es))
-    dedupe
+    distinct
     (mapcat #(d/datoms @db/*conn* :eavt %))))
 
 (comment
@@ -68,8 +106,7 @@
     reverse
     (take 30)
     (map :e)
-    count
-    )
+    count)
 
   (datoms-for-frontend))
 
