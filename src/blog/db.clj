@@ -204,5 +204,4 @@
            (org-crud.update/update!
              note {:org.update/reset-last-modified true
                    :org/tags                       "published"})))
-    doall)
-  )
+    doall))

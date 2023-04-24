@@ -2,7 +2,6 @@
   (:require
    [clojure.string :as string]
    [uix.core.alpha :as uix]
-   [wing.uix.router :as router]
 
    [components.floating :as floating]
    [components.table :as components.table]
