@@ -241,7 +241,7 @@
                   (string/replace "/Users/russ" "~"))]]))
 
       [:div
-       {:class ["ml-auto"]}
+       {:class ["ml-auto" "w-1/3" "overflow-scroll"]}
        [focus/current-task opts]]
 
       [:div

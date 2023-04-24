@@ -21,7 +21,7 @@
             current (get (into [] todos) @n)
             ct      (count todos)]
         [:div
-         {:class ["flex" "flex-wrap" "place-self-center"
+         {:class ["flex" "flex-row" "place-self-center"
                   "items-center" "space-x-4"
                   "h-full"]}
 
