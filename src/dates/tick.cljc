@@ -64,8 +64,9 @@
     (when (and time-string
                (or (and (string? time-string) (seq (string/trim time-string)))
                    (int? time-string)))
-      (if-let [time (-> time-string string/trim
-                        ((apply some-fn wrapped-parse-attempts)))]
+      (if-let [time (cond-> time-string
+                      (string? time-string) string/trim
+                      true                  ((apply some-fn wrapped-parse-attempts)))]
         time
         (do
           #?(:clj (println "Error parsing time string" time-string)
@@ -228,11 +229,15 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn sort-chrono [a b]
-  (cond (and a b) (t/< a b)
-        a         true
-        :else     false))
+  (let [a (when a (parse-time-string a))
+        b (when b (parse-time-string b))]
+    (cond (and a b) (t/< a b)
+          a         true
+          :else     false)))
 
 (defn sort-latest-first [a b]
-  (cond (and a b) (t/> a b)
-        a         true
-        :else     false))
+  (let [a (when a (parse-time-string a))
+        b (when b (parse-time-string b))]
+    (cond (and a b) (t/> a b)
+          a         true
+          :else     false)))
