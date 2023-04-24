@@ -69,11 +69,10 @@
   (log/info "[DB]: building blog.db")
   (let [start-t     (t/now)
         blog-config @blog.config/*config*
-        blog-db     (->>
-                      (garden/all-garden-notes-nested)
-                      (reduce
-                        (partial add-note-to-db blog-config)
-                        initial-db))]
+        blog-db     (->> (garden/all-garden-notes-nested)
+                         (reduce
+                           (partial add-note-to-db blog-config)
+                           initial-db))]
     (log/info "[DB]: blog.db built"
               (str (dates/millis-since start-t) "ms"))
     blog-db))
@@ -115,6 +114,12 @@
 (defn root-notes []
   (sys/start! `*notes-db*)
   (vals (:root-notes-by-id @*notes-db*)))
+
+(defn all-notes []
+  (->> (root-notes)
+       (mapcat org-crud/nested-item->flattened-items)
+       (remove nil?)
+       (remove empty?)))
 
 (defn fetch-root-note-with-id
   "Fetches a root note for the passed id. Supports fetching the root note with a child id."

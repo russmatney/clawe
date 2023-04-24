@@ -393,15 +393,15 @@
     true        vals
     n           (take n)))
 
-(defn join-children [todos]
-  (->> todos
-       (map (fn [td]
+(defn join-children [org-items]
+  (->> org-items
+       (map (fn [item]
               (let [children
                     (db/query '[:find (pull ?c [*])
                                 :in $ ?db-id
                                 :where [?c :org/parents ?db-id]]
-                              (:db/id td))]
-                (assoc td :org/items children))))))
+                              (:db/id item))]
+                (assoc item :org/items children))))))
 
 (defn list-todos
   ([] (list-todos nil))

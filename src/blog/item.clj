@@ -74,7 +74,10 @@
     (let [id         (some->> (re-seq #"^id:([A-Za-z0-9-]*)" link) first second)
           note       (when id (blog.db/id->note id))
           note-uri   (when note (blog.db/note->published-uri note))
-          text-elems (->> text interpose-inline-code (map (fn [el] [:span el])))]
+          text-elems (some->>
+                       (or text link)
+                       interpose-inline-code
+                       (map (fn [el] [:span el])))]
       [:span {:class ["not-prose"]}
        (cond
          (and id note-uri)
