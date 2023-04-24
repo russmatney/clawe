@@ -105,8 +105,11 @@
      (remove nil?)
      (into [:div]))])
 
-(comment
+(defn publish []
   (render/write-page
     {:path    "/resources.html"
      :content (page)
      :title   "Resources"}))
+
+(comment
+  (publish))

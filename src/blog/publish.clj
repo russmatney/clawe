@@ -11,6 +11,7 @@
    [blog.pages.last-modified :as pages.last-modified]
    [blog.pages.index :as pages.index]
    [blog.pages.tags :as pages.tags]
+   [blog.pages.resources :as pages.resources]
    [blog.db :as blog.db]
    [blog.config :as blog.config]
    [components.note :as note]
@@ -74,7 +75,8 @@
   []
   (publish-index-by-tag)
   (publish-index-by-last-modified)
-  (publish-index))
+  (publish-index)
+  (pages.resources/publish))
 
 (defn ensure-image-dir []
   (let [dir (blog.config/blog-content-images)]
@@ -111,6 +113,7 @@
     (notify/notify {:subject "Rebuilding blog..."
                     :body    "Building all notes and indexes"
                     :id      notif-id})
+    (blog.db/refresh-notes)
     ;; images have to go first, so that notes hide/show divs for existing images
     (publish-images)
     (publish-notes)
@@ -123,7 +126,6 @@
                       :id      notif-id}))))
 
 (comment
-
   (publish-all)
   (publish-note (blog.db/find-note "clove.org"))
   (publish-note (blog.db/find-note "beehive.org")))
