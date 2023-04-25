@@ -108,9 +108,12 @@
 (defn level [it]
   (let [level (:org/level it 0)
         level (if (#{:level/root} level) 0 level)]
-    [:div
-     {:class ["whitespace-nowrap" "font-nes"]}
-     (->> (repeat level "*") (apply str))]))
+    [components.debug/raw-metadata
+     {:label
+      [:div
+       {:class ["whitespace-nowrap" "font-nes"]}
+       (->> (repeat level "*") (apply str))]}
+     it]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; status
@@ -255,11 +258,7 @@
               "mt-auto"
               "pb-2"]}
 
-     [components.debug/raw-metadata {:label "RAW"} it]
-
-     [:div
-      {:class ["ml-4"]}
-      [content it]]
+     [content it]
 
      ;; actions list
      [:span

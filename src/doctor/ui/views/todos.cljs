@@ -4,7 +4,33 @@
    [doctor.ui.db :as ui.db]
    [components.filter :as components.filter]
    [components.todo :as todo]
-   [components.filter-defs :as filter-defs]))
+   [components.filter-defs :as filter-defs]
+
+   [components.floating :as floating]
+   [components.actions :as components.actions]
+   [components.garden :as components.garden]
+   [doctor.ui.handlers :as handlers]
+   [components.item :as item]))
+
+(defn todos-table-def []
+  {:headers ["" "Name" "Tags" "Parents" "Actions"]
+   :->row   (fn [todo]
+              [[:span.flex.flex-row.items-center.space-x-2
+                [todo/level todo]
+                [todo/status todo]
+                [todo/priority-label todo]
+                [item/db-id todo]
+                [item/id-hash todo]]
+               [floating/popover
+                {:hover        true :click true
+                 :anchor-comp  [:span
+                                {:class "whitespace-nowrap"}
+                                (:org/name-string todo)]
+                 :popover-comp [components.garden/full-note todo]}]
+               [components.garden/all-nested-tags-comp todo]
+               [item/parent-names todo]
+               [components.actions/actions-list
+                {:actions (handlers/->actions todo) :n 4}]])})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; filter-grouper presets
@@ -162,7 +188,9 @@
      (when (seq (:filtered-items filter-data))
        [:div {:class ["pt-6"]}
         [components.filter/items-by-group
-         (assoc filter-data :item->comp todo/card-or-card-group)]])
+         (assoc filter-data
+                :table-def (todos-table-def)
+                :item->comp todo/card-or-card-group)]])
 
      (when (not (seq todos))
        [:div

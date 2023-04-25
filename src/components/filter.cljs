@@ -6,11 +6,10 @@
    [components.floating :as floating]
    [components.table :as components.table]
    [components.actions :as components.actions]
-   [components.debug :as components.debug]
+   [components.debug :as debug]
    [util :as util]
    [components.pill :as pill]
-   [doctor.ui.localstorage :as localstorage]
-   [components.debug :as debug]))
+   [doctor.ui.localstorage :as localstorage]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; grouped filter items component
@@ -247,7 +246,7 @@
         (let [meta {:group-by-key    group-by-key
                     :sort-groups-key sort-groups-key
                     :active-filters  active-filters}]
-          [components.debug/raw-metadata {:label "Metadata"}
+          [debug/raw-metadata {:label "Metadata"}
            meta])]
 
        [:div
