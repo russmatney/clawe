@@ -153,8 +153,12 @@
                           {:join-children? true
                            :skip-subtasks? true})
         only-incomplete (uix/state (:only-incomplete opts))
+        hide-current    (uix/state (:hide-current opts))
         pills
-        [{:on-click #(swap! only-incomplete not)
+        [{:on-click #(swap! hide-current not)
+          :label    (if @hide-current "Show current" "Hide current")
+          :active   @hide-current}
+         {:on-click #(swap! only-incomplete not)
           :label    (if @only-incomplete "All" "Only Incomplete")
           :active   @only-incomplete}]
 
@@ -171,7 +175,9 @@
                                 (cond->> items
                                   @only-incomplete
                                   (filter #(or (todo/not-started? %)
-                                               (todo/in-progress? %)))))
+                                               (todo/in-progress? %)))
+                                  @hide-current
+                                  (filter #(not (todo/current? %)))))
                 :sort-items todo/sort-todos)
               (update :presets merge (presets))))]
     [:div
