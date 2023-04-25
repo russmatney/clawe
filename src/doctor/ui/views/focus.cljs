@@ -34,7 +34,7 @@
           [components.garden/text-with-links (:org/name current)]]
 
          [components.actions/actions-list
-          {:n 2 :hide-disabled true
+          {:n 2 :hide-disabled true :nowrap true
            :actions
            (concat
              (when (> ct 0)

@@ -120,7 +120,7 @@
                                             :else nil)))))]
         [:div
          {:class ["inline-flex"
-                  (when (or (not (:nowrap opts-or-axs)) @showing-all)
+                  (when (and (not (:nowrap opts-or-axs)) @showing-all)
                     "flex-wrap")]}
          (for [[i ax] (->> actions
                            (remove nil?)

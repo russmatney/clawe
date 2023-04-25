@@ -226,19 +226,11 @@
             (some->> active-workspaces
                      (filter :workspace/focused) first)]
         (when current-workspace
-          [:div
-           {:class ["flex" "flex-row" "space-x-4"
-                    "justify-between" "items-center"
-                    "ml-auto" "mx-8"]}
-           [:span
-            {:class ["font-nes" "text-city-blue-500"]}
-            (:workspace/title current-workspace)]
-           #_[:span
-              {:class ["text-city-blue-500" "font-mono"]}
-              (-> current-workspace
-                  :workspace/directory
-                  (string/replace "/home/russ" "~")
-                  (string/replace "/Users/russ" "~"))]]))
+          [:span
+           {:class ["font-nes" "text-city-blue-500" "whitespace-nowrap"
+                    "px-3"
+                    ]}
+           (:workspace/title current-workspace)]))
 
       [:div
        {:class ["ml-auto" "w-1/3" "overflow-scroll"]}
