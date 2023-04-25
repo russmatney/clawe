@@ -45,7 +45,7 @@
 
 (defn breadcrumbs [bcrumbs]
   [:span
-   {:class ["flex" "flex-row"]}
+   {:class ["flex" "flex-row" "flex-wrap"]}
    (->>
      bcrumbs
      reverse
@@ -54,7 +54,7 @@
          [:span {:class
                  (concat
                    (colors/color-wheel-classes {:type :line :i i})
-                   ["whitespace-nowrap"])}
+                   ["flex-grow"])}
           " " nm]))
      (interpose [:span
                  {:class ["text-city-blue-dark-200" "px-4"]}

@@ -9,24 +9,25 @@
    [components.debug :as debug]
    [util :as util]
    [components.pill :as pill]
-   [doctor.ui.localstorage :as localstorage]))
+   [doctor.ui.localstorage :as localstorage]
+   [hiccup-icons.octicons :as octicons]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; grouped filter items component
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn pagination-actions [{:keys [page-size step total]}]
-  [(when (> @page-size 0)
+  [(when (< @page-size total)
+     {:action/label    (str "all (" total ")")
+      :action/on-click (fn [_] (reset! page-size total))})
+   (when (> @page-size 0)
      (let [new-size (max (- @page-size step) 0)]
        {:action/label    (str "less (" new-size ")")
         :action/on-click (fn [_] (reset! page-size new-size))}))
    (when (< @page-size total)
      (let [new-size (min (+ @page-size step) total)]
        {:action/label    (str "more (" new-size ")")
-        :action/on-click (fn [_] (reset! page-size new-size))}))
-   (when (< @page-size total)
-     {:action/label    (str "all (" total ")")
-      :action/on-click (fn [_] (reset! page-size total))})])
+        :action/on-click (fn [_] (reset! page-size new-size))}))])
 
 (defn group->comp
   [{:keys [item-group label item->comp group-by-key filter-items sort-items all-filter-defs
@@ -38,6 +39,7 @@
                                   (fn [label] (or (str label) "None")))
         label-comp            (some-> group-by-key all-filter-defs :group-by-label-comp)
         label                 (label->group-by-label label)
+        show-group            (uix/state true)
         group-comp-open?      (uix/state true)
         item-group-open?      (uix/state true)
         table-open?           (uix/state true)
@@ -73,6 +75,13 @@
          {:n 5 ;; num actions to show before paginating
           :actions
           (concat
+            [{:action/on-click (fn [_] (swap! show-group not))
+              :action/icon     (if @show-group octicons/chevron-up16 octicons/chevron-down16)
+              :action/label    (if @show-group "Hide" "Show")}]
+
+            (when-not (and hide-all-tables hide-all-groups)
+              (pagination-actions {:page-size page-size :step 4 :total (count items)}))
+
             [(when (not hide-all-tables)
                {:action/on-click (fn [_] (swap! table-open? not))
                 :action/label    (str (if @table-open? "Hide table" "Show table"))})
@@ -81,11 +90,9 @@
                 :action/label    (str (if @item-group-open? "Hide items" "Show items"))})
              (when (not hide-all-groups)
                {:action/on-click (fn [_] (swap! group-comp-open? not))
-                :action/label    (str (if @group-comp-open? "Hide group" "Show group"))})]
-            (when-not (and hide-all-tables hide-all-groups)
-              (pagination-actions {:page-size page-size :step 4 :total (count items)})))}]]]]
+                :action/label    (str (if @group-comp-open? "Hide group" "Show group"))})])}]]]]
 
-     (when (and @item-group-open? (not hide-all-groups))
+     (when (and @show-group @item-group-open? (not hide-all-groups))
        [:div
         {:class ["flex" "flex-row" "flex-wrap" "justify-around"]}
 
@@ -96,7 +103,7 @@
                                :filter-by active-filters-fn
                                :filter-fn filter-items) it]))])
 
-     (when (and @table-open? (not hide-all-tables))
+     (when (and @show-group @table-open? (not hide-all-tables))
        [:div
         {:class ["flex" "flex-row" "w-full"]}
         (when (and table-def (:->row table-def))
@@ -105,7 +112,7 @@
                (assoc :n @page-size)
                (assoc :rows (->> items (map (:->row table-def)))))])])
 
-     (when (and @group-comp-open? (:group->comp opts))
+     (when (and @show-group @group-comp-open? (:group->comp opts))
        ((:group->comp opts) (->> items (take @page-size))))]))
 
 (defn items-by-group [filter-data]

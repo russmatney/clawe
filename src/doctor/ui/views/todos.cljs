@@ -24,7 +24,7 @@
                [floating/popover
                 {:hover        true :click true
                  :anchor-comp  [:span
-                                {:class "whitespace-nowrap"}
+                                {:class ["flex-grow" "font-mono"]}
                                 (:org/name-string todo)]
                  :popover-comp [components.garden/full-note todo]}]
                [components.garden/all-nested-tags-comp todo]
