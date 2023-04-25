@@ -17,7 +17,6 @@
 
 
 (defn colorized-metadata
-  "TODO figure out why data is getting double printed/leaking in here"
   ([m] (colorized-metadata {} m))
   ([opts m] (colorized-metadata 0 opts m))
   ([level {:keys [exclude-key] :as opts} m]
@@ -44,7 +43,9 @@
                 (not (:no-sort opts)) map-key-sort
                 true                  (map (partial colorized-metadata (inc level) opts)))
 
-              (and (or (list? v) (set? v)) (seq v))
+              (and (or (list? v) (set? v)
+                       (and (not (string? v)) (seq? v)))
+                   (seq v))
               (->> v (map (partial colorized-metadata (inc level) opts)))
 
               :else
@@ -64,15 +65,6 @@
   ([metadata] [raw-metadata nil metadata])
   ([{:keys [label] :as opts} metadata]
    (let [label (if (= false label) nil (or label "Toggle raw metadata"))]
-     [:div
-      {:class ["mt-auto" "p-4" "bg-yo-blue-700"
-               "border"
-               "border-city-blue-800"]}
-      (when metadata
-        (cond->> metadata
-          (not (:no-sort opts)) map-key-sort
-          true                  (map #(colorized-metadata opts %))))]
-
      [floating/popover
       {:hover true :click true
        :anchor-comp
@@ -89,4 +81,10 @@
         (when metadata
           (cond->> metadata
             (not (:no-sort opts)) map-key-sort
-            true                  (map #(colorized-metadata opts %))))]}])))
+            true
+            (map #(colorized-metadata opts %))
+            true
+            (map-indexed
+              (fn [i x]
+                ;; space between items
+                [:div {:key i :class ["pt-2"]} x]))))]}])))

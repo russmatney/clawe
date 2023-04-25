@@ -9,7 +9,8 @@
    [components.debug :as components.debug]
    [util :as util]
    [components.pill :as pill]
-   [doctor.ui.localstorage :as localstorage]))
+   [doctor.ui.localstorage :as localstorage]
+   [components.debug :as debug]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; grouped filter items component
@@ -50,13 +51,21 @@
      [:div
       [:hr {:class ["mt-6" "border-city-blue-900"]}]
       [:div
-       {:class ["p-6" "flex flex-row"]}
+       {:class ["p-6" "flex flex-row" "items-center"]}
        [:span
         {:class ["font-nes" "text-city-blue-400"]}
         (if (and label label-comp)
           [label-comp label]
           (str (label->group-by-label label)))
         (str " (" (count items) ")")]
+
+       [:span
+        {:class ["pl-4" "font-mono" "text-city-blue-400"]}
+        [debug/raw-metadata {:label "raw opts"} opts]]
+
+       [:span
+        {:class ["pl-4" "font-mono" "text-city-blue-400"]}
+        [debug/raw-metadata {:label "raw items"} items]]
 
        [:div
         {:class ["ml-auto"]}
