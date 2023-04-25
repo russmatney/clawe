@@ -263,10 +263,9 @@
 
      ;; actions list
      [:span
-      {:class ["ml-auto"]}
+      {:class ["ml-auto" "pl-4"]}
       [components.actions/actions-list
        {:actions       (handlers/->actions it (handlers/todo->actions it))
-        :nowrap        true
         :hide-disabled true}]]]]))
 
 
@@ -284,10 +283,10 @@
                                 (remove #(#{item} %))
                                 (filter :org/status)
                                 seq)
-         [children? todos] (if (seq todos) [true todos] [false [item]])
          todos             (cond->> todos
                              filter-by (filter filter-by)
                              filter-fn filter-fn)
+         [children? todos] (if (seq todos) [true todos] [false [item]])
          groups            (group-by (fn [it] (-> it :org/parent-names str)) todos)]
 
      [:div {:class ["flex" "flex-col"]}
@@ -298,30 +297,29 @@
                                 ["border-city-green-400" "border"
                                  "bg-city-blue-900"
                                  "py-3"]))}
-         [:div {:class ["p-2"]}
-          (when children?
+
+         (when children?
+           [:div
+            {:class ["flex" "flex-col" "p-2"]}
             [:div
-             {:class ["flex" "flex-col"]}
-             [:div
-              {:class ["flex" "flex-row" "items-center"]}
+             {:class ["flex" "flex-row" "items-center"]}
 
-              [status item]
-              [item/db-id item]
-              [item/id-hash item]
-              [:div {:class ["ml-auto"]}
-               [tags-list item]]
-              [priority-label item]]
+             [status item]
+             [item/db-id item]
+             [item/id-hash item]
+             [:div {:class ["ml-auto"]}
+              [tags-list item]]
+             [priority-label item]]
 
-             [:div
-              {:class ["flex" "flex-row" "items-center" "px-3"]}
-              [item/parent-names {:header? true} (first grouped-todos)]
+            [:div
+             {:class ["flex" "flex-row" "items-center" "px-3"]}
+             [item/parent-names {:header? true} (first grouped-todos)]
 
-              [:span
-               {:class ["ml-auto"]}
-               [components.actions/actions-list
-                {:actions       (handlers/->actions item (handlers/todo->actions item))
-                 :nowrap        true
-                 :hide-disabled true}]]]])]
+             [:span
+              {:class ["ml-auto"]}
+              [components.actions/actions-list
+               {:actions       (handlers/->actions item (handlers/todo->actions item))
+                :hide-disabled true}]]]])
 
          (if children?
            [:div
