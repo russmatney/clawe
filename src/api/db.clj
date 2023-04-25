@@ -94,6 +94,11 @@
                   :e))
     (map :e)))
 
+(defn chess-games->es []
+  (->>
+    (db/datoms :avet :doctor/type :type/lichess-game)
+    (map :e)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; initial data to send to frontend
 
@@ -106,7 +111,8 @@
       (last-modified-files->es 200)
       (recent-wallpapers->es 20)
       (recent-events->es 300)
-      (repos->es))
+      (repos->es)
+      (chess-games->es))
     distinct
     (mapcat #(d/datoms @db/*conn* :eavt %))))
 
