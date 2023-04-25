@@ -85,8 +85,7 @@
                       :else        it)]
      (when priort
        [:span
-        (merge opts
-               {:class
+        (merge {:class
                 (concat
                   ["whitespace-nowrap" "font-nes"
                    "cursor-pointer"
@@ -98,7 +97,9 @@
                          (skipped? it))   ["text-city-blue-dark-400"]
                     (#{"A"} priort)       ["text-city-red-400"]
                     (#{"B"} priort)       ["text-city-pink-400"]
-                    (#{"C"} priort)       ["text-city-green-400"]))})
+                    (#{"C"} priort)       ["text-city-green-400"]))
+                :on-click #(handlers/remove-priority it)}
+               opts)
         (str "#" priort " ")]))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -167,7 +168,7 @@
           {:class
            (concat ["cursor-pointer" "hover:line-through"]
                    (colors/color-wheel-classes {:type :line :i (+ 2 i)}))
-           :on-click #((:on-click opts) tag)}
+           :on-click (fn [tag] (handlers/remove-tag it tag))}
           tag]
          ":"])])))
 
@@ -217,17 +218,13 @@
      [item/db-id it]
      [item/id-hash it]
      [:div {:class ["ml-auto"]}
-      [priority-label
-       {:on-click #(handlers/remove-priority it)}
-       it]]]
+      [priority-label it]]]
 
     ;; middle content
     [:div
      {:class ["flex" "flex-col" "pb-2"]}
 
-     [tags-list
-      {:on-click (fn [tag] (handlers/remove-tag it tag))}
-      it]
+     [tags-list it]
 
      [queued it]
 
@@ -312,10 +309,8 @@
               [item/db-id item]
               [item/id-hash item]
               [:div {:class ["ml-auto"]}
-               [tags-list
-                {:on-click (fn [tag] (handlers/remove-tag item tag))}
-                item]]
-              [priority-label {:on-click (fn [_] (handlers/remove-priority item))} item]]
+               [tags-list item]]
+              [priority-label item]]
 
              [:div
               {:class ["flex" "flex-row" "items-center" "px-3"]}

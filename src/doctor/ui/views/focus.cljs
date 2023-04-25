@@ -72,12 +72,8 @@
     [item/db-id it]
     [item/id-hash it]
     [:div {:class ["ml-auto"]}
-     [todo/tags-list
-      {:on-click (fn [tag] (handlers/remove-tag it tag))}
-      it]]
-    [todo/priority-label
-     {:on-click (fn [_] (handlers/remove-priority it))}
-     it]]
+     [todo/tags-list it]]
+    [todo/priority-label it]]
 
    [:div {:class ["flex" "flex-row"]}
     [:span {:class ["font-nes"]}
