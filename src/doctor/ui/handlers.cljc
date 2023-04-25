@@ -217,6 +217,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defhandler remove-priority [item]
+  (when (:db/id item)
+    (->> [[:db.fn/retractAttribute (:db/id item) :org/priority]]
+         (d/transact db/*conn*)))
   (org-crud.api/update! item {:org/priority nil}))
 
 (defhandler increase-priority [todo]
