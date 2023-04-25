@@ -155,7 +155,7 @@
 
 (defn tags-list
   ([it] [tags-list nil it])
-  ([opts it]
+  ([_opts it]
    (when (seq (:org/tags it))
      [:span
       {:class ["text-md" "font-mono"
