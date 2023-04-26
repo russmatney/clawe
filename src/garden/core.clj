@@ -347,17 +347,21 @@
 
 (defn reset-last-modified-via-git [item]
   (let [commit-dt (-> item :org/source-file last-commit-dt)]
-    (if (t/> commit-dt (:file/last-modified item))
-      (log/debug "Latest commit dt is AFTER last-modified, skipping lm reset"
-                 (:org/short-path item))
-      (reset-last-modified item commit-dt))))
+    (when-not commit-dt
+      (log/warn "No latest commit for item" (:org/short-path item)))
+    (when commit-dt
+      (if (and (:file/last-modified item)
+               (t/>= commit-dt (:file/last-modified item)))
+        (log/debug "Latest commit dt is AFTER last-modified, skipping lm reset"
+                   (:org/short-path item))
+        (reset-last-modified item commit-dt)))))
 
 (defn reset-created-at-via-git [item]
   (when (#{:level/root} (:org/level item))
     (let [first-commit-dt (-> item :org/source-file first-commit-dt)
           created-at      (-> item :org.props/created-at)]
       (when first-commit-dt
-        (if (t/> first-commit-dt created-at)
+        (if (t/>= first-commit-dt created-at)
           (log/debug "First commit dt is AFTER item created-at, skipping created-at reset"
                      (:org/short-path item))
           (org-crud.update/update! item {:org.props/created-at created-at}))))))
@@ -375,11 +379,9 @@
   (->>
     (all-garden-paths)
     (map path->nested-item)
+    (remove nil?)
     (remove empty?)
-    (take 2)
+    (sort-by :file/last-modified dates.tick/sort-latest-first)
     (map reset-last-modified-via-git)
-    ;; (sort-by :file/last-modified dates.tick/sort-chrono)
-    ;; first
-    ;; :file/last-modified
-    )
+    doall)
   )
