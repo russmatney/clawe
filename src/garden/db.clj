@@ -5,7 +5,8 @@
    [clojure.string :as string]
    [taoensso.timbre :as log]
    [item.core :as item]
-   [clojure.set :as set]))
+   [clojure.set :as set]
+   [babashka.fs :as fs]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ->db-item
@@ -269,8 +270,10 @@
           notes-to-purge
           (->> all-db-notes (remove ->should-keep?))]
       (when (seq notes-to-purge)
-        (log/info "Purging" (count notes-to-purge) "/" (count all-db-notes) "notes from the db"
-                  (->> notes-to-purge (map :org/name-string))))
+        (log/info
+          "Purging" (count notes-to-purge) "/" (count all-db-notes) "notes from the db\n"
+          "on path" garden-path "\n"
+          (->> notes-to-purge (map (some-fn :org/name-string :org/name identity)))))
       (->> notes-to-purge
            (map :db/id)
            (remove nil?)
@@ -431,5 +434,39 @@
   (list-todos {:filter-pred    td-pred
                :join-children? true
                :skip-subtasks? true})
-  (list-only-todos-with-children {:filter-pred td-pred})
+  (list-only-todos-with-children {:filter-pred td-pred}))
+
+(defn retract-invalid-source-file-entities
+  "retract entities for :org/source-files that dOn'T eXiSt"
+  []
+  (->>
+    (db/query '[:find (pull ?note [:org/source-file :db/id])
+                :where [?note :org/source-file _]])
+    (map first)
+    (remove (comp fs/exists? :org/source-file))
+    (map :db/id)
+    (db/retract-entities)))
+
+(comment
+  (retract-invalid-source-file-entities)
+
+  ;; re-ingest :type/garden notes
+  (->>
+    (db/query '[:find (pull ?note [:org/source-file])
+                :where [?note :doctor/type :type/garden]])
+    (map first)
+    (filter (comp fs/exists? :org/source-file))
+    (map :org/source-file)
+    (map sync-and-purge-for-path)))
+
+
+(comment
+  (->>
+    (db/query '[:find (pull ?note [:org/source-file])
+                :where
+                [?note :doctor/type :type/note]
+                [?note :org/level :level/root]])
+    (map first)
+    count
+    )
   )
