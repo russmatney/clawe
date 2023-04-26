@@ -10,7 +10,13 @@
                        (-> k-v second coll?))))))
 
 (defn map-key-sort [m]
-  (->> m (sort-by first) colls-last))
+  (->> m (sort-by first
+                  (fn [a b]
+                    (cond (and a b)
+                          (> a b)
+                          a     a
+                          :else b)))
+       colls-last))
 
 (comment
   (colls-last {:some-v 5 :some-coll [5]}))
@@ -43,10 +49,16 @@
                 (not (:no-sort opts)) map-key-sort
                 true                  (map (partial colorized-metadata (inc level) opts)))
 
-              (and (or (list? v) (set? v)
-                       (and (not (string? v)) (seq? v)))
+              (and (or (list? v)
+                       (set? v)
+                       (and
+                         (seq? v)
+                         (not (string? v))))
+                   (seq? v)
                    (seq v))
-              (->> v (map (partial colorized-metadata (inc level) opts)))
+              (->> v
+                   (take 10)
+                   (map (partial colorized-metadata (inc level) opts)))
 
               :else
               [:span {:class ["text-city-green-400" "max-w-xs"]}
@@ -80,6 +92,7 @@
                  "border-city-blue-800"]}
         (when metadata
           (cond->> metadata
+            (not (map? metadata)) (take 10)
             (not (:no-sort opts)) map-key-sort
             true
             (map #(colorized-metadata opts %))

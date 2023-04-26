@@ -62,11 +62,19 @@
 
        [:span
         {:class ["pl-4" "font-mono" "text-city-blue-400"]}
-        [debug/raw-metadata {:label "raw opts"} opts]]
+        [debug/raw-metadata {:label "raw opts"}
+         ;; limiting our selection here b/c opts is quite huge
+         ;; (and has full components in it)
+         (select-keys
+           opts
+           [:label :group-by-key :default-page-size :table-def
+            :hide-all-tables :hide-all-groups])]]
 
        [:span
         {:class ["pl-4" "font-mono" "text-city-blue-400"]}
-        [debug/raw-metadata {:label "raw items"} items]]
+        [debug/raw-metadata {:label "raw items"}
+         (->> items (take 10)
+              (map (fn [x] (update x :org/items (fn [its] (take 2 its))))))]]
 
        [:div
         {:class ["ml-auto"]}
