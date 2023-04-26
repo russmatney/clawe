@@ -126,9 +126,19 @@
                            (remove nil?)
                            (map-indexed vector))]
            ^{:key i}
-           [action-icon-button
-            {:class (colors/color-wheel-classes {:i i :type :line})}
-            ax])]))))
+           (let [popup-comp (:action/popup-comp ax)
+                 action-button
+                 ^{:key i}
+                 [action-icon-button
+                  {:class (colors/color-wheel-classes {:i i :type :line})}
+                  ax]]
+             (if popup-comp
+               ^{:key i}
+               [floating/popover
+                {:click        true
+                 :anchor-comp  action-button
+                 :popover-comp popup-comp}]
+               action-button)))]))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; popover

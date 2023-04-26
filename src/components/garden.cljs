@@ -88,7 +88,7 @@
   (let [note (plasma.uix/state nil)]
     (with-rpc []
       (when item
-        (handlers/full-garden-item item))
+        (handlers/full-garden-item (dissoc item :actions/inferred)))
       #(reset! note %))
     {:note @note}))
 

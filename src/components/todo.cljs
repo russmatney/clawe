@@ -98,7 +98,8 @@
                     (#{"A"} priort)       ["text-city-red-400"]
                     (#{"B"} priort)       ["text-city-pink-400"]
                     (#{"C"} priort)       ["text-city-green-400"]))
-                :on-click #(handlers/remove-priority it)}
+                :on-click #(handlers/remove-priority
+                             (dissoc it :actions/inferred))}
                opts)
         (str "#" priort " ")]))))
 
@@ -135,12 +136,13 @@
            ;; TODO refactor this logic into...something?
            ;; needs to support going from one state to another... maybe via a popup menu, with a default
            (handlers/todo-set-new-status
-             it (cond
-                  (completed? it)   :status/not-started
-                  (skipped? it)     :status/not-started
-                  (current? it)     :status/done
-                  (in-progress? it) :status/done
-                  (not-started? it) :status/in-progress)))}
+             (dissoc it :actions/inferred)
+             (cond
+               (completed? it)   :status/not-started
+               (skipped? it)     :status/not-started
+               (current? it)     :status/done
+               (in-progress? it) :status/done
+               (not-started? it) :status/in-progress)))}
         (cond
           (and (completed? it) (not @hovering?))   "[X]"
           (and (completed? it) @hovering?)         "[ ]"
@@ -171,7 +173,9 @@
           {:class
            (concat ["cursor-pointer" "hover:line-through"]
                    (colors/color-wheel-classes {:type :line :i (+ 2 i)}))
-           :on-click (fn [tag] (handlers/remove-tag it tag))}
+           :on-click (fn [tag] (handlers/remove-tag
+                                 (dissoc it :actions/inferred)
+                                 tag))}
           tag]
          ":"])])))
 
@@ -264,7 +268,7 @@
      [:span
       {:class ["ml-auto" "pl-4"]}
       [components.actions/actions-list
-       {:actions       (handlers/->actions it (handlers/todo->actions it))
+       {:actions       (handlers/->actions it)
         :hide-disabled true}]]]]))
 
 
@@ -317,7 +321,7 @@
              [:span
               {:class ["ml-auto"]}
               [components.actions/actions-list
-               {:actions       (handlers/->actions item (handlers/todo->actions item))
+               {:actions       (handlers/->actions item)
                 :hide-disabled true}]]]])
 
          (if children?

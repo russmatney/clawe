@@ -91,6 +91,7 @@
   :ok)
 
 (defhandler add-tag [item tag]
+  (log/debug "adding tag to item" tag (:org/name-string item))
   (org-crud.api/update! item {:org/tags tag})
   :ok)
 
@@ -472,46 +473,48 @@
    (defn ->actions
      ([item] (->actions item nil))
      ([item actions]
-      (->>
-        (cond
-          ;; huh? should these be concated with the defaults?
-          (seq actions)
-          actions
+      (let [inferred (:actions/inferred item)
+            item     (dissoc item :actions/inferred)]
+        (->>
+          (cond
+            ;; huh? should these be concated with the defaults?
+            (seq actions)
+            actions
 
-          ;; workspace
-          (:workspace/index item)
-          (workspace->actions item)
+            ;; workspace
+            (:workspace/index item)
+            (workspace->actions item)
 
-          ;; client
-          (:client/id item (:client/window-title item))
-          (client->actions item)
+            ;; client
+            (:client/id item (:client/window-title item))
+            (client->actions item)
 
-          ;; todos
-          (#{:type/todo} (:doctor/type item))
-          (todo->actions item)
+            ;; todos
+            (#{:type/todo} (:doctor/type item))
+            (todo->actions item)
 
-          ;; garden note
-          (#{:type/note} (:doctor/type item))
-          (garden-file->actions item)
+            ;; garden note
+            (#{:type/note} (:doctor/type item))
+            (garden-file->actions item)
 
-          ;; repo actions
-          (#{:type/repo} (:doctor/type item))
-          (repo->actions item)
+            ;; repo actions
+            (#{:type/repo} (:doctor/type item))
+            (repo->actions item)
 
-          ;; wallpaper actions
-          (#{:type/wallpaper} (:doctor/type item))
-          (wallpaper->actions item)
+            ;; wallpaper actions
+            (#{:type/wallpaper} (:doctor/type item))
+            (wallpaper->actions item)
 
-          (:db/id item)
-          [{:action/on-click #(delete-from-db item)
-            :action/label    "delete-from-db"
-            :action/icon     fa/trash-alt-solid}]
+            (:db/id item)
+            [{:action/on-click #(delete-from-db item)
+              :action/label    "delete-from-db"
+              :action/icon     fa/trash-alt-solid}]
 
-          :else [])
-        (concat (:actions/inferred item []))
-        (map-indexed vector)
-        (map (fn [[i ax]]
-               (merge
-                 {:action/class (colors/color-wheel-classes {:type :line :i i})}
-                 ax ;; let the ax overwrite/maintain a color
-                 )))))))
+            :else [])
+          (concat (or inferred []))
+          (map-indexed vector)
+          (map (fn [[i ax]]
+                 (merge
+                   {:action/class (colors/color-wheel-classes {:type :line :i i})}
+                   ax ;; let the ax overwrite/maintain a color
+                   ))))))))

@@ -62,7 +62,7 @@
                   "items-center" "justify-between"]}
     [item/parent-names it]
     [components.actions/actions-list
-     {:actions       (handlers/->actions it (handlers/todo->actions it))
+     {:actions       (handlers/->actions it)
       :nowrap        true
       :hide-disabled true}]]
 

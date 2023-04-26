@@ -18,7 +18,7 @@
       (when-not (:org/id it)
         ["opacity-50" "cursor-pointer" "tooltip"]))
     :on-click (fn [_] (when-not (:org/id it)
-                        (handlers/ensure-uuid it)))}
+                        (handlers/ensure-uuid (dissoc it :actions/inferred))))}
    (if (:org/id it)
      (->> it :org/id str (take 4) (apply str))
      [:span
@@ -35,7 +35,7 @@
        "hover:text-slate-400"
        "hover:line-through"
        "cursor-pointer" "tooltip"]
-      :on-click #(handlers/delete-from-db it)}
+      :on-click #(handlers/delete-from-db (dissoc it :actions/inferred))}
      [:span {:class ["tooltip-text" "-mt-12" "-ml-12"]}
       "delete-from-db"]
      (->> it :db/id str (apply str))]))

@@ -39,7 +39,8 @@
          (map (fn [repo]
                 {:action/label (:repo/short-path repo)
                  :action/on-click
-                 (fn [_] (handlers/ingest-commits-for-repo repo))}))
+                 (fn [_] (handlers/ingest-commits-for-repo
+                           (dissoc repo :actions/inferred)))}))
          (sort-by :action/label))))
 
 (defn commit-ingest-buttons [conn]
