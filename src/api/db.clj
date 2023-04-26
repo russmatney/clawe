@@ -5,7 +5,8 @@
    [db.core :as db]
    [garden.core :as garden]
    [datascript.core :as d]
-   [taoensso.timbre :as log]))
+   [taoensso.timbre :as log]
+   [dates.tick :as dt]))
 
 (defn prioritized-todos->es []
   (->>
@@ -37,8 +38,7 @@
 (comment
   (count (current-todos->es)))
 
-(defn last-n-dailies->es
-  [n]
+(defn last-n-dailies->es [n]
   (->>
     (db/query '[:find ?e
                 :in $ ?paths
@@ -51,24 +51,35 @@
 (comment
   (count (last-n-dailies->es 7)))
 
-(defn last-modified-files->es
-  [n]
+(defn all-notes->es
+  ([] (all-notes->es nil))
+  ([n]
+   (cond->>
+       (db/datoms :avet :doctor/type :type/note)
+     true (sort-by :v dt/sort-chrono)
+     ;; true (sort-by :v dt/sort-latest-first)
+     true (map :e)
+     true dedupe
+     n    (take n))))
+
+(defn last-modified-files->es [n]
   (->>
     (db/datoms :avet :file/last-modified)
-    reverse
-    (take n)
-    (map :e)))
+    (sort-by :v dt/sort-latest-first)
+    (map :e)
+    dedupe
+    (take n)))
 
 (comment
   (count (last-modified-files->es 40))
-  (->> (last-modified-files->es 40)
-       sort
-       (d/pull-many @db/*conn* '[*])
-       count
-       )
   (->> (d/datoms @db/*conn* :avet :file/last-modified) reverse)
-  (->> (last-modified-files->es 5)
-       (d/pull-many @db/*conn* '[*])))
+  (->> (last-modified-files->es 40)
+       (d/pull-many @db/*conn* '[:doctor/type
+                                 :db/id
+                                 :file/last-modified
+                                 :org/name-string
+                                 :org/short-path])
+       (take 3)))
 
 (defn recent-wallpapers->es
   [n]
@@ -92,12 +103,14 @@
     (filter (comp #(= % "russmatney") :repo/user-name
                   #(d/entity @db/*conn* %)
                   :e))
-    (map :e)))
+    (map :e)
+    dedupe))
 
 (defn chess-games->es []
   (->>
     (db/datoms :avet :doctor/type :type/lichess-game)
-    (map :e)))
+    (map :e)
+    dedupe))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; initial data to send to frontend
@@ -105,10 +118,11 @@
 (defn datoms-for-frontend []
   (->>
     (concat
+      #_(all-notes->es)
       (prioritized-todos->es)
       (current-todos->es)
       (last-n-dailies->es 14)
-      (last-modified-files->es 200)
+      (last-modified-files->es 500)
       (recent-wallpapers->es 20)
       (recent-events->es 300)
       (repos->es)
@@ -117,14 +131,20 @@
     (mapcat #(d/datoms @db/*conn* :eavt %))))
 
 (comment
+  (count (all-notes->es))
   (->>
-    (d/datoms @db/*conn* :avet :file/last-modified)
-    reverse
-    (take 30)
+    (datoms-for-frontend)
     (map :e)
-    count)
-
-  (datoms-for-frontend))
+    dedupe
+    (d/pull-many @db/*conn* '[:file/last-modified
+                              :doctor/type
+                              :org/name-string
+                              :org/short-path])
+    (filter (comp #{:type/note} :doctor/type))
+    #_(sort-by :file/last-modified dt/sort-chrono)
+    (take 5)
+    )
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; db stream and frontend data push
