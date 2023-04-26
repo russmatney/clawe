@@ -6,9 +6,11 @@
    [wing.core :as w]))
 
 (defn take-and-log [{:keys [n label]} xs]
-  (let [ct (count xs)]
-    (when (> ct n) (log/info ct label "in db, trimming to" n))
-    (->> xs (take n))))
+  (if-not n
+    xs
+    (let [ct (count xs)]
+      (when (> ct n) (log/info ct label "in db, trimming to" n))
+      (->> xs (take n)))))
 
 
 ;; TODO tests for this namespace
@@ -114,51 +116,63 @@
 ;; garden-notes
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn garden-notes
-  ([conn] (garden-notes conn nil))
-  ([conn {:keys [n]}]
-   (when conn
-     (let [n (or n 100)]
-       (->>
-         (d/q '[:find (pull ?e [*])
-                :where
-                [?e :doctor/type :type/note]
-                [?e :org/level :level/root]]
-              conn)
-         (map first)
-         (sort-by :file/last-modified dt/sort-latest-first)
-         (take-and-log {:n n :label "garden notes"}))))))
-
-(defn garden-files
-  "Returns garden source-files"
-  ([conn] (garden-files conn nil))
-  ([conn {:keys [n]}]
-   (when conn
-     (let [n (or n 100)]
-       (->>
-         (d/q '[:find (pull ?e [:org/source-file :file/last-modified])
-                :where
-                [?e :doctor/type :type/note]
-                [?e :org/source-file ?source-file]]
-              conn)
-         (map first)
-         (w/distinct-by :org/source-file)
-         (sort-by :file/last-modified dt/sort-latest-first)
-         (map :org/source-file)
-         (take-and-log {:n n :label "garden files"}))))))
-
 (defn join-children [conn items]
   (->> items
-       (map (fn [td]
+       (map (fn [item]
               (let [children
                     (->>
                       (d/q '[:find (pull ?c [*])
                              :in $ ?db-id
                              :where [?c :org/parents ?db-id]]
                            conn
-                           (:db/id td))
+                           (:db/id item))
                       (map first))]
-                (assoc td :org/items children))))))
+                (assoc item :org/items children))))))
+
+(defn garden-notes
+  ([conn] (garden-notes conn nil))
+  ([conn {:keys [n]}]
+   (when conn
+     (->>
+       (d/q '[:find (pull ?e [*])
+              :where
+              [?e :doctor/type :type/note]]
+            conn)
+       (map first)
+       (sort-by :file/last-modified dt/sort-latest-first)
+       (take-and-log {:n n :label "garden notes"})))))
+
+(defn root-notes
+  ([conn] (garden-notes conn nil))
+  ([conn {:keys [n join-children?]}]
+   (when conn
+     (cond->>
+         (d/q '[:find (pull ?e [*])
+                :where
+                [?e :doctor/type :type/note]
+                [?e :org/level :level/root]]
+              conn)
+       true           (map first)
+       true           (sort-by :file/last-modified dt/sort-latest-first)
+       n              (take-and-log {:n n :label "garden notes"})
+       join-children? (join-children conn)))))
+
+(defn garden-files
+  "Returns garden source-files"
+  ([conn] (garden-files conn nil))
+  ([conn {:keys [n]}]
+   (when conn
+     (->>
+       (d/q '[:find (pull ?e [:org/source-file :file/last-modified])
+              :where
+              [?e :doctor/type :type/note]
+              [?e :org/source-file ?source-file]]
+            conn)
+       (map first)
+       (w/distinct-by :org/source-file)
+       (sort-by :file/last-modified dt/sort-latest-first)
+       (map :org/source-file)
+       (take-and-log {:n n :label "garden files"})))))
 
 (defn list-todos
   "Returns all todos in the db.
