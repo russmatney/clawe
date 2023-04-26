@@ -51,15 +51,18 @@
 (comment
   (count (last-n-dailies->es 7)))
 
+(defn all-todos->es
+  ([] (all-todos->es nil))
+  ([n]
+   (cond->> (db/datoms :avet :doctor/type :type/todo)
+     true (map :e)
+     n    (take n))))
+
 (defn all-notes->es
   ([] (all-notes->es nil))
   ([n]
-   (cond->>
-       (db/datoms :avet :doctor/type :type/note)
-     true (sort-by :v dt/sort-chrono)
-     ;; true (sort-by :v dt/sort-latest-first)
+   (cond->> (db/datoms :avet :doctor/type :type/note)
      true (map :e)
-     true dedupe
      n    (take n))))
 
 (defn last-modified-files->es [n]
@@ -118,6 +121,7 @@
 (defn datoms-for-frontend []
   (->>
     (concat
+      #_(all-todos->es)
       #_(all-notes->es)
       (prioritized-todos->es)
       (current-todos->es)
