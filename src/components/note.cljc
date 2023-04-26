@@ -1,5 +1,6 @@
 (ns components.note
   (:require
+   [taoensso.timbre :as log]
    [tick.core :as t]
    [dates.tick :as dates]
    [clojure.set :as set]
@@ -66,8 +67,14 @@
               (-> note :blog/published-at))))
 
 (defn last-modified [note]
-  (t/format "MMM dd, YYYY"
-            (-> note :file/last-modified dates/parse-time-string)))
+  (let [parsed
+        (-> note :file/last-modified dates/parse-time-string)]
+    (when-not parsed
+      (log/debug "could not parse :file/last-modified"
+                 (-> note :file/last-modified)
+                 note))
+    (when parsed
+      (t/format "MMM dd, YYYY" parsed))))
 
 (defn created-at [note]
   (when (:org.prop/created-at note)
