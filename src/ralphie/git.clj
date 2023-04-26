@@ -376,7 +376,10 @@
   ;; TODO support before/after
   ;; TODO rename, probably just `commits`
   "
-  [{:keys [dir path n _before _after] :as opts}]
+  [{:keys [dir path n
+           _before _after
+           oldest-first]
+    :as   opts}]
   (when-not (or dir path)
     ;; TODO can we use timbre in bb?
     (println "WARN ralphie.git/commits needs dir or path" dir path))
@@ -392,7 +395,8 @@
         ^{:out :string :dir dir}
         (process/$
           git log
-          -n ~n
+          (when-not oldest-first "-n")
+          (when-not oldest-first n)
           ;; ~(when before (str "--before=" before))
           ;; ~(when after (str "--after=" after))
           ~(str "--pretty=format:" (log-format-str))
@@ -402,11 +406,13 @@
         ;; pre-precess double quotes (maybe just move to single?)
         (string/replace "\"" "'")
         (string/replace delimiter "\"")
-        ((fn [s] (println s) s))
+        #_((fn [s] (println s) s))
         edn/read-string
         (cond->>
             dir (map #(assoc % :commit/directory dir))
-            path (map #(assoc % :commit/path path))))
+            path         (map #(assoc % :commit/path path))
+            oldest-first reverse
+            oldest-first (take n)))
       (catch Exception e
         (println "Error fetching commits for dir" dir opts)
         (println e)
