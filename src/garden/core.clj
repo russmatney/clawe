@@ -76,17 +76,7 @@
 ;; todos
 
 (defn basic-todo-paths []
-  (-> "~/todo/{journal,projects}.org" r.zsh/expand-many)
-  ;; (-> "~/todo/{journal,projects,icebox}.org" r.zsh/expand-many)
-  )
-
-(defn repo-todo-paths [repo-ids]
-  (->> repo-ids
-       (map #(str "~/" % "/{readme,todo}.org"))
-       (mapcat r.zsh/expand-many)))
-
-(comment
-  (repo-todo-paths #{"russmatney/clawe" "teknql/fabb" "russmatney/dino" "doesnot/exist"}))
+  (-> "~/todo/{icebox}.org" r.zsh/expand-many))
 
 ;; garden
 
@@ -114,8 +104,7 @@
     (flat-garden-paths)))
 
 (comment
-  (count
-    (all-garden-paths)))
+  (count (all-garden-paths)))
 
 (defn last-modified-paths []
   (->> (all-garden-paths)
@@ -377,11 +366,10 @@
       reset-last-modified-via-git)
 
   (->>
-    (all-garden-paths)
+    (all-garden-notes-nested)
     (map path->nested-item)
     (remove nil?)
     (remove empty?)
     (sort-by :file/last-modified dates.tick/sort-latest-first)
     (map reset-last-modified-via-git)
-    doall)
-  )
+    doall))

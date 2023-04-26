@@ -3,9 +3,9 @@
    [clojure.test :refer [deftest is testing]]
    [ralphie.git :as sut]))
 
-(deftest commits-for-dir-test
+(deftest commits-test
   (testing "commits parse hashes and short-hashes"
-    (let [commits (sut/commits-for-dir {:dir "russmatney/clawe" :n 10})]
+    (let [commits (sut/commits {:dir "russmatney/clawe" :n 10})]
       (doall
         (for [commit commits]
           (do
@@ -13,7 +13,7 @@
             (is (:commit/hash commit)))))))
 
   (testing "commits parse parent hashes and short-hashes"
-    (let [commits (sut/commits-for-dir {:dir "russmatney/clawe" :n 10})]
+    (let [commits (sut/commits {:dir "russmatney/clawe" :n 10})]
       (doall
         (for [commit commits]
           (do
@@ -21,19 +21,19 @@
             (is (:commit/parent-hash commit)))))))
 
   (testing "commits parse subjects"
-    (let [commits (sut/commits-for-dir {:dir "russmatney/clawe" :n 10})]
+    (let [commits (sut/commits {:dir "russmatney/clawe" :n 10})]
       (doall
         (for [commit commits]
           (is (:commit/subject commit))))))
 
   (testing "commits parse authors"
-    (let [commits (sut/commits-for-dir {:dir "russmatney/clawe" :n 10})]
+    (let [commits (sut/commits {:dir "russmatney/clawe" :n 10})]
       (doall
         (for [commit commits]
           (is (:commit/author-email commit))))))
 
   (testing "commits parse dates"
-    (let [commits (sut/commits-for-dir {:dir "russmatney/clawe" :n 10})]
+    (let [commits (sut/commits {:dir "russmatney/clawe" :n 10})]
       (doall
         (for [commit commits]
           (is (:commit/author-date commit)))))))

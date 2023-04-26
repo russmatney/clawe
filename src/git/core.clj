@@ -97,14 +97,14 @@
     ;; TODO support these in the db!
     (dissoc :commit/stat-lines)))
 
-(defn commits-for-dir [opts]
+(defn commits [opts]
   (let [commits
         (try
-          (r.git/commits-for-dir opts)
+          (r.git/commits opts)
           (catch Exception _e nil))
         commit-stats
         (try
-          (r.git/commit-stats-for-dir opts)
+          (r.git/commit-stats opts)
           (catch Exception _e nil))]
     ;; these should have the same :commit/hash, so will merge in the db
     (->> (concat [] commits commit-stats)
@@ -116,7 +116,7 @@
     (when dirs
       (->>
         dirs
-        (map #(commits-for-dir {:dir % :n n}))
+        (map #(commits {:dir % :n n}))
         (remove nil?)
         (apply concat)))))
 

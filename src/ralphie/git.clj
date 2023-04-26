@@ -17,6 +17,15 @@
    [clojure.edn :as edn]
    [util :as util]))
 
+(defn repo-todo-paths [repo-ids]
+  (->> repo-ids
+       (map #(str "~/" % "/{readme,todo,todos}.org"))
+       (mapcat zsh/expand-many)
+       (filter fs/exists?)))
+
+(comment
+  (repo-todo-paths #{"russmatney/clawe" "teknql/fabb" "russmatney/dino" "doesnot/exist"}))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; local repos
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -368,10 +377,7 @@
          (string/join " "))
     "}"))
 
-(declare commits-for-dir)
-(def commits commits-for-dir)
-
-(defn commits-for-dir
+(defn commits
   "Retuns metadata for `n` commits at the specified `dir`.
   ;; TODO support before/after
   ;; TODO rename, probably just `commits`
@@ -383,24 +389,29 @@
   (when-not (or dir path)
     ;; TODO can we use timbre in bb?
     (println "WARN ralphie.git/commits needs dir or path" dir path))
-  (let [dir (or dir
-                ;; do we need to traverse to find nearest git parent?
-                (when path (-> path fs/parent str)))
-        dir (if (string/starts-with? dir "/")
-              dir (zsh/expand "~/" dir))
-        n   (or n 10)]
+  (let [dir  (or (fs/expand-home dir)
+                 ;; do we need to traverse to find nearest git parent?
+                 (when path (-> path fs/expand-home fs/parent str)))
+        path (or path ".")
+        n    (or n 10)
+
+        cmd
+        (str
+          "git log"
+          (when-not oldest-first (str " -n "))
+          (when-not oldest-first (str " " n))
+          ;; ~(when before (str "--before=" before))
+          ;; ~(when after (str "--after=" after))
+          " --pretty=format:'" (log-format-str) "'"
+          (when path path))]
     (try
       ;; consider url-encoding the content to avoid delimiting
       (->
-        ^{:out :string :dir dir}
-        (process/$
-          git log
-          (when-not oldest-first "-n")
-          (when-not oldest-first n)
-          ;; ~(when before (str "--before=" before))
-          ;; ~(when after (str "--after=" after))
-          ~(str "--pretty=format:" (log-format-str))
-          ~(when path path))
+        (process/process cmd
+                         {:out :string
+                          ;; TODO this ought to just-work (bb/process handling a unixpath)
+                          ;; maybe use fs/expand-home in bb/process ?
+                          :dir (str dir)})
         process/check :out
         ((fn [s] (str "[" s "]")))
         ;; pre-precess double quotes (maybe just move to single?)
@@ -418,16 +429,23 @@
         (println e)
         nil))))
 
-
 (comment
-  (commits-for-dir {:dir "russmatney/clawe" :n 10 :before "2022-05-06" :after "2022-05-02"})
-  (count (commits-for-dir {:dir "russmatney/clawe" :n 10 :before "2022-05-06" :after "2022-05-02"}))
-  (commits-for-dir {:dir "russmatney/clawe" :n 10})
-  (commits-for-dir {:dir "/Users/russ/russmatney/clawe" :n 10})
-  (commits-for-dir {:dir (zsh/expand "~/russmatney/dotfiles") :n 30})
+  (commits {:dir "russmatney/clawe" :n 10 :before "2022-05-06" :after "2022-05-02"})
+  (count (commits {:dir "russmatney/clawe" :n 10 :before "2022-05-06" :after "2022-05-02"}))
+  (commits {:dir "russmatney/clawe" :n 10})
+  (commits {:dir "/Users/russ/russmatney/clawe" :n 10})
+  (commits {:dir (zsh/expand "~/russmatney/dotfiles") :n 30})
 
-  (commits-for-dir {:n 3 :path (zsh/expand "~/todo/journal.org")})
-  (commits-for-dir {:n 3 :path (zsh/expand "~/todo/garden/dino.org")}))
+  (commits {:n 3 :path (zsh/expand "~/todo/journal.org")})
+  (->>
+    (commits {:n    3 :oldest-first true
+              :dir  "~/todo"
+              :path (zsh/expand "~/todo/garden/clawe.org")})
+    (map (fn [commit]
+           (str (:commit/author-date commit) "     \t" (:commit/full-message commit)))))
+
+  (commits {:dir          "~/russmatney/clawe" :n 10
+            :oldest-first true}))
 
 (defn ->stats-header [[commit author date]]
   {:commit/hash         (-> commit (string/split #" ") second)
@@ -473,8 +491,7 @@
 (comment
   (->stat-line "3\t5\tsrc/doctor/ui/views/screenshots.cljs")
   (->stat-line "1\t1\tsrc/{doctor/ui => hooks}/screenshots.cljc")
-  (->stat-line "-\t-\tassets/robot_sheet.png")
-  )
+  (->stat-line "-\t-\tassets/robot_sheet.png"))
 
 (defn ->stats
   ([stat-lines] (->stats nil stat-lines))
@@ -508,13 +525,11 @@
              "7\t5\tmobs/Mobot.tscn"
              "4\t5\tplayer/Player.gd"
              "48\t35\tplayer/Player.tscn"
-             "1\t1\tproject.godot"))
-
-  )
+             "1\t1\tproject.godot")))
 
 (defn ->stats-commit
   "Parse `git log --numstat` lines.
-  We don't care for commit message here - that is handled in `commits-for-dir`.
+  We don't care for commit message here - that is handled in `commits`.
   "
   ([x] (->stats-commit nil x))
   ([dir [header _msg stats]]
@@ -522,10 +537,11 @@
      (->stats-header header)
      (->stats dir stats))))
 
-(defn commit-stats-for-dir
+(defn commit-stats
   "Retuns metadata for `n` commits at the specified `dir`.
   ;; TODO support before/after
   "
+  ;; TODO Dry up logic vs commits
   [{:keys [dir n _before _after] :as opts}]
   (let [dir (if (string/starts-with? dir "/")
               dir (zsh/expand "~/" dir))
@@ -546,8 +562,9 @@
 
 (comment
   (nth
-    (commit-stats-for-dir {:dir "russmatney/clawe" :n 10})
+    (commit-stats {:dir          "russmatney/clawe" :n 10
+                   :oldest-first true})
     7)
   (nth
-    (commit-stats-for-dir {:dir "russmatney/beatemup-two" :n 10})
+    (commit-stats {:dir "russmatney/beatemup-two" :n 10})
     7))
