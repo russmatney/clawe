@@ -60,7 +60,7 @@
                   (log/info "received data: "
                             "datoms: " (count items)))
 
-             (->> items (take 3)
+             (->> items (take 2)
                   (map (fn [dt] [(:a dt) (:v dt)]))
                   (log/info))
 
@@ -71,10 +71,14 @@
                       (d/datoms db :eavt)
                       (map :e)
                       (distinct)
-                      (take 3)
+                      (take 1)
                       (d/pull-many db '[*]))))
                  (->>
-                   (map (fn [x] (log/info x)))
+                   (map (fn [x] (log/info
+                                  (->>
+                                    x
+                                    (take 3)
+                                    (into {})))))
                    doall)))]
 
        (with-stream [] (db-stream) handle-resp)
