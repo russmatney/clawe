@@ -57,10 +57,18 @@
 
 (defn parse-time-string
   [time-string]
-  (if (and time-string
-           (or (t/instant? time-string) (t/date-time? time-string) (t/zoned-date-time? time-string)))
+  (cond
+    (and time-string
+         (or
+           (t/instant? time-string)
+           (t/date-time? time-string)
+           (t/zoned-date-time? time-string)))
     ;; support passing already parsed time through
     time-string
+
+    (inst? time-string) (t/zoned-date-time time-string)
+
+    :else
     (when (and time-string
                (or (and (string? time-string) (seq (string/trim time-string)))
                    (int? time-string)))
