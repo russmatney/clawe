@@ -358,6 +358,7 @@
    ;; :commit/commiter-email         "%cE"
    ;; :commit/commiter-date "%cD"
    })
+
 (def delimiter "^^^^^")
 (defn log-format-str []
   (str
@@ -367,12 +368,22 @@
          (string/join " "))
     "}"))
 
+(declare commits-for-dir)
+(def commits commits-for-dir)
+
 (defn commits-for-dir
   "Retuns metadata for `n` commits at the specified `dir`.
   ;; TODO support before/after
+  ;; TODO rename, probably just `commits`
   "
-  [{:keys [dir n _before _after] :as opts}]
-  (let [dir (if (string/starts-with? dir "/")
+  [{:keys [dir path n _before _after] :as opts}]
+  (when-not (or dir path)
+    ;; TODO can we use timbre in bb?
+    (println "WARN ralphie.git/commits needs dir or path" dir path))
+  (let [dir (or dir
+                ;; do we need to traverse to find nearest git parent?
+                (when path (-> path fs/parent str)))
+        dir (if (string/starts-with? dir "/")
               dir (zsh/expand "~/" dir))
         n   (or n 10)]
     (try
@@ -384,18 +395,23 @@
           -n ~n
           ;; ~(when before (str "--before=" before))
           ;; ~(when after (str "--after=" after))
-          ~(str "--pretty=format:" (log-format-str)))
+          ~(str "--pretty=format:" (log-format-str))
+          ~(when path path))
         process/check :out
         ((fn [s] (str "[" s "]")))
         ;; pre-precess double quotes (maybe just move to single?)
         (string/replace "\"" "'")
         (string/replace delimiter "\"")
+        ((fn [s] (println s) s))
         edn/read-string
-        (->> (map #(assoc % :commit/directory dir))))
+        (cond->>
+            dir (map #(assoc % :commit/directory dir))
+            path (map #(assoc % :commit/path path))))
       (catch Exception e
         (println "Error fetching commits for dir" dir opts)
         (println e)
         nil))))
+
 
 (comment
   (commits-for-dir {:dir "russmatney/clawe" :n 10 :before "2022-05-06" :after "2022-05-02"})
@@ -403,7 +419,9 @@
   (commits-for-dir {:dir "russmatney/clawe" :n 10})
   (commits-for-dir {:dir "/Users/russ/russmatney/clawe" :n 10})
   (commits-for-dir {:dir (zsh/expand "~/russmatney/dotfiles") :n 30})
-  )
+
+  (commits-for-dir {:n 3 :path (zsh/expand "~/todo/journal.org")})
+  (commits-for-dir {:n 3 :path (zsh/expand "~/todo/garden/dino.org")}))
 
 (defn ->stats-header [[commit author date]]
   {:commit/hash         (-> commit (string/split #" ") second)
