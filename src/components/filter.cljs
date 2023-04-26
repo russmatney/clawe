@@ -33,7 +33,8 @@
   [{:keys [item-group label item->comp group-by-key filter-items sort-items all-filter-defs
            default-page-size table-def
            hide-all-tables hide-all-groups
-           active-filters-fn]
+           active-filters-fn
+           xs->xs]
     :as   opts}]
   (let [label->group-by-label (or (some-> group-by-key all-filter-defs :group-by-label)
                                   (fn [label] (or (str label) "None")))
@@ -44,6 +45,7 @@
         item-group-open?      (uix/state true)
         table-open?           (uix/state true)
         items                 (cond->> item-group
+                                xs->xs       xs->xs
                                 filter-items filter-items
                                 sort-items   sort-items)
         page-size             (uix/state (or default-page-size 4))]
