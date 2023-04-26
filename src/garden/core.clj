@@ -1,13 +1,17 @@
 (ns garden.core
   (:require
+   [taoensso.timbre :as log]
    [babashka.fs :as fs]
    [org-crud.core :as org-crud]
+   [org-crud.update :as org-crud.update]
    [ralphie.zsh :as r.zsh]
    [util]
    [clojure.string :as string]
    [dates.tick :as dates.tick]
    [db.core :as db]
-   [wing.core :as w]))
+   [wing.core :as w]
+   [ralphie.git :as r.git]
+   [tick.core :as t]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; org file paths
@@ -84,12 +88,6 @@
 (comment
   (repo-todo-paths #{"russmatney/clawe" "teknql/fabb" "russmatney/dino" "doesnot/exist"}))
 
-;; workspaces
-
-(defn workspace-paths []
-  ;; could find matches in non-workspace dir same-root paths
-  (-> "~/todo/garden/workspaces/*.org" r.zsh/expand-many))
-
 ;; garden
 
 (defn flat-garden-paths
@@ -108,13 +106,11 @@
   - basic todo paths (journal, projects, icebox)
   - daily/*
   - garden/*
-  - garden/workspaces/*
   "
   []
   (concat
     (basic-todo-paths)
     (all-daily-paths)
-    (workspace-paths)
     (flat-garden-paths)))
 
 (comment
@@ -181,18 +177,24 @@
   (->> path
        org-crud/path->flattened-items
        ;; TODO consider/test performance hit
-       (map merge-parsed-datetimes)))
+       (map merge-parsed-datetimes)
+       (remove nil?)
+       (remove empty?)))
 
 (defn paths->nested-garden-notes [paths]
   (->> paths org-file-paths
-       (map path->nested-item)))
+       (map path->nested-item)
+       (remove nil?)
+       (remove empty?)))
 
 (comment
   (paths->nested-garden-notes (daily-paths)))
 
 (defn paths->flattened-garden-notes [paths]
   (->> paths org-file-paths
-       (mapcat path->flattened-items)))
+       (mapcat path->flattened-items)
+       (remove nil?)
+       (remove empty?)))
 
 (comment
   (paths->flattened-garden-notes (daily-paths)))
@@ -210,7 +212,8 @@
     (all-garden-paths)
     (org-file-paths)
     (map path->nested-item)
-    (remove nil?)))
+    (remove nil?)
+    (remove empty?)))
 
 (defn all-garden-notes-flattened
   "All relevant org items from the garden, flattened (a note per headline)."
@@ -219,7 +222,8 @@
     (all-garden-paths)
     (org-file-paths)
     (mapcat path->flattened-items)
-    (remove nil?)))
+    (remove nil?)
+    (remove empty?)))
 
 (comment
   (->>
@@ -316,3 +320,66 @@
 
   (slurp
     (str (fs/expand-home "~/todo/garden/this_roam_linked_nodes_ui_is_backwards.org"))))
+
+(defn first-commit-dt [path]
+  nil
+  ;; TODO implement :oldest-first in ralphie.git/commits
+  #_(-> path
+        fs/expand-home
+        (#(r.git/commits {:path         % :n 1
+                          :oldest-first true}))
+        first
+        :commit/author-date
+        dates.tick/parse-time-string))
+
+(defn last-commit-dt [path]
+  (-> path
+      fs/expand-home
+      (#(r.git/commits {:path % :n 1}))
+      first
+      :commit/author-date
+      dates.tick/parse-time-string))
+
+(defn reset-last-modified [item new-lm]
+  (log/info "Setting last-modified for" (:org/short-path item) new-lm)
+  (fs/set-last-modified-time
+    (:org/source-file item) (t/instant new-lm)))
+
+(defn reset-last-modified-via-git [item]
+  (let [commit-dt (-> item :org/source-file last-commit-dt)]
+    (if (t/> commit-dt (:file/last-modified item))
+      (log/debug "Latest commit dt is AFTER last-modified, skipping lm reset"
+                 (:org/short-path item))
+      (reset-last-modified item commit-dt))))
+
+(defn reset-created-at-via-git [item]
+  (when (#{:level/root} (:org/level item))
+    (let [first-commit-dt (-> item :org/source-file first-commit-dt)
+          created-at      (-> item :org.props/created-at)]
+      (when first-commit-dt
+        (if (t/> first-commit-dt created-at)
+          (log/debug "First commit dt is AFTER item created-at, skipping created-at reset"
+                     (:org/short-path item))
+          (org-crud.update/update! item {:org.props/created-at created-at}))))))
+
+(comment
+  (-> "~/todo/garden/dino.org" last-commit-dt)
+  (-> "~/todo/daily/2020-07-15.org" last-commit-dt)
+  (-> "~/todo/daily/2020-07-15.org" path->nested-item)
+  (-> "~/todo/daily/2023-04-25.org" path->nested-item)
+  (-> "~/todo/daily/2020-12-26.org" path->nested-item)
+
+  (-> "~/todo/daily/2020-12-26.org" path->nested-item
+      reset-last-modified-via-git)
+
+  (->>
+    (all-garden-paths)
+    (map path->nested-item)
+    (remove empty?)
+    (take 2)
+    (map reset-last-modified-via-git)
+    ;; (sort-by :file/last-modified dates.tick/sort-chrono)
+    ;; first
+    ;; :file/last-modified
+    )
+  )
