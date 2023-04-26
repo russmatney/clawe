@@ -18,12 +18,12 @@
    ["bg-slate-800" "border-slate-300"]])
 
 (def hover-line-color-classes
-  [["hover:text-city-blue-400" "hover:text-city-blue-300"]
-   ["hover:text-city-pink-400" "hover:text-city-pink-300"]
-   ["hover:text-city-green-400" "hover:text-city-green-300"]
-   ["hover:text-city-orange-400" "hover:text-city-orange-300"]
-   ["hover:text-city-red-400" "hover:text-city-red-300"]
-   ["hover:text-slate-400" "hover:text-slate-300"]])
+  [["hover:text-city-blue-200" "hover:border-city-blue-300"]
+   ["hover:text-city-pink-200" "hover:border-city-pink-300"]
+   ["hover:text-city-green-200" "hover:border-city-green-300"]
+   ["hover:text-city-orange-200" "hover:border-city-orange-300"]
+   ["hover:text-city-red-200" "hover:border-city-red-300"]
+   ["hover:text-slate-200" "hover:border-slate-300"]])
 
 (def hover-bg-color-classes
   [["hover:bg-city-blue-800" "hover:border-city-blue-300"]
