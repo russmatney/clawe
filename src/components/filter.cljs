@@ -10,7 +10,8 @@
    [util :as util]
    [components.pill :as pill]
    [doctor.ui.localstorage :as localstorage]
-   [hiccup-icons.octicons :as octicons]))
+   [hiccup-icons.octicons :as octicons]
+   [components.note :as note]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; grouped filter items component
@@ -382,6 +383,23 @@
                (is-match val))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; inferring presets
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn infer-presets [items]
+  (let [tags-by-freq
+        (->> items (mapcat note/->all-tags) frequencies
+             (sort-by second >)
+             (take 20))]
+    (->> (map (fn [[tag freq]]
+                [(keyword (str "-" freq "-tag-" tag))
+                 {:group-by :filters/tags
+                  :sort-by  :filters/tags
+                  :filters  #{{:filter-key :filters/tags :match tag}}}])
+              tags-by-freq)
+         (into {}))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; use-filter
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -420,6 +438,8 @@
             (map (partial filter-match-fn all-filter-defs))
             ;; every predicate must match
             (apply every-pred)))
+
+        config (update config :presets merge (infer-presets items))
 
         filtered-items (cond->> items
                          active-filters-fn (filter active-filters-fn)
