@@ -450,15 +450,27 @@
 (comment
   (retract-invalid-source-file-entities)
 
-  ;; re-ingest :type/garden notes
+  (->>
+    (db/query '[:find (pull ?note [:db/id :org/source-file])
+                :where [?note :doctor/type :type/todo]])
+    (map first)
+    (filter (comp fs/exists? :org/source-file))
+    (filter #(string/includes? % "archive/"))
+    (map :db/id)
+    distinct
+    (db/retract-entities)
+    )
+
+  ;; re-ingest :type/garden notes... very slow
   (->>
     (db/query '[:find (pull ?note [:org/source-file])
                 :where [?note :doctor/type :type/garden]])
     (map first)
     (filter (comp fs/exists? :org/source-file))
+    distinct
     (map :org/source-file)
-    (map sync-and-purge-for-path)))
-
+    (map sync-and-purge-for-path)
+    doall))
 
 (comment
   (->>
