@@ -126,7 +126,7 @@
       (prioritized-todos->es)
       (current-todos->es)
       (last-n-dailies->es 14)
-      (last-modified-files->es 800)
+      (last-modified-files->es 200)
       (recent-wallpapers->es 20)
       (recent-events->es 300)
       (repos->es)
