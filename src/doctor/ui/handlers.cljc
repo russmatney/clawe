@@ -16,6 +16,7 @@
              [org-crud.api :as org-crud.api]
              [garden.db :as garden.db]
              [api.blog :as api.blog]
+             [blog.db :as blog.db]
              [api.todos :as api.todos]
              [taoensso.timbre :as log]]
        :cljs [[hiccup-icons.fa :as fa]
@@ -37,6 +38,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; garden
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defhandler refresh-blog-db []
+  (blog.db/refresh-notes)
+  :ok)
 
 (defhandler reingest-todos []
   (api.todos/reingest-todos)

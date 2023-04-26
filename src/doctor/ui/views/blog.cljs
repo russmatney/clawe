@@ -31,6 +31,8 @@
 (defn blog-actions []
   [{:action/label    "Republish Blog"
     :action/on-click (fn [_] (use-blog/rebuild-all))}
+   {:action/label    "Refresh Blog DB"
+    :action/on-click (fn [_] (handlers/refresh-blog-db))}
    {:action/label    "Ingest Garden Recent"
     :action/on-click (fn [_] (handlers/ingest-garden-latest))}
    {:action/label    "Ingest Garden Full"
