@@ -20,13 +20,14 @@
   octicons/comment-discussion16)
 
 (defn is-daily? [note]
-  (re-seq #"^daily/" (:org/short-path note)))
+  (some->> note :org/short-path (re-seq #"^daily/")))
 
+;; TODO delete!
 (defn is-workspace-note? [note]
-  (re-seq #"^workspaces/" (:org/short-path note)))
+  (some->> note :org/short-path (re-seq #"^workspaces/")))
 
 (defn is-garden-note? [note]
-  (re-seq #"^garden/" (:org/short-path note)))
+  (some->> note :org/short-path (re-seq #"^garden/")))
 
 (defn blog-actions []
   [{:action/label    "Republish Blog"
@@ -198,7 +199,7 @@
     :sort-groups :filters/tags}
 
    :by-last-modified-date
-   {:filters     #{(filter-modified-in-last-n-days 21)}
+   {:filters     #{#_(filter-modified-in-last-n-days 21)}
     :group-by    :filters/last-modified-date
     :sort-groups :filters/last-modified-date}
 
@@ -264,13 +265,12 @@
 ;; main widget
 
 (defn widget [opts]
-  (let [blog-data            (use-blog/use-blog-data)
+  (let [
+        blog-data            (use-blog/use-blog-data)
         {:keys [root-notes]} @blog-data
 
-        notes (ui.db/garden-notes (:conn opts))
-
-        _ (println "root notes" (count root-notes))
-        _ (println "fe db notes" (count notes))
+        ;; TODO merge/use db notes here, drop use-blog-data
+        ;; root-notes (ui.db/root-notes (:conn opts) {:join-children true})
 
         sort-published-first (uix/state nil)
         sort-published-last  (uix/state nil)
