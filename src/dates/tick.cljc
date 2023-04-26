@@ -61,6 +61,7 @@
     (and time-string
          (or
            (t/instant? time-string)
+           (t/date? time-string)
            (t/date-time? time-string)
            (t/zoned-date-time? time-string)))
     ;; support passing already parsed time through
