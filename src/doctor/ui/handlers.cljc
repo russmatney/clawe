@@ -508,6 +508,7 @@
             :action/icon     fa/trash-alt-solid}]
 
           :else [])
+        (concat (:actions/inferred item []))
         (map-indexed vector)
         (map (fn [[i ax]]
                (merge
