@@ -13,7 +13,8 @@
 ;; current task (for topbar)
 
 (defn current-task [{:keys [conn]}]
-  (let [current-todos (ui.db/current-todos conn)]
+  (let [current-todos (ui.db/current-todos conn)
+        current-todos (todo/infer-actions {:no-popup true} current-todos)]
     (if-not (seq current-todos)
       [:span "--"]
       (let [todos   (todo/sort-todos current-todos)
@@ -111,7 +112,8 @@
 ;; main widget
 
 (defn widget [opts]
-  (let [todos (ui.db/current-todos (:conn opts))]
+  (let [todos (ui.db/current-todos (:conn opts))
+        todos (todo/infer-actions todos)]
     (if (seq todos)
       [current-stack todos]
       [:div

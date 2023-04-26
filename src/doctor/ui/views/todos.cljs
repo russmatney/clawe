@@ -2,9 +2,7 @@
   (:require
    [uix.core.alpha :as uix]
    [doctor.ui.db :as ui.db]
-   [components.colors :as colors]
    [components.filter :as components.filter]
-   [components.note :as note]
    [components.todo :as todo]
    [components.filter-defs :as filter-defs]
 
@@ -12,8 +10,7 @@
    [components.actions :as components.actions]
    [components.garden :as components.garden]
    [doctor.ui.handlers :as handlers]
-   [components.item :as item]
-   [clojure.set :as set]))
+   [components.item :as item]))
 
 (defn todos-table-def []
   {:headers ["" "Name" "Tags" "Parents" "Actions"]
@@ -148,49 +145,6 @@
     :sort-groups :filters/tags}})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn add-tags-list
-  [it tags]
-  (let [tags (set/difference tags (-> it note/->all-tags (into #{})))]
-    (when (seq tags)
-      [:div
-       {:class ["p-4"
-                "bg-yo-blue-800"
-                "text-md" "font-mono"
-                "flex" "flex-row" "flex-wrap"]}
-       ":"
-       (for [[i tag] (->> tags (map-indexed vector))]
-         ^{:key i}
-         [:span
-          [:span
-           {:class
-            (concat ["cursor-pointer"]
-                    (colors/color-wheel-classes
-                      {:type :line :i (+ 2 i)})
-                    (colors/color-wheel-classes
-                      {:type :both :i i :hover? true}))
-            :on-click (fn [_] (handlers/add-tag
-                                (dissoc it :actions/inferred)
-                                tag))}
-           tag]
-          ":"])])))
-
-(defn infer-actions [todos]
-  (let [tags (->> todos (mapcat note/->all-tags) (into #{}))]
-    (->> todos
-         (map
-           (fn [todo]
-             (let [axs (->> [{:action/type  :action/popup
-                              :action/label "Add Tag"
-                              :action/popup-comp
-                              ^{:key (:db/id todo)}
-                              [:div [add-tags-list todo tags]]}]
-                            (remove nil?))]
-               ;; attaching non transit properties breaks defhandlers
-               (-> todo (update :actions/inferred concat axs))))))))
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; main widget
 
 (defn widget [opts]
@@ -241,7 +195,7 @@
        [:div {:class ["pt-6"]}
         [components.filter/items-by-group
          (assoc filter-data
-                :xs->xs infer-actions
+                :xs->xs todo/infer-actions
                 :table-def (todos-table-def)
                 :item->comp todo/card-or-card-group)]])
 

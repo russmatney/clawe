@@ -2,6 +2,7 @@
   (:require
    [tick.core :as t]
    [components.colors :as colors]
+   [components.note :as note]
    [components.floating :as floating]
    [components.garden :as components.garden]
    [components.debug :as components.debug]
@@ -10,8 +11,8 @@
    [doctor.ui.handlers :as handlers]
    [dates.tick :as dates.tick]
    [uix.core.alpha :as uix]
-   [clojure.set :as set]
-   [util :as util]))
+   [util :as util]
+   [clojure.set :as set]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; preds
@@ -437,3 +438,60 @@
                           (map-indexed vector))]
           ^{:key i}
           [todo-row opts td])]])))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn add-tags-list
+  [it tags]
+  (let [tags (set/difference tags (-> it note/->all-tags (into #{})))]
+    (when (seq tags)
+      [:div
+       {:class ["p-4"
+                "bg-yo-blue-800"
+                "text-md" "font-mono"
+                "flex" "flex-row" "flex-wrap"]}
+       ":"
+       (for [[i tag] (->> tags (map-indexed vector))]
+         ^{:key i}
+         [:span
+          [:span
+           {:class
+            (concat ["cursor-pointer"]
+                    (colors/color-wheel-classes
+                      {:type :line :i (+ 2 i)})
+                    (colors/color-wheel-classes
+                      {:type :both :i i :hover? true}))
+            :on-click (fn [_] (handlers/add-tag
+                                (dissoc it :actions/inferred)
+                                tag))}
+           tag]
+          ":"])])))
+
+(defn todo->add-tag-actions [todo tags opts]
+  (cond
+    (:no-popup opts)
+    (->> (set/difference tags (-> todo note/->all-tags (into #{})))
+         (map
+           (fn [tag]
+             {:action/on-click
+              (fn []
+                (handlers/add-tag (dissoc todo :actions/inferred) tag))
+              :action/label (str "Add Tag " tag)})))
+
+    :else
+    [{:action/type  :action/popup
+      :action/label "Add Tag"
+      :action/popup-comp
+      ^{:key (:db/id todo)}
+      [:div [add-tags-list todo tags]]}]))
+
+;; consider 'suggestions' naming (vs 'inferred')
+(defn infer-actions
+  ([todos] (infer-actions nil todos))
+  ([opts todos]
+   (let [tags (->> todos (mapcat note/->all-tags) (into #{}))]
+     (->> todos (map (fn [todo]
+                       ;; NOTE attaching non transit properties breaks defhandlers
+                       (update todo :actions/inferred concat
+                               (todo->add-tag-actions todo tags opts))))))))
