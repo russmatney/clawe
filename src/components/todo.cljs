@@ -492,7 +492,7 @@
                                     :org/parent-name]}]
   (let [all-db-tags
         ;; TODO pull from fe-db/backend?
-        #{"clawe" "godot" "dino" "gunner"}]
+        #{"clawe" "godot" "dino" "gunner" "blog" "patrons"}]
     (->> all-db-tags
          (filter
            (fn [tag]
@@ -503,9 +503,12 @@
 (defn todo->inferred-actions
   ([todo] (todo->inferred-actions todo nil))
   ([todo opts]
-   (let [tags (concat (:sibling-tags opts)
-                      (item->suggested-tags todo)
-                      )]
+   (let [tags
+         (->>
+           (concat
+             (:sibling-tags opts)
+             (item->suggested-tags todo))
+           (into #{}))]
      ;; NOTE attaching non transit properties breaks defhandlers
      (update todo :actions/inferred concat
              (when (seq tags)
