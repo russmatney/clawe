@@ -92,6 +92,9 @@
 
 (defhandler add-tag [item tag]
   (log/debug "adding tag to item" tag (:org/name-string item))
+  (when (:db/id item)
+    (db/transact {:db/id (:db/id item) :org/tags
+                  (into (:org/tags item) tag)}))
   (org-crud.api/update! item {:org/tags tag})
   :ok)
 
