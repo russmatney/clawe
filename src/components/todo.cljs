@@ -12,7 +12,8 @@
    [dates.tick :as dates.tick]
    [uix.core.alpha :as uix]
    [util :as util]
-   [clojure.set :as set]))
+   [clojure.set :as set]
+   [clojure.string :as string]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; preds
@@ -486,12 +487,34 @@
       ^{:key (:db/id todo)}
       [:div [add-tags-list todo tags]]}]))
 
+(defn item->suggested-tags [{:as   _item
+                             :keys [:org/name-string
+                                    :org/parent-name]}]
+  (let [all-db-tags
+        ;; TODO pull from fe-db/backend?
+        #{"clawe" "godot" "dino" "gunner"}]
+    (->> all-db-tags
+         (filter
+           (fn [tag]
+             (or
+               (string/includes? name-string tag)
+               (string/includes? parent-name tag)))))))
+
+(defn todo->inferred-actions
+  ([todo] (todo->inferred-actions todo nil))
+  ([todo opts]
+   (let [tags (concat (:sibling-tags opts)
+                      (item->suggested-tags todo)
+                      )]
+     ;; NOTE attaching non transit properties breaks defhandlers
+     (update todo :actions/inferred concat
+             (when (seq tags)
+               (todo->add-tag-actions todo tags opts))))))
+
 ;; consider 'suggestions' naming (vs 'inferred')
 (defn infer-actions
   ([todos] (infer-actions nil todos))
   ([opts todos]
    (let [tags (->> todos (mapcat note/->all-tags) (into #{}))]
-     (->> todos (map (fn [todo]
-                       ;; NOTE attaching non transit properties breaks defhandlers
-                       (update todo :actions/inferred concat
-                               (todo->add-tag-actions todo tags opts))))))))
+     (->> todos (map #(todo->inferred-actions
+                        % (assoc opts :sibling-tags tags)))))))
