@@ -41,14 +41,3 @@
         (assoc state
                :current nil
                :last (assoc current :finished-at (t/zoned-date-time)))))))
-
-(defn actions []
-  (let [{:keys [current]} (get-state)]
-    (->>
-      [(when current
-         {:action/on-click (fn [_] (end-current))
-          :action/label    "End"})
-       (when (not current)
-         {:action/on-click (fn [_] (start-new))
-          :action/label    "Start"})]
-      (remove nil?))))

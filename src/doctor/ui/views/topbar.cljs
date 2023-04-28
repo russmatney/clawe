@@ -18,6 +18,7 @@
 
    ["@heroicons/react/20/solid" :as HIMini]
 
+   [doctor.ui.views.pomodoro :as pomodoro]
    [doctor.ui.views.focus :as focus]))
 
 (defn skip-bar-app? [client]
@@ -233,8 +234,12 @@
            (:workspace/title current-workspace)]))
 
       [:div
-       {:class ["ml-auto" "w-1/3" "overflow-scroll"]}
+       {:class ["ml-auto" "px-8" "overflow-scroll"]}
        [focus/current-task opts]]
+
+      [:div
+       {:class ["ml-auto" "px-8" "overflow-scroll"]}
+       [pomodoro/bar opts]]
 
       [:div
        {:class ["ml-auto"]}

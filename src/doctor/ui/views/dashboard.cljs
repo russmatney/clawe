@@ -11,8 +11,6 @@
 
    ;; TODO move to doctor.ui.view
    [pages.screenshots :as screenshots]
-
-   [doctor.ui.pomodoros :as pomodoros]
    [doctor.ui.views.focus :as focus]
    [doctor.ui.views.todos :as todos]
    [doctor.ui.views.commits :as commits]
@@ -26,7 +24,8 @@
    [doctor.ui.handlers :as handlers]
    [doctor.ui.localstorage :as localstorage]))
 
-(defn widget-bar [{:keys [comp label opts actions icon w-class]}]
+(defn widget-bar
+  [{:keys [comp label opts actions icon w-class bar]}]
   (let [icon-opts     {:class ["px-1 py-2 pr-2"]
                        :text  label}
         storage-label (str  "widget-bar-" label)
@@ -50,6 +49,11 @@
       [:span
        {:class ["font-mono" "pl-2"]}
        (str ":doctor/" label)]
+
+      (when bar
+        [:span {:class ["ml-auto"]}
+         [bar opts]])
+
       [:div
        {:class ["ml-auto"]}
        [components.actions/actions-list
@@ -88,11 +92,11 @@
                   :label   "ingestors"
                   :actions (ingest/ingest-actions)}]
 
-     [widget-bar {:comp    pomodoro/widget
-                  :label   "pomodoro"
-                  :opts    opts
-                  :icon    octicons/clock16
-                  :actions (pomodoros/actions)}]
+     [widget-bar {:comp  pomodoro/widget
+                  :label "pomodoro"
+                  :opts  opts
+                  :icon  octicons/clock16
+                  :bar   pomodoro/bar}]
 
      [widget-bar {:comp  focus/widget
                   :label "current-focus"
