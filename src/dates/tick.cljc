@@ -1,6 +1,5 @@
 (ns dates.tick
   (:require
-   [taoensso.timbre :as log]
    [clojure.string :as string]
    [tick.core :as t]
    [util :as util]))

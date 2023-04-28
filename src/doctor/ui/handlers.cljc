@@ -2,7 +2,6 @@
   (:require
    [plasma.core :refer [defhandler]]
    [dates.tick :as dates.tick]
-   [taoensso.timbre :as log]
    #?@(:clj [[garden.core :as garden]
              [ralphie.emacs :as emacs]
              [git.core :as git]
@@ -19,7 +18,8 @@
              [api.blog :as api.blog]
              [blog.db :as blog.db]
              [api.todos :as api.todos]
-             [api.pomodoros :as api.pomodoros]]
+             [api.pomodoros :as api.pomodoros]
+             [taoensso.timbre :as log]]
        :cljs [[hiccup-icons.fa :as fa]
               [components.icons :as components.icons]
               [components.colors :as colors]
