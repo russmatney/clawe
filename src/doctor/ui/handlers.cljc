@@ -491,7 +491,10 @@
 
 #?(:cljs
    (defn workspace->actions [wsp]
-     [{:action/label "Close"
+     [{:action/label    "Focus"
+       :action/icon     octicons/pin16
+       :action/on-click #(hooks.workspaces/focus-workspace wsp)}
+      {:action/label "Close"
        :action/icon  octicons/trash
        :action/on-click
        #(hooks.workspaces/close-workspaces wsp)}]))

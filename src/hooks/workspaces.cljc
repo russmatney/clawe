@@ -30,6 +30,10 @@
   (api.workspaces/push-updated-workspaces)
   (api.topbar/push-topbar-metadata))
 
+(defhandler focus-workspace [wsp]
+  (log/info "Focusing wsp" (:workspace/title wsp))
+  (wm/focus-workspace wsp))
+
 (defhandler focus-client [c]
   (log/info "Focusing client" (:client/window-title c))
   (wm/focus-client c))
