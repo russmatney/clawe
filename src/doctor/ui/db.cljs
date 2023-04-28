@@ -12,7 +12,6 @@
       (when (> ct n) (log/info ct label "in db, trimming to" n))
       (->> xs (take n)))))
 
-
 ;; TODO tests for this namespace
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -92,6 +91,23 @@
              [?e :doctor/type :type/repo]]
            conn)
       (map first))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; pomodoros
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn pomodoro-state [conn]
+  (let [current (some->>
+                  (d/q '[:find (pull ?e [*])
+                         :where [?e :pomodoro/is-current true]] conn)
+                  ffirst)
+        last    (some->>
+                  (d/q '[:find (pull ?e [*])
+                         :where [?e :pomodoro/finished-at _]] conn)
+                  (map first)
+                  (sort-by :pomodoro/finished-at dt/sort-latest-first)
+                  first)]
+    {:current current :last last}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; wallpapers

@@ -2,6 +2,7 @@
   (:require
    [plasma.core :refer [defhandler]]
    [dates.tick :as dates.tick]
+   [taoensso.timbre :as log]
    #?@(:clj [[garden.core :as garden]
              [ralphie.emacs :as emacs]
              [git.core :as git]
@@ -18,13 +19,14 @@
              [api.blog :as api.blog]
              [blog.db :as blog.db]
              [api.todos :as api.todos]
-             [taoensso.timbre :as log]]
+             [api.pomodoros :as api.pomodoros]]
        :cljs [[hiccup-icons.fa :as fa]
               [components.icons :as components.icons]
               [components.colors :as colors]
               ["@heroicons/react/20/solid" :as HIMini]
               [hooks.workspaces :as hooks.workspaces]
-              [hiccup-icons.octicons :as octicons]])))
+              [hiccup-icons.octicons :as octicons]
+              [doctor.ui.db :as ui.db]])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; db items
@@ -150,6 +152,28 @@
 (defhandler set-wallpaper [item]
   (wallpapers/set-wallpaper item)
   :ok)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; pomodoros
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defhandler pomodoro-start-new []
+  (api.pomodoros/start-new)
+  :ok)
+
+(defhandler pomodoro-end-current []
+  (api.pomodoros/end-current)
+  :ok)
+
+#?(:cljs
+   (defn pomodoro-actions [conn]
+     (let [{:keys [current]} (ui.db/pomodoro-state conn)]
+       [{:action/label    "Start"
+         :action/on-click #(pomodoro-start-new)
+         :action/disabled current}
+        {:action/label    "End"
+         :action/on-click #(pomodoro-end-current)
+         :action/disabled (not current)}])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; todos
