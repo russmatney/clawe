@@ -156,9 +156,16 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defhandler queue-todo [todo]
-  (-> todo
-      (assoc :todo/queued-at (System/currentTimeMillis))
-      db/transact)
+  (let [new-id (random-uuid)]
+    (log/debug "queuing todo")
+    (when-not (:org/id todo)
+      (org-crud.api/update! todo {:org/id new-id})
+      (log/debug "added id to org"))
+    (cond-> todo
+      (:org/id todo) (assoc :org/id new-id)
+      true           (assoc :todo/queued-at (System/currentTimeMillis))
+      true           db/transact)
+    (log/debug "transacted new item"))
   :ok)
 
 (defhandler unqueue-todo [todo]
@@ -362,7 +369,6 @@
            :action/icon     (if (:todo/queued-at todo)
                               [:> HIMini/BoltSlashIcon {:class ["w-6" "h-6"]}]
                               [:> HIMini/BoltIcon {:class ["w-6" "h-6"]}])
-           :action/disabled (not (:org/id todo))
            :action/priority 1}
 
           ;; requeue
