@@ -389,7 +389,7 @@
   (when-not (or dir path)
     ;; TODO can we use timbre in bb?
     (println "WARN ralphie.git/commits needs dir or path" dir path))
-  (let [dir  (or (fs/expand-home dir)
+  (let [dir  (or (and dir (fs/expand-home dir))
                  ;; do we need to traverse to find nearest git parent?
                  (when path (-> path fs/expand-home fs/parent str)))
         path (or path ".")
