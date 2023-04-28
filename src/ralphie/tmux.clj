@@ -298,6 +298,7 @@
          initial-target (str session ":" window "." pane)]
 
      (when-not (has-session? initial-target)
+       ;; TODO iron out keys should be :tmux/session
        (ensure-session {:tmux/session-name session}))
 
      (let [panes          (list-panes
@@ -373,6 +374,8 @@
   ;;   if the specified session does not exist, it should be created and the command run in there
 
   (fire "echo sup")
+  (fire "echo sup" {:tmux.fire/session    "clawe"
+                    :tmux.fire/interrupt? true})
   (fire "bb log-awesome"
         {:tmux.fire/directory "~/russmatney/clawe"})
   (fire "echo sup" {:tmux.fire/interrupt? true})

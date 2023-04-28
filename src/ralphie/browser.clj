@@ -33,9 +33,7 @@
                 {:tab/url url})))))
 
 (defn tabs
-  "List browser tabs - depends on https://github.com/balta2ar/brotab.
-
-  "
+  "List browser tabs - depends on https://github.com/balta2ar/brotab."
   ([] (tabs nil))
   ([opts]
    (if notify/is-mac?
@@ -133,6 +131,7 @@ Depends on `brotab`."
 
 (def osx-default-browser-app "/Applications/Firefox.app")
 
+;; TODO support passing in a :tab/url as well
 (defn open
   "Opens the passed url"
   ([] (open nil))

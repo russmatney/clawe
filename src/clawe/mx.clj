@@ -88,6 +88,9 @@
                                         :tmux.fire/session   (:workspace/title wsp)
                                         :tmux.fire/directory dir})))))))))
 
+(comment
+  (bb-tasks-for-wsp))
+
 (defn deps-git-urls
   ([] (deps-git-urls (wm/current-workspace)))
   ([wsp]
@@ -339,5 +342,7 @@
                     :msg            "Clawe commands (fast)"}))))
 
 (comment
+  (mx-commands {:wsp (wm/current-workspace)})
+
   (mx)
   (mx-fast))
