@@ -65,6 +65,13 @@
      true (map :e)
      n    (take n))))
 
+(defn all-pomodoros->es
+  ([] (all-pomodoros->es nil))
+  ([n]
+   (cond->> (db/datoms :avet :doctor/type :type/pomodoro)
+     true (map :e)
+     n    (take n))))
+
 (defn last-modified-files->es [n]
   (->>
     (db/datoms :avet :file/last-modified)
@@ -123,6 +130,7 @@
     (concat
       #_(all-todos->es)
       #_(all-notes->es)
+      (all-pomodoros->es)
       (prioritized-todos->es)
       (current-todos->es)
       (last-n-dailies->es 14)

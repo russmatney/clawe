@@ -12,6 +12,8 @@
    {:db/unique :db.unique/identity}
    :misc/id
    {:db/unique :db.unique/identity}
+   :pomodoro/id
+   {:db/unique :db.unique/identity}
 
    ;; unique string ids
 
