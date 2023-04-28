@@ -1,5 +1,6 @@
 (ns dates.tick
   (:require
+   [taoensso.timbre :as log]
    [clojure.string :as string]
    [tick.core :as t]
    [util :as util]))
@@ -143,9 +144,16 @@
 (defn duration-since
   ([inst] (duration-since inst nil))
   ([inst end]
-   (t/duration
-     {:tick/beginning inst
-      :tick/end       (or end (t/zoned-date-time))})))
+   (when inst
+     (t/duration
+       {:tick/beginning (parse-time-string inst)
+        :tick/end       (or (and end (parse-time-string end))
+                            (t/zoned-date-time))}))))
+
+(comment
+  (duration-since (t/at (t/yesterday)
+                        (t/midnight))
+                  (t/now)))
 
 (defn millis-since
   [start-inst]
@@ -154,23 +162,25 @@
 (defn human-time-since
   ([inst] (human-time-since inst nil))
   ([inst end]
-   (let [since   (duration-since inst end)
-         days    (t/days since)
-         hours   (t/hours since)
-         mins    (t/minutes since)
-         seconds (t/seconds since)]
-     (cond
-       (> days 1)    (str days " days")
-       (= days 1)    (str days " day")
-       (> hours 1)   (let [mins (- mins (* hours 60))]
-                       (str hours ":" (util/zp mins 2) " hours"))
-       (= hours 1)   (let [mins (- mins 60)]
-                       (str hours ":" (util/zp mins 2) " hour"))
-       (> mins 1)    (str mins " minutes")
-       (= mins 1)    (let [secs (- seconds 60)]
-                       (str mins ":" (util/zp secs 2) " minute"))
-       (> seconds 1) (str seconds " seconds")
-       (= seconds 1) (str seconds " second")))))
+   (when inst
+     (let [end     (or end (t/zoned-date-time))
+           since   (duration-since inst end)
+           days    (t/days since)
+           hours   (t/hours since)
+           mins    (t/minutes since)
+           seconds (t/seconds since)]
+       (cond
+         (> days 1)    (str days " days")
+         (= days 1)    (str days " day")
+         (> hours 1)   (let [mins (- mins (* hours 60))]
+                         (str hours ":" (util/zp mins 2) " hours"))
+         (= hours 1)   (let [mins (- mins 60)]
+                         (str hours ":" (util/zp mins 2) " hour"))
+         (> mins 1)    (str mins " minutes")
+         (= mins 1)    (let [secs (- seconds 60)]
+                         (str mins ":" (util/zp secs 2) " minute"))
+         (> seconds 1) (str seconds " seconds")
+         (= seconds 1) (str seconds " second"))))))
 
 (comment
   (util/zp 5 2)
