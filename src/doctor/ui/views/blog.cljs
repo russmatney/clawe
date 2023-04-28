@@ -13,8 +13,7 @@
    [tick.core :as t]
    [dates.tick :as dates.tick]
    [components.colors :as colors]
-   [hiccup-icons.octicons :as octicons]
-   [doctor.ui.db :as ui.db]))
+   [hiccup-icons.octicons :as octicons]))
 
 (def icon
   octicons/comment-discussion16)
