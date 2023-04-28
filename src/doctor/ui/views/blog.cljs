@@ -130,18 +130,19 @@
 (defn notes-table-def []
   {:headers ["Published" "Name" "Tags (incl. nested)" "Actions" "Raw"]
    :->row   (fn [note]
-              [[:span
-                (when (:blog/published note) "Published")]
-               [floating/popover
-                {:hover        true :click true
-                 :anchor-comp  [:span
-                                {:class "whitespace-nowrap"}
-                                (:org/name-string note)]
-                 :popover-comp [components.garden/full-note note]}]
-               [components.garden/all-nested-tags-comp note]
-               [components.actions/actions-list
-                {:actions (handlers/->actions note) :n 5}]
-               [components.debug/raw-metadata {:label "raw"} note]])})
+              (let [note (assoc note :doctor/type :type/note)]
+                [[:span
+                  (when (:blog/published note) "Published")]
+                 [floating/popover
+                  {:hover        true :click true
+                   :anchor-comp  [:span
+                                  {:class "whitespace-nowrap"}
+                                  (:org/name-string note)]
+                   :popover-comp [components.garden/full-note note]}]
+                 [components.garden/all-nested-tags-comp note]
+                 [components.actions/actions-list
+                  {:actions (handlers/->actions note) :n 5}]
+                 [components.debug/raw-metadata {:label "raw"} note]]))})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; presets
