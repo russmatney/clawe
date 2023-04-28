@@ -310,17 +310,22 @@
   (slurp
     (str (fs/expand-home "~/todo/garden/this_roam_linked_nodes_ui_is_backwards.org"))))
 
+;; TODO move to ralphie.git namespaces
 (defn first-commit-dt [path]
-  nil
-  ;; TODO implement :oldest-first in ralphie.git/commits
-  #_(-> path
-        fs/expand-home
-        (#(r.git/commits {:path         % :n 1
-                          :oldest-first true}))
-        first
-        :commit/author-date
-        dates.tick/parse-time-string))
+  (-> path
+      fs/expand-home
+      (#(r.git/commits {:path % :n 1 :oldest-first true}))
+      first
+      :commit/author-date
+      dates.tick/parse-time-string))
 
+(comment
+  (-> "~/todo/garden/dino.org" fs/expand-home)
+  (-> "~/todo/garden/dino.org" first-commit-dt)
+  (-> "~/todo/garden/dino.org" fs/expand-home fs/expand-home fs/parent str)
+  )
+
+;; TODO move to ralphie.git namespaces
 (defn last-commit-dt [path]
   (-> path
       fs/expand-home
@@ -350,10 +355,10 @@
     (let [first-commit-dt (-> item :org/source-file first-commit-dt)
           created-at      (-> item :org.props/created-at)]
       (when first-commit-dt
-        (if (t/>= first-commit-dt created-at)
+        (if (and created-at (t/>= first-commit-dt created-at))
           (log/debug "First commit dt is AFTER item created-at, skipping created-at reset"
                      (:org/short-path item))
-          (org-crud.update/update! item {:org.props/created-at created-at}))))))
+          (org-crud.update/update! item {:org.props/created-at first-commit-dt}))))))
 
 (comment
   (-> "~/todo/garden/dino.org" last-commit-dt)
@@ -362,8 +367,9 @@
   (-> "~/todo/daily/2023-04-25.org" path->nested-item)
   (-> "~/todo/daily/2020-12-26.org" path->nested-item)
 
-  (-> "~/todo/daily/2020-12-26.org" path->nested-item
-      reset-last-modified-via-git)
+  (-> "~/todo/daily/2023-04-25.org" path->nested-item)
+  (-> "~/todo/daily/2023-04-25.org" first-commit-dt)
+  (-> "~/todo/daily/2023-04-25.org" path->nested-item reset-created-at-via-git)
 
   (->>
     (all-garden-notes-nested)
