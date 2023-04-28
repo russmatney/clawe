@@ -1,6 +1,11 @@
 #+TITLE: Clawe
 #+startup: overview
 
+I'm putting together an overview of this whole project [[https://danger.russmatney.com/note/clawe_overview_video.html][on my blog]]. I hope to
+have a stream and video supporting it soon!
+
+--
+
 #+begin_quote Toy Story
 Buzz: This is an intergalactic emergency. I need to commandeer your vessel to Sector 12. Who's in charge here?
 
@@ -13,8 +18,7 @@ Alien #2: The claw chooses who will go and who will stay.
 Woody: This is ludicrous.
 #+end_quote
 
-For more on Clawe beyond the below readme, check out the [[https://danger.russmatney.com/note/workspaces/clawe.html][clawe workspace garden
-file]] on my blog.
+For more on Clawe beyond the below readme, check out the [[https://danger.russmatney.com/note/clawe.html][clawe garden file]] on my blog.
 
 * Clawe is a clojure-centric window-manager, uh, -manager
 It is named after the shape of your hand while trying to nail some of these key
