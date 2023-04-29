@@ -1,8 +1,12 @@
 #+TITLE: Clawe
 #+startup: overview
 
-I'm putting together an overview of this whole project [[https://danger.russmatney.com/note/clawe_overview_video.html][on my blog]]. I hope to
-have a stream and video supporting it soon!
+I'm putting together an overview of this whole project [[https://danger.russmatney.com/note/clawe_overview_video.html][on my blog]].
+
+A stream covering the motivation and showing some of the namespaces is available
+[[https://www.twitch.tv/videos/1805970411?t=2h59m42s][on twitch]].
+
+I hope to cut it to something shorter and more presentable soon!
 
 --
 
