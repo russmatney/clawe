@@ -33,18 +33,16 @@
       (reset! interval (js/setInterval #(reset! time (t/zoned-date-time)) 500))
       (fn [] (js/clearInterval @interval)))
     [:div
-     {:class ["flex flex-row" "items-center" "justify-around"]}
-
+     {:class ["flex flex-row" "items-center" "justify-around" "pl-3"]}
      [:div
-      {:class ["text-slate-200" "font-nes" "mr-4"]}
+      {:class ["text-slate-200" "font-nes" "mr-4" "whitespace-nowrap"]}
       (cond current
             [:span
-             "Pomodoro: " (dates/human-time-since (:pomodoro/started-at current))]
+             (dates/human-time-since (:pomodoro/started-at current))]
             last
             [:span
              "Break: "
              (dates/human-time-since (:pomodoro/finished-at last))])]
-
      [components.actions/actions-list (handlers/pomodoro-actions conn)]]))
 
 (defn widget [{:keys [conn] :as _opts}]

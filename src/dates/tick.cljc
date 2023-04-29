@@ -170,16 +170,16 @@
            seconds (t/seconds since)]
        (cond
          (> days 1)    (str days " days")
-         (= days 1)    (str days " day")
+         (= days 1)    (str days "d")
          (> hours 1)   (let [mins (- mins (* hours 60))]
-                         (str hours ":" (util/zp mins 2) " hours"))
+                         (str hours ":" (util/zp mins 2) "m"))
          (= hours 1)   (let [mins (- mins 60)]
-                         (str hours ":" (util/zp mins 2) " hour"))
-         (> mins 1)    (str mins " minutes")
+                         (str hours ":" (util/zp mins 2) "m"))
+         (> mins 1)    (str mins "m")
          (= mins 1)    (let [secs (- seconds 60)]
-                         (str mins ":" (util/zp secs 2) " minute"))
-         (> seconds 1) (str seconds " seconds")
-         (= seconds 1) (str seconds " second"))))))
+                         (str mins ":" (util/zp secs 2) "s"))
+         (> seconds 1) (str seconds " secs")
+         (= seconds 1) (str seconds "s"))))))
 
 (comment
   (util/zp 5 2)
