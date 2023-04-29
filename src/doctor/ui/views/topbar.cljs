@@ -220,32 +220,28 @@
       {:class ["flex" "flex-row" "h-full"
                "justify-between" "items-center"]}
 
-      ;; workspaces
       [workspace-list topbar-state active-workspaces]
 
-      ;; current task
+      ;; workspace title
       (let [current-workspace
             (some->> active-workspaces
                      (filter :workspace/focused) first)]
         (when current-workspace
           [:span
            {:class ["font-nes" "text-city-blue-500" "whitespace-nowrap"
-                    "text-4xl" "px-3"]}
+                    "text-4xl" "pl-3"]}
            (components.format/s-shortener
              {:length 6 :break "|"}
              (string/replace (:workspace/title current-workspace) "-" ""))]))
 
       [:div
-       {:class ["ml-auto" "px-8" "overflow-scroll"]}
+       {:class ["overflow-scroll"]}
        [focus/current-task opts]]
 
       [:div
-       {:class ["ml-auto" "px-8" "overflow-scroll"]}
+       {:class ["overflow-scroll"]}
        [pomodoro/bar opts]]
 
-      [:div
-       {:class ["ml-auto"]}
-       [topbar-actions-list metadata]]
+      [topbar-actions-list metadata]
 
-      ;; clock/host/metadata
       [clock-host-metadata topbar-state metadata]]]))

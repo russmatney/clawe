@@ -168,12 +168,13 @@
 #?(:cljs
    (defn pomodoro-actions [conn]
      (let [{:keys [current]} (ui.db/pomodoro-state conn)]
-       [{:action/label    "Start"
-         :action/on-click #(pomodoro-start-new)
-         :action/disabled current}
-        {:action/label    "End"
-         :action/on-click #(pomodoro-end-current)
-         :action/disabled (not current)}])))
+       [(if current
+          {:action/label    "End"
+           :action/on-click #(pomodoro-end-current)
+           :action/icon     octicons/stop16}
+          {:action/label    "Start"
+           :action/on-click #(pomodoro-start-new)
+           :action/icon     octicons/stopwatch16})])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; todos

@@ -26,13 +26,13 @@
                   "items-center" "space-x-4"
                   "h-full"]}
 
-         [:span
-          {:class ["pl-3" "font-mono"]}
-          (str (inc @n) "/" ct)]
-
          [:div
           {:class ["font-mono pr-3" "whitespace-nowrap"]}
           [components.garden/text-with-links (:org/name current)]]
+
+         [:span
+          {:class ["font-mono"]}
+          (str (inc @n) "/" ct)]
 
          [components.actions/actions-list
           {:n 2 :hide-disabled true :nowrap true

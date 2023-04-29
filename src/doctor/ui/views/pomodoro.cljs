@@ -33,12 +33,11 @@
       (reset! interval (js/setInterval #(reset! time (t/zoned-date-time)) 500))
       (fn [] (js/clearInterval @interval)))
     [:div
-     {:class ["flex flex-row" "items-center" "justify-around" "pl-3"]}
+     {:class ["flex flex-row" "items-center" "justify-between" "whitespace-nowrap"]}
      [:div
-      {:class ["text-slate-200" "font-nes" "mr-4" "whitespace-nowrap"]}
+      {:class ["text-slate-200" "font-nes" "pr-2"]}
       (cond current
-            [:span
-             (dates/human-time-since (:pomodoro/started-at current))]
+            [:span (dates/human-time-since (:pomodoro/started-at current))]
             last
             [:span
              "Break: "
