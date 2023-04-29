@@ -87,7 +87,7 @@
   ;; attr frequency
   (->>
     (frequencies (->> (d/datoms @*conn* :aevt) (map :a)))
-    (filter (fn [[val ct]]
+    (filter (fn [[_val ct]]
               (> ct 1)))
     (sort-by second >)
     (take 20))
@@ -95,7 +95,7 @@
   ;; value frequency
   (->>
     (frequencies (->> (d/datoms @*conn* :aevt) (map :v)))
-    (filter (fn [[val ct]]
+    (filter (fn [[_val ct]]
               (> ct 1)))
     (sort-by second >)
     (take 20))
@@ -117,6 +117,7 @@
                  (into #{}))]))
        (into {}))
 
+  ;; entity counts-of-things
   (->>
     (d/q '[:find (pull ?e [*])
            :where
@@ -130,10 +131,19 @@
   ;; retracting entities
   (->>
     (d/datoms @*conn* :aevt :doctor/type)
-    (filter (comp #{:type/garden} :v))
+    (filter (comp #{:type/lichess-game} :v))
     (map :e)
     (map (fn [e]
            [:db.fn/retractEntity e]))
+    (d/transact *conn*)
+    )
+
+  ;; retracting attributes
+  (->>
+    (d/datoms @*conn* :aevt :org/body-string)
+    (map :e)
+    (map (fn [e]
+           [:db/retract e :org/body-string]))
     (d/transact *conn*)
     )
 
