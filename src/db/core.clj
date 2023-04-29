@@ -38,9 +38,12 @@
 (defsys ^:dynamic *conn*
   :start
   (let [conn (d/conn-from-db (db-from-file))]
-    (d/listen! conn :db-backup-writer (fn [_] (write-db-to-file)))
+    (d/listen! conn :db-backup-writer
+               ;; TODO debounce to every few seconds, or during idle time
+               (fn [_] (write-db-to-file)))
     conn)
   :stop
+  (write-db-to-file)
   (d/unlisten! *conn* :db-backup-writer))
 
 
@@ -71,6 +74,68 @@
 
   (write-db-to-file)
 
+  (count (d/datoms @*conn* :eavt))
+  ;; 379672
+  ;; 368801
+
+  (count (d/datoms @*conn* :aevt :doctor/type))
+  ;; 17606
+  (frequencies (->> (d/datoms @*conn* :aevt :doctor/type) (map :v)))
+  #:type{:lichess-game 623, :screenshot 523, :repo 88, :commit 483, :note 12728, :todo 3038, :wallpaper 117, :pomodoro 6}
+
+
+  ;; attr frequency
+  (->>
+    (frequencies (->> (d/datoms @*conn* :aevt) (map :a)))
+    (filter (fn [[val ct]]
+              (> ct 1)))
+    (sort-by second >)
+    (take 20))
+
+  ;; value frequency
+  (->>
+    (frequencies (->> (d/datoms @*conn* :aevt) (map :v)))
+    (filter (fn [[val ct]]
+              (> ct 1)))
+    (sort-by second >)
+    (take 20))
+
+  ;; all attrs by :doctor/type
+  (->> (d/datoms @*conn* :aevt :doctor/type)
+       (map :v)
+       (distinct)
+       (map (fn [type]
+              [type
+               (->>
+                 (d/q '[:find ?a
+                        :in $ ?type
+                        :where
+                        [?e :doctor/type ?type]
+                        [?e ?a _]]
+                      @*conn* type)
+                 (map first)
+                 (into #{}))]))
+       (into {}))
+
+  (->>
+    (d/q '[:find (pull ?e [*])
+           :where
+           [?e _ _]
+           (not [?e :doctor/type _])]
+         @*conn*)
+    (map first)
+    count)
+
+
+  ;; retracting entities
+  (->>
+    (d/datoms @*conn* :aevt :doctor/type)
+    (filter (comp #{:type/garden} :v))
+    (map :e)
+    (map (fn [e]
+           [:db.fn/retractEntity e]))
+    (d/transact *conn*)
+    )
 
   ;; reingest
 
