@@ -6,14 +6,19 @@
   ([s] (s-shortener nil s))
   ([opts s]
    (let [total-len (:length opts 30)
+         break     (:break opts "...")
          half-len  (/ total-len 2)]
-     (if (< (count s) total-len)
+     (if (<= (+ (count s)) (+ (count break) total-len))
        s
        (let [start (take half-len s)
              end   (->> s reverse (take half-len) reverse)]
-         (apply str (concat start "..." end)))))))
+         (apply str (concat start
+                            break
+                            end)))))))
 
 (comment
+  (s-shortener {:length 7} "spotify")
+
   (s-shortener "some really long string with lots of thoughts that never end")
   (s-shortener
     {:length 20}

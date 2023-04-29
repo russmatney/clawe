@@ -9,6 +9,7 @@
    [components.charts :as charts]
    [components.actions :as components.actions]
    [components.colors :as colors]
+   [components.format :as format]
 
    [hooks.topbar :as hooks.topbar]
    [hooks.workspaces :as hooks.workspaces]
@@ -229,9 +230,10 @@
         (when current-workspace
           [:span
            {:class ["font-nes" "text-city-blue-500" "whitespace-nowrap"
-                    "px-3"
-                    ]}
-           (:workspace/title current-workspace)]))
+                    "text-4xl" "px-3"]}
+           (components.format/s-shortener
+             {:length 6 :break "|"}
+             (string/replace (:workspace/title current-workspace) "-" ""))]))
 
       [:div
        {:class ["ml-auto" "px-8" "overflow-scroll"]}
