@@ -79,9 +79,11 @@
   ;; 368801
 
   (count (d/datoms @*conn* :aevt :doctor/type))
+  ;; 16983
   ;; 17606
   (frequencies (->> (d/datoms @*conn* :aevt :doctor/type) (map :v)))
   #:type{:lichess-game 623, :screenshot 523, :repo 88, :commit 483, :note 12728, :todo 3038, :wallpaper 117, :pomodoro 6}
+  #:type{:screenshot 523, :repo 88, :commit 483, :note 12728, :todo 3038, :wallpaper 117, :pomodoro 6}
 
 
   ;; attr frequency

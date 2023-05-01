@@ -21,10 +21,6 @@
 (defn is-daily? [note]
   (some->> note :org/short-path (re-seq #"^daily/")))
 
-;; TODO delete!
-(defn is-workspace-note? [note]
-  (some->> note :org/short-path (re-seq #"^workspaces/")))
-
 (defn is-garden-note? [note]
   (some->> note :org/short-path (re-seq #"^garden/")))
 
@@ -228,19 +224,11 @@
     :group-by    :filters/last-modified-date
     :sort-groups :filters/last-modified-date}
 
-   :unpublished-workspace-notes
-   {:filters     #{{:filter-key :filters/published :match "Unpublished"}
-                   {:filter-key :filters/short-path
-                    :match-fn   filter-defs/is-workspace-fname}}
-    :group-by    :filters/last-modified-date
-    :sort-groups :filters/last-modified-date}
-
    :unpublished-garden-notes
    {:filters     #{{:filter-key :filters/published :match "Unpublished"}
                    {:filter-key :filters/short-path
                     :match-fn   (fn [x]
-                                  (not (or (filter-defs/is-daily-fname x)
-                                           (filter-defs/is-workspace-fname x))))}}
+                                  (not (filter-defs/is-daily-fname x)))}}
     :group-by    :filters/last-modified-date
     :sort-groups :filters/last-modified-date}
 
@@ -277,8 +265,6 @@
         only-notes           (uix/state nil)
         only-dailies         (uix/state nil)
         hide-dailies         (uix/state nil)
-        hide-workspaces      (uix/state nil)
-        only-workspaces      (uix/state nil)
         hide-all-tables      (uix/state nil)
         hide-all-groups      (uix/state nil)
 
@@ -295,12 +281,6 @@
                {:on-click #(swap! only-notes not)
                 :label    "only-garden-notes"
                 :active   @only-notes}
-               {:on-click #(swap! only-workspaces not)
-                :label    "only-workspaces"
-                :active   @only-workspaces}
-               {:on-click #(swap! hide-workspaces not)
-                :label    "hide-workspaces"
-                :active   @hide-workspaces}
                {:on-click #(swap! only-dailies not)
                 :label    "only-dailies"
                 :active   @only-dailies}
@@ -325,11 +305,9 @@
                 :filter-items
                 (fn [items]
                   (cond->> items
-                    @hide-workspaces (remove is-workspace-note?)
-                    @only-workspaces (filter is-workspace-note?)
-                    @only-notes      (filter is-garden-note?)
-                    @hide-dailies    (remove is-daily?)
-                    @only-dailies    (filter is-daily?))))
+                    @only-notes   (filter is-garden-note?)
+                    @hide-dailies (remove is-daily?)
+                    @only-dailies (filter is-daily?))))
               (update :presets merge (presets))))]
 
     [:div

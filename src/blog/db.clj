@@ -163,9 +163,8 @@
 (defn path->uri [path]
   (-> path fs/file-name fs/strip-ext
       (#(str (cond
-               (string/includes? path "/daily/")      "/daily"
-               (string/includes? path "/workspaces/") "/note/workspaces"
-               :else                                  "/note")
+               (string/includes? path "/daily/") "/daily"
+               :else                             "/note")
              "/" % ".html"))))
 
 (defn note->uri [note]

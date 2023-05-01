@@ -48,7 +48,6 @@
 
    :clawe
    {:filters
-    ;; TODO add the clawe workspace here as well
     #{{:filter-key :filters/short-path :match-str-includes-any ["russmatney/clawe"]}
       ;; TODO support OR here, probably opt-in
       ;; {:filter-key :filters/tags :match "clawe"}

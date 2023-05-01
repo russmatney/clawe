@@ -28,9 +28,6 @@
 (defn is-daily-fname [fname]
   (some-> fname (string/includes? "daily")))
 
-(defn is-workspace-fname [fname]
-  (some-> fname (string/includes? "workspaces")))
-
 (defn path->basename [fname]
   (let [[f s & _rest]
         (some-> fname (string/split #"/") reverse)]
@@ -54,9 +51,7 @@
                                             ;; TODO refactor to sort by last-modified date, most recent first
                                             (sort-by (comp count :item-group) > item-groups))
                         :filter-options   [{:label    "All Dailies"
-                                            :match-fn is-daily-fname}
-                                           {:label    "All Workspaces"
-                                            :match-fn is-workspace-fname}]
+                                            :match-fn is-daily-fname}]
                         :format-label     path->basename}
    :filters/tags       {:label          "Tags"
                         :group-by       :org/tags
