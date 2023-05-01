@@ -2,7 +2,8 @@
   (:require
    [taoensso.timbre :as log]
    [db.core :as db]
-   [dates.tick :as dt]))
+   [dates.tick :as dt]
+   [ralphie.notify :as notify]))
 
 
 (defn get-state []
@@ -20,19 +21,23 @@
   (let [current (:current (get-state))]
     (if current
       (log/warn "Attempted to start-new pomodoro when current exists, doing nothing")
-      (-> {:doctor/type         :type/pomodoro
-           :pomodoro/started-at (dt/now)
-           :pomodoro/is-current true
-           :pomodoro/id         (random-uuid)}
-          (db/transact)))
+      (do
+        (-> {:doctor/type         :type/pomodoro
+             :pomodoro/started-at (dt/now)
+             :pomodoro/is-current true
+             :pomodoro/id         (random-uuid)}
+            (db/transact))
+        (notify/notify "Starting new pomodoro")))
     (get-state)))
 
 (defn end-current []
   (let [{:keys [current]} (get-state)]
-    (-> current
-        (assoc :pomodoro/finished-at (dt/now))
-        (assoc :pomodoro/is-current false)
-        (db/transact))
+    (when current
+      (-> current
+          (assoc :pomodoro/finished-at (dt/now))
+          (assoc :pomodoro/is-current false)
+          (db/transact))
+      (notify/notify "Finished pomodoro"))
     (get-state)))
 
 (comment
