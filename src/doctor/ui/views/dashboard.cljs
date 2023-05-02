@@ -104,7 +104,7 @@
                   :icon  octicons/light-bulb16
                   :actions
                   [{:action/label    "Clear Current Todos"
-                    :action/on-click #(js/alert "todo")}]}]
+                    :action/on-click #(handlers/clear-current-todos)}]}]
 
      [widget-bar {:comp  todos/widget
                   :label "todos"

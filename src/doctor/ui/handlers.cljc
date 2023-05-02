@@ -180,6 +180,10 @@
 ;; todos
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defhandler clear-current-todos []
+  (api.todos/clear-current-todos)
+  :ok)
+
 (defhandler queue-todo [todo]
   (let [new-id (random-uuid)]
     (log/debug "queuing todo")

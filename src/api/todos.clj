@@ -2,7 +2,11 @@
   (:require
    [garden.db :as garden.db]
    [db.core :as db]
-   [garden.core :as garden]))
+   [garden.core :as garden]
+   [api.db :as api.db]
+   [datascript.core :as d]
+   [ralphie.notify :as notify]
+   [org-crud.api :as org-crud.api]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; org helpers
@@ -32,3 +36,20 @@
 
 (defn reingest-todos []
   (db/transact (relevant-org-todos)))
+
+(defn clear-current-todos []
+  (let [current-todos
+        (->>
+          (api.db/current-todos->es)
+          (d/pull-many @db/*conn* '[*]))]
+    (notify/notify (str "Clearing " (count current-todos) " todos"))
+    (->> current-todos
+         (map #(org-crud.api/update! % {:org/status :status/not-started
+                                        :org/tags   [:remove "current"]}))
+         doall)))
+
+(comment
+  (clear-current-todos)
+
+  (-> {:tags ["hello" "there" "very"]}
+      (update :tags (fn [tgs] (-> (set tgs) (disj "very"))))))
