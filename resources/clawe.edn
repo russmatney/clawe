@@ -140,7 +140,8 @@
  :doctor-base-url "http://localhost:3334"
  :repo-roots ["~/russmatney/*" "~/teknql/*"]
  :workspace/defs
-   {"Godot-3-2D-Day-Night-Cycle" {:workspace/directory "~/hiulit/Godot-3-2D-Day-Night-Cycle"}
+   {"BulletUpHell" {:workspace/directory "~/Dark-Peace/BulletUpHell"}
+    "Godot-3-2D-Day-Night-Cycle" {:workspace/directory "~/hiulit/Godot-3-2D-Day-Night-Cycle"}
     "Godot-Mixing-Desk" {:workspace/directory "~/kyzfrintin/Godot-Mixing-Desk"}
     "Gut" {:workspace/directory "~/bitwes/Gut"}
     "Project-Map" {:workspace/directory "~/Yogoda/Project-Map"}
@@ -189,6 +190,7 @@
     "godot-actions" {:workspace/directory "~/bend-n/godot-actions"}
     "godot-aseprite-wizard" {:workspace/directory "~/viniciusgerevini/godot-aseprite-wizard"}
     "godot-demo-projects" {:workspace/directory "~/godotengine/godot-demo-projects"}
+    "godot-docs" {:workspace/directory "~/godotengine/godot-docs"}
     "godot-filesystem-view" {:workspace/directory "~/zaevi/godot-filesystem-view"}
     "godot-git-plugin" {:workspace/directory "~/godotengine/godot-git-plugin"}
     "godot-next" {:workspace/directory "~/godot-extended-libraries/godot-next"}
