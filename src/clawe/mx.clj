@@ -26,6 +26,32 @@
    [clawe.workspace.open :as workspace.open]))
 
 
+(defn lines->paragraphs [s]
+  (->> s
+       string/split-lines
+       (partition-by #{""})
+       (map #(string/join " " %))
+       (string/join "\n")))
+
+(comment
+  (lines->paragraphs
+    "this is a line
+with some more content
+one new lines
+
+and a new paragraph
+with more content
+below
+
+hi there
+"))
+
+(defn clipboard-lines->paragraphs
+  ([] (clipboard-lines->paragraphs nil))
+  ([_] (->> (clipboard/get-clip "clipboard") lines->paragraphs clipboard/set-clip)))
+
+(defcom/defcom convert-clipboard-lines-to-paragraphs clipboard-lines->paragraphs)
+
 (defn clipboard-org->markdown
   ([] (clipboard-org->markdown nil))
   ([_]
