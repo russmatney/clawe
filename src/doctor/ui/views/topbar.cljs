@@ -115,9 +115,10 @@
 ;; Clock/host/metadata
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn sep [] [:span
-              {:class ["px-3 font-nes text-slate-600"]}
-              "|"])
+(defn sep []
+  [:span
+   {:class ["font-nes text-3xl text-slate-600"]}
+   "|"])
 
 (defn toggle-background-mode [{:keys [topbar/background-mode] :as _metadata}]
   (fn [_]
@@ -154,6 +155,8 @@
 (defn clock-host-metadata [{:keys [time]} metadata]
   [:div
    {:class ["flex" "flex-row" "justify-end" "items-center"]}
+
+   [topbar-actions-list metadata]
 
    [sep]
 
@@ -241,7 +244,5 @@
       [:div
        {:class ["overflow-scroll"]}
        [pomodoro/bar opts]]
-
-      [topbar-actions-list metadata]
 
       [clock-host-metadata topbar-state metadata]]]))
