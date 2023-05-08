@@ -353,12 +353,13 @@
 (defn reset-created-at-via-git [item]
   (when (#{:level/root} (:org/level item))
     (let [first-commit-dt (-> item :org/source-file first-commit-dt)
-          created-at      (-> item :org.props/created-at)]
+          created-at      (-> item :org.prop/created-at)]
       (when first-commit-dt
         (if (and created-at (t/>= first-commit-dt created-at))
           (log/debug "First commit dt is AFTER item created-at, skipping created-at reset"
                      (:org/short-path item))
-          (org-crud.update/update! item {:org.props/created-at first-commit-dt}))))))
+          (org-crud.update/update! item {:org.prop/created-at            first-commit-dt
+                                         :org.update/reset-last-modified true}))))))
 
 (comment
   (-> "~/todo/garden/dino.org" last-commit-dt)
@@ -373,7 +374,33 @@
 
   (->>
     (all-garden-notes-nested)
-    (map path->nested-item)
+    (remove nil?)
+    (remove empty?)
+    ;; (map :file/last-modified)
+    (map :org.prop/created-at)
+    frequencies
+    (sort-by second >))
+
+  (->>
+    (all-garden-notes-nested)
+    (remove nil?)
+    (remove empty?)
+    (sort-by :file/last-modified dates.tick/sort-latest-first)
+    first
+    count)
+
+  :hi
+
+  (->>
+    (all-garden-notes-nested)
+    (remove nil?)
+    (remove empty?)
+    (sort-by :file/last-modified dates.tick/sort-latest-first)
+    (map reset-created-at-via-git)
+    doall)
+
+  (->>
+    (all-garden-notes-nested)
     (remove nil?)
     (remove empty?)
     (sort-by :file/last-modified dates.tick/sort-latest-first)
