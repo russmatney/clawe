@@ -31,6 +31,13 @@
                   "border-city-orange-light-500"
                   ]}
 
+         [todo/status current]
+
+         [todo/priority-label current]
+
+         [:div {:class ["ml-auto"]}
+          [todo/tags-list current]]
+
          [:div
           {:class ["font-mono pr-3" "whitespace-nowrap"]}
           [components.garden/text-with-links (:org/name current)]]
