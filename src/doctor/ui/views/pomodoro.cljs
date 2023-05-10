@@ -44,10 +44,41 @@
              (dates/human-time-since (:pomodoro/finished-at last))])]
      [components.actions/actions-list (handlers/pomodoro-actions conn)]]))
 
+(defn pomodoro-list [pomodoros]
+  (let [pairs (->> pomodoros
+                   (partition 2 1))]
+    [:div
+     (for [[p prev] pairs]
+       ^{:key (-> p :db/id str)}
+       [:div
+        {:class ["flex flex-col" "font-nes"
+                 "my-4" "pl-2"
+                 "text-2xl" "whitespace-nowrap"]}
+        [:span
+         (when prev
+           (str "Break: "
+                (dates/human-time-since (:pomodoro/finished-at prev) (:pomodoro/started-at p))))]
+
+        [:span
+         (str
+           "Started: "
+           (dates/human-time-since (:pomodoro/started-at p))
+
+           " "
+           (when (:pomodoro/finished-at p)
+             (str
+               "Finished: "
+               (dates/human-time-since (:pomodoro/finished-at p)))))
+
+         "("
+         (dates/human-time-since (:pomodoro/started-at p) (:pomodoro/finished-at p))
+         ")"]])]))
+
 (defn widget [{:keys [conn] :as _opts}]
   (let [time                               (uix/state (t/zoned-date-time))
         interval                           (atom nil)
-        {:keys [current last] :as p-state} (ui.db/pomodoro-state conn)]
+        {:keys [current last] :as p-state} (ui.db/pomodoro-state conn)
+        pomodoros                          (ui.db/pomodoros conn)]
     (uix/with-effect [@interval]
       (reset! interval (js/setInterval #(reset! time (t/zoned-date-time)) 500))
       (fn [] (js/clearInterval @interval)))
@@ -109,4 +140,8 @@
           [:div
            {:class ["py-2" "px-4"]}
            [:span
-            "Last: " (dates/human-time-since started-at finished-at)]]))]]))
+            "Last: " (dates/human-time-since started-at finished-at)]]))]
+
+     [pomodoro-list pomodoros]
+
+     ]))

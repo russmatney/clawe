@@ -109,6 +109,17 @@
                   first)]
     {:current current :last last}))
 
+(defn pomodoros [conn]
+  (when conn
+    (->>
+      (d/q '[:find (pull ?e [*])
+             :where
+             [?e :doctor/type :type/pomodoro]]
+           conn)
+      (map first)
+      (filter :pomodoro/started-at)
+      (sort-by :pomodoro/started-at dt/sort-latest-first))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; wallpapers
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
