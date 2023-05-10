@@ -23,8 +23,13 @@
             ct      (count todos)]
         [:div
          {:class ["flex" "flex-row" "place-self-center"
-                  "items-center" "space-x-4"
-                  "h-full"]}
+                  "items-center" "space-x-4" "px-3"
+                  "h-full"
+                  "bg-city-orange-light-900"
+                  "border"
+                  "rounded-lg"
+                  "border-city-orange-light-500"
+                  ]}
 
          [:div
           {:class ["font-mono pr-3" "whitespace-nowrap"]}
