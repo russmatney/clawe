@@ -25,7 +25,9 @@
         [?e :doctor/type :type/todo]
         (or
           [?e :org/status :status/in-progress]
-          [?e :org/tags "current"])
+          ;; 'current' deprecated, delete soon
+          ;; [?e :org/tags "current"]
+          )
         ;; filter out todos with lingering 'current' tags but completed statuses
         (not
           [?e :org/status ?status]

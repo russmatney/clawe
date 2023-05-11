@@ -45,7 +45,8 @@
     (notify/notify (str "Clearing " (count current-todos) " todos"))
     (->> current-todos
          (map #(org-crud.api/update! % {:org/status :status/not-started
-                                        :org/tags   [:remove "current"]}))
+                                        ;; :org/tags   [:remove "current"]
+                                        }))
          doall)))
 
 (comment

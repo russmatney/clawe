@@ -223,11 +223,15 @@
          (cond->
              (not (:todo/queued-at it))
            (assoc :todo/queued-at (dates.tick/now))
-           true (assoc :org/tags "current"))
-         (#{:status/done :status/not-started
-            :status/skipped :status/cancelled}
-           status)
-         (assoc :org/tags [:remove "current"])
+           ;; "current" is DEPRECATED, delete soon
+           ;; true (assoc :org/tags "current")
+           )
+
+         ;; "current" is DEPRECATED, delete soon
+         ;; (#{:status/done :status/not-started
+         ;;    :status/skipped :status/cancelled}
+         ;;   status)
+         ;; (assoc :org/tags [:remove "current"])
          (not (:org/id it)) (assoc :org/id (random-uuid)))))
 
 (defhandler cancel-todo [todo]
@@ -364,9 +368,8 @@
            [:> HIMini/PlayIcon {:class ["w-4" "h-6"]}]
            ;; disabled if already tagged current or already completed/skipped
            :action/disabled
-           (or ((or (some->> todo :org/tags (into #{})) #{}) "current")
-               (#{:status/done :status/cancelled :status/skipped}
-                 status))
+           (#{:status/done :status/cancelled :status/skipped :status/in-progress}
+             status)
            ;; higher priority if priority set
            :action/priority    (if (:org/priority todo) 3 0)}
 

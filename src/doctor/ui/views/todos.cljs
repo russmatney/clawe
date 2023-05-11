@@ -98,10 +98,10 @@
     :group-by    :filters/short-path
     :sort-groups :filters/short-path}
 
-   :tagged-current
-   {:filters     #{{:filter-key :filters/tags :match "current"}}
-    :group-by    :filters/priority
-    :sort-groups :filters/priority}
+   ;; :tagged-current
+   ;; {:filters     #{{:filter-key :filters/tags :match "current"}}
+   ;;  :group-by    :filters/priority
+   ;;  :sort-groups :filters/priority}
 
    :today
    {:filters
@@ -147,16 +147,16 @@
 ;; main widget
 
 (defn widget [opts]
-  (let [todos           (ui.db/list-todos
-                          (:conn opts)
-                          {:join-children? true
-                           :skip-subtasks? true})
-        only-incomplete (uix/state (:only-incomplete opts))
-        hide-current    (uix/state (:hide-current opts))
+  (let [todos            (ui.db/list-todos
+                           (:conn opts)
+                           {:join-children? true
+                            :skip-subtasks? true})
+        only-incomplete  (uix/state (:only-incomplete opts))
+        hide-in-progress (uix/state (:hide-in-progress opts))
         pills
-        [{:on-click #(swap! hide-current not)
-          :label    (if @hide-current "Show current" "Hide current")
-          :active   @hide-current}
+        [{:on-click #(swap! hide-in-progress not)
+          :label    (if @hide-in-progress "Show in-progress" "Hide in-progress")
+          :active   @hide-in-progress}
          {:on-click #(swap! only-incomplete not)
           :label    (if @only-incomplete "All" "Only Incomplete")
           :active   @only-incomplete}]
@@ -175,8 +175,8 @@
                                   @only-incomplete
                                   (filter #(or (todo/not-started? %)
                                                (todo/in-progress? %)))
-                                  @hide-current
-                                  (filter #(not (todo/current? %)))))
+                                  @hide-in-progress
+                                  (filter #(not (todo/in-progress? %)))))
                 :sort-items todo/sort-todos)
               (update :presets merge (presets))))]
     [:div

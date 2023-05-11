@@ -30,13 +30,6 @@
 (defn in-progress? [it]
   (-> it :org/status #{:status/in-progress}))
 
-(defn current? [it]
-  (or (in-progress? it)
-      (seq (set/intersection #{"current"}
-                             (->> it :org/tags
-                                  ;; ugh, tags from db are not sets
-                                  (into #{}))))))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; sort todos
 
@@ -60,9 +53,8 @@
              (not (:org/priority it))
              (+ 100)
 
-             ;; move current to front
-             (or (current? it)
-                 (in-progress? it)) (- 100)))
+             ;; move in-progress to front
+             (in-progress? it) (- 100)))
          ;; lower number means earlier in the order
          <)
        (sort-by :todo/queued-at dates.tick/sort-latest-first)))
@@ -142,7 +134,6 @@
              (cond
                (completed? it)   :status/not-started
                (skipped? it)     :status/not-started
-               (current? it)     :status/done
                (in-progress? it) :status/done
                (not-started? it) :status/in-progress)))}
         (cond
@@ -150,8 +141,6 @@
           (and (completed? it) @hovering?)         "[ ]"
           (and (skipped? it) (not @hovering?))     "SKIP"
           (and (skipped? it) @hovering?)           "[ ]"
-          (and (current? it) (not @hovering?))     "[-]"
-          (and (current? it) @hovering?)           "[X]"
           (and (in-progress? it) (not @hovering?)) "[-]"
           (and (in-progress? it) @hovering?)       "[X]"
           (and (not-started? it) (not @hovering?)) "[ ]"
