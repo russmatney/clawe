@@ -324,6 +324,23 @@
         :src   "/assets/candy-icons/emacs.svg"}]}))
 
 #?(:cljs
+   (defn status-plain [it]
+     (when (:org/status it)
+       [:span
+        {:class ["whitespace-nowrap" "font-nes"
+                 "cursor-pointer"
+                 "text-slate-300"
+                 "hover:opacity-50"]}
+        (cond
+          (-> it :org/status #{:status/done})        "[X]"
+          (-> it :org/status #{:status/skipped})     "SKIP"
+          (-> it :org/status #{:status/cancelled})   "CANCEL"
+          (-> it :org/status #{:status/in-progress}) "[-]"
+          (-> it :org/status #{:status/not-started}) "[ ]"
+          ;; this one doesn't really exist - quick UI hack
+          (-> it :org/status #{:status/not-a-todo})  "**")])))
+
+#?(:cljs
    (defn todo->actions [todo]
      (let [{:keys [org/status]} todo]
        (->>
@@ -417,34 +434,37 @@
           ;; finish todo
           {:action/label    "mark-complete"
            :action/on-click #(complete-todo todo)
-           :action/icon     fa/check-circle-solid
            :action/disabled (#{:status/done} status)
            :action/priority (if (or (:todo/queued-at todo)
-                                    (:status/in-progress todo)) 2 0)}
+                                    (:status/in-progress todo)) 2 0)
+           :action/comp     [status-plain {:org/status :status/done}]
+           }
 
           ;; mark-skipped
           {:action/label    "mark-skipped"
            :action/disabled (#{:status/skipped} status)
            :action/on-click #(skip-todo todo)
-           :action/icon     [:> HIMini/ArchiveBoxIcon {:class ["w-4" "h-6"]}]}
+           :action/comp     [status-plain {:org/status :status/skipped}]}
 
           ;; mark-cancelled
           {:action/label    "mark-cancelled"
            :action/on-click #(cancel-todo todo)
            :action/disabled (#{:status/cancelled} status)
-           :action/icon     fa/ban-solid}
+           :action/comp     [status-plain {:org/status :status/cancelled}]}
 
           ;; mark-not-started
           {:action/label    "mark-not-started"
            :action/on-click #(mark-not-started todo)
+           :action/priority (if (or (:todo/queued-at todo)
+                                    (:status/in-progress todo)) 2 0)
            :action/disabled (#{:status/not-started} status)
-           :action/icon     fa/box-open-solid}
+           :action/comp     [status-plain {:org/status :status/not-started}]}
 
           ;; mark not-a-todo (clear todo status)
           {:action/label    "clear-todo-status"
            :action/on-click #(clear-status todo)
            :action/disabled (not status)
-           :action/icon     [:> HIMini/XCircleIcon {:class ["w-4" "h-6"]}]}]
+           :action/comp     [status-plain {:org/status :status/not-a-todo}]}]
          (remove nil?)))))
 
 (defhandler publish-note [item]

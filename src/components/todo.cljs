@@ -113,6 +113,19 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; status
 
+(defn status-plain [it]
+  (when (:org/status it)
+    [:span
+     {:class ["ml-2" "whitespace-nowrap" "font-nes"
+              "cursor-pointer"
+              "text-slate-300"
+              "hover:opacity-50"]}
+     (cond
+       (completed? it)   "[X]"
+       (skipped? it)     "SKIP"
+       (in-progress? it) "[-]"
+       (not-started? it) "[ ]")]))
+
 (defn status
   ([it] [status nil it])
   ([_opts it]
