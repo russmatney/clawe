@@ -36,16 +36,14 @@
   "List browser tabs - depends on https://github.com/balta2ar/brotab."
   ([] (tabs nil))
   ([opts]
-   (if notify/is-mac?
-     (tabs-osx)
-     (let [query         (:query opts nil)
-           default-query "-pinned"]
-       (->> (p/$ bt query ~(if query query default-query ))
-            p/check
-            :out
-            slurp
-            (#(string/split % #"\n"))
-            (map line->tab))))))
+   (let [query         (:query opts nil)
+         default-query "-pinned"]
+     (->> (p/$ bt query ~(if query query default-query ))
+          p/check
+          :out
+          slurp
+          (#(string/split % #"\n"))
+          (map line->tab)))))
 
 (comment
   (tabs)
