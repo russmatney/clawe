@@ -16,7 +16,7 @@
                                        :tmux.fire/session "doctor-workspace-clerk"}
                        :client/window-title "tauri-doctor-clerk-workspace"
                        :client/workspace-title "clerk-clove"}
-    "devweb" {:client/app-names ["firefoxdeveloperedition" "google-chrome"
+    "devweb" {:client/app-names ["firefoxdeveloperedition" "google-chrome" "google chrome"
                                  "firefox developer edition"]
               :client/create ralphie.browser/open-dev
               :client/workspace-title "browsers"
