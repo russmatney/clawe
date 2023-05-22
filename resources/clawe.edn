@@ -153,6 +153,7 @@
     "advent-of-code" {:workspace/directory "~/russmatney/advent-of-code"}
     "advent-of-godot" {:workspace/directory "~/russmatney/advent-of-godot"}
     "apple-platform-rs" {:workspace/directory "~/indygreg/apple-platform-rs"}
+    "aseprite" {:workspace/directory "~/aseprite/aseprite"}
     "bbin" {:workspace/directory "~/babashka/bbin"}
     "bean-of-the-wild" {:workspace/directory "~/nagidev/bean-of-the-wild"}
     "beatemup-three" {:workspace/directory "~/russmatney/beatemup-three"}
