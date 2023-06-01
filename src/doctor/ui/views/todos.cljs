@@ -138,6 +138,13 @@
     :group-by    :filters/short-path
     :sort-groups :filters/short-path}
 
+   :last-30-days
+   {:filters
+    #{{:filter-key :filters/short-path :match-str-includes-any
+       (->> 30 range (map filter-defs/short-path-days-ago))}}
+    :group-by    :filters/short-path
+    :sort-groups :filters/short-path}
+
    :tags
    {:filters     {}
     :group-by    :filters/tags
