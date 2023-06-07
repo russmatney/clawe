@@ -159,12 +159,14 @@
                 ;; handle plasma requests
                 (= uri "/plasma-ws")
                 {:undertow/websocket
-                 {:on-open          #(plasma.server/on-connect! *plasma-server* %)
+                 {:on-open          #(plasma.server/on-connect! *plasma-server* (:channel %))
                   :on-message       #(plasma.server/on-message! *plasma-server*
                                                                 (:channel %)
                                                                 (:data %))
-                  :on-close-message #(plasma.server/on-disconnect! *plasma-server*
-                                                                   (:ws-channel %))}}
+                  :on-close-message #(plasma.server/on-disconnect! *plasma-server* (:channel %))
+                  :on-error         #(do
+                                       (log/debug "Error in plasma-ws" (:error %))
+                                       (log/debug "on channel" (:channel %)))}}
 
                 (:websocket? req)
                 {:undertow/websocket
