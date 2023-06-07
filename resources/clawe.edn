@@ -225,6 +225,7 @@
     "org-roam" {:workspace/directory "~/org-roam/org-roam"}
     "picture-pages" {:workspace/directory "~/russmatney/picture-pages"}
     "pirates" {:workspace/directory "~/russmatney/pirates"}
+    "plasma" {:workspace/directory "~/teknql/plasma"}
     "pluggs" {:workspace/directory "~/russmatney/pluggs"}
     "pollen" {:workspace/directory "~/mbutterick/pollen"}
     "portal" {:workspace/directory "~/djblue/portal"}
