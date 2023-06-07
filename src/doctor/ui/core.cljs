@@ -127,12 +127,10 @@
 ;; Websocket events
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn on-close []
-  (log/info "Connection with server closed")
-  (log/info "TODO impl reconnect logic"))
+(defn on-close [] (log/info "Connection with server closed"))
 (defn on-error [] (log/info "Connection with server error"))
-(defn on-open []
-  (log/info "Connection with server open"))
+(defn on-open [] (log/info "Connection with server open"))
+(defn on-reconnect [] (log/info "Reconnected to server"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Bootstrap
@@ -158,13 +156,14 @@
 (defn ^:export init
   []
   (dev-setup)
-  ;; TODO support websockets reconnecting
+  (time-literals.read-write/print-time-literals-cljs!)
   (plasma.client/use-transport!
     (plasma.client/websocket-transport
       plasma-ws-url
-      {:on-open  on-open
-       :on-close on-close
-       :on-error on-error
+      {:on-open      on-open
+       :on-close     on-close
+       :on-reconnect on-reconnect
+       :on-error     on-error
        :transit-write-handlers
        (merge ttl/write-handlers dt/write-handlers)
        :transit-read-handlers
