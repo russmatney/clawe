@@ -42,17 +42,20 @@
              body (conj body)
              replaces-process
              (conj "--replaces-process" replaces-process)))
-         ;; _
-         ;; (println exec-strs)
          _                (when print?
                             ;; TODO use dynamic global bool to print all notifs
                             (println subject (when body (str "\n" body))))
-         proc             (process/process (conj exec-strs) {:out :string})]
+         proc             (try (process/process (conj exec-strs) {:out :string})
+                               (catch Exception e
+                                 (println e)
+                                 (println "ERROR ralphie.notify/notify error.")
+                                 (println "Do you have the expected notification program?")
+                                 (println "Tried to execute:" exec-strs)))]
 
      ;; we only check when --replaces-process is not passed
      ;; ... skips error messages if bad data is passed
      ;; ... also not sure when these get dealt with. is this a memory leak?
-     (when-not replaces-process
+     (when (and proc (not replaces-process))
        (-> proc check :out))
      nil)))
 
