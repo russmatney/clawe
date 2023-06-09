@@ -1,10 +1,11 @@
 (ns ralphie.config
-  (:require [ralphie.sh :refer [expand]]))
+  (:require
+   [babashka.fs :as fs]))
 
 ;; TODO this should all come via resources/*.edn and aero, maybe systemic as well
-(defn home-dir [] (expand "~"))
+(defn home-dir [] (fs/home))
 
-(defn project-dir [] (expand "~/russmatney/ralphie"))
+(defn project-dir [] (str (fs/home) "/russmatney/clawe"))
 
 (defn github-username [] "russmatney")
 
