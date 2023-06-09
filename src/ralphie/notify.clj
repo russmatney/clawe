@@ -1,12 +1,37 @@
 (ns ralphie.notify
   (:require
    [babashka.process :as process :refer [$]]
-   [clojure.string :as string]
-   [ralphie.zsh :as zsh]))
+   [ralphie.config :as config]
+   [clojure.edn :as edn]
+   [clojure.string :as string]))
 
+;; id/replaces-process cache ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def osx? (boolean (string/includes? (zsh/expand "$OSTYPE") "darwin")))
-(comment osx?)
+(defn process-cache []
+  (config/cache-file "notify-process-cache.edn"))
+
+(defn read-process-cache
+  ([] (read-process-cache nil))
+  ([f]
+   (let [file (or f (process-cache))
+         raw  (slurp file)]
+     (or (edn/read-string raw) {}))))
+
+(defn existing-id [notify-id]
+  (let [file  (process-cache)
+        cache (read-process-cache file)]
+    (get cache notify-id)))
+
+(defn write-proc-id [proc-id notify-id]
+  (when (int? proc-id)
+    (let [file  (process-cache)
+          cache (read-process-cache file)
+          cache (assoc cache notify-id proc-id)]
+      (spit file cache))))
+
+(comment
+  (existing-id "my-notif")
+  (write-proc-id 9 "my-notif"))
 
 ;; osx notify ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -23,21 +48,16 @@
 
 ;; linux notify ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn linux-notif-cmd [{:keys [subject body notif-id]}]
-  ;; TODO use notif-id to look up a cached proc-id, pass to -r
-  (cond->
-      ["notify-send.py" subject]
-    body (conj body)
-
-    ;; goes away
-    notif-id
-    (conj "--replaces-process" notif-id)))
+(defn linux-notif-cmd [{:keys [subject body notify-id]}]
+  (let [proc-id (when notify-id (existing-id notify-id))]
+    (cond-> ["notify-send" subject]
+      body      (conj body)
+      ;; replace process when one is found in the cache
+      proc-id   (conj "-r" proc-id)
+      ;; print proc-id when notify-id passed
+      notify-id (conj "-p"))))
 
 ;; notify ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; TODO move all ralphie.notify/is-mac? usage to ralphie.config/osx?
-;; TODO move all :notify/replaces-process usage to :notify/id
-;; TODO refactor arity to emphasise the map usage
 
 (defn notify
   "Create a notification.
@@ -48,27 +68,25 @@
   - :notify/id, :notify/replaces-process
   - :notify/print?
   "
+  ([subject body] (notify {:notify/subject subject :notify/body body}))
+  ([subject body opts] (notify (merge {:notify/subject subject :notify/body body} opts)))
   ([opts]
-   (let [opts     (if (string? opts) {:notify/subject opts} opts)
-         subject  (some opts [:subject :notify/subject])
-         body     (some opts [:body :notify/body])
-         notif-id (some opts [:id :notify/id])
-         print?   (:notify/print? opts)
+   (let [opts      (if (string? opts) {:notify/subject opts} opts)
+         subject   (some opts [:subject :notify/subject])
+         body      (some opts [:body :notify/body])
+         notify-id (some opts [:id :notify/id])
+         print?    (:notify/print? opts)
          exec-strs
-         (if osx?
+         (if config/osx?
            (osx-notif-cmd {:subject subject :body body})
-           (linux-notif-cmd {:subject subject :body body :notif-id notif-id}))
+           (linux-notif-cmd {:subject subject :body body :notify-id notify-id}))
 
          _ (when print? (println subject (when body (str "\n" body))))]
      (try
-       (cond->
-           (process/process exec-strs {:out :string}) process/check
-
-           (and notif-id (not osx?))
-           ((fn [proc]
-              (let [proc-id (:out proc)]
-                ;; TODO write proc-id to cache with notif-id
-                (println "todo: cache proc-id with notif-id")))))
+       (cond-> (process/process exec-strs {:out :string})
+         true process/check
+         (and notify-id (not config/osx?))
+         (#(-> % :out string/trim read-string (write-proc-id notify-id))))
        (catch Exception e
          (println e)
          (println "ERROR ralphie.notify/notify error.")
@@ -85,13 +103,14 @@
   (notify {:subject "subj" :body {:value "v" :label "laaaa"}})
   (notify {:subject "subj" :body "BODY"})
   (notify {:notify/subject "subj" :notify/body "BODY"})
+  (notify {:notify/subject "subj" :notify/body "BYdddD"
+           :notify/id      "replace-me"})
+
   (-> ($ notify-send subj body)
       process/check)
 
-  (->
-    ($ osascript -e "display notification \"Lorem ipsum dolor sit amet\" with title \"Title\"")
-    process/check)
+  (-> ($ osascript -e "display notification \"Lorem ipsum dolor sit amet\" with title \"Title\"")
+      process/check)
 
-  (->
-    (process/process ["osascript" "-e" "display notification \"Lorem ipsum\ndolor sit amet\" with title \"Title\""])
-    process/check))
+  (-> (process/process ["osascript" "-e" "display notification \"Lorem ipsum\ndolor sit amet\" with title \"Title\""])
+      process/check))

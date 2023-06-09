@@ -2,28 +2,22 @@
   (:require
    [babashka.process :refer [$ check]]
    [clojure.string :as string]
-   [ralphie.notify :as notify]
-   [ralphie.config :as r.config]
-   [babashka.fs :as fs]
-   ))
+   [ralphie.config :as config]
+   [babashka.fs :as fs]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; mru
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def cache-dir (str (r.config/project-dir) "/.cache"))
-
-(defn cache-file [cache-id]
-  (->
-    (str cache-dir "/" cache-id)
-    (fs/absolutize)))
+(defn mru-cache-file [cache-id]
+  (config/cache-file (str "mru-" cache-id)))
 
 (defn read-mru-cache [{:keys [cache-id file]}]
   (when (or cache-id file)
-    (let [file (or file (cache-file cache-id))]
+    (let [file (or file (mru-cache-file cache-id))]
       (when (fs/exists? file)
         (->>
-          (slurp (str file))
+          (slurp file)
           (string/split-lines)
           (#(do (println %) %))
           distinct
@@ -32,23 +26,16 @@
 (defn add-mru-label [{:keys [cache-id label]}]
   (when cache-id
     (println "writing to mru cache for id:" cache-id)
-    (let [file  (cache-file cache-id)
+    (let [file  (mru-cache-file cache-id)
           cache (or (read-mru-cache {:file file}) #{})]
 
-      (when-not (fs/exists? file)
-        (fs/create-dirs (fs/parent file)))
-
-      (spit (str file)
+      (spit file
             (->>
               (concat [label] cache)
               distinct
               (string/join "\n"))))))
 
 (comment
-  (fs/list-dir cache-dir)
-  (fs/exists? (cache-file "hi"))
-  (cache-file "hi")
-
   (read-mru-cache {:cache-id "hi"})
   (add-mru-label {:cache-id "hi" :label "some command"})
   (add-mru-label {:cache-id "hi" :label "another command"})
@@ -70,7 +57,7 @@
   it is left as is."
   [{:rofi/keys [label description] :as x}]
   (cond
-    notify/is-mac?        x
+    config/osx?           x
     (not label)           x
     (#{\<} (first label)) x
     :else
@@ -130,7 +117,7 @@
          selected-label
          (some->
 
-           (if notify/is-mac?
+           (if config/osx?
              ^{:in  (string/join "\n" labels)
                :out :string}
              ($ choose -u)
