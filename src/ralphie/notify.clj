@@ -36,6 +36,7 @@
 ;; osx notify ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn osx-notif-cmd [{:keys [subject body]}]
+  ;; TODO support similar replaces-id feature (tho osx more or less does this already)
   ["osascript" "-e" (str "display notification \""
                          (cond
                            (string? body) body
@@ -60,13 +61,17 @@
 ;; notify ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn notify
-  "Create a notification.
+  "Create a notification. Linux depends on `notify-send`, osx on `osascript`.
+
+  Non-string OSX bodies are not yet escaped, so they may be ignored or crash the notif.
+
+  This function should never crash/stop execution.
 
   Attrs:
   - :notify/subject
   - :notify/body
-  - :notify/id, :notify/replaces-process
-  - :notify/print?
+  - :notify/id - an id used to replace an existing notification, rather than create a new one.
+  - :notify/print? - also print the subject/body of the notification
   "
   ([subject body] (notify {:notify/subject subject :notify/body body}))
   ([subject body opts] (notify (merge {:notify/subject subject :notify/body body} opts)))
@@ -75,22 +80,22 @@
          subject   (some opts [:subject :notify/subject])
          body      (some opts [:body :notify/body])
          notify-id (some opts [:id :notify/id])
-         print?    (:notify/print? opts)
-         exec-strs
+         print?    (some opts [:print? :notify/print?])
+         cmd-str
          (if config/osx?
            (osx-notif-cmd {:subject subject :body body})
            (linux-notif-cmd {:subject subject :body body :notify-id notify-id}))
 
          _ (when print? (println subject (when body (str "\n" body))))]
      (try
-       (cond-> (process/process exec-strs {:out :string})
+       (cond-> (process/process cmd-str {:out :string})
          true process/check
          (and notify-id (not config/osx?))
          (#(-> % :out string/trim read-string (write-proc-id notify-id))))
        (catch Exception e
          (println e)
          (println "ERROR ralphie.notify/notify error.")
-         (println "Tried to execute:" exec-strs)))
+         (println "Tried to execute:" cmd-str)))
      nil)))
 
 
