@@ -53,3 +53,5 @@ public/assets/clips
 /cljs-test-runner-out/
 /out/
 /target/
+
+.cache

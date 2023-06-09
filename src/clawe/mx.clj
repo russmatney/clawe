@@ -359,7 +359,8 @@ hi there
    (let [wsp (wm/current-workspace)]
      (->> (mx-commands {:wsp wsp})
           (rofi/rofi {:require-match? true
-                      :msg            "Clawe commands"})))))
+                      :msg            "Clawe commands"
+                      :cache-id       "clawe-mx"})))))
 
 (defn mx-fast
   "Run rofi with commands created in `mx-commands-fast`."
@@ -367,7 +368,8 @@ hi there
   ([_]
    (->> (mx-commands-fast)
         (rofi/rofi {:require-match? true
-                    :msg            "Clawe commands (fast)"}))))
+                    :msg            "Clawe commands (fast)"
+                    :cache-id       "clawe-mx-fast"}))))
 
 (comment
   (mx-commands {:wsp (wm/current-workspace)})
