@@ -10,7 +10,6 @@
    [ring.adapter.undertow :as undertow]
    [ring.adapter.undertow.websocket :as undertow.ws]
    [datascript.transit :as dt]
-   #_[nextjournal.clerk.viewer :as clerk-viewer]
 
    [dates.transit-time-literals :as ttl]
    [api.db :as api.db]
@@ -22,10 +21,7 @@
    [doctor.api :as doctor.api]
    [garden.watcher :as garden.watcher]
    [ralphie.notify :as notify]
-   [clojure.edn :as edn]
-   [hiccup.page :as hiccup]
-   #_[notebooks.clerk :as notebooks.clerk]
-   #_[notebooks.core :as notebooks]))
+   [hiccup.page :as hiccup]))
 
 (defn output-fn
   [data]
@@ -56,52 +52,15 @@
 ;; transit helpers
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; (defn eval* [form]
-;;   (println "\n\nCalling eval with form" form)
-;;   (eval form))
-
-;; (def clerk-read-handlers
-;;   ;; wrapped in an extra vector to work around transit-cljs bug
-;;   {"clerk/ViewerEval"
-;;    (fn [[expr]] (eval* expr))
-;;    "clerk/ViewerFn" (fn [[form]]
-;;                       (clerk-viewer/->viewer-fn form))})
-
-;; (def clerk-write-handlers
-;;   ;; wrapping this in an extra vector to work around likely transit-cljs bug
-;;   {nextjournal.clerk.viewer.ViewerEval (transit/write-handler "clerk/ViewerEval" #(vector (:form %)))
-;;    nextjournal.clerk.viewer.ViewerFn   (transit/write-handler "clerk/ViewerFn" #(vector (:form %)))})
-
 (def transit-read-handlers
   (merge transit/default-read-handlers
          ttl/read-handlers
-         dt/read-handlers
-         ;; clerk-read-handlers
-         ))
+         dt/read-handlers))
 
 (def transit-write-handlers
   (merge transit/default-write-handlers
          ttl/write-handlers
-         dt/write-handlers
-         ;; clerk-write-handlers
-         ))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; clerk helpers
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defonce !clients (atom #{}))
-(comment (reset! !clients #{}))
-
-(defn broadcast!
-  "Sends an updated eval of the passed `notebook-sym` to _all_ clients."
-  [notebook-sym]
-  (println "broadcasting notebook-sym" notebook-sym)
-  (when-let [_doc nil #_ (notebooks.clerk/ns-sym->viewer notebook-sym)]
-    (doseq [_ch @!clients]
-      #_(undertow.ws/send (clerk-viewer/->edn {:doc doc}) ch))))
-
-(comment (broadcast! 'notebooks.core))
+         dt/write-handlers))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Plasma config
@@ -181,86 +140,29 @@
                                  (log/debug "Error in plasma-ws" (:error %))
                                  (log/debug "on channel" (:channel %)))}}
 
-                (:websocket? req)
-                {:undertow/websocket
-                 {:on-open
-                  (fn [msg]
-                    (swap! !clients conj (:channel msg))
-                    #_(notebooks.clerk/channel-visiting-notebook msg))
-
-                  :on-close-message
-                  (fn [msg]
-                    (swap! !clients disj (:channel msg))
-                    #_(notebooks.clerk/channel-left-notebook msg))
-
-                  :on-message
-                  (fn [msg]
-                    (let [data (:data msg)]
-                      (cond
-                        (string/starts-with? data "{:path ")
-                        (let [_path (-> data edn/read-string :path)]
-                          #_(notebooks.clerk/channel-visiting-notebook
-                              (assoc msg :path path)))
-
-                        :else
-                        (do
-                          (println "evaling: " data)
-                          ;; TODO we'll want to make sure this ns is loaded
-                          ;; note that the form from the FE can't be aliased
-                          (eval (read-string data))))))}}
-
-                (string/starts-with? uri "/notebooks/")
-                (let [notebook-sym nil #_ (notebooks.clerk/path->notebook-sym uri)]
-                  (when notebook-sym
-                    (log/info "loading notebook" notebook-sym)
-                    (let [{:keys [notebook error]}
-                          (try
-                            {:notebook nil
-                             #_        (notebooks.clerk/ns-sym->html notebook-sym)}
-                            (catch Exception e
-                              (println "[CLERK] notebook build fail" notebook-sym)
-                              (println e)
-                              {:error e}))]
-                      (if notebook
-                        {:status  200
-                         :headers {"Content-Type" "text/html"}
-                         :body    notebook}
-                        {:status  200
-                         :headers {"Content-Type" "text/html"}
-                         :body
-                         (hiccup/html5
-                           [:html
-                            [:head]
-                            [:body
-                             [:div
-                              (str "No notebook or failed to load nb at uri: " uri)
-
-                              [:pre error]
-
-                              #_(->>
-                                  (notebooks/notebooks)
-                                  (map #(assoc % :ns (notebooks.clerk/path->notebook-sym (:uri %))))
-                                  (map (fn [{:keys [name uri]}]
-                                         [:li
-                                          [:a {:href uri}
-                                           (str name)]]))
-                                  (into [:ul]))]]])}))))
-
-                (= "/" uri)
+                (= "/doctor" uri)
                 (let [body
                       (hiccup/html5
                         [:html
-                         [:head]
+                         [:head
+                          ;; TODO local tailwind styles
+                          ]
                          [:body
                           [:div
-                           #_(->>
-                               (notebooks/notebooks)
-                               (map #(assoc % :ns (notebooks.clerk/path->notebook-sym (:uri %))))
-                               (map (fn [{:keys [name uri]}]
-                                      [:li
-                                       [:a {:href uri}
-                                        (str name)]]))
-                               (into [:ul]))]]])]
+                           (str "The Doctor is in!" uri)]
+
+                          [:div
+                           (str "TODO list some end points?")
+                           (str "TODO some doctor data?")
+                           (str "TODO status check?")]
+
+                          [:div
+                           (str "Websocket connections: " (count @*sessions*))
+
+                           [:pre
+                            (str
+                              @*sessions*)]
+                           ]]])]
                   {:status  200
                    :headers {"Content-Type" "text/html"}
                    :body    body})
