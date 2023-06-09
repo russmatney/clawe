@@ -229,7 +229,9 @@
 
          (when (and (not (seq body)) (seq body-string))
            [:pre
-            [text-with-links opts body-string]])])
+            [text-with-links
+             (assoc opts :text-classes ["flex" "flex-col"])
+             body-string]])])
 
       (when show-raw
         [components.debug/raw-metadata
