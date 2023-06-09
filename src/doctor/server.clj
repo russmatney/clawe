@@ -115,6 +115,7 @@
                    (log/debug "Error in plasma-ws" (:error %))
                    (log/debug "on channel" (:channel %)))}})
 
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Doctor page
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -165,7 +166,8 @@
    garden.watcher/*garden-watcher*
    ;; this is also disabled in the impl
    db.listeners/*data-expander*
-   db/*conn*]
+   db/*conn*
+   *plasma-server*]
   :start
   (let [port (:server/port doctor.config/*config*)]
     (log/info "Starting *server* on port" port)
