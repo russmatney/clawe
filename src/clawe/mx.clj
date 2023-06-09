@@ -272,7 +272,6 @@ hi there
 ;; mx fast
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
 (defn mx-commands-fast
   ([] (mx-commands-fast nil))
   ([_]
@@ -297,7 +296,10 @@ hi there
        (workspace-defs)
        ;; all defcoms
        (->> (defcom/list-commands) (map r.core/defcom->rofi))
-       (blog-rofi-opts))
+       (blog-rofi-opts)
+
+       ;; all bindings
+       (->> (defkbd/list-bindings) (map defkbd/->rofi)))
      (remove nil?))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -322,7 +324,7 @@ hi there
          (workspace.open/open-workspace-rofi-options)
 
          ;; all bindings
-         (->> (defkbd/list-bindings) (map defkbd/->rofi))
+         ;; (->> (defkbd/list-bindings) (map defkbd/->rofi))
 
          ;; kill tmux/tags/clients
          (when-not (clawe.config/is-mac?)
