@@ -23,7 +23,7 @@
    [ralphie.notify :as notify]
    [hiccup.page :as hiccup]))
 
-(defn output-fn
+(defn log-output-fn
   [data]
   (let [{:keys [level ?err #_vargs _msg_ ?ns-str ?file _hostname_
                 _timestamp_ ?line output-opts]}
@@ -46,7 +46,7 @@
             (str enc/system-newline
                  (ef data))))))))
 
-(log/merge-config! {:output-fn output-fn})
+(log/merge-config! {:output-fn log-output-fn})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; transit helpers
@@ -91,6 +91,64 @@
                                      (when (seq args) (log/debug "args" args)))
                                    ctx)}]}))
 
+(defn ->plasma-undertow-ws-handler [_req]
+  {:undertow/websocket
+   {:on-open
+    #(do
+       (plasma.server/on-connect! *plasma-server* (:channel %))
+       (log/info "client connected" (str "(" (count @*sessions*) " current)"))
+       (notify/notify {:notify/subject "Websocket connected"
+                       :notify/body    (str "active sessions: " (count @*sessions*))
+                       :notify/id      :doctor/sessions}))
+
+    :on-close-message
+    #(do
+       (plasma.server/on-disconnect! *plasma-server* (:channel %))
+       (log/info "client disconnected" (str "(" (count @*sessions*) " current)"))
+       (notify/notify {:notify/subject "Websocket disconnected"
+                       :notify/body    (str "active sessions: " (count @*sessions*))
+                       :notify/id      :doctor/sessions}))
+    :on-message #(plasma.server/on-message! *plasma-server*
+                                            (:channel %)
+                                            (:data %))
+    :on-error   #(do
+                   (log/debug "Error in plasma-ws" (:error %))
+                   (log/debug "on channel" (:channel %)))}})
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Doctor page
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn ->doctor-page
+  [{:keys [uri] :as req}]
+  (hiccup/html5
+    [:html
+     [:head
+      ;; TODO local tailwind styles
+      ]
+     [:body
+      [:div
+       (str "Welcome to " uri)]
+      [:div
+       (str "The Doctor is in!")]
+
+      [:pre (str req)]
+
+      [:div
+       (str "Websocket connections: " (count @*sessions*))
+
+       [:pre
+        (str
+          @*sessions*)]]
+
+      [:div
+       [:br]
+       (str "TODO list some end points?")
+       [:br]
+       (str "TODO some doctor data?")
+       [:br]
+       (str "TODO status check?")]]]))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Server
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -111,67 +169,23 @@
   :start
   (let [port (:server/port doctor.config/*config*)]
     (log/info "Starting *server* on port" port)
-    (let [server
-          (undertow/run-undertow
-            (fn [{:keys [uri] :as req}]
-              (cond
-                ;; handle plasma requests
-                (= uri "/plasma-ws")
-                {:undertow/websocket
-                 {:on-open
-                  #(do
-                     (plasma.server/on-connect! *plasma-server* (:channel %))
-                     (log/info "client connected" (str "(" (count @*sessions*) " current)"))
-                     (notify/notify {:notify/subject "Websocket connected"
-                                     :notify/body    (str "active sessions: " (count @*sessions*))
-                                     :notify/id      :doctor/sessions}))
+    (let [server (undertow/run-undertow
+                   (fn [{:keys [uri] :as req}]
+                     (cond
+                       ;; handle plasma requests
+                       (= "/plasma-ws" uri)
+                       (->plasma-undertow-ws-handler req)
 
-                  :on-close-message
-                  #(do
-                     (plasma.server/on-disconnect! *plasma-server* (:channel %))
-                     (log/info "client disconnected" (str "(" (count @*sessions*) " current)"))
-                     (notify/notify {:notify/subject "Websocket disconnected"
-                                     :notify/body    (str "active sessions: " (count @*sessions*))
-                                     :notify/id      :doctor/sessions}))
-                  :on-message #(plasma.server/on-message! *plasma-server*
-                                                          (:channel %)
-                                                          (:data %))
-                  :on-error   #(do
-                                 (log/debug "Error in plasma-ws" (:error %))
-                                 (log/debug "on channel" (:channel %)))}}
+                       (= "/doctor" uri)
+                       {:status  200
+                        :headers {"Content-Type" "text/html"}
+                        :body    (->doctor-page req)}
 
-                (= "/doctor" uri)
-                (let [body
-                      (hiccup/html5
-                        [:html
-                         [:head
-                          ;; TODO local tailwind styles
-                          ]
-                         [:body
-                          [:div
-                           (str "The Doctor is in!" uri)]
-
-                          [:div
-                           (str "TODO list some end points?")
-                           (str "TODO some doctor data?")
-                           (str "TODO status check?")]
-
-                          [:div
-                           (str "Websocket connections: " (count @*sessions*))
-
-                           [:pre
-                            (str
-                              @*sessions*)]
-                           ]]])]
-                  {:status  200
-                   :headers {"Content-Type" "text/html"}
-                   :body    body})
-
-                ;; poor man's router
-                :else (doctor.api/route req)))
-            {:port             port
-             :session-manager? false
-             :websocket?       true})]
+                       ;; poor man's router
+                       :else (doctor.api/route req)))
+                   {:port             port
+                    :session-manager? false
+                    :websocket?       true})]
       (notify/notify {:notify/subject "Started doctor backend server!"
                       :notify/body    (str "On port: " port)
                       :notify/id      :doctor/server})
@@ -180,14 +194,13 @@
   :stop
   (.stop *server*))
 
+
 (defn restart []
   (if (sys/running? `*server*)
     (sys/restart! `*server*)
     (sys/start! `*server*)))
 
 (comment
-  (-> "/notebooks/clawe" (string/replace-first "/" "") (string/replace-first "/" ".") symbol)
-
   (restart)
   *server*
   @sys/*registry*
