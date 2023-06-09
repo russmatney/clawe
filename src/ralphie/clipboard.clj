@@ -3,7 +3,7 @@
    [clojure.string :as string]
    [babashka.process :as p]
    [clojure.java.shell :as sh]
-   [ralphie.notify :as notify]))
+   [ralphie.config :as config]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Read the clipboard
@@ -12,7 +12,7 @@
 (defn get-clip
   ([] (get-clip "primary"))
   ([clipboard-name]
-   (if notify/is-mac?
+   (if config/osx?
      (-> ^{:out :string} (p/$ pbpaste) p/check :out)
      (-> (sh/sh "xclip" "-o" "-selection" clipboard-name)
          :out))))
@@ -44,7 +44,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn set-clip [s]
-  (if notify/is-mac?
+  (if config/osx?
     (-> ^{:out :string :in s} (p/$ pbcopy) p/check :out)
     (-> (p/process '[xclip -i -selection clipboard]
                    {:in s})

@@ -46,12 +46,12 @@ _arguments -C \\
 ;; DEPRECATED
 (defcom build-uberjar
   (let [proc "rebuilding-ralphie-uberjar"]
-    (notify/notify {:subject          "Ralphie Uberjar: Rebuilding"
-                    :replaces-process proc})
+    (notify/notify {:subject "Ralphie Uberjar: Rebuilding"
+                    :id      proc})
     (let [cp (util/get-cp (config/project-dir))]
       (->
         ^{:dir (config/project-dir)}
         ($ bb -cp ~cp --uberjar ralphie.jar -m ralphie.core )
         check)
-      (notify/notify {:subject          "Ralphie Uberjar: Rebuild Complete"
-                      :replaces-process proc}))))
+      (notify/notify {:subject "Ralphie Uberjar: Rebuild Complete"
+                      :id      proc}))))

@@ -112,11 +112,11 @@
                           " )")]
 
        (when-not (emacs-server-running?)
-         (notify {:notify/subject          "Initializing Emacs Server, initializing."
-                  :notify/replaces-process "init-emacs-server"})
+         (notify {:notify/subject "Initializing Emacs Server, initializing."
+                  :notify/id      "init-emacs-server"})
          (initialize-emacs-server)
-         (notify {:notify/subject          "Started Emacs Server"
-                  :notify/replaces-process "init-emacs-server"}))
+         (notify {:notify/subject "Started Emacs Server"
+                  :notify/id      "init-emacs-server"}))
 
        (-> ($ emacsclient --no-wait --create-frame
               -F ~(str "((name . \"" wsp-name "\"))")

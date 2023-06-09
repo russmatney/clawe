@@ -5,6 +5,7 @@
    [clojure.string :as string]
    [ralphie.rofi :as rofi]
    [ralphie.notify :as notify]
+   [ralphie.config :as config]
    [ralphie.clipboard :as clipboard]))
 
 (defn line->tab [s]
@@ -137,7 +138,7 @@ Depends on `brotab`."
    (let [url (when opts
                (if (string? opts) opts
                    (some opts [:url :browser.open/url])))]
-     (if notify/is-mac?
+     (if config/osx?
        (if url
          (->
            ^{:out :string}
@@ -175,7 +176,7 @@ Depends on `brotab`."
    (if url
      (-> (p/$ firefox-developer-edition --new-tab ~url)
          p/check :out)
-     (if notify/is-mac?
+     (if config/osx?
        (-> ^{:out :string}
            (p/$ open -na "/Applications/Firefox Developer Edition.app")
            p/check :out)

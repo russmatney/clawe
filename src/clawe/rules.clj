@@ -135,12 +135,14 @@
        (try
          (println "Deleting workspace" (workspace/strip it))
          (wm/delete-workspace it)
-         (notify/notify "Deleted Workspace" (:workspace/title it "no-title"))
+         (notify/notify {:notify/subject "Deleted Workspace"
+                         :notify/body    (:workspace/title it "no-title")})
 
          ;; call again until there are none left?
          (clean-workspaces it)
          (catch Exception e e
-                (notify/notify "Error deleting workspace" e)))
+                (notify/notify {:notify/subject "Error deleting workspace"
+                                :notify/body    e})))
 
        :else (notify/notify "Finished deleting workspaces")))))
 

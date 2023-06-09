@@ -3,7 +3,7 @@
    [babashka.process :as process]
    [backtick]
    [clojure.string :as string]
-   [ralphie.notify :as notify]))
+   [ralphie.config :as config]))
 
 (comment
   (ralphie.awesome.fnl/fnl
@@ -85,7 +85,7 @@ util = require 'util';
   Adds a preamble that sets common variables and requires common modules."
   ([lua-str] (awm-cli nil lua-str))
   ([opts lua-str]
-   (when-not notify/is-mac? ;; TODO better detection/handling for awm running
+   (when-not config/osx? ;; TODO better detection/handling for awm running
      (let [quiet? (:quiet? opts true)]
        (->>
          (str lua-preamble "\n\n-- Passed command:\n" lua-str)

@@ -586,7 +586,7 @@
   []
   (let [notif-proc "awm-error-check"]
     (notify/notify "Checking AWM Config" "Syntax and Other BS"
-                   {:replaces-process notif-proc})
+                   {:id notif-proc})
     (let [config-files (concat
                          (expand-files "~/.config/awesome/*")
                          (expand-files "~/.config/awesome/**/*"))
@@ -599,12 +599,12 @@
         (->> errant-files
              (map (fn [{:keys [file error]}]
                     (notify/notify "Found issue:" error
-                                   {:replaces-process notif-proc})
+                                   {:id notif-proc})
                     (println (str file "\n" (str error) "\n\n")))))
 
         (do
           (notify/notify "Clean Awesome config!" (str "Checked " ct " files")
-                         {:replaces-process notif-proc})
+                         {:id notif-proc})
           "No Errors.")))))
 
 (comment (check-for-errors))
