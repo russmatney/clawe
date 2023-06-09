@@ -19,26 +19,30 @@
     (fs/absolutize)))
 
 (defn read-mru-cache [{:keys [cache-id file]}]
-  (let [file (or file (cache-file cache-id))]
-    (when (fs/exists? file)
-      (->>
-        (slurp (str file))
-        (string/split-lines)
-        distinct
-        (into [])))))
+  (when (or cache-id file)
+    (let [file (or file (cache-file cache-id))]
+      (when (fs/exists? file)
+        (->>
+          (slurp (str file))
+          (string/split-lines)
+          (#(do (println %) %))
+          distinct
+          (into []))))))
 
 (defn add-mru-label [{:keys [cache-id label]}]
-  (println "writing to mru cache for id:" cache-id)
-  (let [file  (cache-file cache-id)
-        cache (or (read-mru-cache {:file file}) #{})]
+  (when cache-id
+    (println "writing to mru cache for id:" cache-id)
+    (let [file  (cache-file cache-id)
+          cache (or (read-mru-cache {:file file}) #{})]
 
-    (when-not (fs/exists? file)
-      (fs/create-dirs (fs/parent file)))
+      (when-not (fs/exists? file)
+        (fs/create-dirs (fs/parent file)))
 
-    (spit (str file)
-          (->>
-            (concat [label] cache)
-            (string/join "\n")))))
+      (spit (str file)
+            (->>
+              (concat [label] cache)
+              distinct
+              (string/join "\n"))))))
 
 (comment
   (fs/list-dir cache-dir)
@@ -100,16 +104,24 @@
 
          (coll? opts)
          (rofi {} opts)))
-  ([{:keys [msg message on-select require-match?]} xs]
+  ([{:keys [msg message on-select require-match? cache-id]} xs]
    (println "Rofi called with" (count xs) "xs.")
 
-   (let [maps?  (-> xs first map?)
+   (let [mru-cache     (read-mru-cache {:cache-id cache-id})
+         mru-cache-set (into #{} mru-cache)
+
+         maps?  (-> xs first map?)
          xs     (if maps? (->> xs (map build-label)) xs)
          labels (if maps? (->> xs
                                (map (some-fn :label :rofi/label))
                                (map escape-rofi-label))
                     xs)
-         msg    (or msg message)
+
+         labels (->> labels
+                     (remove mru-cache-set)
+                     (concat mru-cache))
+
+         msg (or msg message)
 
          sep "|"
 
@@ -151,6 +163,8 @@
                   (do
                     (println res)
                     (check proc)))))))]
+     (add-mru-label {:cache-id cache-id :label selected-label})
+
      (when (seq selected-label)
        ;; TODO use index-by, or just make a map
        (let [->label    (fn [x]
@@ -203,7 +217,8 @@
 
   (rofi
     {:require-match? true
-     :msg            "message"}
+     :msg            "message"
+     :cache-id       "test-cache"}
     [{:label "iii" :url "urlllll"}
      {:label "333" :url "something"}
      {:label "jkjkjkjkjkjkjkjkjkjkjkjkjkjkjk" :url "w/e"}
