@@ -159,14 +159,27 @@
                 ;; handle plasma requests
                 (= uri "/plasma-ws")
                 {:undertow/websocket
-                 {:on-open          #(plasma.server/on-connect! *plasma-server* (:channel %))
-                  :on-message       #(plasma.server/on-message! *plasma-server*
-                                                                (:channel %)
-                                                                (:data %))
-                  :on-close-message #(plasma.server/on-disconnect! *plasma-server* (:channel %))
-                  :on-error         #(do
-                                       (log/debug "Error in plasma-ws" (:error %))
-                                       (log/debug "on channel" (:channel %)))}}
+                 {:on-open
+                  #(do
+                     (plasma.server/on-connect! *plasma-server* (:channel %))
+                     (log/info "client connected" (str "(" (count @*sessions*) " current)"))
+                     (notify/notify {:notify/subject "Websocket connected"
+                                     :notify/body    (str "active sessions: " (count @*sessions*))
+                                     :notify/id      :doctor/sessions}))
+
+                  :on-close-message
+                  #(do
+                     (plasma.server/on-disconnect! *plasma-server* (:channel %))
+                     (log/info "client disconnected" (str "(" (count @*sessions*) " current)"))
+                     (notify/notify {:notify/subject "Websocket disconnected"
+                                     :notify/body    (str "active sessions: " (count @*sessions*))
+                                     :notify/id      :doctor/sessions}))
+                  :on-message #(plasma.server/on-message! *plasma-server*
+                                                          (:channel %)
+                                                          (:data %))
+                  :on-error   #(do
+                                 (log/debug "Error in plasma-ws" (:error %))
+                                 (log/debug "on channel" (:channel %)))}}
 
                 (:websocket? req)
                 {:undertow/websocket

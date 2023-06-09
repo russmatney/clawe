@@ -373,7 +373,6 @@
       (notify/notify "Multiple spaces for app desc.... could not label space" str-app-name))))
 
 (defn toggle-floating [{:yabai.window/keys [id] :as _window}]
-  (notify/notify "toggling floating" id)
   (->
     ^{:out :string}
     (process/$ yabai -m window ~id --toggle float)
