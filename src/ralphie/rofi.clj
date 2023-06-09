@@ -19,11 +19,10 @@
         (->>
           (slurp file)
           (string/split-lines)
-          (#(do (println %) %))
           distinct
           (into []))))))
 
-(defn add-mru-label [{:keys [cache-id label]}]
+(defn update-mru-cache [{:keys [cache-id label]}]
   (when cache-id
     (println "writing to mru cache for id:" cache-id)
     (let [file  (mru-cache-file cache-id)
@@ -37,9 +36,9 @@
 
 (comment
   (read-mru-cache {:cache-id "hi"})
-  (add-mru-label {:cache-id "hi" :label "some command"})
-  (add-mru-label {:cache-id "hi" :label "another command"})
-  (add-mru-label {:cache-id "hi" :label "some other command"}))
+  (update-mru-cache {:cache-id "hi" :label "some command"})
+  (update-mru-cache {:cache-id "hi" :label "another command"})
+  (update-mru-cache {:cache-id "hi" :label "some other command"}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; rofi-general
@@ -152,7 +151,7 @@
                   (do
                     (println res)
                     (check proc)))))))]
-     (add-mru-label {:cache-id cache-id :label selected-label})
+     (update-mru-cache {:cache-id cache-id :label selected-label})
 
      (when (seq selected-label)
        ;; TODO use index-by, or just make a map

@@ -1,3 +1,5 @@
+(println "Clawe mx ns load")
+
 (ns clawe.mx
   (:require
    [clojure.string :as string]
@@ -323,9 +325,6 @@ hi there
          ;; open a known workspace
          (workspace.open/open-workspace-rofi-options)
 
-         ;; all bindings
-         ;; (->> (defkbd/list-bindings) (map defkbd/->rofi))
-
          ;; kill tmux/tags/clients
          (when-not (clawe.config/is-mac?)
            (kill-things wsp))
@@ -356,20 +355,25 @@ hi there
   "Run rofi with commands created in `mx-commands`."
   ([] (mx nil))
   ([_]
+   (println "Clawe mx start")
    (let [wsp (wm/current-workspace)]
+     (println "Clawe mx wsp pulled")
      (->> (mx-commands {:wsp wsp})
           (rofi/rofi {:require-match? true
                       :msg            "Clawe commands"
-                      :cache-id       "clawe-mx"})))))
+                      :cache-id       "clawe-mx"}))
+     (println "Clawe mx stop"))))
 
 (defn mx-fast
   "Run rofi with commands created in `mx-commands-fast`."
   ([] (mx-fast nil))
   ([_]
+   (println "Clawe mx-fast start")
    (->> (mx-commands-fast)
         (rofi/rofi {:require-match? true
                     :msg            "Clawe commands (fast)"
-                    :cache-id       "clawe-mx-fast"}))))
+                    :cache-id       "clawe-mx-fast"}))
+   (println "Clawe mx-fast stop")))
 
 (comment
   (mx-commands {:wsp (wm/current-workspace)})
