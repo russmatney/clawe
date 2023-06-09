@@ -66,8 +66,7 @@
 
 (comment
   (build-label {:rofi/label "hi"})
-  (build-label {:rofi/label "hi" :rofi/description "desc"})
-  )
+  (build-label {:rofi/label "hi" :rofi/description "desc"}))
 
 ;; TODO Tests for this,especially that ensure the result is returned
 (defn rofi
@@ -91,7 +90,8 @@
          (coll? opts)
          (rofi {} opts)))
   ([{:keys [msg message on-select require-match? cache-id]} xs]
-   (println "Rofi called with" (count xs) "xs.")
+   ;; (println "Rofi called with" (count xs) "xs.")
+   (timer/print-since "rofi/rofi")
 
    (let [maps?      (-> xs first map?)
          xs         (if maps? (->> xs (map build-label)) xs)
@@ -113,6 +113,7 @@
 
          sep "|"
 
+         _ (timer/print-since "rofi labels filtered and sorted")
          selected-label
          (some->
 
@@ -144,7 +145,7 @@
                   ;; TODO determine if simple nothing-selected or actual rofi error
                   (= 1 (:exit res))
                   (do
-                    (println "Rofi Nothing Selected (or Error)")
+                    (println "\nRofi Nothing Selected (or Error)")
                     nil)
 
                   :else

@@ -1,4 +1,14 @@
-(println "Clawe mx ns load")
+(ns timer)
+
+(def start-t (atom (System/currentTimeMillis)))
+(def last-t (atom nil))
+
+(defn print-since [line]
+  (let [now      (System/currentTimeMillis)
+        old-last @last-t]
+    (reset! last-t now)
+    (println "|" (when old-last (- now old-last)) "\t|" (- now @start-t) "\t|" line)))
+
 
 (ns clawe.mx
   (:require
@@ -26,6 +36,8 @@
    [clawe.toggle :as toggle]
    [clawe.wm :as wm]
    [clawe.workspace.open :as workspace.open]))
+
+(timer/print-since "clawe.mx\tNamespace (and deps) Loaded")
 
 
 (defn lines->paragraphs [s]
@@ -355,25 +367,27 @@ hi there
   "Run rofi with commands created in `mx-commands`."
   ([] (mx nil))
   ([_]
-   (println "Clawe mx start")
+   (timer/print-since "clawe.mx/mx\tstart")
    (let [wsp (wm/current-workspace)]
-     (println "Clawe mx wsp pulled")
+     (timer/print-since "clawe.mx/mx\tfetched current workspace (or it's lazy?)")
      (->> (mx-commands {:wsp wsp})
+          (#(do (timer/print-since "clawe.mx/mx\tcommands") %))
           (rofi/rofi {:require-match? true
                       :msg            "Clawe commands"
                       :cache-id       "clawe-mx"}))
-     (println "Clawe mx stop"))))
+     (timer/print-since "clawe.mx\tend"))))
 
 (defn mx-fast
   "Run rofi with commands created in `mx-commands-fast`."
   ([] (mx-fast nil))
   ([_]
-   (println "Clawe mx-fast start")
+   (timer/print-since "clawe.mx/mx-fast\tstart")
    (->> (mx-commands-fast)
+        (#(do (timer/print-since "clawe.mx/mx-fast\tcommands fast") %))
         (rofi/rofi {:require-match? true
                     :msg            "Clawe commands (fast)"
                     :cache-id       "clawe-mx-fast"}))
-   (println "Clawe mx-fast stop")))
+   (timer/print-since "clawe.mx-fast\tend")))
 
 (comment
   (mx-commands {:wsp (wm/current-workspace)})
