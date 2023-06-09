@@ -40,7 +40,7 @@
 
          [:div
           {:class ["font-mono pr-3" "whitespace-nowrap"]}
-          [components.garden/text-with-links (:org/name current)]]
+          (:org/name-string current)]
 
          [:span
           {:class ["font-mono"]}
