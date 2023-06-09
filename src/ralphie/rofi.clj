@@ -107,15 +107,17 @@
   ([{:keys [msg message on-select require-match? cache-id]} xs]
    (println "Rofi called with" (count xs) "xs.")
 
-   (let [mru-cache     (read-mru-cache {:cache-id cache-id})
-         mru-cache-set (into #{} mru-cache)
+   (let [maps?      (-> xs first map?)
+         xs         (if maps? (->> xs (map build-label)) xs)
+         labels     (if maps? (->> xs
+                                   (map (some-fn :label :rofi/label))
+                                   (map escape-rofi-label))
+                        xs)
+         labels-set (into #{} labels)
 
-         maps?  (-> xs first map?)
-         xs     (if maps? (->> xs (map build-label)) xs)
-         labels (if maps? (->> xs
-                               (map (some-fn :label :rofi/label))
-                               (map escape-rofi-label))
-                    xs)
+         mru-cache     (->> (read-mru-cache {:cache-id cache-id})
+                            (filter labels-set))
+         mru-cache-set (into #{} mru-cache)
 
          labels (->> labels
                      (remove mru-cache-set)
