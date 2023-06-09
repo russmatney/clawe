@@ -1,94 +1,97 @@
 (ns ralphie.notify
   (:require
-   [babashka.process :as process :refer [$ check]]
+   [babashka.process :as process :refer [$]]
    [clojure.string :as string]
    [ralphie.zsh :as zsh]))
 
 
-(def is-mac? (boolean (string/includes? (zsh/expand "$OSTYPE") "darwin")))
+(def osx? (boolean (string/includes? (zsh/expand "$OSTYPE") "darwin")))
+(comment osx?)
 
-(comment
-  is-mac?)
+;; osx notify ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn osx-notif-cmd [{:keys [subject body]}]
+  ["osascript" "-e" (str "display notification \""
+                         (cond
+                           (string? body) body
+                           ;; TODO escape stringified bodies for osascript's standards
+                           (not body)     "no body"
+                           :else          "unsupported body")
+                         "\""
+                         (when subject
+                           (str " with title \"" subject "\"")))])
+
+;; linux notify ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn linux-notif-cmd [{:keys [subject body notif-id]}]
+  ;; TODO use notif-id to look up a cached proc-id, pass to -r
+  (cond->
+      ["notify-send.py" subject]
+    body (conj body)
+
+    ;; goes away
+    notif-id
+    (conj "--replaces-process" notif-id)))
+
+;; notify ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; TODO move all ralphie.notify/is-mac? usage to ralphie.config/osx?
+;; TODO move all :notify/replaces-process usage to :notify/id
+;; TODO refactor arity to emphasise the map usage
 
 (defn notify
-  ([notice]
-   (cond (string? notice) (notify notice nil)
+  "Create a notification.
 
-         (map? notice)
-         (let [subject (some notice [:subject :notify/subject])
-               body    (some notice [:body :notify/body])]
-           (notify subject body notice))
-
-         :else
-         (notify "Malformed ralphie.notify/notify call"
-                 "Expected string or map.")))
-  ([subject body & args]
-   (let [opts             (or (some-> args first) {})
-         print?           (:notify/print? opts)
-         replaces-process (some opts [:notify/id :replaces-process :notify/replaces-process])
+  Attrs:
+  - :notify/subject
+  - :notify/body
+  - :notify/id, :notify/replaces-process
+  - :notify/print?
+  "
+  ([opts]
+   (let [opts     (if (string? opts) {:notify/subject opts} opts)
+         subject  (some opts [:subject :notify/subject])
+         body     (some opts [:body :notify/body])
+         notif-id (some opts [:id :notify/id])
+         print?   (:notify/print? opts)
          exec-strs
-         (if is-mac?
-           ["osascript" "-e" (str "display notification \""
-                                  (cond
-                                    (string? body) body
-                                    ;; TODO escape stringified bodies for osascript's standards
-                                    (not body)     "no body"
-                                    :else          "unsupported body")
-                                  "\""
-                                  (when subject
-                                    (str " with title \"" subject "\"")))]
-           (cond->
-               ["notify-send.py" subject]
-             body (conj body)
-             replaces-process
-             (conj "--replaces-process" replaces-process)))
-         _                (when print?
-                            ;; TODO use dynamic global bool to print all notifs
-                            (println subject (when body (str "\n" body))))
-         proc             (try (process/process (conj exec-strs) {:out :string})
-                               (catch Exception e
-                                 (println e)
-                                 (println "ERROR ralphie.notify/notify error.")
-                                 (println "Do you have the expected notification program?")
-                                 (println "Tried to execute:" exec-strs)))]
+         (if osx?
+           (osx-notif-cmd {:subject subject :body body})
+           (linux-notif-cmd {:subject subject :body body :notif-id notif-id}))
 
-     ;; we only check when --replaces-process is not passed
-     ;; ... skips error messages if bad data is passed
-     ;; ... also not sure when these get dealt with. is this a memory leak?
-     (when (and proc (not replaces-process))
-       (-> proc check :out))
+         _ (when print? (println subject (when body (str "\n" body))))]
+     (try
+       (cond->
+           (process/process exec-strs {:out :string}) process/check
+
+           (and notif-id (not osx?))
+           ((fn [proc]
+              (let [proc-id (:out proc)]
+                ;; TODO write proc-id to cache with notif-id
+                (println "todo: cache proc-id with notif-id")))))
+       (catch Exception e
+         (println e)
+         (println "ERROR ralphie.notify/notify error.")
+         (println "Tried to execute:" exec-strs)))
      nil)))
 
 
 (comment
-  (notify "subj" "body\nbody\nbody")
+  (notify "subj")
   (notify {:subject "subj"})
-  (notify "subj" "body\nbodybodddd" {:replaces-process "blah"})
 
   (some {:blah "nope" :notify/subject 3} [:notify/subject :subject])
 
-  (notify "nice")
-
   (notify {:subject "subj" :body {:value "v" :label "laaaa"}})
   (notify {:subject "subj" :body "BODY"})
+  (notify {:notify/subject "subj" :notify/body "BODY"})
   (-> ($ notify-send subj body)
-      check)
-
-  (->
-    ^{:out :string}
-    ($ echo $OSTYPE)
-    check
-    :out)
-
+      process/check)
 
   (->
     ($ osascript -e "display notification \"Lorem ipsum dolor sit amet\" with title \"Title\"")
-    check
-    )
+    process/check)
 
   (->
     (process/process ["osascript" "-e" "display notification \"Lorem ipsum\ndolor sit amet\" with title \"Title\""])
-    check
-    )
-
-  )
+    process/check))
