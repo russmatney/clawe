@@ -91,7 +91,7 @@
          (rofi {} opts)))
   ([{:keys [msg message on-select require-match? cache-id]} xs]
    ;; (println "Rofi called with" (count xs) "xs.")
-   (timer/print-since "rofi/rofi")
+   ;; (timer/print-since "rofi/rofi")
 
    (let [maps?      (-> xs first map?)
          xs         (if maps? (->> xs (map build-label)) xs)
@@ -113,7 +113,7 @@
 
          sep "|"
 
-         _ (timer/print-since "rofi labels filtered and sorted")
+         ;; _ (timer/print-since "rofi labels filtered and sorted")
          selected-label
          (some->
 
