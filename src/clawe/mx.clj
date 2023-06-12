@@ -377,12 +377,15 @@ hi there
    (let [cmds (mx-commands-fast)]
      (->> cmds
           (#(do (timer/print-since "clawe.mx/mx-fast\tcommands fast") %))
-          (rofi/rofi {:require-match? true
-                      :msg            "Clawe commands (fast)"
-                      :cache-id       "clawe-mx-fast"}))
-     (c.mx-fast/write-mx-cache
-       (->> cmds (map #(select-keys % #{:rofi/label})))
-       #_(->> cmds (map #(dissoc % :rofi/on-select)))))
+          (rofi/rofi {:require-match?     true
+                      :msg                "Clawe commands (fast)"
+                      :cache-id           "clawe-mx-fast"
+                      :label-input->cache (fn [label-input]
+                                            (c.mx-fast/write-mx-cache
+                                              label-input
+                                              #_(->> cmds (map #(select-keys % #{:rofi/label})))
+                                              #_(->> cmds (map #(dissoc % :rofi/on-select)))))}))
+     )
    (timer/print-since "clawe.mx-fast\tend")))
 
 (comment

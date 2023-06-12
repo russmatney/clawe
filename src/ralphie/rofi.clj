@@ -74,6 +74,29 @@
   (build-label {:rofi/label "hi"})
   (build-label {:rofi/label "hi" :rofi/description "desc"}))
 
+(defn xs->input-string [{:keys [mru-cache-id sep]} xs]
+  (let [maps? (-> xs first map?)
+        xs    (if maps? (->> xs (map build-label)) xs)
+
+        _      (timer/print-since "rofi labels built")
+        labels (if maps? (->> xs
+                              (map (some-fn :label :rofi/label))
+                              (map escape-rofi-label))
+                   xs)
+        _      (timer/print-since (str "rofi labels escaped" (->> labels (take 3) (apply str))))
+        ;; labels-set (into #{} labels)
+        ;; _          (timer/print-since "rofi labels in a set")
+
+        mru-cache         (->> (read-mru-cache {:cache-id mru-cache-id})
+                               #_(filter labels-set))
+        #_#_mru-cache-set (into #{} mru-cache)
+
+        _      (timer/print-since "mru cache read and in a set")
+        labels (->> labels
+                    #_(remove mru-cache-set)
+                    (concat mru-cache))]
+    (string/join sep labels)))
+
 ;; TODO Tests for this,especially that ensure the result is returned
 (defn rofi
   "Expects `xs` to be a coll of maps with a `:label` key.
@@ -91,109 +114,95 @@
   ;; TODO support `:rofi/tag` and `:rofi/tags` for including search terms (like "clone")
   ([opts]
    (cond (map? opts)
-         (rofi opts (:xs opts))
+         (rofi opts ((some-fn :xs :file) opts))
 
          (coll? opts)
          (rofi {} opts)))
-  ([{:keys [msg message on-select require-match? mru-cache-id]} xs]
+  ([{:keys [msg message on-select require-match? mru-cache-id label-input->cache] :as opts} xs-or-file]
    ;; (println "Rofi called with" (count xs) "xs.")
-   (timer/print-since (str "rofi/rofi with " (count xs) "xs"))
+   (let [xs         (when (coll? xs-or-file) xs-or-file)
+         input-file (when (string? xs-or-file) xs-or-file)]
+     (timer/print-since (str "rofi/rofi with " (count xs) "xs or file " input-file))
 
-   (let [maps? (-> xs first map?)
-         xs    (if maps? (->> xs (map build-label)) xs)
+     (let [msg (or msg message)
+           sep (if (config/osx?) "\n" "|")
+           rofi-input
+           (cond (seq xs) (let [label-input (xs->input-string (assoc opts :sep sep) xs)]
+                            ;; invoke this callback to update calling rofi caches
+                            (label-input->cache label-input)
+                            label-input)
 
-         _      (timer/print-since "rofi labels built")
-         labels (if maps? (->> xs
-                               (map (some-fn :label :rofi/label))
-                               (map escape-rofi-label))
-                    xs)
-         _      (timer/print-since (str "rofi labels escaped" (->> labels (take 3) (apply str))))
-         ;; labels-set (into #{} labels)
-         ;; _          (timer/print-since "rofi labels in a set")
+                 (fs/exists? input-file) input-file)
 
-         mru-cache         (->> (read-mru-cache {:cache-id mru-cache-id})
-                                #_(filter labels-set))
-         #_#_mru-cache-set (into #{} mru-cache)
+           _ (timer/print-since "rofi labels string joined")
+           selected-label
+           (some->
+             (if (config/osx?)
+               ^{:in rofi-input :out :string :err :string}
+               ($ choose -u)
 
-         _      (timer/print-since "mru cache read and in a set")
-         labels (->> labels
-                     #_(remove mru-cache-set)
-                     (concat mru-cache))
+               ;; TODO could move to async piping of entries to rofi
+               (with-meta
+                 ($ rofi -i
+                    ~(if require-match? "-no-custom" "")
+                    -sep ~sep
+                    ~(when input-file (str "-input " input-file))
+                    -markup-rows
+                    -normal-window ;; NOTE may want this to be optional
+                    ;; -eh 2 ;; row height
+                    ;; -dynamic
+                    ;; -no-fixed-num-lines
+                    -dmenu -mesg ~msg -p *)
+                 (cond->
+                     {:out :string :err :string}
+                   (seq xs)
+                   (assoc :in rofi-input))))
 
-         msg (or msg message)
+             ((fn [proc]
+                ;; check for type of error
+                (let [res @proc]
+                  (cond
+                    (zero? (:exit res))
+                    (-> res :out string/trim)
 
-         sep (if (config/osx?) "\n" "|")
+                    ;; TODO determine if simple nothing-selected or actual rofi error
+                    (= 1 (:exit res))
+                    (do
+                      (println "\nRofi Nothing Selected (or Error)")
+                      (println res)
+                      nil)
 
-         ;; labels (take 150 labels)
+                    :else
+                    (do
+                      (println res)
+                      (check proc)))))))]
+       (update-mru-cache {:cache-id mru-cache-id :label selected-label})
 
-         input-label-string (string/join sep labels)
-
-         _ (timer/print-since "rofi labels string joined")
-         selected-label
-         (some->
-
-           (if (config/osx?)
-             ^{:in  input-label-string
-               :out :string}
-             ($ choose -u)
-
-             ;; TODO could move to async piping of entries to rofi
-             ^{:in  input-label-string
-               :out :string}
-             ($ rofi -i
-                ~(if require-match? "-no-custom" "")
-                -sep ~sep
-                -markup-rows
-                -normal-window ;; NOTE may want this to be optional
-                ;; -eh 2 ;; row height
-                ;; -dynamic
-                ;; -no-fixed-num-lines
-                -dmenu -mesg ~msg -p *))
-
-           ((fn [proc]
-              ;; check for type of error
-              (let [res @proc]
-                (cond
-                  (zero? (:exit res))
-                  (-> res :out string/trim)
-
-                  ;; TODO determine if simple nothing-selected or actual rofi error
-                  (= 1 (:exit res))
-                  (do
-                    (println "\nRofi Nothing Selected (or Error)")
-                    nil)
-
-                  :else
-                  (do
-                    (println res)
-                    (check proc)))))))]
-     (update-mru-cache {:cache-id mru-cache-id :label selected-label})
-
-     (when (seq selected-label)
-       ;; TODO use index-by, or just make a map
-       (let [->label    (fn [x]
-                          (-> (or (:rofi/label x) (:label x)) escape-rofi-label))
-             selected-x (if maps?
-                          (let [matches
-                                (->> xs
-                                     (filter (fn [x]
-                                               (-> x ->label
-                                                   (string/starts-with? selected-label)))))]
-                            (some->> matches
-                                     ;; select the shortest match
-                                     (sort-by (comp count ->label) <)
-                                     first))
-                          selected-label)]
-         (if selected-x
-           (if-let [on-select (or ((some-fn :rofi/on-select :on-select)
-                                   selected-x) on-select)]
-             (do
-               ;; TODO support zero-arity on-select here
-               (println "on-select found" on-select)
-               (println "argslists" (-> on-select meta :arglists))
-               (on-select selected-x))
-             selected-x)
-           selected-label))))))
+       (when (seq selected-label)
+         ;; TODO use index-by, or just make a map
+         (let [->label    (fn [x]
+                            (-> (or (:rofi/label x) (:label x)) escape-rofi-label))
+               selected-x (if (and (seq xs) (map? (first xs)))
+                            (let [matches
+                                  (->> xs
+                                       (filter (fn [x]
+                                                 (-> x ->label
+                                                     (string/starts-with? selected-label)))))]
+                              (some->> matches
+                                       ;; select the shortest match
+                                       (sort-by (comp count ->label) <)
+                                       first))
+                            selected-label)]
+           (if selected-x
+             (if-let [on-select (or ((some-fn :rofi/on-select :on-select)
+                                     selected-x) on-select)]
+               (do
+                 ;; TODO support zero-arity on-select here
+                 (println "on-select found" on-select)
+                 (println "argslists" (-> on-select meta :arglists))
+                 (on-select selected-x))
+               selected-x)
+             selected-label)))))))
 
 
 (comment
