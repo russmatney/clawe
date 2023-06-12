@@ -5,7 +5,7 @@
    [tick.core :as t]
    [systemic.core :as sys :refer [defsys]]
    [babashka.fs :as fs]
-   [zprint.core :as zp]
+   ;; [zprint.core :as zp]
    [clojure.string :as string]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -45,7 +45,8 @@
         ;; note this is not a deep merge
         (merge @*config* updated-config)]
     (spit blog-edn (-> updated-config
-                       (zp/zprint-str 100)
+                       str
+                       ;; (zp/zprint-str 100)
                        (string/replace "," "")))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

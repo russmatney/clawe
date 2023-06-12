@@ -9,10 +9,13 @@
    [clawe.wm.protocol :as wm.protocol]
    [clawe.yabai :as clawe.yabai]
    [clawe.client :as client]
-   [clojure.string :as string])
+   [clojure.string :as string]
+   [timer :as timer])
   (:import
    [clawe.awesome Awesome]
    [clawe.yabai Yabai]))
+
+(timer/print-since "clawe.wm ns loading")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; window manager sys
