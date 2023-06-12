@@ -99,37 +99,46 @@
    ;; (println "Rofi called with" (count xs) "xs.")
    (timer/print-since (str "rofi/rofi with " (count xs) "xs"))
 
-   (let [maps?      (-> xs first map?)
-         xs         (if maps? (->> xs (map build-label)) xs)
-         labels     (if maps? (->> xs
-                                   (map (some-fn :label :rofi/label))
-                                   (map escape-rofi-label))
-                        xs)
-         labels-set (into #{} labels)
+   (let [maps? (-> xs first map?)
+         xs    (if maps? (->> xs (map build-label)) xs)
 
-         mru-cache     (->> (read-mru-cache {:cache-id mru-cache-id})
-                            (filter labels-set))
-         mru-cache-set (into #{} mru-cache)
+         _      (timer/print-since "rofi labels built")
+         labels (if maps? (->> xs
+                               (map (some-fn :label :rofi/label))
+                               (map escape-rofi-label))
+                    xs)
+         _      (timer/print-since (str "rofi labels escaped" (->> labels (take 3) (apply str))))
+         ;; labels-set (into #{} labels)
+         ;; _          (timer/print-since "rofi labels in a set")
 
+         mru-cache         (->> (read-mru-cache {:cache-id mru-cache-id})
+                                #_(filter labels-set))
+         #_#_mru-cache-set (into #{} mru-cache)
+
+         _      (timer/print-since "mru cache read and in a set")
          labels (->> labels
-                     (remove mru-cache-set)
+                     #_(remove mru-cache-set)
                      (concat mru-cache))
 
          msg (or msg message)
 
-         sep "|"
+         sep (if (config/osx?) "\n" "|")
 
-         _ (timer/print-since "rofi labels filtered and sorted")
+         ;; labels (take 150 labels)
+
+         input-label-string (string/join sep labels)
+
+         _ (timer/print-since "rofi labels string joined")
          selected-label
          (some->
 
            (if (config/osx?)
-             ^{:in  (string/join "\n" labels)
+             ^{:in  input-label-string
                :out :string}
              ($ choose -u)
 
              ;; TODO could move to async piping of entries to rofi
-             ^{:in  (string/join sep labels)
+             ^{:in  input-label-string
                :out :string}
              ($ rofi -i
                 ~(if require-match? "-no-custom" "")
@@ -139,7 +148,7 @@
                 ;; -eh 2 ;; row height
                 ;; -dynamic
                 ;; -no-fixed-num-lines
-                -dmenu -mesg ~msg -sync -p *))
+                -dmenu -mesg ~msg -p *))
 
            ((fn [proc]
               ;; check for type of error
