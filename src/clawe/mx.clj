@@ -24,6 +24,7 @@
    [clawe.toggle :as toggle]
    [clawe.wm :as wm]
    [clawe.workspace.open :as workspace.open]
+   [clawe.mx-fast :as c.mx-fast]
 
    [timer :as timer]))
 
@@ -372,11 +373,16 @@ hi there
   ([] (mx-fast nil))
   ([_]
    (timer/print-since "clawe.mx/mx-fast\tstart")
-   (->> (mx-commands-fast)
-        (#(do (timer/print-since "clawe.mx/mx-fast\tcommands fast") %))
-        (rofi/rofi {:require-match? true
-                    :msg            "Clawe commands (fast)"
-                    :cache-id       "clawe-mx-fast"}))
+   (c.mx-fast/clear-mx-cache)
+   (let [cmds (mx-commands-fast)]
+     (->> cmds
+          (#(do (timer/print-since "clawe.mx/mx-fast\tcommands fast") %))
+          (rofi/rofi {:require-match? true
+                      :msg            "Clawe commands (fast)"
+                      :cache-id       "clawe-mx-fast"}))
+     (c.mx-fast/write-mx-cache
+       (->> cmds (map #(select-keys % #{:rofi/label})))
+       #_(->> cmds (map #(dissoc % :rofi/on-select)))))
    (timer/print-since "clawe.mx-fast\tend")))
 
 (comment
@@ -384,3 +390,23 @@ hi there
 
   (mx)
   (mx-fast))
+
+(defn call-selected-label
+  "Calls a command matching the passed 'label'.
+
+  Invoked via bb.process from clawe.mx-fast."
+  [{:keys [label]}]
+  (timer/print-since "clawe.mx/call-selected-label\tstart")
+  (let [cmd-map (->> (mx-commands-fast)
+                     (#(do (timer/print-since "clawe.mx/call-selected-label\tcommands fast") %))
+                     (group-by :rofi/label)
+                     (map (fn [[k v]] [k (first v)]))
+                     (into {}))
+        _       (timer/print-since "clawe.mx/call-selected-label\tbuilt cmd-map (lazy?)")
+        cmd     (get cmd-map label)]
+    (if cmd
+      (do
+        (timer/print-since "clawe.mx/call-selected-label\tcalling on-select")
+        ((:rofi/on-select cmd) cmd))
+      (println "WARN: no command found for passed label" label
+               (keys cmd-map)))))

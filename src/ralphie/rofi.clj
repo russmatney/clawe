@@ -3,9 +3,11 @@
    [babashka.process :refer [$ check]]
    [clojure.string :as string]
    [ralphie.config :as config]
+   [ralphie.cache :as cache]
    [babashka.fs :as fs]
 
-   [timer :as timer]))
+   [timer :as timer]
+   ))
 
 (timer/print-since "ralphie.rofi ns loaded")
 
@@ -14,7 +16,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn mru-cache-file [cache-id]
-  (config/cache-file (str "mru-" cache-id)))
+  (cache/cache-file (str "mru-" cache-id)))
 
 (defn read-mru-cache [{:keys [cache-id file]}]
   (when (or cache-id file)
@@ -93,7 +95,7 @@
 
          (coll? opts)
          (rofi {} opts)))
-  ([{:keys [msg message on-select require-match? cache-id]} xs]
+  ([{:keys [msg message on-select require-match? mru-cache-id]} xs]
    ;; (println "Rofi called with" (count xs) "xs.")
    (timer/print-since (str "rofi/rofi with " (count xs) "xs"))
 
@@ -105,7 +107,7 @@
                         xs)
          labels-set (into #{} labels)
 
-         mru-cache     (->> (read-mru-cache {:cache-id cache-id})
+         mru-cache     (->> (read-mru-cache {:cache-id mru-cache-id})
                             (filter labels-set))
          mru-cache-set (into #{} mru-cache)
 
@@ -156,7 +158,7 @@
                   (do
                     (println res)
                     (check proc)))))))]
-     (update-mru-cache {:cache-id cache-id :label selected-label})
+     (update-mru-cache {:cache-id mru-cache-id :label selected-label})
 
      (when (seq selected-label)
        ;; TODO use index-by, or just make a map

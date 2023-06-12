@@ -2,13 +2,14 @@
   (:require
    [babashka.process :as process :refer [$]]
    [ralphie.config :as config]
+   [ralphie.cache :as cache]
    [clojure.edn :as edn]
    [clojure.string :as string]))
 
 ;; id/replaces-process cache ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn process-cache []
-  (config/cache-file "notify-process-cache.edn"))
+  (cache/cache-file "notify-process-cache.edn"))
 
 (defn read-process-cache
   ([] (read-process-cache nil))
