@@ -425,7 +425,7 @@ if it is busy."
 
      (let [
            proc
-           (if config/osx?
+           (if (config/osx?)
              ($ open -na "/Applications/Alacritty.app" --args
                 --title ~session-name -e tmux "new-session" -A
                 ~(when directory "-c") ~(when directory directory)

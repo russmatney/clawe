@@ -7,6 +7,8 @@
 
    [timer :as timer]))
 
+(timer/print-since "ralphie.rofi ns loaded")
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; mru
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -58,7 +60,7 @@
   it is left as is."
   [{:rofi/keys [label description] :as x}]
   (cond
-    config/osx?           x
+    (config/osx?)         x
     (not label)           x
     (#{\<} (first label)) x
     :else
@@ -119,7 +121,7 @@
          selected-label
          (some->
 
-           (if config/osx?
+           (if (config/osx?)
              ^{:in  (string/join "\n" labels)
                :out :string}
              ($ choose -u)

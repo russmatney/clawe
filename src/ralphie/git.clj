@@ -30,14 +30,12 @@
 ;; local repos
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def local-repos-root (fs/home))
-
 (defn local-repos
   "Returns a list of absolute paths to local git repos"
   []
   (->> (bb/run-proc
          {:error-message (str "RALPHIE ERROR fetching local repos")}
-         ^{:dir local-repos-root}
+         ^{:dir (fs/home)}
          ($ ls -a))
        ;; TODO run in parallel
        ;; or just memoize?
@@ -197,8 +195,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def local-repo-group-dirs
-  [(zsh/expand "~/russmatney")
-   (zsh/expand "~/teknql")])
+  ["russmatney" "teknql"])
 
 (defn update-local-repos
   "Updates local repo refs using git-summary.
@@ -217,7 +214,7 @@
   []
   (notify "Updating local repo refs via git-summary" local-repo-group-dirs)
   (for [dir local-repo-group-dirs]
-    (tmux/fire {:tmux.fire/cmd     (str "cd " dir " && git-summary")
+    (tmux/fire {:tmux.fire/cmd     (str "cd " (str (fs/home) "/" dir) " && git-summary")
                 :tmux.fire/session "git-summary"})))
 
 (defcom update-local-repos-cmd

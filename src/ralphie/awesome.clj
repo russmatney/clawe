@@ -37,7 +37,10 @@
    [defthing.defcom :refer [defcom] :as defcom]
    [ralphie.awesome.fnl :as awm.fnl :refer [fnl]]
    [ralphie.notify :as notify]
-   [ralphie.sh :as sh]))
+   [ralphie.sh :as sh]
+   [timer :as timer]))
+
+(timer/print-since "ralphie.awesome ns loading")
 
 ;; This is hard-coded to the awesome keybinding writer! be careful!
 (def awm-fnl awm.fnl/awm-fnl) ;; awmfnlawmfnlawmfnl

@@ -2,8 +2,7 @@
   (:require
    [babashka.process :as process]
    [backtick]
-   [clojure.string :as string]
-   [ralphie.config :as config]))
+   [clojure.string :as string]))
 
 (comment
   (ralphie.awesome.fnl/fnl
@@ -85,20 +84,19 @@ util = require 'util';
   Adds a preamble that sets common variables and requires common modules."
   ([lua-str] (awm-cli nil lua-str))
   ([opts lua-str]
-   (when-not config/osx? ;; TODO better detection/handling for awm running
-     (let [quiet? (:quiet? opts true)]
-       (->>
-         (str lua-preamble "\n\n-- Passed command:\n" lua-str)
-         ((fn [lua-str]
-            (when-not quiet?
-              (println "Running lua via awesome-client!:\n\n" lua-str))
-            lua-str))
-         ((fn [lua-str]
-            ^{:out :string}
-            (process/$ awesome-client ~lua-str)))
-         process/check
-         :out
-         parse-output)))))
+   (let [quiet? (:quiet? opts true)]
+     (->>
+       (str lua-preamble "\n\n-- Passed command:\n" lua-str)
+       ((fn [lua-str]
+          (when-not quiet?
+            (println "Running lua via awesome-client!:\n\n" lua-str))
+          lua-str))
+       ((fn [lua-str]
+          ^{:out :string}
+          (process/$ awesome-client ~lua-str)))
+       process/check
+       :out
+       parse-output))))
 
 (def awm-lua awm-cli)
 

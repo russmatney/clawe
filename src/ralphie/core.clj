@@ -1,7 +1,7 @@
 (ns ralphie.core
   (:require
    [defthing.defcom :as defcom]
-   ralphie.awesome
+   ;; ralphie.awesome
    ralphie.browser
    ralphie.emacs
    ralphie.fzf
@@ -18,7 +18,11 @@
    ralphie.systemd
    ralphie.tmux
    ralphie.yabai
-   ralphie.zsh))
+   ralphie.zsh
+
+   [timer :as timer]))
+
+(timer/print-since "ralphie.core ns loading")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; defcom->rofi

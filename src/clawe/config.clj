@@ -11,11 +11,11 @@
 (defn calc-is-mac? []
   (boolean (string/includes? (zsh/expand "$OSTYPE") "darwin")))
 
-(def config-res (io/resource "clawe.edn"))
+(defn config-res [] (io/resource "clawe.edn"))
 
 (defn ->config []
   (->
-    (aero/read-config config-res)
+    (aero/read-config (config-res))
     (assoc :is-mac (calc-is-mac?))
     (assoc :home-dir (str (fs/home)))))
 
@@ -50,9 +50,9 @@
   (sys/start! `*config*)
   (let [updated-config  (merge @*config* updated-config)
         writable-config (apply dissoc updated-config do-not-write-keys)]
-    (spit config-res (-> writable-config
-                         (zp/zprint-str 100)
-                         (string/replace "," "")))))
+    (spit (config-res) (-> writable-config
+                           (zp/zprint-str 100)
+                           (string/replace "," "")))))
 
 (comment
   (write-config nil))

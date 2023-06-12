@@ -12,7 +12,7 @@
 (defn get-clip
   ([] (get-clip "primary"))
   ([clipboard-name]
-   (if config/osx?
+   (if (config/osx?)
      (-> ^{:out :string} (p/$ pbpaste) p/check :out)
      (-> (sh/sh "xclip" "-o" "-selection" clipboard-name)
          :out))))
@@ -44,7 +44,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn set-clip [s]
-  (if config/osx?
+  (if (config/osx?)
     (-> ^{:out :string :in s} (p/$ pbcopy) p/check :out)
     (-> (p/process '[xclip -i -selection clipboard]
                    {:in s})

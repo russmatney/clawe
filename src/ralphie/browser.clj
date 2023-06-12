@@ -138,7 +138,7 @@ Depends on `brotab`."
    (let [url (when opts
                (if (string? opts) opts
                    (some opts [:url :browser.open/url])))]
-     (if config/osx?
+     (if (config/osx?)
        (if url
          (->
            ^{:out :string}
@@ -176,7 +176,7 @@ Depends on `brotab`."
    (if url
      (-> (p/$ firefox-developer-edition --new-tab ~url)
          p/check :out)
-     (if config/osx?
+     (if (config/osx?)
        (-> ^{:out :string}
            (p/$ open -na "/Applications/Firefox Developer Edition.app")
            p/check :out)

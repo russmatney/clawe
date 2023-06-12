@@ -4,8 +4,8 @@
    [clojure.string :as string]
    [ralphie.zsh :as zsh]))
 
-(def osx? (boolean (string/includes? (zsh/expand "$OSTYPE") "darwin")))
-(comment osx?)
+(defn osx? [] (boolean (string/includes? (zsh/expand "$OSTYPE") "darwin")))
+(comment (osx?))
 
 
 ;; TODO this should all come via resources/*.edn and aero, maybe systemic as well

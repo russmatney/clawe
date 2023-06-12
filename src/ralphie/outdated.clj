@@ -6,13 +6,13 @@
   (:require
    [clojure.edn :as edn]
    [babashka.process :refer [$ check]]
-   [ralphie.config :as config]
+   [babashka.fs :as fs]
    [clojure.string :as str]
    [defthing.defcom :as defcom :refer [defcom]]))
 
 (defn repo->deps [repo]
   (-> repo
-      (#(str (config/home-dir) "/" % "/deps.edn"))
+      (#(str (fs/home) "/" % "/deps.edn"))
       slurp
       edn/read-string
       :deps))

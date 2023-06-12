@@ -82,7 +82,7 @@
          notify-id (some opts [:id :notify/id])
          print?    (some opts [:print? :notify/print?])
          cmd-str
-         (if config/osx?
+         (if (config/osx?)
            (osx-notif-cmd {:subject subject :body body})
            (linux-notif-cmd {:subject subject :body body :notify-id notify-id}))
 
@@ -90,7 +90,7 @@
      (try
        (cond-> (process/process cmd-str {:out :string})
          true process/check
-         (and notify-id (not config/osx?))
+         (and notify-id (not (config/osx?)))
          (#(-> % :out string/trim read-string (write-proc-id notify-id))))
        (catch Exception e
          (println e)
