@@ -1,15 +1,3 @@
-(ns timer)
-
-(def start-t (atom (System/currentTimeMillis)))
-(def last-t (atom nil))
-
-(defn print-since [line]
-  (let [now      (System/currentTimeMillis)
-        old-last @last-t]
-    (reset! last-t now)
-    (println "|" (when old-last (- now old-last)) "\t|" (- now @start-t) "\t|" line)))
-
-
 (ns clawe.mx-fast
   (:require
    [clojure.string :as string]
@@ -29,7 +17,10 @@
    [clawe.doctor :as doctor]
    [clawe.toggle :as toggle]
    [clawe.wm :as wm]
-   [clawe.workspace.open :as workspace.open]))
+   [clawe.workspace.open :as workspace.open]
+
+   [timer :as timer]
+   ))
 
 (timer/print-since "clawe.mx-fast\tNamespace (and deps) Loaded")
 

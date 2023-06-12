@@ -3,7 +3,9 @@
    [babashka.process :refer [$ check]]
    [clojure.string :as string]
    [ralphie.config :as config]
-   [babashka.fs :as fs]))
+   [babashka.fs :as fs]
+
+   [timer :as timer]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; mru
@@ -91,7 +93,7 @@
          (rofi {} opts)))
   ([{:keys [msg message on-select require-match? cache-id]} xs]
    ;; (println "Rofi called with" (count xs) "xs.")
-   ;; (timer/print-since "rofi/rofi")
+   (timer/print-since (str "rofi/rofi with " (count xs) "xs"))
 
    (let [maps?      (-> xs first map?)
          xs         (if maps? (->> xs (map build-label)) xs)
@@ -113,7 +115,7 @@
 
          sep "|"
 
-         ;; _ (timer/print-since "rofi labels filtered and sorted")
+         _ (timer/print-since "rofi labels filtered and sorted")
          selected-label
          (some->
 
@@ -122,6 +124,7 @@
                :out :string}
              ($ choose -u)
 
+             ;; TODO could move to async piping of entries to rofi
              ^{:in  (string/join sep labels)
                :out :string}
              ($ rofi -i
@@ -132,8 +135,7 @@
                 ;; -eh 2 ;; row height
                 ;; -dynamic
                 ;; -no-fixed-num-lines
-                -dmenu -mesg ~msg -sync -p *)
-             )
+                -dmenu -mesg ~msg -sync -p *))
 
            ((fn [proc]
               ;; check for type of error
