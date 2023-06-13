@@ -83,7 +83,7 @@
                               (map (some-fn :label :rofi/label))
                               (map escape-rofi-label))
                    xs)
-        _      (timer/print-since (str "rofi labels escaped" (->> labels (take 3) (apply str))))
+        _      (timer/print-since (str "rofi labels escaped" #_(->> labels (take 3) (apply str))))
         ;; labels-set (into #{} labels)
         ;; _          (timer/print-since "rofi labels in a set")
 
@@ -129,7 +129,8 @@
            rofi-input
            (cond (seq xs) (let [label-input (xs->input-string (assoc opts :sep sep) xs)]
                             ;; invoke this callback to update calling rofi caches
-                            (label-input->cache label-input)
+                            (when label-input->cache
+                              (label-input->cache label-input))
                             label-input)
 
                  (fs/exists? input-file) input-file)
@@ -142,21 +143,17 @@
                ($ choose -u)
 
                ;; TODO could move to async piping of entries to rofi
-               (with-meta
-                 ($ rofi -i
-                    ~(if require-match? "-no-custom" "")
-                    -sep ~sep
-                    ~(when input-file (str "-input " input-file))
-                    -markup-rows
-                    -normal-window ;; NOTE may want this to be optional
-                    ;; -eh 2 ;; row height
-                    ;; -dynamic
-                    ;; -no-fixed-num-lines
-                    -dmenu -mesg ~msg -p *)
-                 (cond->
-                     {:out :string :err :string}
-                   (seq xs)
-                   (assoc :in rofi-input))))
+               ^{:out :string :err :string :in rofi-input}
+               ($ rofi -i
+                  ~(if require-match? "-no-custom" "")
+                  -sep ~sep
+                  ;; ~(when input-file (str "-input " input-file))
+                  -markup-rows
+                  -normal-window ;; NOTE may want this to be optional
+                  ;; -eh 2 ;; row height
+                  ;; -dynamic
+                  ;; -no-fixed-num-lines
+                  -dmenu -mesg ~msg -p *))
 
              ((fn [proc]
                 ;; check for type of error
@@ -169,7 +166,6 @@
                     (= 1 (:exit res))
                     (do
                       (println "\nRofi Nothing Selected (or Error)")
-                      (println res)
                       nil)
 
                     :else
@@ -181,7 +177,9 @@
        (when (seq selected-label)
          ;; TODO use index-by, or just make a map
          (let [->label    (fn [x]
-                            (-> (or (:rofi/label x) (:label x)) escape-rofi-label))
+                            (-> x build-label ((some-fn :label :rofi/label)) escape-rofi-label))
+               ;; xs-by-label (->> xs (group-by ->label) (map (fn [[k v]] [k (first v)])) (into {}))
+               ;; is this shortest-match actually important?
                selected-x (if (and (seq xs) (map? (first xs)))
                             (let [matches
                                   (->> xs

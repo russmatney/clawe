@@ -25,7 +25,8 @@
 
 (defkbd clawe-rofi-mx-fast
   [[:mod] "x"]
-  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.mx-fast/mx-fast"))
+  #_(sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.mx-fast/mx-fast")
+  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.mx/mx-fast"))
 
 (defkbd rofi-launcher
   [[:mod] "space"]

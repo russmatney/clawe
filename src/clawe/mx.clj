@@ -24,7 +24,7 @@
    [clawe.toggle :as toggle]
    [clawe.wm :as wm]
    [clawe.workspace.open :as workspace.open]
-   [clawe.mx-fast :as c.mx-fast]
+   #_[clawe.mx-fast :as c.mx-fast]
 
    [timer :as timer]))
 
@@ -373,19 +373,19 @@ hi there
   ([] (mx-fast nil))
   ([_]
    (timer/print-since "clawe.mx/mx-fast\tstart")
-   (c.mx-fast/clear-mx-cache)
+   ;; (c.mx-fast/clear-mx-cache)
    (let [cmds (mx-commands-fast)]
      (->> cmds
           (#(do (timer/print-since "clawe.mx/mx-fast\tcommands fast") %))
-          (rofi/rofi {:require-match?     true
-                      :msg                "Clawe commands (fast)"
-                      :cache-id           "clawe-mx-fast"
-                      :label-input->cache (fn [label-input]
-                                            (c.mx-fast/write-mx-cache
-                                              label-input
-                                              #_(->> cmds (map #(select-keys % #{:rofi/label})))
-                                              #_(->> cmds (map #(dissoc % :rofi/on-select)))))}))
-     )
+          (rofi/rofi {:require-match? true
+                      :msg            "Clawe commands (fast)"
+                      :cache-id       "clawe-mx-fast"
+                      ;; :label-input->cache (fn [label-input]
+                      ;;                       (c.mx-fast/write-mx-cache
+                      ;;                         label-input
+                      ;;                         #_(->> cmds (map #(select-keys % #{:rofi/label})))
+                      ;;                         #_(->> cmds (map #(dissoc % :rofi/on-select)))))
+                      })))
    (timer/print-since "clawe.mx-fast\tend")))
 
 (comment
