@@ -63,6 +63,7 @@ hi there
    (->> (clipboard/get-clip "clipboard")
         string/split-lines
         org-crud.parse/parse-lines
+        ;; TODO fix! this seems to drop everything
         (org-crud.markdown/item->md-body {:drop-id-links true})
         (string/join "\n")
         clipboard/set-clip)))

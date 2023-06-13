@@ -5,7 +5,7 @@
    [ralphie.zsh :as zsh]
    [babashka.fs :as fs]
    [systemic.core :as sys :refer [defsys]]
-   ;; [zprint.core :as zp]
+   [zprint.core :as zp]
    [clojure.string :as string]
 
    [timer :as timer]
@@ -60,8 +60,7 @@
   (let [updated-config  (merge @*config* updated-config)
         writable-config (apply dissoc updated-config do-not-write-keys)]
     (spit (config-res) (-> writable-config
-                           str
-                           ;; (zp/zprint-str 100)
+                           (zp/zprint-str 100)
                            (string/replace "," "")))))
 
 (comment
