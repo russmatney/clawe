@@ -24,7 +24,6 @@
    [clawe.toggle :as toggle]
    [clawe.wm :as wm]
    [clawe.workspace.open :as workspace.open]
-   #_[clawe.mx-fast :as c.mx-fast]
 
    [timer :as timer]))
 
@@ -275,12 +274,24 @@ hi there
          (filter :repo-id))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; mx fast
+;; mx-ctx-suggestions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn mx-commands-fast
-  ([] (mx-commands-fast nil))
-  ([_]
+(defn common-wsps []
+  (->>
+    (workspace-defs)
+    (filter :workspace/directory)
+    (filter (comp #(re-seq #"russmatney" %) :workspace/directory))))
+
+(def common-wsps-mem (memoize common-wsps))
+
+(defn mx-suggestion-commands
+  "Commands that support dynamic context (e.g. open browser tabs).
+
+  Commands that cannot be memoized,
+  plus useful commands to have when the server is down (e.g. opening a workspace to fix it)."
+  ([] (mx-suggestion-commands nil))
+  ([{:keys [_wsp]}]
    (->>
      (concat
        (->>
@@ -298,15 +309,28 @@ hi there
 
        (rofi-neil-suggestions)
 
-       (client-defs)
-       (workspace-defs)
-       ;; all defcoms
-       (->> (defcom/list-commands) (map r.core/defcom->rofi))
-       (blog-rofi-opts)
+       ;; TODO show only common but unopen workspaces (clawe, dotfiles, dino)
+       (common-wsps-mem))
+     (remove nil?))))
 
-       ;; all bindings
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; mx fast
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn mx-commands-fast
+  ([] (mx-commands-fast nil))
+  ([_]
+   (->>
+     (concat
+       (->> (defcom/list-commands) (map r.core/defcom->rofi))
+       (workspace-defs)
+       (client-defs)
+       (blog-rofi-opts)
        (->> (defkbd/list-bindings) (map defkbd/->rofi)))
      (remove nil?))))
+
+;; TODO need to bust this, e.g. when new workspace defs are created
+(def mx-commands-fast-memoized (memoize mx-commands-fast))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; mx full
@@ -321,13 +345,13 @@ hi there
          ;; open deps github page
          (deps-git-urls wsp)
 
-         (mx-commands-fast)
-
          ;; run bb tasks for the current workspace
          (bb-tasks-for-wsp wsp)
 
          ;; open a known workspace
          (workspace.open/open-workspace-rofi-options)
+
+         (mx-commands-fast)
 
          ;; kill tmux/tags/clients
          (when-not (clawe.config/is-mac?)
@@ -340,16 +364,11 @@ hi there
            (systemd/rofi-service-opts #(str "Stop " %) :systemd/stop)))
        (remove nil?)))))
 
-(comment
-  (mx-commands)
+;; TODO need to bust this cache from time to time, eg. when a new bb task is created
+(def mx-commands-memoized (memoize mx-commands))
 
-  (->>
-    (mx-commands)
-    (filter :defcom/name)
-    (filter (comp #(re-seq #"key" %) :defcom/name))
-    (first)
-    :rofi/on-select
-    ((fn [f] (f)))))
+(comment
+  (mx-commands))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; public
@@ -362,55 +381,33 @@ hi there
    (timer/print-since "clawe.mx/mx\tstart")
    (let [wsp (wm/current-workspace)]
      (timer/print-since "clawe.mx/mx\tfetched current workspace (or it's lazy?)")
-     (->> (mx-commands {:wsp wsp})
+     (->> (mx-commands-memoized {:wsp wsp})
           (#(do (timer/print-since "clawe.mx/mx\tcommands") %))
           (rofi/rofi {:require-match? true
                       :msg            "Clawe commands"
-                      :cache-id       "clawe-mx"}))
-     (timer/print-since "clawe.mx\tend"))))
+                      :cache-id       "clawe-mx"})))
+   (timer/print-since "clawe.mx\tend")))
 
 (defn mx-fast
   "Run rofi with commands created in `mx-commands-fast`."
   ([] (mx-fast nil))
   ([_]
    (timer/print-since "clawe.mx/mx-fast\tstart")
-   ;; (c.mx-fast/clear-mx-cache)
-   (let [cmds (mx-commands-fast)]
+   (let [cmds (mx-commands-fast-memoized)]
      (->> cmds
           (#(do (timer/print-since "clawe.mx/mx-fast\tcommands fast") %))
           (rofi/rofi {:require-match? true
                       :msg            "Clawe commands (fast)"
-                      :cache-id       "clawe-mx-fast"
-                      ;; :label-input->cache (fn [label-input]
-                      ;;                       (c.mx-fast/write-mx-cache
-                      ;;                         label-input
-                      ;;                         #_(->> cmds (map #(select-keys % #{:rofi/label})))
-                      ;;                         #_(->> cmds (map #(dissoc % :rofi/on-select)))))
-                      })))
-   (timer/print-since "clawe.mx-fast\tend")))
+                      :cache-id       "clawe-mx-fast"})))
+   (timer/print-since "mx-fast\tend")))
 
-(comment
-  (mx-commands {:wsp (wm/current-workspace)})
-
-  (mx)
-  (mx-fast))
-
-(defn call-selected-label
-  "Calls a command matching the passed 'label'.
-
-  Invoked via bb.process from clawe.mx-fast."
-  [{:keys [label]}]
-  (timer/print-since "clawe.mx/call-selected-label\tstart")
-  (let [cmd-map (->> (mx-commands-fast)
-                     (#(do (timer/print-since "clawe.mx/call-selected-label\tcommands fast") %))
-                     (group-by :rofi/label)
-                     (map (fn [[k v]] [k (first v)]))
-                     (into {}))
-        _       (timer/print-since "clawe.mx/call-selected-label\tbuilt cmd-map (lazy?)")
-        cmd     (get cmd-map label)]
-    (if cmd
-      (do
-        (timer/print-since "clawe.mx/call-selected-label\tcalling on-select")
-        ((:rofi/on-select cmd) cmd))
-      (println "WARN: no command found for passed label" label
-               (keys cmd-map)))))
+(defn mx-suggestions
+  "Run rofi with commands created in `mx-commands`."
+  ([] (mx nil))
+  ([_]
+   (timer/print-since "clawe.mx/mx-suggestions\tstart")
+   (->> (mx-suggestion-commands)
+        (#(do (timer/print-since "clawe.mx/mx-suggestions\tcommands") %))
+        (rofi/rofi {:require-match? true
+                    :msg            "Clawe suggestions"}))
+   (timer/print-since "mx-suggestions\tend")))

@@ -10,7 +10,9 @@
    [wallpapers.core :as wallpapers]
    #_[notebooks.clerk :as notebooks.clerk]
    [clojure.string :as string]
-   [babashka.fs :as fs]))
+   [babashka.fs :as fs]
+
+   [clawe.mx :as clawe.mx]))
 
 
 (defn route
@@ -76,6 +78,16 @@
     (do
       (blog/restart-systems)
       {:status 200 :body "restarted blog systems"})
+
+    (= uri "/clawe-mx")
+    (do
+      (clawe.mx/mx)
+      {:status 200})
+
+    (= uri "/clawe-mx-fast")
+    (do
+      (clawe.mx/mx-fast)
+      {:status 200})
 
     :else
     (do

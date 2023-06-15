@@ -39,3 +39,11 @@
 (defn restart-blog-systems
   ([] (restart-blog-systems nil))
   ([_] (slurp (str (clawe.config/doctor-base-url) "/blog/restart-systems"))))
+
+(defn clawe-mx
+  ([] (clawe-mx))
+  ([_] (slurp (str (clawe.config/doctor-base-url) "/clawe-mx"))))
+
+(defn clawe-mx-fast
+  ([] (clawe-mx-fast))
+  ([_] (slurp (str (clawe.config/doctor-base-url) "/clawe-mx-fast"))))

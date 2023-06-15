@@ -78,24 +78,24 @@
   (let [maps? (-> xs first map?)
         xs    (if maps? (->> xs (map build-label)) xs)
 
-        _      (timer/print-since "rofi labels built")
-        labels (if maps? (->> xs
-                              (map (some-fn :label :rofi/label))
-                              (map escape-rofi-label))
-                   xs)
-        _      (timer/print-since (str "rofi labels escaped" #_(->> labels (take 3) (apply str))))
-        ;; labels-set (into #{} labels)
-        ;; _          (timer/print-since "rofi labels in a set")
+        labels     (if maps? (->> xs
+                                  (map (some-fn :label :rofi/label))
+                                  (map escape-rofi-label))
+                       xs)
+        labels-set (into #{} labels)
 
-        mru-cache         (->> (read-mru-cache {:cache-id mru-cache-id})
-                               #_(filter labels-set))
-        #_#_mru-cache-set (into #{} mru-cache)
+        mru-cache     (->> (read-mru-cache {:cache-id mru-cache-id})
+                           (filter labels-set))
+        mru-cache-set (into #{} mru-cache)
 
-        _      (timer/print-since "mru cache read and in a set")
         labels (->> labels
-                    #_(remove mru-cache-set)
+                    (remove mru-cache-set)
                     (concat mru-cache))]
     (string/join sep labels)))
+
+;; TODO restore mru sorting in the wake of this memoization
+;; maybe with a write-ahead cache of this function?
+(def xs->input-string-memoized (memoize xs->input-string))
 
 ;; TODO Tests for this,especially that ensure the result is returned
 (defn rofi
@@ -127,7 +127,7 @@
      (let [msg (or msg message)
            sep (if (config/osx?) "\n" "|")
            rofi-input
-           (cond (seq xs) (let [label-input (xs->input-string (assoc opts :sep sep) xs)]
+           (cond (seq xs) (let [label-input (xs->input-string-memoized (assoc opts :sep sep) xs)]
                             ;; invoke this callback to update calling rofi caches
                             (when label-input->cache
                               (label-input->cache label-input))

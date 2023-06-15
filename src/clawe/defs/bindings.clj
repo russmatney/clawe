@@ -20,13 +20,19 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defkbd clawe-rofi-mx-all
-  [[:mod :shift] "x"]
-  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.mx/mx"))
+  [[:mod] "x"]
+  ;; (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.mx/mx")
+  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-mx"))
 
 (defkbd clawe-rofi-mx-fast
-  [[:mod] "x"]
+  [[:mod :shift] "x"]
   #_(sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.mx-fast/mx-fast")
-  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.mx/mx-fast"))
+  #_(sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.mx/mx-fast")
+  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-mx-fast"))
+
+(defkbd clawe-rofi-mx-suggestions
+  [[:mod] "w"]
+  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.mx/mx-suggestions"))
 
 (defkbd rofi-launcher
   [[:mod] "space"]
