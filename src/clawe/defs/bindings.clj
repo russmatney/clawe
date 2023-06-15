@@ -21,17 +21,22 @@
 
 (defkbd clawe-rofi-mx-all
   [[:mod] "x"]
-  ;; (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.mx/mx")
+  "Invoke clawe-mx from the server."
   (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-mx"))
 
-(defkbd clawe-rofi-mx-fast
+(defkbd clawe-rofi-mx-bb
   [[:mod :shift] "x"]
-  #_(sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.mx-fast/mx-fast")
-  #_(sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.mx/mx-fast")
-  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-mx-fast"))
+  "A babashka-only (serverless) clawe-mx command."
+  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.mx/mx-fast"))
 
 (defkbd clawe-rofi-mx-suggestions
   [[:mod] "w"]
+  "Invoke clawe-mx-suggestions from the server"
+  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-mx-suggestions"))
+
+(defkbd clawe-rofi-mx-suggestions-bb
+  [[:mod :shift] "w"]
+  "A babashka-only (serverless) clawe-suggestions command."
   (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.mx/mx-suggestions"))
 
 (defkbd rofi-launcher

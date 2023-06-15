@@ -8,7 +8,9 @@
    [clawe.config :as clawe.config]
    [clawe.doctor :as clawe.doctor]
    [clawe.rules :as clawe.rules]
-   [clawe.wm :as wm]))
+   [clawe.wm :as wm]
+   [clawe.mx :as mx]
+   ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Workspace opening/creation/installation
@@ -41,6 +43,7 @@
   [wsp]
   ;; creates (ensures) workspace before focusing
   (wm/focus-workspace wsp)
+
   ;; TODO open clients for workspace
   ;; could be clients with matching workspace titles, or some other matching rule
   ;; (client.create/create-client "emacs")
@@ -48,6 +51,10 @@
   ;; (clawe.rules/clean-up-workspaces) ;; deletes empty workspace immediately after creating it
   (clawe.rules/sort-workspace-indexes)
   (clawe.doctor/update-topbar)
+
+  ;; invoke clawe-mx to warm up the mx-cache for this workspace
+  ;; maybe want an option to NOT open rofi in this case
+  (clawe.mx/mx {:wsp wsp})
   wsp)
 
 (defn create-workspace-def [repo-wsp]

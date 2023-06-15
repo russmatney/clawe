@@ -47,3 +47,7 @@
 (defn clawe-mx-fast
   ([] (clawe-mx-fast))
   ([_] (slurp (str (clawe.config/doctor-base-url) "/clawe-mx-fast"))))
+
+(defn clawe-mx-suggestions
+  ([] (clawe-mx-suggestions))
+  ([_] (slurp (str (clawe.config/doctor-base-url) "/clawe-mx-suggestions"))))

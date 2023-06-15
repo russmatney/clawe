@@ -89,6 +89,11 @@
       (clawe.mx/mx-fast)
       {:status 200})
 
+    (= uri "/clawe-mx-suggestions")
+    (do
+      (clawe.mx/mx-suggestions)
+      {:status 200})
+
     :else
     (do
       (println "uri" uri)

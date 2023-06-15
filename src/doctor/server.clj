@@ -70,6 +70,13 @@
   "Plasma sessions"
   (atom {}))
 
+(defn server-status-notif [opts]
+  (notify/notify
+    (merge {:notify/subject "Server status notif"
+            :notify/body    (str "active sessions: " (count @*sessions*))
+            :notify/id      :doctor/server-status}
+           opts)))
+
 (defsys ^:dynamic *plasma-server*
   "Our plasma server bundle"
   (plasma.server/make-server
@@ -97,17 +104,12 @@
     #(do
        (plasma.server/on-connect! *plasma-server* (:channel %))
        (log/info "client connected" (str "(" (count @*sessions*) " current)"))
-       (notify/notify {:notify/subject "Websocket connected"
-                       :notify/body    (str "active sessions: " (count @*sessions*))
-                       :notify/id      :doctor/sessions}))
-
+       (server-status-notif {:notify/subject "Websocket connected"}))
     :on-close-message
     #(do
        (plasma.server/on-disconnect! *plasma-server* (:channel %))
        (log/info "client disconnected" (str "(" (count @*sessions*) " current)"))
-       (notify/notify {:notify/subject "Websocket disconnected"
-                       :notify/body    (str "active sessions: " (count @*sessions*))
-                       :notify/id      :doctor/sessions}))
+       (server-status-notif {:notify/subject "Websocket connected"}))
     :on-message #(plasma.server/on-message! *plasma-server*
                                             (:channel %)
                                             (:data %))
@@ -188,9 +190,7 @@
                    {:port             port
                     :session-manager? false
                     :websocket?       true})]
-      (notify/notify {:notify/subject "Started doctor backend server!"
-                      :notify/body    (str "On port: " port)
-                      :notify/id      :doctor/server})
+      (server-status-notif {:notify/subject (str "Server started on port: " port)})
       ;; be sure to return the server as the system
       server))
   :stop

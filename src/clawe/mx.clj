@@ -348,9 +348,6 @@ hi there
          ;; run bb tasks for the current workspace
          (bb-tasks-for-wsp wsp)
 
-         ;; open a known workspace
-         (workspace.open/open-workspace-rofi-options)
-
          (mx-commands-fast)
 
          ;; kill tmux/tags/clients
@@ -377,9 +374,9 @@ hi there
 (defn mx
   "Run rofi with commands created in `mx-commands`."
   ([] (mx nil))
-  ([_]
+  ([{:keys [wsp]}]
    (timer/print-since "clawe.mx/mx\tstart")
-   (let [wsp (wm/current-workspace)]
+   (let [wsp (or wsp (wm/current-workspace))]
      (timer/print-since "clawe.mx/mx\tfetched current workspace (or it's lazy?)")
      (->> (mx-commands-memoized {:wsp wsp})
           (#(do (timer/print-since "clawe.mx/mx\tcommands") %))
@@ -403,7 +400,7 @@ hi there
 
 (defn mx-suggestions
   "Run rofi with commands created in `mx-commands`."
-  ([] (mx nil))
+  ([] (mx-suggestions nil))
   ([_]
    (timer/print-since "clawe.mx/mx-suggestions\tstart")
    (->> (mx-suggestion-commands)
