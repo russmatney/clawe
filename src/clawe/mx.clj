@@ -200,10 +200,17 @@ hi there
     (map (fn [d] (-> d (assoc :rofi/label (str "client-def: " (:client/key d))
                               :rofi/on-select (fn [_] (client-action-rofi d))))))))
 
+(declare mx)
+
 (defn wsp-def->actions [wsp]
   [{:rofi/label     "Open Workspace and emacs"
     :rofi/on-select (fn [_]
                       (workspace.open/open-new-workspace wsp)
+
+                      ;; invoke clawe-mx to warm up the mx-cache for this workspace
+                      ;; maybe want an option to NOT open rofi in this case
+                      (mx {:wsp wsp})
+
                       ;; TODO may need to handle a race-case, or pass in new wsp info to avoid it
                       (client.create/create-client "emacs"))}
    (when (-> wsp :workspace/directory)
@@ -216,10 +223,20 @@ hi there
    {:rofi/label     "Open Workspace and terminal"
     :rofi/on-select (fn [_]
                       (workspace.open/open-new-workspace wsp)
+
+                      ;; invoke clawe-mx to warm up the mx-cache for this workspace
+                      ;; maybe want an option to NOT open rofi in this case
+                      (mx {:wsp wsp})
+
                       ;; TODO may need to handle a race-case, or pass in new wsp info to avoid it
                       (client.create/create-client "terminal"))}
    {:rofi/label     "Open Workspace"
-    :rofi/on-select (fn [_] (workspace.open/open-new-workspace wsp))}
+    :rofi/on-select (fn [_]
+                      (workspace.open/open-new-workspace wsp)
+
+                      ;; invoke clawe-mx to warm up the mx-cache for this workspace
+                      ;; maybe want an option to NOT open rofi in this case
+                      (mx {:wsp wsp}))}
    {:rofi/label     "Close Workspace"
     :rofi/on-select (fn [_] (wm/delete-workspace wsp))}
    {:rofi/label     "Focus Workspace"

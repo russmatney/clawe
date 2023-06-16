@@ -9,7 +9,6 @@
    [clawe.doctor :as clawe.doctor]
    [clawe.rules :as clawe.rules]
    [clawe.wm :as wm]
-   [clawe.mx :as mx]
    ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -51,10 +50,6 @@
   ;; (clawe.rules/clean-up-workspaces) ;; deletes empty workspace immediately after creating it
   (clawe.rules/sort-workspace-indexes)
   (clawe.doctor/update-topbar)
-
-  ;; invoke clawe-mx to warm up the mx-cache for this workspace
-  ;; maybe want an option to NOT open rofi in this case
-  (clawe.mx/mx {:wsp wsp})
   wsp)
 
 (defn create-workspace-def [repo-wsp]
