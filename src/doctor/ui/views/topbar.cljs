@@ -129,10 +129,12 @@
 (defn topbar-actions-list [metadata]
   [components.actions/actions-list
    {:actions
-    [{:action/on-click (fn [_] (hooks.topbar/rerender-notebooks))
-      :action/label    "rerender"}
+    [{:action/on-click (fn [_]
+                         ;; TODO toggle mute
+                         )
+      :action/icon     (if (:microphone/muted metadata)
+                         fa/microphone-slash-solid fa/microphone-solid)}
 
-     ;; bg toggle
      {:action/on-click (toggle-background-mode metadata)
       :action/label    "toggle"
       :action/icon
@@ -140,17 +142,11 @@
       (if (#{:bg/dark} (:topbar/background-mode metadata))
         [:> HIMini/SunIcon {:class ["w-6" "h-6"]}]
         [:> HIMini/MoonIcon {:class ["w-6" "h-6"]}])}
-
      ;; reload
+
      {:action/on-click (fn [_] (js/location.reload))
       :action/label    "reload"
-      :action/icon     [:> HIMini/ArrowPathIcon {:class ["w-6" "h-6"]}]}
-
-     {:action/on-click (fn [_]
-                         ;; TODO toggle mute
-                         )
-      :action/icon     (if (:microphone/muted metadata)
-                         fa/microphone-slash-solid fa/microphone-solid)}]}])
+      :action/icon     [:> HIMini/ArrowPathIcon {:class ["w-6" "h-6"]}]}]}])
 
 (defn clock-host-metadata [{:keys [time]} metadata]
   [:div
