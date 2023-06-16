@@ -51,3 +51,10 @@
 (defn clawe-mx-suggestions
   ([] (clawe-mx-suggestions))
   ([_] (slurp (str (clawe.config/doctor-base-url) "/clawe-mx-suggestions"))))
+
+(defn clawe-toggle
+  {:org.babashka/cli
+   ;; could support overrides for :hide/*, :create/*, :focus/* options
+   {:alias {:key :client/key}}}
+  [opts]
+  (slurp (str (clawe.config/doctor-base-url) "/clawe-toggle")))

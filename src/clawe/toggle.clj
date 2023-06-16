@@ -6,8 +6,10 @@
    [clawe.client.create :as client.create]
    [clawe.doctor :as clawe.doctor]
    [clawe.wm :as wm]
-   [clawe.workspace :as workspace]))
+   [clawe.workspace :as workspace]
+   [timer]))
 
+(timer/print-since "clawe.toggle NS loaded")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; find-client
@@ -155,18 +157,20 @@
    ;; could support overrides for :hide/*, :create/*, :focus/* options
    {:alias {:key :client/key}}}
   [args]
+  (timer/print-since "clawe.toggle/toggle start")
   (let [all-clients       (wm/active-clients)
         current-workspace (wm/current-workspace
                             {:prefetched-clients all-clients})
         current-workspace (or current-workspace
                               ;; fallback workspace
                               (wm/create-workspace "journal"))
-        opts {:prefetched-clients all-clients
-              :current-workspace  current-workspace}]
-    (-> args
-        :client/key
-        (determine-toggle-action opts)
-        (execute-toggle-action (merge args opts))))
+        opts              {:prefetched-clients all-clients
+                           :current-workspace  current-workspace}]
+    (timer/print-since "clawe.toggle/toggle deps calced")
+    (let [action (-> args :client/key (determine-toggle-action opts))]
+      (timer/print-since "clawe.toggle/toggle action determined")
+      (execute-toggle-action action (merge args opts))
+      (timer/print-since "clawe.toggle/toggle action executed")))
 
   (clawe.doctor/update-topbar))
 

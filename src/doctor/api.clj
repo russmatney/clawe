@@ -12,7 +12,8 @@
    [clojure.string :as string]
    [babashka.fs :as fs]
 
-   [clawe.mx :as clawe.mx]))
+   [clawe.mx :as clawe.mx]
+   [clawe.toggle :as clawe.toggle]))
 
 
 (defn route
@@ -92,6 +93,12 @@
     (= uri "/clawe-mx-suggestions")
     (do
       (clawe.mx/mx-suggestions)
+      {:status 200})
+
+    (= uri "/clawe-toggle")
+    (do
+      ;; TODO handle query params/body
+      (clawe.toggle/toggle {:client/key "web"})
       {:status 200})
 
     :else
