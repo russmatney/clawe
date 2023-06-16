@@ -267,8 +267,10 @@ shift + cmd - d : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle -
 cmd - m : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key messages
 shift + cmd - m : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key mindnode
 shift + cmd - g : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key godot
-shift + cmd - x : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key xcode
+# shift + cmd - x : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key xcode
 
 cmd - d : bb --config ~/russmatney/clawe/bb.edn -x clawe.rules/clean-up-workspaces
-cmd - x : bb --config ~/russmatney/clawe/bb.edn -x clawe.mx-fast/mx-fast
-cmd - w : bb --config ~/russmatney/clawe/bb.edn -x clawe.mx/mx
+cmd - x : bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-mx
+shift + cmd - x : bb --config ~/russmatney/clawe/bb.edn -x clawe.mx/mx-fast
+cmd - w : bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-mx-suggestions
+shift + cmd - w : bb --config ~/russmatney/clawe/bb.edn -x clawe.mx/mx-suggestions
