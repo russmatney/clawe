@@ -237,43 +237,51 @@
 
 (defkbd toggle-terminal
   [[:mod] "Return"]
+  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key terminal"))
+
+(defkbd toggle-terminal-bb
+  [[:ctrl :mod :shift] "Return"]
   (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key terminal"))
 
 (defkbd toggle-emacs
   [[:mod :shift] "Return"]
-  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key emacs"))
+  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key emacs"))
 
 (defkbd toggle-workspace-journal
   [[:mod] "u"]
+  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key journal"))
+
+(defkbd toggle-workspace-journal-bb
+  [[:mod :shift] "u"]
   (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key journal"))
 
 (defkbd toggle-workspace-web
   [[:mod] "t"]
-  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key web"))
+  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key web"))
 
 (defkbd toggle-workspace-chrome-browser
   [[:mod] "b"]
-  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key devweb"))
+  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key devweb"))
 
 (defkbd toggle-workspace-slack
   [[:mod] "a"]
-  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key slack"))
+  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key slack"))
 
 (defkbd toggle-workspace-discord
   [[:mod :shift] "d"]
-  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key discord"))
+  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key discord"))
 
 (defkbd toggle-workspace-spotify
   [[:mod] "s"]
-  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key spotify"))
+  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key spotify"))
 
 (defkbd toggle-workspace-zoom
   [[:mod] "z"]
-  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key zoom"))
+  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key zoom"))
 
 (defkbd toggle-workspace-one-password
   [[:mod] "."]
-  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key onepass"))
+  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key onepass"))
 
 ;; (defkbd toggle-workspace-doctor-todo
 ;;   [[:mod] "y"]
@@ -281,11 +289,11 @@
 
 (defkbd toggle-workspace-doctor-focus
   [[:mod] "y"]
-  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key focus"))
+  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key focus"))
 
-(defkbd toggle-workspace-doctor-workspace
-  [[:mod :shift] "w"]
-  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key clerk-workspace"))
+;; (defkbd toggle-workspace-doctor-workspace
+;;   [[:mod :shift] "w"]
+;;   (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key clerk-workspace"))
 
 ;; (defkbd toggle-workspace-doctor-clerk
 ;;   [[:mod :shift] "c"]
@@ -293,15 +301,15 @@
 
 (defkbd toggle-workspace-aseprite
   [[:mod :shift] "p"]
-  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key aseprite"))
+  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key aseprite"))
 
 (defkbd toggle-workspace-godot
   [[:mod :shift] "g"]
-  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key godot"))
+  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key godot"))
 
 (defkbd toggle-workspace-obs
   [[:mod :shift] "o"]
-  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key obs"))
+  (sxhkd-exec "bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key obs"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; cycle tags and clients

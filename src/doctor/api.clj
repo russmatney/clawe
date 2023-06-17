@@ -18,8 +18,8 @@
 
 (defn route
   "Routes an api request."
-  [{:keys [uri] :as _req}]
-  ;; (log/debug "Routing API req" uri (System/currentTimeMillis))
+  [{:keys [uri query-string] :as _req}]
+  ;; (log/debug "Routing API req" req (System/currentTimeMillis))
 
   (cond
     (= uri "/reload")
@@ -98,7 +98,7 @@
     (= uri "/clawe-toggle")
     (do
       ;; TODO handle query params/body
-      (clawe.toggle/toggle {:client/key "web"})
+      (clawe.toggle/toggle {:client/key query-string})
       {:status 200})
 
     :else

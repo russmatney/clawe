@@ -1,6 +1,9 @@
 (ns clawe.doctor
   (:require
-   [clawe.config :as clawe.config]))
+   [clawe.config :as clawe.config]
+   [timer :as timer]))
+
+(timer/print-since "clawe.doctor\tNamespace (and deps) Loaded")
 
 (defn update-topbar-url []
   (str (clawe.config/doctor-base-url) "/topbar/update"))
@@ -53,8 +56,8 @@
   ([_] (slurp (str (clawe.config/doctor-base-url) "/clawe-mx-suggestions"))))
 
 (defn clawe-toggle
-  {:org.babashka/cli
-   ;; could support overrides for :hide/*, :create/*, :focus/* options
-   {:alias {:key :client/key}}}
+  {:org.babashka/cli {:alias {:key :client/key}}}
   [opts]
-  (slurp (str (clawe.config/doctor-base-url) "/clawe-toggle")))
+  (let [client-key (:client/key opts)]
+    (timer/print-since "clawe.doctor/clawe-toggle\tslurping")
+    (slurp (str (clawe.config/doctor-base-url) "/clawe-toggle" "?" client-key))))
