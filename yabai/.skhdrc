@@ -256,17 +256,18 @@ cmd - r : bb --config ~/russmatney/clawe/bb.edn -x clawe.restart/reload
 shift + cmd - return : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key emacs
 cmd - return : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key terminal
 
-cmd - y : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key focus
-cmd - u : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key journal
-cmd - t : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key web
-cmd - b : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key devweb
-cmd - s : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key spotify
-cmd - e : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key aseprite
-cmd - a : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key slack
-shift + cmd - d : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key discord
-cmd - m : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key messages
-shift + cmd - m : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key mindnode
-shift + cmd - g : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key godot
+shift + cmd - u : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key journal
+cmd - y : bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key focus
+cmd - u : bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key journal
+cmd - t : bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key web
+cmd - b : bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key devweb
+cmd - s : bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key spotify
+cmd - e : bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key aseprite
+cmd - a : bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key slack
+shift + cmd - d : bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key discord
+cmd - m : bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key messages
+shift + cmd - m : bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key mindnode
+shift + cmd - g : bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key godot
 # shift + cmd - x : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key xcode
 
 cmd - d : bb --config ~/russmatney/clawe/bb.edn -x clawe.rules/clean-up-workspaces
