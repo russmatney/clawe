@@ -27,6 +27,8 @@
         d/db)
       (do
         (log/info "No db file found creating empty one")
+        (fs/create-dirs (fs/parent db-file))
+        (fs/create-file db-file)
         (d/empty-db schema)))))
 
 (comment
