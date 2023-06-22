@@ -57,6 +57,10 @@
         {:color "text-city-blue-400"
          :src   "/assets/candy-icons/geany.svg"}
 
+        (string/includes? "gitops" title)
+        {:color "text-city-blue-400"
+         :src   "/assets/candy-icons/gitkraken.svg"}
+
         :else
         {:color "text-city-blue-400"
          :src   "/assets/candy-icons/emacs.svg"})

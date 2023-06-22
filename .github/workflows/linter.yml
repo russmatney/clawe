@@ -9,7 +9,7 @@ jobs:
     - name: Setup clj-kondo
       uses: DeLaGuardo/setup-clojure@10.0
       with:
-        clj-kondo: '2022.11.02'
+        clj-kondo: '2023.05.26'
 
     - name: Lint
       run: clj-kondo --lint src:test --config '{:output {:pattern "::{{level}} file={{filename}},line={{row}},col={{col}}::{{message}}"}}'

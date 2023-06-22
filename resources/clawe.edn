@@ -186,6 +186,7 @@
     "gdfxr" {:workspace/directory "~/timothyqiu/gdfxr"}
     "gdlisp" {:workspace/directory "~/Mercerenies/gdlisp"}
     "girouette" {:workspace/directory "~/green-coder/girouette"}
+    "gitops" {:workspace/directory "~/russmatney/gitops"}
     "godot" {:workspace/directory "~/godotengine/godot"}
     "godot-LDtk-import" {:workspace/directory "~/levigilbert/godot-LDtk-import"}
     "godot-actions" {:workspace/directory "~/bend-n/godot-actions"}
@@ -214,6 +215,7 @@
     "lila-ws" {:workspace/directory "~/lichess-org/lila-ws"}
     "malli" {:workspace/directory "~/metosin/malli"}
     "mate" {:workspace/directory "~/green-coder/mate"}
+    "mealprep" {:workspace/directory "~/russmatney/mealprep"}
     "morphe" {:workspace/directory "~/Workiva/morphe"}
     "my_first_flutter_app" {:workspace/directory "~/russmatney/my_first_flutter_app"}
     "neil" {:workspace/directory "~/babashka/neil"}
