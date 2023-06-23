@@ -1,6 +1,7 @@
 (ns clawe.mx
   (:require
    [clojure.string :as string]
+   [clojure.core.memoize :as memoize]
    [cheshire.core :as json]
    [org-crud.markdown :as org-crud.markdown]
    [org-crud.parse :as org-crud.parse]
@@ -300,7 +301,7 @@ hi there
     (filter :workspace/directory)
     (filter (comp #(re-seq #"russmatney" %) :workspace/directory))))
 
-(def common-wsps-mem (memoize common-wsps))
+(def common-wsps-mem (memoize/memo common-wsps))
 
 (defn mx-suggestion-commands
   "Commands that support dynamic context (e.g. open browser tabs).
@@ -347,7 +348,7 @@ hi there
      (remove nil?))))
 
 ;; TODO need to bust this, e.g. when new workspace defs are created
-(def mx-commands-fast-memoized (memoize mx-commands-fast))
+(def mx-commands-fast-memoized (memoize/memo mx-commands-fast))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; mx full
@@ -356,6 +357,7 @@ hi there
 (defn mx-commands
   ([] (mx-commands nil))
   ([{:keys [wsp]}]
+   (println "running mx-commands")
    (let [wsp (or wsp (wm/current-workspace))]
      (->>
        (concat
@@ -379,10 +381,12 @@ hi there
        (remove nil?)))))
 
 ;; TODO need to bust this cache from time to time, eg. when a new bb task is created
-(def mx-commands-memoized (memoize mx-commands))
+(def mx-commands-memoized (memoize/memo mx-commands))
 
 (comment
-  (mx-commands))
+  (mx-commands)
+  (mx-commands-memoized)
+  (clear-memoized))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; public
@@ -425,3 +429,8 @@ hi there
         (rofi/rofi {:require-match? true
                     :msg            "Clawe suggestions"}))
    (timer/print-since "mx-suggestions\tend")))
+
+(defn clear-memoized []
+  (memoize/memo-clear! mx-commands-memoized)
+  (memoize/memo-clear! mx-commands-fast-memoized)
+  (memoize/memo-clear! common-wsps-mem))

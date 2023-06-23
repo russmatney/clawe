@@ -7,7 +7,7 @@
    [babashka.fs :as fs]
 
    [timer :as timer]
-   ))
+   [clojure.core.memoize :as memoize]))
 
 (timer/print-since "ralphie.rofi ns loaded")
 
@@ -95,7 +95,10 @@
 
 ;; TODO restore mru sorting in the wake of this memoization
 ;; maybe with a write-ahead cache of this function?
-(def xs->input-string-memoized (memoize xs->input-string))
+(def xs->input-string-memoized (memoize/memo xs->input-string))
+
+(defn clear-memoized []
+  (memoize/memo-clear! xs->input-string-memoized))
 
 ;; TODO Tests for this,especially that ensure the result is returned
 (defn rofi

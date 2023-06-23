@@ -22,6 +22,7 @@
   backtick/backtick                  {:mvn/version "0.3.4"}
   aysylu/loom                        {:mvn/version "1.0.2"}
 
+  ;; org.clojure/core.memoize {:mvn/version "1.0.257"}
 
   russmatney/org-crud {:git/url "https://github.com/russmatney/org-crud"
                        :git/sha "855c20023313fccf9e95c957afe7b7a476eb94ee"}
