@@ -174,7 +174,7 @@
            :action/icon     octicons/stop16}
           {:action/label    "Start"
            :action/on-click #(pomodoro-start-new)
-           :action/icon     octicons/stopwatch16})])))
+           :action/icon     octicons/play16})])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; todos
