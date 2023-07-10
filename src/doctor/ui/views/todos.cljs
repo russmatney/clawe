@@ -21,16 +21,16 @@
                 [todo/priority-label todo]
                 [item/db-id todo]
                 [item/id-hash todo]]
-               [floating/popover
-                {:hover        true :click true
-                 :anchor-comp  [:span
-                                {:class ["flex-grow" "font-mono"]}
-                                (:org/name-string todo)]
-                 :popover-comp [components.garden/full-note todo]}]
+
+               ;; TODO support selecting a word and adding it as a tag
+               [:span
+                {:class ["flex-grow" "font-mono"]}
+                (:org/name-string todo)]
+
                [components.garden/all-nested-tags-comp todo]
                [item/parent-names todo]
                [components.actions/actions-list
-                {:actions (handlers/->actions todo) :n 4}]])})
+                {:actions (handlers/->actions todo) :n 7}]])})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; filter-grouper presets

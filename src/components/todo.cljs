@@ -97,6 +97,27 @@
                opts)
         (str "#" priort " ")]))))
 
+(defn priority-setter-actions
+  ([it] (priority-setter-actions nil it))
+  ([_opts it]
+   (concat
+     (->> ["A" "B" "C"]
+          (map (fn [p]
+                 {:action/label    (str "#" p)
+                  :action/on-click (fn [_]
+                                     (-> it
+                                         (dissoc :actions/inferred)
+                                         (handlers/set-priority p)))})))
+     [{:action/label "Clear"
+       :action/on-click
+       (fn [_] (handlers/remove-priority (dissoc it :actions/inferred)))}])))
+
+(defn priority-setters
+  ([it] (priority-setters nil it))
+  ([opts it]
+   (components.actions/actions-list
+     (priority-setter-actions opts it))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; level
 

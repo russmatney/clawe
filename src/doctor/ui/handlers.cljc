@@ -271,6 +271,15 @@
          (d/transact db/*conn*)))
   (org-crud.api/update! item {:org/priority nil}))
 
+(defhandler set-priority [todo priority]
+  (when-not (#{"A" "B" "C"} priority)
+    (log/warn "set-priority - unexpected priority passed:" priority))
+  (org-crud.api/update! todo
+                        (cond-> {:org/priority priority}
+                          (not (:org/id todo))
+                          (assoc :org/id (random-uuid))))
+  :ok)
+
 (defhandler increase-priority [todo]
   (let [priority
         (if (contains? #{"A" "B" "C" nil} (:org/priority todo))
@@ -344,35 +353,51 @@
    (defn todo->actions [todo]
      (let [{:keys [org/status]} todo]
        (->>
-         [;; open in emacs
-          (assoc (open-in-journal-action todo)
-                 :action/priority -10)
+         (concat
+           [ ;; open in emacs
+            (assoc (open-in-journal-action todo)
+                   :action/priority -10)
 
-          ;; ensure uuid
-          {:action/label    "ensure-uuid"
-           :action/on-click #(ensure-uuid todo)
-           :action/icon
-           [:> HIMini/FingerPrintIcon {:class ["w-6" "h-6"]}]
-           :action/disabled (:org/id todo)
-           :action/priority -10} ;; low-prority
+            ;; ensure uuid
+            {:action/label    "ensure-uuid"
+             :action/on-click #(ensure-uuid todo)
+             :action/icon
+             [:> HIMini/FingerPrintIcon {:class ["w-6" "h-6"]}]
+             :action/disabled (:org/id todo)
+             :action/priority -10}] ;; low-prority
 
-          ;; priority
-          {:action/label    "increase-priority"
-           :action/on-click #(increase-priority todo)
-           :action/disabled (or (not status)
-                                (#{"A"} (:org/priority todo)))
-           :action/icon     fa/chevron-circle-up-solid
-           :action/priority 1}
-          {:action/label    "decrease-priority"
-           :action/on-click #(decrease-priority todo)
-           :action/disabled (or (not status)
-                                (not (:org/priority todo)))
-           :action/icon     fa/chevron-circle-down-solid
-           :action/priority 1}
+           ;; priority
+           (->> ["A" "B" "C"]
+                (map (fn [p]
+                       (when-not (#{p} (:org/priority todo))
+                         {:action/label    (str "#" p)
+                          :action/on-click (fn [_]
+                                             (-> todo
+                                                 (dissoc :actions/inferred)
+                                                 (set-priority p)))
+                          :action/priority (when (:org/priority todo)
+                                             -1)}))))
+           [(when (:org/priority todo)
+              {:action/label "#_"
+               :action/on-click
+               (fn [_] (remove-priority (dissoc todo :actions/inferred)))})
+            ;; {:action/label    "increase-priority"
+            ;;  :action/on-click #(increase-priority todo)
+            ;;  :action/disabled (or (not status)
+            ;;                       (#{"A"} (:org/priority todo)))
+            ;;  :action/icon     fa/chevron-circle-up-solid
+            ;;  :action/priority 1}
+            ;; {:action/label    "decrease-priority"
+            ;;  :action/on-click #(decrease-priority todo)
+            ;;  :action/disabled (or (not status)
+            ;;                       (not (:org/priority todo)))
+            ;;  :action/icon     fa/chevron-circle-down-solid
+            ;;  :action/priority 1}
+            ]
 
-          ;; start-todo
-          {:action/label       "start-todo"
-           :action/description "
+           ;; start-todo
+           [{:action/label       "start-todo"
+             :action/description "
 - Adds 'current' tag
 - sets :status/in-progress
 - ensures uuid
@@ -380,91 +405,91 @@
 ;; TODO ensure pomodoro
 ;; TODO offer/suggest/M-x to change-mode
 "
-           :action/on-click    (fn [_] (start-todo todo))
-           :action/icon        #_fa/hashtag-solid
-           [:> HIMini/PlayIcon {:class ["w-4" "h-6"]}]
-           ;; disabled if already tagged current or already completed/skipped
-           :action/disabled
-           (#{:status/done :status/cancelled :status/skipped :status/in-progress}
-             status)
-           ;; higher priority if priority set
-           :action/priority    (if (:org/priority todo) 3 0)}
+             :action/on-click    (fn [_] (start-todo todo))
+             :action/icon        #_fa/hashtag-solid
+             [:> HIMini/PlayIcon {:class ["w-4" "h-6"]}]
+             ;; disabled if already tagged current or already completed/skipped
+             :action/disabled
+             (#{:status/done :status/cancelled :status/skipped :status/in-progress}
+               status)
+             ;; higher priority if priority set
+             :action/priority    (if (:org/priority todo) 3 0)}
 
-          ;; add-tag
-          {:action/label    "add-tag"
-           :action/on-click (fn [_]
-                              (let [res (js/prompt "Add tag")]
-                                (when (seq res)
-                                  (add-tag todo res))))
-           :action/icon     fa/hashtag-solid
-           ;; higher priority if missing tags
-           :action/priority (if (seq (:org/tags todo)) 0 1)}
+            ;; add-tag
+            {:action/label    "add-tag"
+             :action/on-click (fn [_]
+                                (let [res (js/prompt "Add tag")]
+                                  (when (seq res)
+                                    (add-tag todo res))))
+             :action/icon     fa/hashtag-solid
+             ;; higher priority if missing tags
+             :action/priority (if (seq (:org/tags todo)) 0 1)}
 
-          ;; db-only commands: delete-from-db, purge-file (for reingestion)
-          {:action/label    "delete-from-db"
-           :action/on-click #(delete-from-db todo)
-           :action/icon     fa/trash-alt-solid
-           :action/disabled (not (:db/id todo))}
-          {:action/label    "purge-file"
-           :action/on-click #(purge-org-source-file todo)
-           :action/icon     fa/trash-solid
-           :action/disabled (not (:db/id todo))}
+            ;; db-only commands: delete-from-db, purge-file (for reingestion)
+            {:action/label    "delete-from-db"
+             :action/on-click #(delete-from-db todo)
+             :action/icon     fa/trash-alt-solid
+             :action/disabled (not (:db/id todo))}
+            {:action/label    "purge-file"
+             :action/on-click #(purge-org-source-file todo)
+             :action/icon     fa/trash-solid
+             :action/disabled (not (:db/id todo))}
 
-          ;; queue toggle
-          {:action/label    (if (:todo/queued-at todo) "(un)queue-todo" "queue-todo")
-           :action/on-click (fn [_] (if (:todo/queued-at todo)
-                                      (unqueue-todo todo)
-                                      (queue-todo todo)))
-           :action/icon     (if (:todo/queued-at todo)
-                              [:> HIMini/BoltSlashIcon {:class ["w-6" "h-6"]}]
-                              [:> HIMini/BoltIcon {:class ["w-6" "h-6"]}])
-           :action/priority 1}
+            ;; queue toggle
+            {:action/label    (if (:todo/queued-at todo) "(un)queue-todo" "queue-todo")
+             :action/on-click (fn [_] (if (:todo/queued-at todo)
+                                        (unqueue-todo todo)
+                                        (queue-todo todo)))
+             :action/icon     (if (:todo/queued-at todo)
+                                [:> HIMini/BoltSlashIcon {:class ["w-6" "h-6"]}]
+                                [:> HIMini/BoltIcon {:class ["w-6" "h-6"]}])
+             :action/priority 1}
 
-          ;; requeue
-          {:action/label    "requeue-todo"
-           :action/on-click #(queue-todo todo)
-           :action/icon
-           [:> HIMini/ArrowPathIcon {:class ["w-6" "h-6"]}]
-           :action/disabled
-           (not
-             (and (not (#{:status/cancelled :status/done} status))
-                  (:todo/queued-at todo)))
-           :action/priority 1}
+            ;; requeue
+            {:action/label    "requeue-todo"
+             :action/on-click #(queue-todo todo)
+             :action/icon
+             [:> HIMini/ArrowPathIcon {:class ["w-6" "h-6"]}]
+             :action/disabled
+             (not
+               (and (not (#{:status/cancelled :status/done} status))
+                    (:todo/queued-at todo)))
+             :action/priority 1}
 
-          ;; finish todo
-          {:action/label    "mark-complete"
-           :action/on-click #(complete-todo todo)
-           :action/disabled (#{:status/done} status)
-           :action/priority (if (or (:todo/queued-at todo)
-                                    (:status/in-progress todo)) 2 0)
-           :action/comp     [status-plain {:org/status :status/done}]
-           }
+            ;; finish todo
+            {:action/label    "mark-complete"
+             :action/on-click #(complete-todo todo)
+             :action/disabled (#{:status/done} status)
+             :action/priority (if (or (:todo/queued-at todo)
+                                      (:status/in-progress todo)) 2 0)
+             :action/comp     [status-plain {:org/status :status/done}]
+             }
 
-          ;; mark-skipped
-          {:action/label    "mark-skipped"
-           :action/disabled (#{:status/skipped} status)
-           :action/on-click #(skip-todo todo)
-           :action/comp     [status-plain {:org/status :status/skipped}]}
+            ;; mark-skipped
+            {:action/label    "mark-skipped"
+             :action/disabled (#{:status/skipped} status)
+             :action/on-click #(skip-todo todo)
+             :action/comp     [status-plain {:org/status :status/skipped}]}
 
-          ;; mark-cancelled
-          {:action/label    "mark-cancelled"
-           :action/on-click #(cancel-todo todo)
-           :action/disabled (#{:status/cancelled} status)
-           :action/comp     [status-plain {:org/status :status/cancelled}]}
+            ;; mark-cancelled
+            {:action/label    "mark-cancelled"
+             :action/on-click #(cancel-todo todo)
+             :action/disabled (#{:status/cancelled} status)
+             :action/comp     [status-plain {:org/status :status/cancelled}]}
 
-          ;; mark-not-started
-          {:action/label    "mark-not-started"
-           :action/on-click #(mark-not-started todo)
-           :action/priority (if (or (:todo/queued-at todo)
-                                    (:status/in-progress todo)) 2 0)
-           :action/disabled (#{:status/not-started} status)
-           :action/comp     [status-plain {:org/status :status/not-started}]}
+            ;; mark-not-started
+            {:action/label    "mark-not-started"
+             :action/on-click #(mark-not-started todo)
+             :action/priority (if (or (:todo/queued-at todo)
+                                      (:status/in-progress todo)) 2 0)
+             :action/disabled (#{:status/not-started} status)
+             :action/comp     [status-plain {:org/status :status/not-started}]}
 
-          ;; mark not-a-todo (clear todo status)
-          {:action/label    "clear-todo-status"
-           :action/on-click #(clear-status todo)
-           :action/disabled (not status)
-           :action/comp     [status-plain {:org/status :status/not-a-todo}]}]
+            ;; mark not-a-todo (clear todo status)
+            {:action/label    "clear-todo-status"
+             :action/on-click #(clear-status todo)
+             :action/disabled (not status)
+             :action/comp     [status-plain {:org/status :status/not-a-todo}]}])
          (remove nil?)))))
 
 (defhandler publish-note [item]
