@@ -109,7 +109,7 @@
   ([wps] (wallpaper-table-def nil wps))
   ([opts wps]
    (let [wps (->> wps (filter (comp #{:type/wallpaper} :doctor/type)))]
-     {:headers ["Img" "Wallpaper" "Used count" "Last Time Set" "Raw" "Actions"]
+     {:headers ["Img" "Actions" "Wallpaper" "Used count" "Last Time Set" "Raw"]
       :n       (:n opts 5)
       :rows    (->> wps
                     (sort-by :wallpaper/last-time-set >)
@@ -121,12 +121,13 @@
                                      :class ["max-h-24"]}]
                               :popover-comp
                               [components.wallpaper/wallpaper-comp wp]}]
+                            [components.actions/actions-list
+                             {:actions (handlers/->actions wp)}]
                             (-> wp :wallpaper/short-path)
                             (:wallpaper/used-count wp)
                             (some-> wp :wallpaper/last-time-set
                                     (t/new-duration :millis) t/instant)
-                            [components.debug/raw-metadata {:label "raw"} wp]
-                            [actions-cell wp]])))})))
+                            [components.debug/raw-metadata {:label "raw"} wp]])))})))
 
 (defn screenshot-table-def [entities]
   (let [screenshots (->> entities (filter (comp #{:type/screenshot
