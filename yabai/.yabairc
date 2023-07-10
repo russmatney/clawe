@@ -52,11 +52,11 @@ yabai -m rule --add app="^System Preferences$" manage=off
 yabai -m rule --add app="choose" manage=off
 yabai -m rule --add app="Kap" manage=off
 
-yabai -m rule --add app="^Emacs$" title="^journal" space=journal
-yabai -m rule --add app="^Emacs$" title="^clawe" space=clawe
-yabai -m rule --add app="^Spotify$" space=spotify
-yabai -m rule --add app="^Safari$" space=web
-yabai -m rule --add app="^Slack$" space=slack
+# yabai -m rule --add app="^Emacs$" title="^journal" space=journal
+# yabai -m rule --add app="^Emacs$" title="^clawe" space=clawe
+# yabai -m rule --add app="^Spotify$" space=spotify
+# yabai -m rule --add app="^Safari$" space=web
+# yabai -m rule --add app="^Slack$" space=slack
 
 # yabai -m rule --add title="tauri-doctor-topbar" sticky=on manage=off
 yabai -m rule --add title="tauri-doctor-topbar" sticky=on
