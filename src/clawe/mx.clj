@@ -374,7 +374,17 @@ hi there
    (let [wsp (or wsp (wm/current-workspace))]
      (->>
        (concat
-         ;; open deps github page
+         ;; common repo commands
+         [(when-let [dir (:workspace/directory wsp)]
+            {:rofi/label "Pull latest"
+             :rofi/on-select
+             (fn [_] (tmux/fire
+                       {:tmux.fire/cmd
+                        "git pull"
+                        :tmux.fire/session   (:workspace/title wsp)
+                        :tmux.fire/directory dir}))})]
+
+         ;; open deps github pages
          (deps-git-urls wsp)
 
          ;; run bb tasks for the current workspace
