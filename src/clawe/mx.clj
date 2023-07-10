@@ -203,23 +203,15 @@ hi there
 (declare mx)
 
 (defn wsp-def->actions [wsp]
-  [{:rofi/label     "Open Workspace and emacs"
-    :rofi/on-select (fn [_]
-                      (workspace.open/open-new-workspace wsp)
-
-                      ;; invoke clawe-mx to warm up the mx-cache for this workspace
-                      ;; maybe want an option to NOT open rofi in this case
-                      (mx {:wsp wsp})
-
-                      ;; TODO may need to handle a race-case, or pass in new wsp info to avoid it
-                      (client.create/create-client "emacs"))}
-   (when (-> wsp :workspace/directory)
+  [(when (-> wsp :workspace/directory)
      ;; TODO not relevant for every workspace
      {:rofi/label     "Open on Github"
       :rofi/on-select (fn [_]
                         (let [dir      (:workspace/directory wsp)
                               repo-url (string/replace dir "~" "https://github.com")]
                           (browser/open {:url repo-url})))})
+   {:rofi/label     "Show Fields"
+    :rofi/on-select (fn [_] (show-fields wsp))}
    {:rofi/label     "Open Workspace and terminal"
     :rofi/on-select (fn [_]
                       (workspace.open/open-new-workspace wsp)
@@ -230,6 +222,16 @@ hi there
 
                       ;; TODO may need to handle a race-case, or pass in new wsp info to avoid it
                       (client.create/create-client "terminal"))}
+   {:rofi/label     "Open Workspace and emacs"
+    :rofi/on-select (fn [_]
+                      (workspace.open/open-new-workspace wsp)
+
+                      ;; invoke clawe-mx to warm up the mx-cache for this workspace
+                      ;; maybe want an option to NOT open rofi in this case
+                      (mx {:wsp wsp})
+
+                      ;; TODO may need to handle a race-case, or pass in new wsp info to avoid it
+                      (client.create/create-client "emacs"))}
    {:rofi/label     "Open Workspace"
     :rofi/on-select (fn [_]
                       (workspace.open/open-new-workspace wsp)
@@ -240,9 +242,7 @@ hi there
    {:rofi/label     "Close Workspace"
     :rofi/on-select (fn [_] (wm/delete-workspace wsp))}
    {:rofi/label     "Focus Workspace"
-    :rofi/on-select (fn [_] (wm/focus-workspace wsp))}
-   {:rofi/label     "Show Fields"
-    :rofi/on-select (fn [_] (show-fields wsp))}])
+    :rofi/on-select (fn [_] (wm/focus-workspace wsp))}])
 
 (defn wsp-action-rofi [wsp]
   (rofi/rofi
@@ -253,10 +253,25 @@ hi there
   (->>
     (clawe.config/workspace-defs-with-titles)
     vals
-    (map (fn [w] (-> w (assoc :rofi/label (str "wsp-def: " (:workspace/title w))
-                              :rofi/description (:workspace/directory w)
-                              :rofi/on-select
-                              (fn [w] (wsp-action-rofi w))))))))
+    (mapcat
+      (fn [w]
+        [
+         (-> w (assoc :rofi/label (str "wsp-actions: " (:workspace/title w))
+                      :rofi/description (:workspace/directory w)
+                      :rofi/on-select
+                      (fn [w] (wsp-action-rofi w))))
+         (-> w (assoc :rofi/label (str "wsp-open: " (:workspace/title w))
+                      :rofi/description (:workspace/directory w)
+                      :rofi/on-select
+                      (fn [_]
+                        (workspace.open/open-new-workspace w)
+
+                        ;; invoke clawe-mx to warm up the mx-cache for this workspace
+                        ;; maybe want an option to NOT open rofi in this case
+                        (mx {:wsp w})
+
+                        ;; TODO may need to handle a race-case, or pass in new wsp info to avoid it
+                        (client.create/create-client "emacs"))))]))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; neil
