@@ -8,6 +8,7 @@
    [components.debug :as components.debug]
    [components.actions :as components.actions]
    [components.item :as item]
+   [doctor.ui.hooks.use-selection :as hooks.use-selection]
    [doctor.ui.handlers :as handlers]
    [dates.tick :as dates.tick]
    [uix.core.alpha :as uix]
@@ -468,7 +469,12 @@
 
 (defn add-tags-list
   [it tags]
-  (let [tags (set/difference tags (-> it note/->all-tags (into #{})))]
+  (let [selections (hooks.use-selection/last-n-selections)
+        sels       (->> selections (remove #{"" nil}))
+        tags       (-> tags
+                       (set/difference
+                         (-> it note/->all-tags (into #{})))
+                       (set/union (into #{} sels)))]
     (when (seq tags)
       [:div
        {:class ["p-4"

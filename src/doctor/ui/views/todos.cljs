@@ -2,14 +2,14 @@
   (:require
    [uix.core.alpha :as uix]
    [doctor.ui.db :as ui.db]
+   [doctor.ui.handlers :as handlers]
+
    [components.filter :as components.filter]
    [components.todo :as todo]
    [components.filter-defs :as filter-defs]
 
-   [components.floating :as floating]
    [components.actions :as components.actions]
    [components.garden :as components.garden]
-   [doctor.ui.handlers :as handlers]
    [components.item :as item]))
 
 (defn todos-table-def []
@@ -22,15 +22,16 @@
                 [item/db-id todo]
                 [item/id-hash todo]]
 
-               ;; TODO support selecting a word and adding it as a tag
                [:span
                 {:class ["flex-grow" "font-mono"]}
                 (:org/name-string todo)]
 
+
                [components.garden/all-nested-tags-comp todo]
                [item/parent-names todo]
                [components.actions/actions-list
-                {:actions (handlers/->actions todo) :n 7}]])})
+                {:actions (handlers/->actions todo)
+                 :n       7}]])})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; filter-grouper presets

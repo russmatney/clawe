@@ -3,7 +3,10 @@
    [components.floating :as floating]
    [components.colors :as colors]
    [uix.core.alpha :as uix]
-   [hiccup-icons.fa :as fa]))
+   [hiccup-icons.fa :as fa]
+
+   [doctor.ui.hooks.use-selection :as hooks.use-selection]
+   ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; icon button
@@ -78,7 +81,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn actions-list [opts-or-axs]
-  (let [actions (:actions opts-or-axs opts-or-axs)]
+  ;; invoke so we have selections stored for misc actions
+  (let [_selections (hooks.use-selection/last-n-selections)
+        actions     (:actions opts-or-axs opts-or-axs)]
     (when actions
       (let [fallback-page-size (:n opts-or-axs 3)
             page-size          (uix/state fallback-page-size)
