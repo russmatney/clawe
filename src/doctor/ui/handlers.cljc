@@ -461,9 +461,9 @@
              :action/on-click #(complete-todo todo)
              :action/disabled (#{:status/done} status)
              :action/priority (if (or (:todo/queued-at todo)
-                                      (:status/in-progress todo)) 2 0)
-             :action/comp     [status-plain {:org/status :status/done}]
-             }
+                                      (#{:status/in-progress :status/not-started}
+                                        (:org/status todo))) 2 0)
+             :action/comp     [status-plain {:org/status :status/done}]}
 
             ;; mark-skipped
             {:action/label    "mark-skipped"

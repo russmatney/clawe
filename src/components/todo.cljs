@@ -540,8 +540,7 @@
            (into #{}))]
      ;; NOTE attaching non transit properties breaks defhandlers
      (update todo :actions/inferred concat
-             (when (seq tags)
-               (todo->add-tag-actions todo tags opts))))))
+             (todo->add-tag-actions todo tags opts)))))
 
 ;; consider 'suggestions' naming (vs 'inferred')
 (defn infer-actions
