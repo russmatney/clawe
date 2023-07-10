@@ -148,7 +148,15 @@
    :tags
    {:filters     {}
     :group-by    :filters/tags
-    :sort-groups :filters/tags}})
+    :sort-groups :filters/tags}
+
+   :unprioritized-by-tag
+   {:filters
+    #{{:filter-key :filters/priority :match-fn nil?}}
+    :group-by    :filters/tags
+    :sort-groups :filters/tags}
+
+   })
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; main widget
