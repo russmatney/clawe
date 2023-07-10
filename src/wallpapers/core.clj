@@ -4,6 +4,7 @@
    [babashka.process :as process]
    [clojure.string :as string]
 
+   [defthing.defcom :refer [defcom]]
    [ralphie.zsh :as zsh]
    [ralphie.notify :as notify]
    [db.core :as db]
@@ -113,8 +114,10 @@
     first))
 
 (defn reload
-  "Reloads the current wallpaper. Falls back to the last-set wp."
+  "Reloads the last-used wallpaper. Falls back to the last-set wp."
   []
   (println "wallpapers-reload hit!")
   (when-let [wp (last-used-wallpaper)]
     (set-wallpaper {:skip-count true} wp)))
+
+(defcom reload-last-wallpaper (fn [_] (reload)))
