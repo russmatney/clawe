@@ -358,7 +358,20 @@ hi there
        (workspace-defs)
        (client-defs)
        (blog-rofi-opts)
-       (->> (defkbd/list-bindings) (map defkbd/->rofi)))
+       (->> (defkbd/list-bindings) (map defkbd/->rofi))
+
+       [{:rofi/label "Drag workspace left"
+         :rofi/on-select
+         (fn [_]
+           (wm/drag-workspace
+             ;; up/down as the values here is crazy to me. who wrote this?!?
+             :dir/down)
+           (doctor/update-topbar))}
+        {:rofi/label "Drag workspace right"
+         :rofi/on-select
+         (fn [_]
+           (wm/drag-workspace :dir/up)
+           (doctor/update-topbar))}])
      (remove nil?))))
 
 ;; TODO need to bust this, e.g. when new workspace defs are created
