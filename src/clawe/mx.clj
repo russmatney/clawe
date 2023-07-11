@@ -389,11 +389,17 @@ hi there
        (concat
          ;; common repo commands
          [(when-let [dir (:workspace/directory wsp)]
+            {:rofi/label "Fetch latest"
+             :rofi/on-select
+             (fn [_] (tmux/fire
+                       {:tmux.fire/cmd       "git fetch"
+                        :tmux.fire/session   (:workspace/title wsp)
+                        :tmux.fire/directory dir}))})
+          (when-let [dir (:workspace/directory wsp)]
             {:rofi/label "Pull latest"
              :rofi/on-select
              (fn [_] (tmux/fire
-                       {:tmux.fire/cmd
-                        "git pull"
+                       {:tmux.fire/cmd       "git pull"
                         :tmux.fire/session   (:workspace/title wsp)
                         :tmux.fire/directory dir}))})]
 
