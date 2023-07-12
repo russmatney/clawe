@@ -336,7 +336,8 @@ hi there
                               ;; return a function wrapping the existing on-select
                               (fn [arg]
                                 (when-let [repo-id (:repo-id x)]
-                                  (workspace.open/create-workspace-def-from-path repo-id))
+                                  (workspace.open/create-workspace-def-from-path repo-id)
+                                  (notify/notify "Created wsp: " repo-id))
                                 (f arg))))))))
 
        (rofi-neil-suggestions)

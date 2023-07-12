@@ -10,6 +10,7 @@
    [ring.adapter.undertow :as undertow]
    [ring.adapter.undertow.websocket :as undertow.ws]
    [datascript.transit :as dt]
+   [babashka.process :as process]
 
    [dates.transit-time-literals :as ttl]
    [api.db :as api.db]
@@ -156,6 +157,10 @@
 ;; Server
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+
+(defn uptime []
+  (-> ^{:out :string} (process/$ uptime) (process/check) :out))
+
 (defsys ^:dynamic *server*
   "Doctor webserver"
   :extra-deps
@@ -190,7 +195,9 @@
                    {:port             port
                     :session-manager? false
                     :websocket?       true})]
-      (server-status-notif {:notify/subject (str "Server started on port: " port)})
+      (server-status-notif {:notify/subject (str "Server started on port: " port)
+                            :notify/body    (uptime)
+                            :notify/id      "server-up"})
       ;; be sure to return the server as the system
       server))
   :stop
@@ -208,4 +215,9 @@
   @sys/*registry*
   (sys/stop!)
   (sys/start! `*server*)
-  (sys/restart! `*server*))
+  (sys/restart! `*server*)
+
+
+
+
+  )
