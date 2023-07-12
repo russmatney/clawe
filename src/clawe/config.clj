@@ -1,5 +1,6 @@
 (ns clawe.config
   (:require
+   [taoensso.timbre :as log]
    [aero.core :as aero]
    [clojure.java.io :as io]
    [ralphie.zsh :as zsh]
@@ -16,7 +17,15 @@
 (defn calc-is-mac? []
   (boolean (string/includes? (zsh/expand "$OSTYPE") "darwin")))
 
-(defn config-res [] (io/resource "clawe.edn"))
+(def clawe-config-path ".config/clawe/clawe.edn")
+
+(defn config-res []
+  (let [conf-clawe (io/file (str (fs/home) "/" clawe-config-path))]
+    (if (fs/exists? conf-clawe) conf-clawe
+        (do
+          ;; TODO add check for clawe.edn to doctor check-in
+          (log/error "clawe.edn not found, falling back on template.")
+          (io/resource "clawe-template.edn")))))
 
 (defn ->config []
   (let [conf

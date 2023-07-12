@@ -1,0 +1,97 @@
+{:client/defs
+ {"aseprite"         {:client/app-names ["aseprite"] :client/workspace-title "aseprite" :match/skip-title true}
+  "devweb"           {:client/app-names       ["firefoxdeveloperedition" "google-chrome" "google chrome"
+                                               "firefox developer edition"]
+                      :client/create          ralphie.browser/open-dev
+                      :client/workspace-title "browsers"
+                      :match/skip-title       true}
+  "discord"          {:client/app-names       ["Discord"]
+                      :client/create          "discord"
+                      :client/workspace-title "slack"
+                      :match/skip-title       true}
+  "emacs"            {:client/app-names          ["Emacs"]
+                      :client/create             {:create/cmd           ralphie.emacs/open
+                                                  :emacs.open/directory :create/use-workspace-directory
+                                                  :emacs.open/workspace :create/use-workspace-title}
+                      :focus/float-and-center    true
+                      :hide/type                 :hide/close
+                      :match/use-workspace-title true}
+  "godot"            {:client/app-names          ["godot" "godot_engine"]
+                      :client/create             {:create/cmd          ralphie.tmux/fire
+                                                  :tmux.fire/cmd       "godot -e"
+                                                  :tmux.fire/directory :create/use-workspace-directory
+                                                  :tmux.fire/session   :create/use-workspace-title}
+                      :client/workspace-title    "godot"
+                      :match/soft-title          true
+                      :match/use-workspace-title true
+                      :merge/skip-title          true}
+  "journal"          {:client/app-names    ["Emacs"]
+                      :client/create       {:create/cmd           ralphie.emacs/open
+                                            :emacs.open/file      "~/todo/journal.org"
+                                            :emacs.open/workspace "journal"}
+                      :client/window-title "journal"
+                      :match/soft-title    true}
+  "messages"         {:client/app-names ["Messages"] :client/workspace-title "messages" :match/skip-title true}
+  "obs"              {:bury/ignore            true
+                      :client/app-names       ["obs"]
+                      :client/workspace-title "obs"
+                      :match/skip-title       true}
+  "1pass"            {:client/app-names       ["1password"]
+                      :client/create          "/usr/bin/gtk-launch 1password.desktop"
+                      :client/workspace-title "onepass"
+                      :match/skip-title       true}
+  "pavucontrol"      {:client/app-names       ["pavucontrol"]
+                      :client/workspace-title "spotify"
+                      :match/skip-title       true}
+  "slack"            {:client/app-names       ["Slack"]
+                      :client/create          "slack"
+                      :client/workspace-title "slack"
+                      :match/skip-title       true}
+  "spotify"          {:client/app-names       ["spotify"]
+                      :client/create          "spotify"
+                      :client/workspace-title "spotify"
+                      :match/skip-title       true}
+  "steam"            {:client/app-names ["steam"] :client/workspace-title "steam" :match/skip-title true}
+  "terminal"         {:client/app-names          ["Alacritty"]
+                      :client/create             {:create/cmd        ralphie.tmux/open-session
+                                                  :tmux/directory    :create/use-workspace-directory
+                                                  :tmux/session-name :create/use-workspace-title}
+                      :focus/float-and-center    true
+                      :hide/type                 :hide/close
+                      :match/use-workspace-title true}
+  "topbar"           {:client/app-names       ["clove"]
+                      :client/create          {:create/cmd           ralphie.tmux/fire
+                                               :tmux.fire/cmd        "bb --config ~/russmatney/clawe/bb.edn topbar"
+                                               :tmux.fire/interrupt? true
+                                               :tmux.fire/session    "doctor-topbar"}
+                      :client/window-title    "clove-doctor-topbar"
+                      :client/workspace-title "widgets"}
+  "web"              {:client/app-names       ["Safari" "firefox"]
+                      :client/create          ralphie.browser/open
+                      :client/workspace-title "browsers"
+                      :match/ignore-names     ["picture-in-picture"]
+                      :match/skip-title       true}
+  "web-video-popout" {:bury/ignore true :client/app-names ["picture-in-picture"]}
+  "zoom"             {:client/app-names ["zoom" "zoom meeting" "slack call"]}}
+ :doctor-base-url "http://localhost:3334"
+ :repo-roots      ["~/russmatney/*" "~/teknql/*"]
+ :workspace/defs
+ {"advent-of-code"      {:workspace/directory "~/russmatney/advent-of-code"}
+  "advent-of-godot"     {:workspace/directory "~/russmatney/advent-of-godot"}
+  "aseprite"            {:workspace/directory "~/aseprite/aseprite"}
+  "blog"                {:workspace/directory "~/russmatney/blog" :workspace/preferred-index 3}
+  "browsers"            {:workspace/preferred-index 9}
+  "clawe"               {:workspace/directory "~/russmatney/clawe" :workspace/preferred-index 2}
+  "clove"               {:workspace/directory "~/russmatney/clove"}
+  "dino"                {:workspace/directory "~/russmatney/dino" :workspace/preferred-index 2}
+  "dotfiles"            {:workspace/directory "~/russmatney/dotfiles" :workspace/preferred-index 1}
+  "game-assets"         {:workspace/directory "~/game-assets"}
+  "gitops"              {:workspace/directory "~/russmatney/gitops"}
+  "godot"               {:workspace/directory "~/godotengine/godot"}
+  "godot-demo-projects" {:workspace/directory "~/godotengine/godot-demo-projects"}
+  "godot-docs"          {:workspace/directory "~/godotengine/godot-docs"}
+  "journal"             {:workspace/directory "~/todo" :workspace/preferred-index 0}
+  "org-crud"            {:workspace/directory "~/russmatney/org-crud"}
+  "slack"               {:workspace/preferred-index 9}
+  "spotify"             {:workspace/preferred-index 9}
+  "steam"               {:workspace/directory "~"}}}
