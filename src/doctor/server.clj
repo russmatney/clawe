@@ -10,7 +10,7 @@
    [ring.adapter.undertow :as undertow]
    [ring.adapter.undertow.websocket :as undertow.ws]
    [datascript.transit :as dt]
-   [babashka.process :as process]
+   [wallpapers.core :as wallpapers]
 
    [dates.transit-time-literals :as ttl]
    [api.db :as api.db]
@@ -157,10 +157,6 @@
 ;; Server
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
-(defn uptime []
-  (-> ^{:out :string} (process/$ uptime) (process/check) :out))
-
 (defsys ^:dynamic *server*
   "Doctor webserver"
   :extra-deps
@@ -176,6 +172,7 @@
    db/*conn*
    *plasma-server*]
   :start
+  (wallpapers/ensure-wallpaper)
   (let [port (:server/port doctor.config/*config*)]
     (log/info "Starting *server* on port" port)
     (let [server (undertow/run-undertow

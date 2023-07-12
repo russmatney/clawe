@@ -10,6 +10,7 @@
    [db.core :as db]
    [clawe.config :as clawe.config]))
 
+
 (defn wp-dir->paths [root]
   (-> (zsh/expand root)
       (string/split #" /")
@@ -121,3 +122,19 @@
     (set-wallpaper {:skip-count true} wp)))
 
 (defcom reload-last-wallpaper (fn [_] (reload)))
+
+
+(defn uptime []
+  (-> ^{:out :string} (process/$ uptime -p) (process/check) :out
+      string/trim-newline
+      (string/replace "up " "")
+      ((fn [s]
+         (let [d    (->> (re-seq #"(\d+)" s) first first Integer/parseInt)
+               unit (-> s (string/split #" ") second)]
+           {:d d :unit unit})))))
+
+(defn ensure-wallpaper []
+  (let [{:keys [d unit]} (uptime)]
+    (cond (and
+            (#{"minutes" "minute"} unit)
+            (< d 5)) (reload))))
