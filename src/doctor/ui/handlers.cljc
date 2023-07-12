@@ -481,7 +481,7 @@
             {:action/label    "mark-not-started"
              :action/on-click #(mark-not-started todo)
              :action/priority (if (or (:todo/queued-at todo)
-                                      (:status/in-progress todo)) 2 0)
+                                      (#{:status/in-progress} (:org/status todo))) 2 0)
              :action/disabled (#{:status/not-started} status)
              :action/comp     [status-plain {:org/status :status/not-started}]}
 
