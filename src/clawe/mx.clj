@@ -159,6 +159,30 @@ hi there
   (rofi/rofi (blog-rofi-opts)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; common urls
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn common-url-opts []
+  (concat
+    (->>
+      (clawe.config/local-dev-urls)
+      (map (fn [{:keys [url label]}]
+             {:rofi/label     (str "Dev Browser:\t" label "\t" url)
+              :rofi/on-select (fn [_]
+                                ;; TODO could have a pre-hook for ensuring the server for these urls
+                                ;; e.g. tmux/fire bb serve in the right repo + tmux session
+                                (browser/open-dev url))})))
+
+    (->>
+      (clawe.config/common-urls)
+      (map (fn [{:keys [url label]}]
+             {:rofi/label     (str "Browser:\t" label "\t" url)
+              :rofi/on-select (fn [_] (browser/open url))})))))
+
+(comment
+  (rofi/rofi (common-url-opts)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; client and workspace defs
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -358,6 +382,7 @@ hi there
        (->> (defcom/list-commands) (map r.core/defcom->rofi))
        (workspace-defs)
        (client-defs)
+       (common-url-opts)
        (blog-rofi-opts)
        (->> (defkbd/list-bindings) (map defkbd/->rofi))
 

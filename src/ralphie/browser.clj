@@ -172,20 +172,21 @@ Depends on `brotab`."
 (defn open-dev
   "Opens a dev browser"
   ([] (open-dev nil))
-  ([{:keys [url]}]
-   (if url
-     (-> (p/$ firefox-developer-edition --new-tab ~url)
-         p/check :out)
-     (if (config/osx?)
-       (-> ^{:out :string}
-           (p/$ open -na "/Applications/Firefox Developer Edition.app")
+  ([{:keys [url] :as opts}]
+   (let [url (cond (string? opts) opts (string? url) url)]
+     (if url
+       (-> (p/$ firefox-developer-edition --new-tab ~url)
            p/check :out)
-       (-> (p/$ "/usr/bin/gtk-launch" "firefoxdeveloperedition.desktop")
-           p/check :out)))))
+       (if (config/osx?)
+         (-> ^{:out :string}
+             (p/$ open -na "/Applications/Firefox Developer Edition.app")
+             p/check :out)
+         (-> (p/$ "/usr/bin/gtk-launch" "firefoxdeveloperedition.desktop")
+             p/check :out))))))
 
 (comment
   (open-dev)
-  (open-dev {:url "http://localhost:3334/notebooks/clawe"})
+  (open-dev {:url "http://localhost:9999"})
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -94,4 +94,13 @@
   "org-crud"            {:workspace/directory "~/russmatney/org-crud"}
   "slack"               {:workspace/preferred-index 9}
   "spotify"             {:workspace/preferred-index 9}
-  "steam"               {:workspace/directory "~"}}}
+  "steam"               {:workspace/directory "~"}}
+ :local-dev-urls
+ [{:url "http://localhost:9999" :label "Local Blog"}
+  {:url "http://localhost:3333" :label "Clawe Doctor UI"}
+  {:url "http://localhost:3333" :label "local dino web build"}]
+ :common-urls
+ [{:url "https://russmatney.itch.io" :label "russmatney Itch.io dashboard"}
+  {:url "https://github.com/russmatney/dino" :label "Dino Github"}
+  {:url "https://github.com/russmatney/clawe" :label "Clawe Github"}
+  {:url "https://russmatney.com" :label "Prod Blog"}]}

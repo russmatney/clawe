@@ -95,6 +95,14 @@
   (sys/start! `*config*)
   (:repo-roots @*config* []))
 
+(defn local-dev-urls []
+  (sys/start! `*config*)
+  (:local-dev-urls @*config* []))
+
+(defn common-urls []
+  (sys/start! `*config*)
+  (:common-urls @*config* []))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; workspace-defs
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
