@@ -91,7 +91,7 @@
    (when (is-daily? note)
      [:div
       {:class ["font-nes"]}
-      (str "Daily items: " (-> note components.note/->daily-items-with-tags count)
+      (str "Daily items: " (-> note components.note/->items-with-tags count)
            "/" (-> note :org/items count))])
 
    (when (seq (components.note/->all-images note))
@@ -124,10 +124,15 @@
 ;; notes table def
 
 (defn notes-table-def []
-  {:headers ["Published" "Name" "Tags (incl. nested)" "Actions" "Raw"]
+  {:headers ["Published" "Name" "Tagged/Items" "Tagged/Todos" "Tags (incl. nested)" "Actions" "Raw"]
    :->row   (fn [note]
-              (let [note (assoc note :doctor/type :type/note)]
-                [[:span
+              (let [note            (assoc note :doctor/type :type/note)
+                    items           (components.note/note->flattened-items note)
+                    todos           (->> items (filter :org/status))
+                    items           (->> items (remove :org/status))
+                    items-with-tags (->> items (filter components.note/item-has-any-tags))
+                    todos-with-tags (->> todos (filter components.note/item-has-any-tags))]
+                [[:span.font-mono
                   (when (:blog/published note) "Published")]
                  [floating/popover
                   {:hover        true :click true
@@ -135,6 +140,8 @@
                                   {:class "whitespace-nowrap"}
                                   (:org/name-string note)]
                    :popover-comp [components.garden/full-note note]}]
+                 [:span.font-nes (str (count items-with-tags) "/" (count items))]
+                 [:span.font-nes (str (count todos-with-tags) "/" (count todos))]
                  [components.garden/all-nested-tags-comp note]
                  [components.actions/actions-list
                   {:actions (handlers/->actions note) :n 5}]

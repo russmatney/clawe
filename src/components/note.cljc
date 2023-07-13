@@ -51,7 +51,7 @@
   (->> item note->flattened-items
        (mapcat :org/links-to) (into #{})))
 
-(defn ->daily-items-with-tags [note]
+(defn ->items-with-tags [note]
   (some->> note :org/items (filter item-has-any-tags)))
 
 (defn ->all-images [item]
