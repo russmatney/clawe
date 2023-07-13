@@ -193,7 +193,6 @@
                     :session-manager? false
                     :websocket?       true})]
       (server-status-notif {:notify/subject (str "Server started on port: " port)
-                            :notify/body    (uptime)
                             :notify/id      "server-up"})
       ;; be sure to return the server as the system
       server))

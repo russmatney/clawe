@@ -134,7 +134,8 @@
            {:d d :unit unit})))))
 
 (defn ensure-wallpaper []
-  (let [{:keys [d unit]} (uptime)]
-    (cond (and
-            (#{"minutes" "minute"} unit)
-            (< d 5)) (reload))))
+  (when-not (clawe.config/is-mac?)
+    (let [{:keys [d unit]} (uptime)]
+      (cond (and
+              (#{"minutes" "minute"} unit)
+              (< d 5)) (reload)))))
