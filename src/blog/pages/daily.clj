@@ -4,8 +4,15 @@
    [blog.item :as item]
    [blog.render :as render]))
 
-(defn note->daily-items [note]
-  (some->> note :org/items (filter item/item-has-any-tags)))
+(defn note->items [note]
+  (some->> note :org/items
+           (remove :org/status)
+           (filter item/item-has-any-tags)))
+
+(defn note->todos [note]
+  (some->> note :org/items
+           (filter :org/status)
+           (filter item/item-has-any-tags)))
 
 (defn page [note]
   [:div
@@ -15,11 +22,19 @@
 
    (item/metadata note)
 
-   (->> note note->daily-items
+   (->> note note->items
         (map item/item->hiccup-content)
         (into [:div]))
 
-   (item/backlink-hiccup note)])
+   [:hr]
+
+   (item/backlink-hiccup note)
+
+   (->> note note->todos
+        (map item/item->hiccup-content)
+        (into [:div
+               [:h3 "Todos"]
+               ]))])
 
 (comment
   (blog.db/refresh-notes)
@@ -30,11 +45,13 @@
              ;; (filter (comp #(re-seq #"Things I Love" %) :org/name-string))
              ;; (filter (comp #(re-seq #"^brainstorm" %) :org/name-string))
              #_(filter (comp #(re-seq #"2022-10-08" %) :org/name-string))
-             (filter (comp #(re-seq #"2022-12-04" %) :org/name-string))
+             ;; (filter (comp #(re-seq #"2022-12-04" %) :org/name-string))
+             (filter (comp #(re-seq #"2023-07-13" %) :org/name-string))
              first)]
     #_(str (config/blog-content-public) (db/note->uri note))
     #_(page note)
     (render/write-page
       {:note    note
        :content (page note)
-       :title   (:org/name note)})))
+       :title   (:org/name note)}))
+  )

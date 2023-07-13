@@ -30,7 +30,8 @@
 (def about-link-uri "/note/blog_about.html")
 
 (defn header []
-  (let [mastodon-href (blog.config/get-mastodon-href)]
+  (let [mastodon-href (blog.config/get-mastodon-href)
+        lemmy-href    (blog.config/get-lemmy-href)]
     [:div
      {:class ["flex" "flex-col" "items-center"
               "text-gray-100" "w-full"]}
@@ -75,6 +76,14 @@
                 :href  mastodon-href
                 :rel   "me"} "mastodon"]]])
 
+       (when lemmy-href
+         [:div
+          [:h4
+           [:a {:class ["font-mono"
+                        "hover:underline"
+                        "cursor-pointer"]
+                :href  lemmy-href} "lemmy"]]])
+
        [:div
         [:h4
          [:a {:class ["font-mono"
@@ -85,7 +94,8 @@
      [:hr]]))
 
 (defn footer []
-  (let [mastodon-href (blog.config/get-mastodon-href)]
+  (let [mastodon-href (blog.config/get-mastodon-href)
+        lemmy-href    (blog.config/get-lemmy-href)]
     [:div
      {:class ["flex" "flex-col" "items-center"
               "text-gray-100" "pb-8"]}
@@ -114,6 +124,14 @@
                        "cursor-pointer"]
                :href  mastodon-href
                :rel   "me"} "mastodon"]]])
+
+      (when lemmy-href
+        [:div
+         [:h4
+          [:a {:class ["font-mono"
+                       "hover:underline"
+                       "cursor-pointer"]
+               :href  lemmy-href} "lemmy"]]])
 
       [:div
        [:h4
