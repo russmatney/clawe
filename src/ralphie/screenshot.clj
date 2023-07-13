@@ -7,6 +7,7 @@
 
 (defn select-region
   "Depends on ~/.local/bin/screenshot-region"
+  ;; TODO refactor to use shotgun + slop directly here
   []
   (-> ($ screenshot-region)
       check)
@@ -18,6 +19,7 @@
   TODO make sure this script reports an error when it fails
   and consider moving the script logic into clj
   "
+  ;; TODO refactor to use shotgun + slop directly here
   []
   (-> ($ screenshot)
       check)

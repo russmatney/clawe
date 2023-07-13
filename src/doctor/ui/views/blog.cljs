@@ -125,10 +125,11 @@
 
 (defn color-for-count [ct]
   (cond
-    (#{0 1} ct) "text-city-blue-800"
-    (>= ct 8)   "text-city-pink-300"
-    (>= ct 3)   "text-city-red-300"
-    (> ct 1)    "text-city-green-300"))
+    (#{0} ct) "text-city-blue-800"
+    (#{1} ct) "text-city-blue-700"
+    (>= ct 8) "text-city-pink-300"
+    (>= ct 3) "text-city-red-300"
+    (> ct 1)  "text-city-green-300"))
 
 (defn notes-table-def []
   {:headers ["Published" "Tags (incl. nested)" "Name" "Words" "Tag/Items" "Tag/Todos" "pub/Links" "pub/BackLinks" "Actions"]
@@ -152,17 +153,25 @@
                  [:span.font-nes
                   {:class [(color-for-count (/ total-wc 8))]}
                   total-wc]
+                 (if (is-daily? note)
+                   [:span.font-nes
+                    {:class [(color-for-count (count items-with-tags))]}
+                    (str (count items-with-tags) "/" (count items))]
+                   [:span.font-nes
+                    {:class [(color-for-count (count items))]}
+                    (str (count items))])
+                 (if (is-daily? note)
+                   [:span.font-nes
+                    {:class [(color-for-count (count todos-with-tags))]}
+                    (str (count todos-with-tags) "/" (count todos))]
+                   [:span.font-nes
+                    {:class [(color-for-count (count todos))]}
+                    (str (count todos))])
                  [:span.font-nes
-                  {:class [(color-for-count (count items))]}
-                  (str (count items-with-tags) "/" (count items))]
-                 [:span.font-nes
-                  {:class [(color-for-count (count todos))]}
-                  (str (count todos-with-tags) "/" (count todos))]
-                 [:span.font-nes
-                  {:class [(color-for-count (:links/count note))]}
+                  {:class [(color-for-count (:links/published-count note))]}
                   (str (:links/published-count note) "/" (:links/count note))]
                  [:span.font-nes
-                  {:class [(color-for-count (:backlinks/count note))]}
+                  {:class [(color-for-count (:backlinks/published-count note))]}
                   (str (:backlinks/published-count note) "/" (:backlinks/count note))]
                  [components.actions/actions-list
                   {:actions (handlers/->actions note) :n 5}]]))})

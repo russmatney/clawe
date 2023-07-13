@@ -5,7 +5,7 @@
    [blog.render :as render]))
 
 (defn note-without-todos [note]
-  ;; TODO handle nested todos
+  ;; TODO filter nested todos
   (some-> note
           (update :org/items (fn [its] (remove :org/status its)))))
 
