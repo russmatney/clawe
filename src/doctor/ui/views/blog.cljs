@@ -123,8 +123,15 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; notes table def
 
+(defn color-for-count [ct]
+  (cond
+    (= ct 0)  "text-city-blue-800"
+    (>= ct 8) "text-city-pink-300"
+    (>= ct 3) "text-city-red-300"
+    (> ct 0)  "text-city-green-300"))
+
 (defn notes-table-def []
-  {:headers ["Published" "Name" "Tagged/Items" "Tagged/Todos" "Tags (incl. nested)" "Actions" "Raw"]
+  {:headers ["Published" "Name" "Tags (incl. nested)" "Tag/Items" "Tag/Todos" "pub/Links" "pub/BackLinks" "Actions"]
    :->row   (fn [note]
               (let [note            (assoc note :doctor/type :type/note)
                     items           (components.note/note->flattened-items note)
@@ -133,19 +140,25 @@
                     items-with-tags (->> items (filter components.note/item-has-any-tags))
                     todos-with-tags (->> todos (filter components.note/item-has-any-tags))]
                 [[:span.font-mono
-                  (when (:blog/published note) "Published")]
-                 [floating/popover
-                  {:hover        true :click true
-                   :anchor-comp  [:span
-                                  {:class "whitespace-nowrap"}
-                                  (:org/name-string note)]
-                   :popover-comp [components.garden/full-note note]}]
-                 [:span.font-nes (str (count items-with-tags) "/" (count items))]
-                 [:span.font-nes (str (count todos-with-tags) "/" (count todos))]
+                  (if (:blog/published note) "Published"
+                      [components.actions/actions-list
+                       {:actions (handlers/->actions note) :n 1}])]
+                 [components.debug/raw-metadata {:label (:org/name-string note)} note]
                  [components.garden/all-nested-tags-comp note]
+                 [:span.font-nes
+                  {:class [(color-for-count (count items))]}
+                  (str (count items-with-tags) "/" (count items))]
+                 [:span.font-nes
+                  {:class [(color-for-count (count todos))]}
+                  (str (count todos-with-tags) "/" (count todos))]
+                 [:span.font-nes
+                  {:class [(color-for-count (:links/count note))]}
+                  (str (:links/published-count note) "/" (:links/count note))]
+                 [:span.font-nes
+                  {:class [(color-for-count (:backlinks/count note))]}
+                  (str (:backlinks/published-count note) "/" (:backlinks/count note))]
                  [components.actions/actions-list
-                  {:actions (handlers/->actions note) :n 5}]
-                 [components.debug/raw-metadata {:label "raw"} note]]))})
+                  {:actions (handlers/->actions note) :n 5}]]))})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; presets

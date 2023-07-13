@@ -5,6 +5,8 @@
    [manifold.stream :as s]
    [tick.core :as t]
 
+   [components.note :as components.note]
+
    [blog.config :as blog.config]
    [blog.db :as blog.db]
    [blog.publish :as blog.publish]
@@ -29,7 +31,21 @@
                       (dates/sort-latest-first
                         (-> note :file/last-modified dates/parse-time-string)
                         month-ago))))
-          (sort-by :org/name-string))}))
+          (sort-by :org/name-string)
+          (map (fn [note]
+
+                 (let [backlinks           (->> note :org/id blog.db/id->root-notes-linked-from)
+                       links               (->> note components.note/->all-links)
+                       published-links     (->> links
+                                                (filter (comp blog.db/id->link-uri :link/id)))
+                       published-backlinks (->> backlinks
+                                                (filter (comp blog.db/id->link-uri :org/id)))]
+                   (-> note
+                       (assoc
+                         :links/count (count links)
+                         :links/published-count (count published-links)
+                         :backlinks/count (count backlinks)
+                         :backlinks/published-count (count published-backlinks)))))))}))
 
 (defsys ^:dynamic *blog-data-stream*
   :start (s/stream)
