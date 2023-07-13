@@ -125,26 +125,33 @@
 
 (defn color-for-count [ct]
   (cond
-    (= ct 0)  "text-city-blue-800"
-    (>= ct 8) "text-city-pink-300"
-    (>= ct 3) "text-city-red-300"
-    (> ct 0)  "text-city-green-300"))
+    (#{0 1} ct) "text-city-blue-800"
+    (>= ct 8)   "text-city-pink-300"
+    (>= ct 3)   "text-city-red-300"
+    (> ct 1)    "text-city-green-300"))
 
 (defn notes-table-def []
-  {:headers ["Published" "Name" "Tags (incl. nested)" "Tag/Items" "Tag/Todos" "pub/Links" "pub/BackLinks" "Actions"]
+  {:headers ["Published" "Tags (incl. nested)" "Name" "Words" "Tag/Items" "Tag/Todos" "pub/Links" "pub/BackLinks" "Actions"]
    :->row   (fn [note]
               (let [note            (assoc note :doctor/type :type/note)
                     items           (components.note/note->flattened-items note)
                     todos           (->> items (filter :org/status))
                     items           (->> items (remove :org/status))
                     items-with-tags (->> items (filter components.note/item-has-any-tags))
-                    todos-with-tags (->> todos (filter components.note/item-has-any-tags))]
+                    todos-with-tags (->> todos (filter components.note/item-has-any-tags))
+                    total-wc        (components.note/word-count note)]
                 [[:span.font-mono
                   (if (:blog/published note) "Published"
                       [components.actions/actions-list
                        {:actions (handlers/->actions note) :n 1}])]
-                 [components.debug/raw-metadata {:label (:org/name-string note)} note]
                  [components.garden/all-nested-tags-comp note]
+                 [components.debug/raw-metadata
+                  {:label
+                   (str (:org/name-string note))}
+                  note]
+                 [:span.font-nes
+                  {:class [(color-for-count (/ total-wc 8))]}
+                  total-wc]
                  [:span.font-nes
                   {:class [(color-for-count (count items))]}
                   (str (count items-with-tags) "/" (count items))]
