@@ -2,28 +2,56 @@
   (:require
    [blog.item :as item]
    [blog.db :as blog.db]
-   [blog.render :as render]))
+   [blog.render :as render]
+   [clojure.string :as string]))
 
-(defn notes-by-tag [notes]
-  (->> notes
+;; data
+
+(defn notes-by-tag []
+  (->> (blog.db/published-notes)
        (map #(dissoc % :org/body))
        (reduce
          (fn [by-tag note]
-           (reduce
-             (fn [by-tag tag]
-               (update by-tag tag (fnil
-                                    (fn [notes]
-                                      (conj notes note))
-                                    #{note})))
-             by-tag
-             (let [tags (item/item->all-tags note)]
-               (if (seq tags) tags
-                   ;; here we include items with no tags
-                   ;; these should be given tags, and
-                   ;; helps to surface them
-                   [nil]))))
-         {})
-       (sort-by (comp (fn [x] (if x (count x) 0)) second) >)))
+           (reduce #(update %1 %2 (fnil (fn [notes] (conj notes note)) #{note}))
+                   by-tag
+                   (let [tags (item/item->published-tags note)]
+                     (if (seq tags) tags
+                         ;; here we include items with no tags
+                         ;; these should be given tags, and
+                         ;; helps to surface them
+                         [nil]))))
+         {})))
+
+(defn tags-and-counts-by-first-letter [notes-by-tag]
+  (->> notes-by-tag
+       keys
+       (remove nil?)
+       (group-by (comp string/lower-case first))
+       (sort-by first)
+       (map (fn [[letter tags]]
+              [letter
+               (->> tags
+                    (map (fn [tag]
+                           {:tag   tag
+                            :label (str "#" tag "/" (count (notes-by-tag tag)))})))]))))
+
+
+(defn data []
+  (let [by-tag (notes-by-tag)]
+    {:highest-count-first (->> by-tag
+                               (sort-by (comp (fn [x] (if x (count x) 0)) second) >))
+     :alphabetical        (->> by-tag
+                               (remove (comp nil? first))
+                               (sort-by (comp string/lower-case first)))
+     :tag-groups          (tags-and-counts-by-first-letter by-tag)}))
+
+
+(comment
+  (notes-by-tag)
+  (data)
+  (:tag-groups (data)))
+
+;; components
 
 (defn tag-block [{:keys [tag notes]}]
   [:div
@@ -38,30 +66,27 @@
      (->> notes (map #(item/note-row % {:tags #{tag}})) (into [:div])))
    [:hr]])
 
-(defn all-tags []
-  (->> (blog.db/all-notes) (mapcat :org/tags) (into #{})))
-
-(comment
-  (->> (all-tags)
-       (sort)
-       (blog.item/tags-list-terms)))
-
-(defn tag-pool []
-  (let [tags (all-tags)]
-    (blog.item/tags-list (sort tags))))
+(defn tag-pool [tag-groups]
+  (for [[tag tags] tag-groups]
+    [:div
+     {:class ["pt-4"]}
+     [:h3 {:class ["flex" "flex-row" "justify-center"]} tag]
+     (blog.item/tags-list tags)]))
 
 (defn page []
-  [:div
-   [:div
-    {:class ["flex" "flex-row" "justify-center"]}
-    [:h2 {:class ["font-mono"]} "Notes By Tag"]]
+  (let [{:keys [alphabetical tag-groups]} (data)]
+    [:div
+     [:div
+      {:class ["flex" "flex-row" "justify-center"]}
+      [:h2 {:class ["font-mono"]} "Notes By Tag"]]
 
-   (->>
-     (notes-by-tag (blog.db/published-notes))
-     (map (fn [[tag notes]]
-            (when (and tag (seq notes))
-              (tag-block {:tag tag :notes notes}))))
-     (into [:div (tag-pool)]))])
+     (->> alphabetical
+          (map (fn [[tag notes]]
+                 (when (and tag (seq notes))
+                   (tag-block {:tag tag :notes notes}))))
+          (into [:div
+                 (tag-pool tag-groups)
+                 [:hr]]))]))
 
 (comment
   (render/write-page

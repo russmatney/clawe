@@ -12,6 +12,9 @@
    [components.colors :as colors]
    [util]))
 
+(defn is-daily? [note]
+  (re-seq #"/daily/" (:org/source-file note)))
+
 (defn item-has-any-tags
   "Returns truthy if the item has at least one matching tag."
   [item]
@@ -35,8 +38,17 @@
 ;;   (->> items (filter #(item-has-parent % parent-names))))
 
 (defn item->all-tags [item]
-  ;; TODO daily notes should filter untagged items (subitems)
   (->> item org-crud/nested-item->flattened-items
+       (mapcat :org/tags) (into #{})
+       (#(disj % "published"))))
+
+(defn item->published-tags [item]
+  (->> item
+       ((fn [it]
+          (if (is-daily? it)
+            (update it :org/items #(remove item-has-any-tags %))
+            it)))
+       org-crud/nested-item->flattened-items
        (mapcat :org/tags) (into #{})
        (#(disj % "published"))))
 
@@ -503,24 +515,25 @@ and [[https://github.com/russmatney/org-crud][this other repo]]")
 ;; note row
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn tags-list-terms
+(defn tags-list-pills
   [tags]
   (when (seq tags)
-    (->>
-      tags
-      (map #(str "#" %))
-      (map-indexed
-        (fn [i tag]
-          [:span
-           {:class ["not-prose" "px-1"]
-            :style {:line-height "2rem"}}
-           [:a {:href  (str "/tags.html" tag)
-                :class (concat ["font-mono"]
-                               (colors/color-wheel-classes {:i i :type :line}))} tag]])))))
+    (->> tags
+         (map-indexed
+           (fn [i opts]
+             (let [tag   (:tag opts opts)
+                   label (:label opts (str "#" opts))]
+               [:span
+                {:class ["not-prose" "px-1"]
+                 :style {:line-height "2rem"}}
+                [:a {:href  (str "/tags.html" (str "#" tag))
+                     :class (concat ["font-mono"]
+                                    (colors/color-wheel-classes {:i i :type :line}))}
+                 label]]))))))
 
 (defn tags-list
   [tags]
-  (let [terms (tags-list-terms tags)]
+  (let [terms (tags-list-pills tags)]
     (when (seq terms)
       (->> terms
            (into [:div {:class ["flex flex-row flex-wrap" "not-prose"]}])))))
@@ -553,14 +566,11 @@ and [[https://github.com/russmatney/org-crud][this other repo]]")
 (defn note-row
   ([note] (note-row note nil))
   ([note opts]
-   (let [is-daily? (re-seq #"/daily/" (:org/source-file note))
-         children-with-tags
-         (when is-daily?
+   (let [children-with-tags
+         (when (is-daily? note)
            (cond->> (:org/items note)
-             true
-             (filter item-has-any-tags)
-             (:tags opts)
-             (filter #(item-has-tags % (:tags opts)))))]
+             true         (filter item-has-any-tags)
+             (:tags opts) (filter #(item-has-tags % (:tags opts)))))]
      [:div
       {:class ["flex" "flex-col" "mb-2"]}
 
