@@ -58,7 +58,7 @@
      {:class ["flex flex-row" "justify-center"]}
      [:h2 "Find notes..."]]
     [:div
-     {:class ["flex flex-row"
+     {:class ["flex flex-row" "flex-wrap"
               "space-x-4"
               "justify-between"]}
      [:p
@@ -70,6 +70,20 @@
        "by tag"
        ;; TODO include 5 most common tags
        ]]
+     [:p
+      {:class ["not-prose"]}
+      [:a {:href  "/published-at.html"
+           :class ["text-city-green-400"
+                   "hover:text-city-green-200"
+                   "font-nes"]}
+       "by date published"]]
+     [:p
+      {:class ["not-prose"]}
+      [:a {:href  "/created-at.html"
+           :class ["text-city-green-400"
+                   "hover:text-city-green-200"
+                   "font-nes"]}
+       "by date created"]]
      [:p
       {:class ["not-prose"]}
       [:a {:href  "/last-modified.html"

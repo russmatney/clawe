@@ -25,10 +25,12 @@
 
    (item/backlink-hiccup note)
 
-   (->> note note->todos
-        (map item/item->hiccup-content)
-        (into [:div
-               [:h3 "Todos"]]))])
+   (when-let [todos (seq (note->todos note))]
+     (->> todos
+          (map item/item->hiccup-content)
+          (into [:div
+                 [:hr]
+                 [:h3 "Todos"]])))])
 
 
 (comment

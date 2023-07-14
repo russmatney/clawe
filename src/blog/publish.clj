@@ -8,7 +8,7 @@
    [blog.render :as render]
    [blog.pages.daily :as pages.daily]
    [blog.pages.note :as pages.note]
-   [blog.pages.last-modified :as pages.last-modified]
+   [blog.pages.date-index :as pages.date-index]
    [blog.pages.index :as pages.index]
    [blog.pages.tags :as pages.tags]
    [blog.pages.resources :as pages.resources]
@@ -57,12 +57,26 @@
      :content (pages.tags/page)
      :title   "Notes By Tag"}))
 
-(defn publish-index-by-last-modified []
-  (log/info "[PUBLISH] exporting index-by-last-modified.")
+(defn publish-date-indexes []
+  (log/info "[PUBLISH] exporting date-indexes.")
+
+  (render/write-page
+    {:path    "/created-at.html"
+     :content (pages.date-index/page {:note->date :org.prop/created-at
+                                      :uri        "/created-at.html"})
+     :title   "By Date Created"})
+
+  (render/write-page
+    {:path    "/published-at.html"
+     :content (pages.date-index/page {:note->date :blog/published-at
+                                      :uri        "/published-at.html"})
+     :title   "By Date Published"})
+
   (render/write-page
     {:path    "/last-modified.html"
-     :content (pages.last-modified/page)
-     :title   "Notes By Modified Date"}))
+     :content (pages.date-index/page {:uri        "/last-modified.html"
+                                      :note->date :file/last-modified})
+     :title   "By Modified Date"}))
 
 (defn publish-index []
   (log/info "[PUBLISH] exporting index.")
@@ -74,7 +88,7 @@
 (defn publish-indexes
   []
   (publish-index-by-tag)
-  (publish-index-by-last-modified)
+  (publish-date-indexes)
   (publish-index)
   (pages.resources/publish))
 
