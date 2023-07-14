@@ -32,8 +32,9 @@
               [letter
                (->> tags
                     (map (fn [tag]
-                           {:tag   tag
-                            :label (str "#" tag "/" (count (notes-by-tag tag)))})))]))))
+                           ;; build for anchor-href-list
+                           {:tag tag
+                            :n   (count (notes-by-tag tag))})))]))))
 
 
 (defn data []
@@ -71,7 +72,7 @@
     [:div
      {:class ["pt-4"]}
      [:h3 {:class ["flex" "flex-row" "justify-center"]} tag]
-     (blog.item/tags-list tags)]))
+     (blog.item/tags-href-list tags)]))
 
 (defn page []
   (let [{:keys [alphabetical tag-groups]} (data)]

@@ -515,28 +515,46 @@ and [[https://github.com/russmatney/org-crud][this other repo]]")
 ;; note row
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn tags-list-pills
-  [tags]
-  (when (seq tags)
-    (->> tags
-         (map-indexed
-           (fn [i opts]
-             (let [tag   (:tag opts opts)
-                   label (:label opts (str "#" opts))]
-               [:span
-                {:class ["not-prose" "px-1"]
-                 :style {:line-height "2rem"}}
-                [:a {:href  (str "/tags.html" (str "#" tag))
-                     :class (concat ["font-mono"]
-                                    (colors/color-wheel-classes {:i i :type :line}))}
-                 label]]))))))
+(defn href-pill-list
+  "Supports a list of colorized xs, where each x is a string or a map like:
+  - :href
+  - :label
 
-(defn tags-list
+  Intended to support anchor links.
+  "
+  [xs]
+  (when (seq xs)
+    (->>
+      xs
+      (map-indexed
+        (fn [i x]
+          (let [label (:label x)]
+            [:span
+             {:class ["not-prose" "px-1"]
+              :style {:line-height "2rem"}}
+             [:a {:href  (:href x)
+                  :class (concat ["font-mono"]
+                                 (colors/color-wheel-classes {:i i :type :line}))}
+              label]])))
+      (into [:div {:class ["flex flex-row flex-wrap" "not-prose"]}]))))
+
+
+(defn tags-href-list
+  "Builds"
   [tags]
-  (let [terms (tags-list-pills tags)]
-    (when (seq terms)
-      (->> terms
-           (into [:div {:class ["flex flex-row flex-wrap" "not-prose"]}])))))
+  (->> tags
+       (map (fn [tag]
+              (cond (string? tag) {:href  (str "/tags.html#" tag)
+                                   :label (str "#" tag)}
+                    (map? tag)    (cond-> tag
+                                    (not (:href tag))
+                                    (assoc :href (str "/tags.html#" (:tag tag)))
+                                    (not (:label tag))
+                                    (assoc :label (str "#" (:tag tag)
+                                                       (when (:n tag) (str "/" (:n tag))))))
+                    :else         tag)))
+       href-pill-list))
+
 
 (defn note->tags-list-terms
   ([note] (note->tags-list-terms note nil))
