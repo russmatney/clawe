@@ -138,6 +138,8 @@
   ;; TODO dry up doctor-tauri with a more fully-featured api support (like quickblog)
   topbar          {:doc  "Run the doctor topbar via tauri. Consumed from systemd service."
                    :task (run-doctor-tauri-app "topbar")}
+  dashboard       {:doc  "Run the doctor focus window via tauri."
+                   :task (run-doctor-tauri-app "dashboard")}
   popup           {:doc  "Run the doctor popup window via tauri."
                    :task (run-doctor-tauri-app "popup")}
   todo            {:doc  "Run the doctor todo window via tauri."

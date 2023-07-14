@@ -66,7 +66,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def route-defs
-  [{:route "/" :page-name :page/home :label "Dashboard" :comp views.dashboard/widget
+  [
+   {:route "/" :page-name :page/home :label "Home" :comp views.dashboard/widget
+    :icon  octicons/beaker16}
+   {:route "/dashboard" :page-name :page/dashboard :label "Dashboard" :comp views.dashboard/widget
     :icon  octicons/beaker16}
    {:route "/focus" :page-name :page/focus :label "Focus" :comp views.focus/widget :hide-header true
     :icon  octicons/light-bulb16}

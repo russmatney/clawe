@@ -30,7 +30,7 @@
    [:div
     {:class ["flex" "flex-row" "justify-center"]}
     [:h3
-     {:class ["pb-2"]}
+     {:class ["pb-2" "pointer-cursor"]}
      [:a {:id tag}
       (or tag "Untagged")]]]
 
@@ -38,17 +38,30 @@
      (->> notes (map #(item/note-row % {:tags #{tag}})) (into [:div])))
    [:hr]])
 
+(defn all-tags []
+  (->> (blog.db/all-notes) (mapcat :org/tags) (into #{})))
+
+(comment
+  (->> (all-tags)
+       (sort)
+       (blog.item/tags-list-terms)))
+
+(defn tag-pool []
+  (let [tags (all-tags)]
+    (blog.item/tags-list (sort tags))))
+
 (defn page []
   [:div
    [:div
     {:class ["flex" "flex-row" "justify-center"]}
     [:h2 {:class ["font-mono"]} "Notes By Tag"]]
+
    (->>
      (notes-by-tag (blog.db/published-notes))
      (map (fn [[tag notes]]
             (when (and tag (seq notes))
               (tag-block {:tag tag :notes notes}))))
-     (into [:div]))])
+     (into [:div (tag-pool)]))])
 
 (comment
   (render/write-page

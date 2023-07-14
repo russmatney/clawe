@@ -442,7 +442,7 @@ and [[https://github.com/russmatney/org-crud][this other repo]]")
 
   (item->hiccup-body note))
 
-(declare tags-list)
+(declare note->tags-list)
 
 (defn item->hiccup-content
   ([item] (item->hiccup-content item nil))
@@ -457,7 +457,7 @@ and [[https://github.com/russmatney/org-crud][this other repo]]")
        (concat
          (when-not (:skip-title opts)
            [(item->hiccup-headline item opts)])
-         [(tags-list item)]
+         [(note->tags-list item)]
          (when-not (:skip-body opts)
            (item->hiccup-body item))
          children)
@@ -504,7 +504,29 @@ and [[https://github.com/russmatney/org-crud][this other repo]]")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn tags-list-terms
-  ([note] (tags-list-terms note nil))
+  [tags]
+  (when (seq tags)
+    (->>
+      tags
+      (map #(str "#" %))
+      (map-indexed
+        (fn [i tag]
+          [:span
+           {:class ["not-prose" "px-1"]
+            :style {:line-height "2rem"}}
+           [:a {:href  (str "/tags.html" tag)
+                :class (concat ["font-mono"]
+                               (colors/color-wheel-classes {:i i :type :line}))} tag]])))))
+
+(defn tags-list
+  [tags]
+  (let [terms (tags-list-terms tags)]
+    (when (seq terms)
+      (->> terms
+           (into [:div {:class ["flex flex-row flex-wrap" "not-prose"]}])))))
+
+(defn note->tags-list-terms
+  ([note] (note->tags-list-terms note nil))
   ([note tags]
    (let [tags (or tags (->> note :org/tags (#(disj % "published"))))]
      (when (seq tags)
@@ -520,10 +542,10 @@ and [[https://github.com/russmatney/org-crud][this other repo]]")
                    :class (concat ["font-mono"]
                                   (colors/color-wheel-classes {:i i :type :line}))} tag]])))))))
 
-(defn tags-list
-  ([note] (tags-list note nil))
+(defn note->tags-list
+  ([note] (note->tags-list note nil))
   ([note tags]
-   (let [terms (tags-list-terms note tags)]
+   (let [terms (note->tags-list-terms note tags)]
      (when (seq terms)
        (->> terms
             (into [:div {:class ["flex flex-row flex-wrap" "not-prose"]}]))))))
@@ -556,8 +578,8 @@ and [[https://github.com/russmatney/org-crud][this other repo]]")
          (:org/name-string note)]]
 
        ;; TODO colorize these tags with
-       (tags-list-terms note
-                        (->> (item->all-tags note) sort))]
+       (note->tags-list-terms note
+                              (->> (item->all-tags note) sort))]
 
       (->> children-with-tags
            (map (fn [ch]
@@ -567,7 +589,7 @@ and [[https://github.com/russmatney/org-crud][this other repo]]")
                               "flex" "flex-row" "justify-between"]}
                      ;; TODO ideally this is a link to an anchor tag for the daily
                      (->>
-                       (tags-list-terms ch)
+                       (note->tags-list-terms ch)
                        (into
                          [:h4 t]))]))))])))
 
@@ -615,8 +637,8 @@ and [[https://github.com/russmatney/org-crud][this other repo]]")
    [:div
     {:class []}
     (if (seq (item->all-tags item))
-      (tags-list item
-                 (->> (item->all-tags item) sort))
+      (note->tags-list item
+                       (->> (item->all-tags item) sort))
       [:span {:class ["font-mono"]} "No tags"])]
    [:span
     {:class ["font-mono"]}
