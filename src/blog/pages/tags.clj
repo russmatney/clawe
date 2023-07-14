@@ -8,6 +8,7 @@
 ;; data
 
 (defn notes-by-tag []
+  ;; TODO use local database
   (->> (blog.db/published-notes)
        (map #(dissoc % :org/body))
        (reduce
@@ -15,15 +16,11 @@
            (reduce #(update %1 %2 (fnil (fn [notes] (conj notes note)) #{note}))
                    by-tag
                    (let [tags (item/item->published-tags note)]
-                     (if (seq tags) tags
-                         ;; here we include items with no tags
-                         ;; these should be given tags, and
-                         ;; helps to surface them
-                         [nil]))))
+                     (when (seq tags) tags))))
          {})))
 
-(defn tags-and-counts-by-first-letter [notes-by-tag]
-  (->> notes-by-tag
+(defn tag-anchor-groups-by-letter [tag->notes]
+  (->> tag->notes
        keys
        (remove nil?)
        (group-by (comp string/lower-case first))
@@ -31,11 +28,11 @@
        (map (fn [[letter tags]]
               [letter
                (->> tags
+                    sort
                     (map (fn [tag]
                            ;; build for anchor-href-list
                            {:tag tag
-                            :n   (count (notes-by-tag tag))})))]))))
-
+                            :n   (count (tag->notes tag))})))]))))
 
 (defn data []
   (let [by-tag (notes-by-tag)]
@@ -44,7 +41,7 @@
      :alphabetical        (->> by-tag
                                (remove (comp nil? first))
                                (sort-by (comp string/lower-case first)))
-     :tag-groups          (tags-and-counts-by-first-letter by-tag)}))
+     :tag-groups          (tag-anchor-groups-by-letter by-tag)}))
 
 
 (comment
@@ -67,7 +64,7 @@
      (->> notes (map #(item/note-row % {:tags #{tag}})) (into [:div])))
    [:hr]])
 
-(defn tag-pool [tag-groups]
+(defn tag-anchor-groups [tag-groups]
   (for [[tag tags] tag-groups]
     [:div
      {:class ["pt-4"]}
@@ -86,7 +83,7 @@
                  (when (and tag (seq notes))
                    (tag-block {:tag tag :notes notes}))))
           (into [:div
-                 (tag-pool tag-groups)
+                 (tag-anchor-groups tag-groups)
                  [:hr]]))]))
 
 (comment

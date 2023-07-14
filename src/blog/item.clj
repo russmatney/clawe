@@ -536,7 +536,7 @@ and [[https://github.com/russmatney/org-crud][this other repo]]")
                   :class (concat ["font-mono"]
                                  (colors/color-wheel-classes {:i i :type :line}))}
               label]])))
-      (into [:div {:class ["flex flex-row flex-wrap" "not-prose"]}]))))
+      (into [:div {:class ["flex flex-row flex-wrap" "justify-center" "not-prose"]}]))))
 
 
 (defn tags-href-list
