@@ -252,6 +252,13 @@ and [[https://github.com/russmatney/org-crud][this other repo]]")
     "[[https://github.com/russmatney/some-repo][leading link]],
     check out [[https://www.youtube.com/watch?v=Z9S_2FmLCm8][this video]]. "))
 
+(defn item->anchor-link [item]
+  (-> (str
+        (apply str (:org/parent-names item))
+        (:org/name-string item))
+      string/lower-case
+      (string/replace #"[ |\(\)]" "")))
+
 (defn item->hiccup-headline
   ([item] (item->hiccup-headline item nil))
   ([item opts]
@@ -270,20 +277,33 @@ and [[https://github.com/russmatney/org-crud][this other repo]]")
                        "")]
                     [:span " "]])
                  elems)))
-            (into
-              (let [[header-elem prefix]
-                    (case (:org/level item)
-                      :level/root [:h1 nil]
-                      1           [:h1 nil]
-                      2           [:h2 "> "]
-                      3           [:h3 ">> "]
-                      4           [:h4 ">>> "]
-                      5           [:h5 ">>>> "]
-                      6           [:h6 ">>>>> "]
-                      [:span nil])]
-                [(or (:header-override opts) header-elem)
-                 (merge (:header-override-opts opts {}))
-                 prefix])))))))
+            ((fn [elems]
+               (let [[header-elem prefix]
+                     (case (:org/level item)
+                       :level/root [:h1 nil]
+                       1           [:h1 nil]
+                       2           [:h2 "> "]
+                       3           [:h3 ">> "]
+                       4           [:h4 ">>> "]
+                       5           [:h5 ">>>> "]
+                       6           [:h6 ">>>>> "]
+                       [:span nil])]
+                 (into
+                   (into
+                     [(or (:header-override opts) header-elem)
+                      (merge (:header-override-opts opts
+                                                    {}))
+                      prefix]
+                     elems)
+                   ;; TODO share/copy anchor link to clipboard
+                   (when (and (item->anchor-link item)
+                              (not (#{:level/root} (:org/level item)))
+                              (not (:no-anchor opts)))
+                     [[:a
+                       (let [href (item->anchor-link item)]
+                         {:id    href :href (str "#" href)
+                          :class ["ml-auto"]})
+                       "a"]]))))))))))
 
 (defn merge-non-list-lines-up
   "Moves non-li text into the previous list-item."
@@ -505,7 +525,8 @@ and [[https://github.com/russmatney/org-crud][this other repo]]")
                          [:a {:href       (blog.db/id->link-uri (:org/id note))
                               :class      ["text-slate-400"]
                               :aria-label (:org/name-string note)}
-                          (item->hiccup-headline note {:header-override :h3})]]]
+                          (item->hiccup-headline note {:header-override :h3
+                                                       :no-anchor       true})]]]
                        (item->hiccup-body note))
                      (into [:div {:class ["pb-4"]}]))))
             (into [:div]))])))
@@ -587,6 +608,27 @@ and [[https://github.com/russmatney/org-crud][this other repo]]")
        (->> terms
             (into [:div {:class ["flex flex-row flex-wrap" "not-prose"]}]))))))
 
+(defn note-child-row [{:keys [uri]} item]
+  [:div
+   {:class ["pl-4" "flex" "flex-row" "justify-between"]}
+   (->>
+     (note->tags-list-terms item)
+     (into
+       [:span
+        {:class []}
+        [:a {:href  (str uri "#" (item->anchor-link item))
+             :class (concat ["no-prose"]
+                            (case (:org/level item)
+                              :level/root []
+                              1           []
+                              2           ["pl-2"]
+                              3           ["pl-4"]
+                              4           ["pl-8"]
+                              5           ["pl-16"]
+                              6           ["pl-24"]
+                              []))}
+         (:org/name-string item)]]))])
+
 (defn note-row
   ([note] (note-row note nil))
   ([note opts]
@@ -594,7 +636,8 @@ and [[https://github.com/russmatney/org-crud][this other repo]]")
          (when (is-daily? note)
            (cond->> (:org/items note)
              true         (filter item-has-any-tags)
-             (:tags opts) (filter #(item-has-tags % (:tags opts)))))]
+             (:tags opts) (filter #(item-has-tags % (:tags opts)))))
+         uri (blog.db/id->link-uri (:org/id note))]
      [:div
       {:class ["flex" "flex-col" "mb-2"]}
 
@@ -607,7 +650,7 @@ and [[https://github.com/russmatney/org-crud][this other repo]]")
          :style {:margin-bottom 0}}
         [:a
          {:class      ["cursor-pointer" "w-full"]
-          :href       (blog.db/id->link-uri (:org/id note))
+          :href       uri
           :aria-label (:org/name-string note)}
          (:org/name-string note)]]
 
@@ -616,16 +659,8 @@ and [[https://github.com/russmatney/org-crud][this other repo]]")
                               (->> (item->all-tags note) sort))]
 
       (->> children-with-tags
-           (map (fn [ch]
-                  (let [t (:org/name-string ch)]
-                    [:div
-                     {:class ["pl-4"
-                              "flex" "flex-row" "justify-between"]}
-                     ;; TODO ideally this is a link to an anchor tag for the daily
-                     (->>
-                       (note->tags-list-terms ch)
-                       (into
-                         [:h4 t]))]))))])))
+           (remove :org/status)
+           (map #(note-child-row {:uri uri} %)))])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; item metadata
@@ -681,5 +716,4 @@ and [[https://github.com/russmatney/org-crud][this other repo]]")
      (when (seq backlinks)
        [:span
         {:class ["font-mono"]}
-        (str "Backlinks: " (count backlinks))]))
-   [:hr]])
+        (str "Backlinks: " (count backlinks))]))])

@@ -2,7 +2,10 @@
   (:require
    [blog.db :as blog.db]
    [blog.item :as item]
-   [blog.render :as render]))
+   [blog.render :as render]
+
+   [org-crud.core :as org-crud]
+   ))
 
 (defn note->items [note]
   (some->> note :org/items
@@ -14,6 +17,17 @@
            (filter item/item-has-any-tags)
            (mapcat item/item->all-todos)))
 
+(defn toc [note]
+  (->> note
+       note->items
+       (mapcat org-crud/nested-item->flattened-items)
+       (remove :org/status)
+       (map (fn [item]
+              [:h3
+               {:class ["not-prose"]}
+               [:a {:href (str "#" (item/item->anchor-link item))}
+                (:org/name-string item)]]))))
+
 (defn page [note]
   [:div
    [:h1
@@ -22,14 +36,21 @@
 
    (item/metadata note)
 
+   (into
+     [:div
+      {:class []}
+      [:h3 "Contents"]]
+     (toc note))
+
+   [:hr]
+
    (->> note note->items
         (map #(item/item->hiccup-content % {:filter-fn (comp not :org/status)}))
         (into [:div]))
 
-   (when-let [backlinks (seq (item/backlink-hiccup note))]
-     [:span
-      [:hr]
-      backlinks])
+   [:hr]
+
+   (item/backlink-hiccup note)
 
    (when-let [todos (seq (note->todos note))]
      (->> todos
