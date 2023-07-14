@@ -172,9 +172,10 @@ Depends on `brotab`."
 (defn open-dev
   "Opens a dev browser"
   ([] (open-dev nil))
-  ([{:keys [url] :as opts}]
+  ([{:keys [url _dev-console?] :as opts}]
    (let [url (cond (string? opts) opts (string? url) url)]
      (if url
+       ;; TODO support --dev-console, opt-in from clawe.edn
        (-> (p/$ firefox-developer-edition --new-tab ~url)
            p/check :out)
        (if (config/osx?)
@@ -186,8 +187,7 @@ Depends on `brotab`."
 
 (comment
   (open-dev)
-  (open-dev {:url "http://localhost:9999"})
-  )
+  (open-dev {:url "http://localhost:9999"}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; reload
