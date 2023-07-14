@@ -11,8 +11,8 @@
 
 (defn note->todos [note]
   (some->> note :org/items
-           (filter :org/status)
-           (filter item/item-has-any-tags)))
+           (filter item/item-has-any-tags)
+           (mapcat item/item->all-todos)))
 
 (defn page [note]
   [:div
@@ -23,15 +23,17 @@
    (item/metadata note)
 
    (->> note note->items
-        (map item/item->hiccup-content)
+        (map #(item/item->hiccup-content % {:filter-fn (comp not :org/status)}))
         (into [:div]))
 
-   [:hr]
-
-   (item/backlink-hiccup note)
+   (when-let [backlinks (seq (item/backlink-hiccup note))]
+     [:span
+      [:hr]
+      backlinks])
 
    (when-let [todos (seq (note->todos note))]
      (->> todos
+          ;; TODO consider a new todo renderer that exposes parent-names
           (map item/item->hiccup-content)
           (into [:div
                  [:hr]
@@ -54,5 +56,4 @@
     (render/write-page
       {:note    note
        :content (page note)
-       :title   (:org/name note)}))
-  )
+       :title   (:org/name note)})))

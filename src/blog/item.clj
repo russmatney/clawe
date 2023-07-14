@@ -37,6 +37,9 @@
 ;; (defn items-with-parent [items parent-names]
 ;;   (->> items (filter #(item-has-parent % parent-names))))
 
+(defn item->all-todos [item]
+  (->> item org-crud/nested-item->flattened-items (filter :org/status)))
+
 (defn item->all-tags [item]
   (->> item org-crud/nested-item->flattened-items
        (mapcat :org/tags) (into #{})
@@ -461,10 +464,13 @@ and [[https://github.com/russmatney/org-crud][this other repo]]")
   ([item opts]
    (let [children
          (when-not (:skip-children opts)
-           (->> item :org/items (map #(item->hiccup-content
-                                        %
-                                        ;; don't skip children's titles
-                                        (dissoc opts :skip-title)))))]
+           (cond->> item
+             true              :org/items
+             (:filter-fn opts) (filter (:filter-fn opts))
+             true              (map #(item->hiccup-content
+                                       %
+                                       ;; don't skip children's titles
+                                       (dissoc opts :skip-title)))))]
      (->>
        (concat
          (when-not (:skip-title opts)

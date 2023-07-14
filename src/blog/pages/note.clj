@@ -4,14 +4,8 @@
    [blog.db :as db]
    [blog.render :as render]))
 
-(defn note-without-todos [note]
-  ;; TODO filter nested todos
-  (some-> note
-          (update :org/items (fn [its] (remove :org/status its)))))
-
 (defn note->todos [note]
-  ;; TODO find nested todos
-  (some->> note :org/items (filter :org/status)))
+  (some->> note blog.item/item->all-todos))
 
 (defn page [note]
   [:div
@@ -21,9 +15,13 @@
    (item/metadata note)
 
    (item/item->hiccup-content
-     (note-without-todos note) {:skip-title true})
+     note {:skip-title true
+           :filter-fn  (comp not :org/status)})
 
-   (item/backlink-hiccup note)
+   (when-let [backlinks (seq (item/backlink-hiccup note))]
+     [:span
+      [:hr]
+      backlinks])
 
    (when-let [todos (seq (note->todos note))]
      (->> todos
@@ -41,7 +39,8 @@
                   ;; (filter (comp #(re-seq #"^brainstorm" %) :org/name-string))
                   ;; (filter (comp #(re-seq #"^future" %) :org/name-string))
                   ;; (filter (comp #(re-seq #"^clojure$" %) :org/name-string))
-                  (filter (comp #(re-seq #"^clawe$" %) :org/name-string))
+                  ;; (filter (comp #(re-seq #"^clawe$" %) :org/name-string))
+                  (filter (comp #(re-seq #"^Juice in Games" %) :org/name-string))
                   first
                   )]
     #_(str (config/blog-content-public) (db/note->uri note))

@@ -56,9 +56,15 @@
    [:div
     {:class ["flex" "flex-row" "justify-center"]}
     [:h3
-     {:class ["pb-2" "pointer-cursor"]}
+     {:class ["pb-2"]}
      [:a {:id tag}
-      (or tag "Untagged")]]]
+      (or tag "Untagged")]]
+
+    [:a     {:class ["cursor-pointer"
+                     "ml-auto"]
+             ;; back to top
+             :href  "/tags.html#"}
+     "^top"]]
 
    (when (seq notes)
      (->> notes (map #(item/note-row % {:tags #{tag}})) (into [:div])))
