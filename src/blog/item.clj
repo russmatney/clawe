@@ -477,6 +477,7 @@ and [[https://github.com/russmatney/org-crud][this other repo]]")
 
   (item->hiccup-body note))
 
+
 (declare note->tags-list)
 
 (defn item->hiccup-content
@@ -517,17 +518,28 @@ and [[https://github.com/russmatney/org-crud][this other repo]]")
        [:br]
        [:h1 "Backlinks"]
        (->> b-notes
-            (map (fn [note]
+            (map (fn [b-note]
                    (->>
                      (concat
                        [[:div
                          {:class ["not-prose"]}
-                         [:a {:href       (blog.db/id->link-uri (:org/id note))
+                         [:a {:href       (blog.db/id->link-uri (:org/id b-note))
                               :class      ["text-slate-400"]
-                              :aria-label (:org/name-string note)}
-                          (item->hiccup-headline note {:header-override :h3
-                                                       :no-anchor       true})]]]
-                       (item->hiccup-body note))
+                              :aria-label (:org/name-string b-note)}
+                          (item->hiccup-headline b-note {:header-override :h3
+                                                         :no-anchor       true})]]]
+                       ;; not quite useful yet b/c it doesn't get context for links in children
+                       ;; i.e. we still see dailies but don't get any context
+                       #_[[:span
+                           (let [{:link/keys [matching-lines-strs] :as link-to} (some->> b-note :org/links-to
+                                                                                         (filter (comp #{(:org/id note)} :link/id))
+                                                                                         first
+                                                                                         )]
+                             (apply str matching-lines-strs)
+                             )
+
+                           ]]
+                       (item->hiccup-body b-note))
                      (into [:div {:class ["pb-4"]}]))))
             (into [:div]))])))
 

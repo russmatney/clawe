@@ -24,7 +24,7 @@
 
 
   russmatney/org-crud {:git/url "https://github.com/russmatney/org-crud"
-                       :git/sha "3640e103d3ab2a975c21a287b8e62dbafcbdc626"}
+                       :git/sha "08279ca901ab6ec243faee1fb09442613999bd54"}
   zprint/zprint       {:mvn/version "1.2.7"}
 
   clj-kondo/clj-kondo {:mvn/version "2023.07.13"}
