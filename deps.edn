@@ -5,17 +5,17 @@
  :deps
  {teknql/systemic                    {:git/sha "d6e4ddc16bc08c7823e2c775084530867b1a03e0"
                                       :git/url "https://github.com/teknql/systemic"}
-  wing/wing                          {:git/sha "c26ea89255d2d047e69f0132e6bbba5e3143c02d"
+  wing/wing                          {:git/sha "08288f4ae6837b5fe386a321361b7b910bc00660"
                                       :git/url "https://github.com/teknql/wing"}
   aero/aero                          {:mvn/version "1.1.6"}
-  babashka/babashka                  {:mvn/version "1.3.176"}
+  babashka/babashka                  {:mvn/version "1.3.181"}
   babashka/babashka.pods             {:mvn/version "0.2.0"}
   babashka/babashka.curl             {:mvn/version "0.1.2"}
-  babashka/process                   {:mvn/version "0.4.16"}
-  org.babashka/cli                   {:mvn/version "0.6.50"}
-  babashka/fs                        {:mvn/version "0.3.17"}
+  babashka/process                   {:mvn/version "0.5.21"}
+  org.babashka/cli                   {:mvn/version "0.7.52"}
+  babashka/fs                        {:mvn/version "0.4.19"}
   juxt/dirwatch                      {:mvn/version "0.2.5"}
-  metosin/malli                      {:mvn/version "0.10.4"}
+  metosin/malli                      {:mvn/version "0.11.0"}
   com.lambdaisland/specmonstah-malli {:mvn/version "0.0.7"}
   cheshire/cheshire                  {:mvn/version "5.11.0"}
   org.clojure/tools.reader           {:mvn/version "1.3.6"}
@@ -24,23 +24,21 @@
 
 
   russmatney/org-crud {:git/url "https://github.com/russmatney/org-crud"
-                       :git/sha "855c20023313fccf9e95c957afe7b7a476eb94ee"}
-  kkinnear/zprint     {:git/url "https://github.com/kkinnear/zprint"
-                       :git/tag "1.2.5"
-                       :git/sha "52efc5a"}
+                       :git/sha "3640e103d3ab2a975c21a287b8e62dbafcbdc626"}
+  zprint/zprint       {:mvn/version "1.2.7"}
 
-  clj-kondo/clj-kondo {:mvn/version "2022.11.02"}
+  clj-kondo/clj-kondo {:mvn/version "2023.07.13"}
   }
  :aliases
  {:dev      {:jvm-opts ["-XX:-OmitStackTraceInFastThrow"]}
-  :outdated {:extra-deps {com.github.liquidz/antq {:mvn/version "2.2.1017"}}
+  :outdated {:extra-deps {com.github.liquidz/antq {:mvn/version "2.5.1095"}}
              :main-opts  ["-m" "antq.core"]}
 
   :doctor-server {:main-opts ["-m" "doctor.main"]}
 
   :kaocha {:extra-deps
-           {lambdaisland/kaocha          {:mvn/version "1.80.1274"}
-            com.lambdaisland/kaocha-cljs {:mvn/version "1.4.130"}}
+           {lambdaisland/kaocha          {:mvn/version "1.85.1342"}
+            com.lambdaisland/kaocha-cljs {:mvn/version "1.5.154"}}
            :main-opts ["-m" "kaocha.runner"]}
 
   :oli-test {:extra-deps {olical/cljs-test-runner {:mvn/version "3.8.0"}}
@@ -49,11 +47,11 @@
   :full-stack-deps
   {:extra-deps
    { ;; dev
-    cider/cider-nrepl             {:mvn/version "0.30.0"}
-    refactor-nrepl/refactor-nrepl {:mvn/version "3.6.0"}
+    cider/cider-nrepl             {:mvn/version "0.31.0"}
+    refactor-nrepl/refactor-nrepl {:mvn/version "3.7.1"}
 
     ;; db
-    datascript/datascript                 {:mvn/version "1.4.1"}
+    datascript/datascript                 {:mvn/version "1.4.2"}
     datascript-transit/datascript-transit {:mvn/version "0.3.0"}
 
     ;; core
@@ -61,31 +59,32 @@
     org.clojure/tools.namespace {:mvn/version "1.4.4"}
 
     ;; web
-    luminus/ring-undertow-adapter {:mvn/version "1.3.0"}
+    luminus/ring-undertow-adapter {:mvn/version "1.3.1"}
 
     ;; logging
-    com.taoensso/timbre {:mvn/version "6.1.0"}
+    com.taoensso/timbre {:mvn/version "6.2.1"}
 
     ;; clerk
     io.github.nextjournal/clerk {:git/url "https://github.com/nextjournal/clerk"
-                                 :git/sha "6c0a44a5634afdec511469d7220158b2957bf488"}
+                                 :git/sha "b7207926bacb10e6af17075efd71df3363b74d21"}
 
     ;; file-watching
     hawk/hawk {:mvn/version "0.2.11"}
 
     ;; time
     com.widdindustries/time-literals {:mvn/version "0.1.10"}
-    tick/tick                        {:mvn/version "0.6.0"}
+    tick/tick                        {:mvn/version "0.6.2"}
 
     ;; serialization
-    com.cognitect/transit-clj {:mvn/version "1.0.329"}
+    com.cognitect/transit-clj {:mvn/version "1.0.333"}
 
     teknql/plasma
-    {:git/sha "1a2d9d211dd28a7545051e741708f03d4525d391"
-     :git/url "https://github.com/teknql/plasma"}
+    {:local/root "../../teknql/plasma"}
+    ;; {:git/sha "490c1fc09e70b0ae8fd704891857972e833997db"
+    ;;  :git/url "https://github.com/teknql/plasma"}
 
     ;; ui dev env
-    thheller/shadow-cljs {:mvn/version "2.22.7"}
+    thheller/shadow-cljs {:mvn/version "2.24.1"}
 
     ;; tailwind
     com.teknql/shadow-cljs-tailwind-jit {:mvn/version "1.0.0"}
