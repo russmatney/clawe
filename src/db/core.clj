@@ -19,12 +19,16 @@
 (defn db-from-file []
   (let [db-file (db.config/db-path)]
     (if (fs/exists? db-file)
-      (->
-        (edn/read-string {:readers d/data-readers} (slurp db-file))
-        ;; support swapping in the schema to allow for schema updates
-        (d/datoms :eavt)
-        (d/conn-from-datoms schema)
-        d/db)
+      (let [datoms (some->
+                     (some->> db-file slurp
+                              ((fn [s] (if (= s "") nil s)))
+                              (edn/read-string {:readers d/data-readers}))
+                     (d/datoms :eavt))]
+        (if datoms
+          (-> datoms (d/conn-from-datoms schema) d/db)
+          (do
+            (log/info "No datoms found in db file, creating empty db")
+            (d/empty-db schema))))
       (do
         (log/info "No db file found creating empty one")
         (fs/create-dirs (fs/parent db-file))
@@ -32,7 +36,18 @@
         (d/empty-db schema)))))
 
 (comment
+  (fs/exists? (db.config/db-path))
   (slurp (db.config/db-path))
+  (some->
+    (some->>
+      (db.config/db-path)
+      slurp
+      ((fn [s] (if (= s "") nil s)))
+      (edn/read-string {:readers d/data-readers}))
+    ;; support swapping in the schema to allow for schema updates
+    (d/datoms :eavt)
+    (d/conn-from-datoms schema)
+    d/db)
   (db-from-file))
 
 (declare write-db-to-file)
