@@ -17,5 +17,5 @@
 
 (defn monitor []
   (or (System/getenv "MONITOR")
-      "HDMI-0"
-      "eDP-1"))
+      "eDP-1"
+      "HDMI-0"))

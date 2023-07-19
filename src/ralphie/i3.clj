@@ -30,6 +30,10 @@
       :out
       (json/parse-string true)))
 
+(comment
+  (tree)
+  (workspaces-simple))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; mid-parse utils
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -65,6 +69,11 @@
        content-node
        :nodes))
 
+(comment
+  (all-nodes)
+  (workspaces-from-tree)
+  )
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; current workspace
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -83,6 +92,7 @@
                        first)))))
 
 (comment
+  (current-workspace)
   (println "\n\n\nbreak\n\n\n")
   ;; (clojure.pprint/pprint
   ;;   (current-workspace))
@@ -103,6 +113,11 @@
   [] (-> (focused-node)
          :window_properties
          :class))
+
+(comment
+  (focused-node)
+  (focused-app)
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; workspace for name
@@ -172,7 +187,11 @@
 
 (comment
   (upsert {:name "timeline"})
-  )
+  (rename-workspace "clawe" 3)
+
+  (i3-msg! "rename" "workspace" "to" (str 3 ":clawe"))
+
+  (visit-workspace "4:4"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; workspaces.org items -> i3 config
