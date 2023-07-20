@@ -209,6 +209,19 @@ cmd - n : yabai -m space --focus prev \
        || yabai -m space --focus last \
        && bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/update-topbar
 
+# cycle windows in current space (0x32 is `)
+# use skhd --observe to learn keycodes
+cmd - 0x32 : yabai -m window --focus next \
+       || yabai -m window --focus $(yabai -m query --windows --space mouse \
+         | jq 'map(select(."title" != "tauri-doctor-topbar"))' \
+         | jq 'map(select(."has-focus" != true))[-1].id') \
+       || yabai -m window --focus first
+cmd + shift - 0x32 : yabai -m window --focus prev \
+       || yabai -m window --focus $(yabai -m query --windows --space mouse \
+         | jq 'map(select(."title" != "tauri-doctor-topbar"))' \
+         | jq 'map(select(."has-focus" != true))[-1].id') \
+       || yabai -m window --focus last
+
 # dragging spaces
 shift + cmd - left : yabai -m space --move prev \
        && bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/update-topbar
