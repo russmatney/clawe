@@ -11,18 +11,12 @@
    [loom.io :refer [view]]
    [util :as util]
    [clojure.string :as string]
-   #_[nextjournal.clerk :as clerk]
-
    [babashka.fs :as fs]))
 
 (comment
   (repl/sync-libs!))
 
 (comment
-  #_(clerk/serve! {})
-
-  "yo"
-
   (binding
       [*data-readers*
        (->

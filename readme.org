@@ -207,9 +207,9 @@ cp node_modules/chessground/assets/chessground.base.css node_modules/chessground
 tauri webview harness around that url. It sets the window to transparent by
 default, so if you want a background, be sure to set one!
 
-The goal is to support local web apps (like the doctor frontend, or some clerk
-notebooks) without requiring a full browser to use them. I.e. don't let your
-dashboard get lost in your browser tabs.
+The goal is to support local web apps (like the doctor frontend) without
+requiring a full browser to use them. I.e. don't let your dashboard get lost in
+your browser tabs.
 
 See the [[https://github.com/russmatney/clove][clove repo]] for install instructions.
 

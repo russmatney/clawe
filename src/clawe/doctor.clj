@@ -19,14 +19,6 @@
 (defn update-screenshots []
   (slurp (str (clawe.config/doctor-base-url) "/screenshots/update")))
 
-(defn rerender-notebook
-  ([] (rerender-notebook nil))
-  ([notebook-name]
-   (slurp (str (clawe.config/doctor-base-url)
-               (if notebook-name
-                 (str "/rerender/notebooks/" notebook-name)
-                 "/rerender/notebooks")))))
-
 (defn rebuild-blog
   ([] (rebuild-blog nil))
   ([_] (slurp (str (clawe.config/doctor-base-url) "/blog/rebuild"))))

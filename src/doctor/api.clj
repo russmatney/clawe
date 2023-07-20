@@ -8,9 +8,6 @@
    [screenshots.core :as screenshots]
    [clips.core :as clips]
    [wallpapers.core :as wallpapers]
-   #_[notebooks.clerk :as notebooks.clerk]
-   [clojure.string :as string]
-   [babashka.fs :as fs]
 
    [clawe.mx :as clawe.mx]
    [clawe.toggle :as clawe.toggle]))
@@ -32,17 +29,6 @@
       (workspaces/push-updated-workspaces)
       (topbar/push-topbar-metadata)
       {:status 200 :body "updated topbar"})
-
-    (= uri "/rerender/notebooks")
-    #_ (notebooks.clerk/update-open-notebooks)
-    {:status 200 :body "notebooks rerender disabled"}
-
-    (string/starts-with? uri "/rerender/notebooks/")
-    (let [nb-name (fs/file-name uri)]
-      (if nb-name
-        #_(notebooks.clerk/update-open-notebooks (symbol (str "notebooks." nb-name)))
-        {:status 200 :body (str nb-name " notebook rerender disabled")}
-        {:status 404 :body "notebook name not found"}))
 
     (= uri "/screenshots/update")
     (do

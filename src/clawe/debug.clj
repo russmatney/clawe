@@ -90,9 +90,7 @@
 
   Supports passed `:xs`, but mostly intends to support context-less `:type` inputs.
 
-  Impled for types: `:clients`, `:workspaces`, `:tmux`, `:tmux-panes`.
-
-  Consumed and exposed by the clerk clawe notebook: `/notebooks/clawe.clj`. "
+  Impled for types: `:clients`, `:workspaces`, `:tmux`, `:tmux-panes`. "
   {:org.babashka/cli
    {:coerce {:type          :keyword
              :headers       [:keyword]

@@ -136,22 +136,16 @@
   -clawe-full-stack {:depends [clawe-be clawe-fe]}
 
   ;; TODO dry up doctor-tauri with a more fully-featured api support (like quickblog)
-  topbar          {:doc  "Run the doctor topbar via tauri. Consumed from systemd service."
-                   :task (run-doctor-tauri-app "topbar")}
-  dashboard       {:doc  "Run the doctor focus window via tauri."
-                   :task (run-doctor-tauri-app "dashboard")}
-  popup           {:doc  "Run the doctor popup window via tauri."
-                   :task (run-doctor-tauri-app "popup")}
-  todo            {:doc  "Run the doctor todo window via tauri."
-                   :task (run-doctor-tauri-app "todo")}
-  focus           {:doc  "Run the doctor focus window via tauri."
-                   :task (run-doctor-tauri-app "focus")}
-  clerk           {:doc  "Run the doctor clerk window via tauri."
-                   ;; TODO capture/share/source of truth for this magic PORT?
-                   :task (run-doctor-tauri-app {:url "http://localhost:3334/notebooks/clawe"} "clerk")}
-  clerk-workspace {:doc  "Run the doctor clerk-workspace window via tauri."
-                   ;; TODO capture/share/source of truth for this magic PORT?
-                   :task (run-doctor-tauri-app {:url "http://localhost:3334/notebooks/wallpapers"} "clerk-workspace")}
+  topbar    {:doc  "Run the doctor topbar via tauri. Consumed from systemd service."
+             :task (run-doctor-tauri-app "topbar")}
+  dashboard {:doc  "Run the doctor focus window via tauri."
+             :task (run-doctor-tauri-app "dashboard")}
+  popup     {:doc  "Run the doctor popup window via tauri."
+             :task (run-doctor-tauri-app "popup")}
+  todo      {:doc  "Run the doctor todo window via tauri."
+             :task (run-doctor-tauri-app "todo")}
+  focus     {:doc  "Run the doctor focus window via tauri."
+             :task (run-doctor-tauri-app "focus")}
 
   restart-doctor (do
                    (shell "systemctl --user daemon-reload")

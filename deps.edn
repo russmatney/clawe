@@ -64,10 +64,6 @@
     ;; logging
     com.taoensso/timbre {:mvn/version "6.2.1"}
 
-    ;; clerk
-    io.github.nextjournal/clerk {:git/url "https://github.com/nextjournal/clerk"
-                                 :git/sha "b7207926bacb10e6af17075efd71df3363b74d21"}
-
     ;; file-watching
     hawk/hawk {:mvn/version "0.2.11"}
 

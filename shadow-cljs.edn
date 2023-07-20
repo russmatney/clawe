@@ -41,7 +41,7 @@
    {:http-root   "public"
     :http-port   3333
     :loader-mode :eval
-    :after-load  doctor.ui/mount-root
+    :after-load  doctor.ui.core/mount-root
     :repl-pprint true}
 
    :tailwind/output "public/css/main-built.css"

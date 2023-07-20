@@ -2,8 +2,7 @@
   (:require
    [plasma.core :refer [defhandler defstream]]
    #?@(:clj [[api.topbar]
-             [ralphie.awesome :as awm]
-             #_[notebooks.clerk :as notebooks.clerk]]
+             [ralphie.awesome :as awm]]
        :cljs [[plasma.uix :refer [with-rpc with-stream]]])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -60,7 +59,3 @@
 
 (defhandler set-background-mode [bg-mode]
   (api.topbar/set-background-mode bg-mode))
-
-(defhandler rerender-notebooks []
-  (println "rerender-notebooks deprecated for now")
-  #_(notebooks.clerk/update-open-notebooks))
