@@ -197,6 +197,14 @@
   ;; i3
 
   ;; TODO wrap in something more verbose/loggy
-  check-i3-config {:task (shell "i3 -C")}
+  check-i3-config
+  {:task
+   (do
+     (log "PERMISSION TO FIRE?")
+     (let [{:keys [exit out err] :as res} (shell "i3 -C")]
+       (if (= exit 0)
+         (log "FIRE AT WILL")
+         ;; not relevant/necessary - shell throws when there's an error
+         (log "Error in i3 config" (slurp out) (slurp err)))))}
 
   }}
