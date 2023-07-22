@@ -191,4 +191,12 @@
                 :doc  "Tail the awesome logs, via ~/.cache/awesome/logs"}
   tail-awesome (run 'log-awesome)
   awesome-tail (run 'log-awesome)
-  awesome-log  (run 'log-awesome)}}
+  awesome-log  (run 'log-awesome)
+
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; i3
+
+  ;; TODO wrap in something more verbose/loggy
+  check-i3-config {:task (shell "i3 -C")}
+
+  }}
