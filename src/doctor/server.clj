@@ -12,6 +12,10 @@
    [datascript.transit :as dt]
    [wallpapers.core :as wallpapers]
 
+   [muuntaja.middleware :as muu.middleware]
+   [muuntaja.format.form :as muu.form]
+   [muuntaja.core :as muu]
+
    [dates.transit-time-literals :as ttl]
    [api.db :as api.db]
    [api.topbar :as api.topbar]
@@ -48,6 +52,14 @@
                  (ef data))))))))
 
 (log/merge-config! {:output-fn log-output-fn})
+
+(def m (muu/create
+         (-> muu/default-options
+             (assoc-in [:formats "application/x-www-form-urlencoded"]
+                       muu.form/format))))
+
+(comment
+  (-> m (.options) :formats keys))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; transit helpers
@@ -157,6 +169,26 @@
 ;; Server
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn router
+  [{:keys [uri] :as req}]
+  (cond
+    ;; handle plasma requests
+    (= "/plasma-ws" uri)
+    (->plasma-undertow-ws-handler req)
+
+    (= "/doctor" uri)
+    {:status  200
+     :headers {"Content-Type" "text/html"}
+     :body    (->doctor-page req)}
+
+    ;; poor man's router
+    :else (doctor.api/route req)))
+
+(def app
+  "Middlewares run bottom to top!"
+  (-> router
+      (muu.middleware/wrap-format m)))
+
 (defsys ^:dynamic *server*
   "Doctor webserver"
   :extra-deps
@@ -176,22 +208,9 @@
   (let [port (:server/port doctor.config/*config*)]
     (log/info "Starting *server* on port" port)
     (let [server (undertow/run-undertow
-                   (fn [{:keys [uri] :as req}]
-                     (cond
-                       ;; handle plasma requests
-                       (= "/plasma-ws" uri)
-                       (->plasma-undertow-ws-handler req)
-
-                       (= "/doctor" uri)
-                       {:status  200
-                        :headers {"Content-Type" "text/html"}
-                        :body    (->doctor-page req)}
-
-                       ;; poor man's router
-                       :else (doctor.api/route req)))
-                   {:port             port
-                    :session-manager? false
-                    :websocket?       true})]
+                   app {:port             port
+                        :session-manager? false
+                        :websocket?       true})]
       (server-status-notif {:notify/subject (str "Server started on port: " port)
                             :notify/id      "server-up"})
       ;; be sure to return the server as the system
@@ -211,9 +230,4 @@
   @sys/*registry*
   (sys/stop!)
   (sys/start! `*server*)
-  (sys/restart! `*server*)
-
-
-
-
-  )
+  (sys/restart! `*server*))

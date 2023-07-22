@@ -5,6 +5,11 @@
    [dates.tick :as dt]
    [ralphie.notify :as notify]))
 
+(defn get-list []
+  (->>
+    (db/query '[:find (pull ?e [*])
+                :where [?e :pomodoro/id _]])
+    (map first)))
 
 (defn get-state []
   (let [current (some->> (db/query '[:find (pull ?e [*])
@@ -55,3 +60,17 @@
 
 (comment
   (clean-up-pomodoros))
+
+(defn route
+  "Routes an api request."
+  [{:keys [uri _query-string] :as _req}]
+  ;; (log/debug "Routing API req" req (System/currentTimeMillis))
+
+  (cond
+    (= "/api/pomodoros" uri)
+    (let [xs (get-list)]
+      (println "listing pomodoros" xs)
+      {:status 200 :body {:pomodoros xs}})
+
+    :else
+    {:status 404}))

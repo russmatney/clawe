@@ -5,20 +5,25 @@
    [api.topbar :as topbar]
    [api.todos :as todos]
    [api.blog :as blog]
+   [api.pomodoros :as pomodoros]
    [screenshots.core :as screenshots]
    [clips.core :as clips]
    [wallpapers.core :as wallpapers]
 
    [clawe.mx :as clawe.mx]
-   [clawe.toggle :as clawe.toggle]))
+   [clawe.toggle :as clawe.toggle]
+   [clojure.string :as string]))
 
 
 (defn route
   "Routes an api request."
-  [{:keys [uri query-string] :as _req}]
+  [{:keys [uri query-string] :as req}]
   ;; (log/debug "Routing API req" req (System/currentTimeMillis))
 
   (cond
+    (string/starts-with? "/api/pomodoros" uri)
+    (pomodoros/route req)
+
     (= uri "/reload")
     (do
       (wallpapers/reload)
