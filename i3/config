@@ -1,43 +1,27 @@
-# Essentials
-
-# super key
-set $mod Mod4
+###################################################
+## Config
+###################################################
 
 # none of that
 focus_follows_mouse no
 
-# Kill focused window
-bindsym $mod+q kill
+# super key
+set $mod Mod4
 
-# restart i3 in place
-bindsym $mod+Shift+r restart
+# Use Mouse+$mod to drag floating windows to their wanted position
+floating_modifier $mod
 
-# open rofi/launcher to start programs
-bindsym $mod+space  exec --no-startup-id rofi -show run
+# nav to current wsp to return to prev
+workspace_auto_back_and_forth yes
 
-# run a terminal
-bindsym $mod+Return exec --no-startup-id alacritty
-
-# run an emacs
-bindsym $mod+Shift+Return exec --no-startup-id emacsclient -c
-
-# finder
-bindsym $mod+e exec --no-startup-id thunar
-
-# relative position
-bindsym $mod+h focus left
-bindsym $mod+j focus down
-bindsym $mod+k focus up
-bindsym $mod+l focus right
-
-################################################################
+ipc-socket ~/.config/i3/i3-ipc.sock
 
 # (No) Title Bars
-for_window [class="^.*"] border pixel 0
+for_window [class="^.*"] border pixel 1
 
 # Gaps
-gaps inner 30
-gaps outer 0
+gaps inner 16
+gaps outer 4
 smart_gaps on
 
 set $black       #212121
@@ -63,65 +47,78 @@ set $transparent #00000000
 # is used in the bar {} block below.
 font pango:Helvetica Neue, FontAwesome 11
 
-# Use Mouse+$mod to drag floating windows to their wanted position
-floating_modifier $mod
+# border colors
+client.focused #4c7899 #285577 #ffffff #2e9ef4 #285577
+default_floating_border pixel 2
+for_window [class="Emacs"] border pixel 2
+for_window [title="Terminal"] border pixel 2
 
-################################################################################
-# universal script commands
-################################################################################
+###################################################
+## Basic keybinds
+###################################################
 
-# relative position
-bindsym $mod+Shift+h focus left
-bindsym $mod+Shift+j focus down
-bindsym $mod+Shift+k focus up
-bindsym $mod+Shift+l focus right
+# restart i3 in place
+bindsym $mod+Shift+r restart
+
+# Kill focused window
+bindsym $mod+q kill
+
+# open rofi/launcher to start programs
+bindsym $mod+space exec --no-startup-id rofi -show run
+
+# move focus
+bindsym $mod+h focus left
+bindsym $mod+j focus down
+bindsym $mod+k focus up
+bindsym $mod+l focus right
+
+# lock screen
+bindsym $mod+Shift+q exec --no-startup-id i3lock -c 3e3e3e
+
+# screenshot
+bindsym $mod+Shift+a exec --no-startup-id ~/.local/bin/screenshot-region
+bindsym $mod+Shift+s exec --no-startup-id i3-scrot
+
+# clawe-mx
+bindsym $mod+x exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.mx/mx
 
 ################################################################################
 # Layout/Window Position
 ################################################################################
 
-# layout rules
-for_window [title="my-floating-title"] floating enable, resize set width 50 ppt height 50 ppt, move position center
+# toggle floating
+bindsym $mod+f floating toggle
 
-for_window [title="floating-alacritty"] floating enable, move scratchpad, scratchpad show, resize set width 80 ppt height 80 ppt, move position center
-for_window [title="floating-emacs"] floating enable, move scratchpad, scratchpad show, resize set width 80 ppt height 80 ppt, move position center
+# toggle fullscreen
+bindsym $mod+Shift+space fullscreen toggle
+
+# toggle layout (stacked, tabbed, toggle split)
+bindsym $mod+semicolon layout toggle splith splitv
+bindsym $mod+Shift+semicolon layout toggle tabbed stacking
 
 # window position commands
-bindsym $mod+c resize set width 50 ppt height 50 ppt, move position center
-bindsym $mod+Shift+c resize set width 90 ppt height 90 ppt, move position center
+bindsym $mod+c floating enable, resize set width 50 ppt height 50 ppt, move position center
+bindsym $mod+Shift+c floating enable, resize set width 90 ppt height 90 ppt, move position center
 
 # absolute positioning
 bindsym $mod+shift+Right floating enable, resize set width 45 ppt height 90 ppt, move position 1008 48
 bindsym $mod+shift+Left floating enable, resize set width 45 ppt height 90 ppt, move position 48 48
-
 bindsym $mod+shift+Down resize set width 60 ppt height 100 ppt, move position 0 px 0 px
 
-# enter fullscreen mode for the focused container
-bindsym $mod+Shift+space fullscreen toggle
-
-default_orientation vertical
 # bsp, sort of
+default_orientation vertical
 for_window [class=".*"] split toggle
 
-# change container layout (stacked, tabbed, toggle split)
-bindsym $mod+semicolon layout toggle splith splitv
-bindsym $mod+Shift+semicolon layout toggle tabbed stacking
+# layout rules
+for_window [title="my-floating-title"] floating enable, resize set width 50 ppt height 50 ppt, move position center
+for_window [title="floating-alacritty"] floating enable, move scratchpad, scratchpad show, resize set width 80 ppt height 80 ppt, move position center
+for_window [title="floating-emacs"] floating enable, move scratchpad, scratchpad show, resize set width 80 ppt height 80 ppt, move position center
+for_window [title="journal" class="Emacs"] floating enable, move scratchpad, scratchpad show, resize set width 80 ppt height 80 ppt, move position center
 
-# toggle tiling / floating
-bindsym $mod+f floating toggle
+################################################################################
+# resize window modal
+################################################################################
 
-# TODO cycle floating windows in workspace
-#bindsym $mod+Shift+f focus mode_toggle
-
-# TODO switch focus between tiling windows/floating windows
-#bindsym $mod+z focus mode_toggle
-
-# reload i3 inplace (preserves your layout/session, can be used to upgrade i3)
-# bindsym $mod+Shift+r exec --no-startup-id ~/russmatney/cosmos/scripts/i3-start.sh
-# bindsym $mod+Shift+r restart
-# bindsym $mod+Shift+r exec --no-startup-id ralphie restart-i3
-
-# resize window (you can also use the mouse for that)
 bindsym $mod+w mode "window"
 mode "window" {
   bindsym h resize shrink width 30 px or 5 ppt
@@ -157,87 +154,8 @@ mode "window" {
 }
 
 ################################################################################
-# Applications
+# Media keybinds
 ################################################################################
-
-# emacs
-# bindsym $mod+Shift+Return exec --no-startup-id emacsclient --alternate-editor='' --no-wait --create-frame --frame-parameters='(quote (name . "my-floating-title"))' --display $DISPLAY
-# bindsym $mod+Shift+Return exec --no-startup-id emacsclient --alternate-editor='' --no-wait --create-frame --display $DISPLAY
-# bindsym $mod+Shift+Return exec --no-startup-id ralphie open-emacs
-
-# terminal
-# bindsym $mod+Return exec --no-startup-id "alacritty --working-directory=/home/russ/dotfiles -e 'tmux'"
-# bindsym $mod+Return exec --no-startup-id ralphie open-term
-
-# browser
-# bindsym $mod+b exec --no-startup-id ~/.local/bin/cosmos open-bookmark
-
-# bindsym $mod+shift+b exec --no-startup-id google-chrome-stable
-bindsym $mod+b exec --no-startup-id firefox-developer-edition
-# bindsym $mod+shift+b exec --no-startup-id firefox
-
-# finder
-# bindsym $mod+e exec --no-startup-id thunar
-
-# lock
-bindsym $mod+Shift+q exec --no-startup-id i3lock -c 000000 --pass-media-keys
-
-# rofi
-# bindsym $mod+space  exec --no-startup-id rofi -show run
-bindsym $mod+x      exec --no-startup-id clawebb -x clawe.mx/mx
-
-# screenshot
-# bindsym $mod+Shift+s exec --no-startup-id ~/.local/bin/screenshot
-bindsym $mod+Shift+a exec --no-startup-id ~/.local/bin/screenshot-region
-bindsym $mod+Shift+s exec --no-startup-id i3-scrot
-
-# bindsym $mod+m mode "monitor"
-# mode "monitor" {
-# # TODO detect monitor and set res on i3 restart
-#      # laptop
-#      bindsym l exec --no-startup-id ~/.local/bin/set-monitor-config laptop
-#      bindsym $mod+l exec --no-startup-id ~/.local/bin/set-monitor-config laptop-hr
-
-#      # work laptop + monitor
-#      bindsym w exec --no-startup-id ~/.local/bin/set-monitor-config work
-
-#      # work monitor only
-#      bindsym $mod+w exec --no-startup-id ~/.local/bin/set-monitor-config work-monitor-only
-
-#      # home laptop + monitor
-#      bindsym h exec --no-startup-id ~/.local/bin/set-monitor-config home
-
-#      # home laptop w/ monitor only
-#      bindsym $mod+h exec --no-startup-id ~/.local/bin/set-monitor-config home-monitor-only
-
-#      # home monitor
-#      bindsym a exec --no-startup-id ~/.local/bin/set-monitor-config algo
-
-#      bindsym Return mode "default"
-#      bindsym Escape mode "default"
-#      bindsym q mode "default"
-# }
-
-# border colors
-client.focused #4c7899 #285577 #ffffff #2e9ef4   #285577
-default_floating_border pixel 2
-for_window [class="Emacs"] border pixel 2
-for_window [title="Terminal"] border pixel 2
-
-# Compositor (Animations, Shadows, Transparency)
-# exec_always --no-startup-id compton --inactive-dim 0.1 --active-opacity 0.9 -i 0.95
-# exec_always --no-startup-id compton -cCfb --backend glx --vsync opengl
-exec_always --no-startup-id picom
-
-# exec_always --no-startup-id feh --bg-scale ~/Dropbox/wallpapers/cityscape-cartoon.jpg
-# exec_always --no-startup-id feh --bg-scale ~/Dropbox/wallpapers/firewatch-blue-orange.jpg
-exec_always --no-startup-id variety --resume
-
-# start dropbox
-exec_always --no-startup-id dropbox &
-
-# start polybar
-exec_always --no-startup-id $HOME/.config/polybar/launch.sh
 
 bindsym XF86AudioPlay exec --no-startup-id "playerctl --play-pause"
 bindsym XF86AudioNext exec --no-startup-id "playerctl next"
@@ -250,47 +168,45 @@ bindsym XF86AudioLowerVolume exec --no-startup-id "pactl set-sink-volume @DEFAUL
 bindsym XF86MonBrightnessUp exec --no-startup-id "light -A 5"
 bindsym XF86MonBrightnessDown exec --no-startup-id "light -U 5"
 
-# Scratchpad
-bindsym $mod+Shift+u mark "todo", move scratchpad
-bindsym $mod+u [con_mark="todo"] scratchpad show
-
-# Scratchpad
-bindsym $mod+Shift+y mark "yodo", move scratchpad
-bindsym $mod+y [con_mark="yodo"] scratchpad show
-
-# Scratchpad
-bindsym $mod+Shift+d mark "dev-app", move scratchpad
-bindsym $mod+d [con_mark="dev-app"] scratchpad show
-
-# mod1 == alt
-bindsym $mod+Shift+t mark "browse", move scratchpad
-bindsym $mod+t [con_mark="browse"] scratchpad show
-
-# # workspace scratchpads
-# bindsym $mod+Shift+g exec --no-startup-id ralphie scratchpad-push
-# bindsym $mod+g exec --no-startup-id ralphie scratchpad-pop
-
-# mind-Garden scratchpad
-# bindsym $mod+Shift+g mark "notes", move scratchpad
-# bindsym $mod+g [con_mark="notes"] scratchpad show
-# bindsym $mod+r [con_mark="notes"] scratchpad show
+################################################################################
+# Apps/Scratchpads
+################################################################################
 
 # cycle all scratchpads
 bindsym $mod+a scratchpad show
 
+# toggle terminal
+bindsym $mod+Return exec --no-startup-id "alacritty --working-directory=/home/russ/dotfiles -e 'tmux'"
 
-# exec sc --user import-environment && sc --user daemon-reload && sc --user restart cosmos
-exec --no-startup-id bluetoothctl -- power on
+# toggle emacs
+bindsym $mod+Shift+Return exec --no-startup-id emacsclient -c
 
-exec_always --no-startup-id xautolock -time 5 -locker "i3lock -c 000000 --pass-media-keys"
+# toggle journal
+bindsym $mod+Shift+u mark "todo", move scratchpad
+bindsym $mod+u [con_mark="todo"] scratchpad show
 
-# bindsym $mod+n exec i3-input -F 'rename workspace to "%s"' -P 'New name for this workspace (n:<name>): '
+# toggle yodo/clawe dashboard
+bindsym $mod+Shift+y mark "yodo", move scratchpad
+bindsym $mod+y [con_mark="yodo"] scratchpad show
+
+# toggle spotify
+# TODO clawe clean up should mark and clean up the i3 scratchpads
+# bindsym $mod+Shift+s mark "spotify", move scratchpad
+bindsym $mod+s [con_mark="spotify"] scratchpad show
+
+# toggle web
+bindsym $mod+Shift+t mark "web", move scratchpad
+bindsym $mod+t [con_mark="web"] scratchpad show
+
+# toggle dev browser
+bindsym $mod+Shift+b mark "dev-web", move scratchpad
+bindsym $mod+b [con_mark="dev-web"] scratchpad show
+
+###################################################################
+## workspaces
+###################################################################
+
 bindsym $mod+comma exec i3-input -F 'rename workspace to "%s"' -P 'New name for this workspace (n:<name>): '
-
-workspace_auto_back_and_forth yes
-
-ipc-socket ~/.config/i3/i3-ipc.sock
-
 
 bindsym $mod+1 workspace 1
 bindsym $mod+2 workspace 2
@@ -305,3 +221,19 @@ bindsym $mod+0 workspace 0
 
 bindsym $mod+n workspace prev
 bindsym $mod+p workspace next
+
+###################################################################
+## startup execs
+###################################################################
+
+# Compositor (Animations, Shadows, Transparency)
+exec_always --no-startup-id compton --inactive-dim 0.1 --active-opacity 0.9 -i 0.95
+# exec_always --no-startup-id compton -cCfb --backend glx --vsync opengl
+# exec_always --no-startup-id picom
+
+# exec_always --no-startup-id feh --bg-scale ~/Dropbox/wallpapers/cityscape-cartoon.jpg
+exec_always --no-startup-id variety --resume
+
+exec_always --no-startup-id $HOME/.config/polybar/launch.sh
+exec_always --no-startup-id bluetoothctl -- power on
+exec_always --no-startup-id xautolock -time 5 -locker "i3lock -c 262626"
