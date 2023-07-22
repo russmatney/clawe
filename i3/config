@@ -208,11 +208,11 @@ bindsym $mod+b [con_mark="dev-web"] scratchpad show
 
 bindsym $mod+comma exec i3-input -F 'rename workspace to "%s"' -P 'New name for this workspace (n:<name>): '
 
-bindsym $mod+1 workspace 1
-bindsym $mod+2 workspace 2
-bindsym $mod+3 workspace 3
-bindsym $mod+4 workspace 4
-bindsym $mod+5 workspace 5
+bindsym $mod+1 workspace 1: journal
+bindsym $mod+2 workspace 2: dotfiles
+bindsym $mod+3 workspace 3: clawe
+bindsym $mod+4 workspace 4: dino
+bindsym $mod+5 workspace 5: mealprep
 bindsym $mod+6 workspace 6
 bindsym $mod+7 workspace 7
 bindsym $mod+8 workspace 8
