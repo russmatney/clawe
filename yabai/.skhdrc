@@ -157,6 +157,7 @@ cmd - j : yabai -m window --focus south
 cmd - k : yabai -m window --focus north
 
 # toggle window split type
+# TODO use semi ;
 shift + cmd - e : yabai -m window --toggle split
 
 # window horizontal size

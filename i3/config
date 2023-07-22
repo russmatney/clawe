@@ -79,8 +79,25 @@ bindsym $mod+Shift+q exec --no-startup-id i3lock -c 3e3e3e
 bindsym $mod+Shift+a exec --no-startup-id ~/.local/bin/screenshot-region
 bindsym $mod+Shift+s exec --no-startup-id i3-scrot
 
+################################################################################
+# clawe
+################################################################################
+
 # clawe-mx
-bindsym $mod+x exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.mx/mx
+bindsym $mod+x exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-mx
+bindsym $mod+w exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-mx-suggestions
+
+# clean up
+# TODO should move all scratchpad toggles to scratchpads
+bindsym $mod+d [class="(Spotify|firefox|firefoxdeveloperedition)"] move scratchpad
+# bindsym $mod+d exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.rules/clean-up-workspaces
+
+# clawe reload
+bindsym $mod-r exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.restart/reload
+
+# cycle window focus
+# TODO impl
+# bindsym $mod-` focus next
 
 ################################################################################
 # Layout/Window Position
@@ -119,7 +136,7 @@ for_window [title="journal" class="Emacs"] floating enable, move scratchpad, scr
 # resize window modal
 ################################################################################
 
-bindsym $mod+w mode "window"
+bindsym $mod+Shift+w mode "window"
 mode "window" {
   bindsym h resize shrink width 30 px or 5 ppt
   bindsym k resize grow height 30 px or 5 ppt
@@ -175,32 +192,34 @@ bindsym XF86MonBrightnessDown exec --no-startup-id "light -U 5"
 # cycle all scratchpads
 bindsym $mod+a scratchpad show
 
-# toggle terminal
+# TODO toggle per wsp tmux session
 bindsym $mod+Return exec --no-startup-id "alacritty --working-directory=/home/russ/dotfiles -e 'tmux'"
+# cmd - return : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key terminal
 
-# toggle emacs
+# TODO toggle per wsp emacs session
 bindsym $mod+Shift+Return exec --no-startup-id emacsclient -c
+# shift + cmd - return : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key emacs
 
 # toggle journal
-bindsym $mod+Shift+u mark "todo", move scratchpad
-bindsym $mod+u [con_mark="todo"] scratchpad show
+bindsym $mod+Shift+u mark "journal", move scratchpad
+bindsym $mod+u [con_mark="journal"] scratchpad show
+# bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key journal
 
 # toggle yodo/clawe dashboard
 bindsym $mod+Shift+y mark "yodo", move scratchpad
 bindsym $mod+y [con_mark="yodo"] scratchpad show
 
 # toggle spotify
-# TODO clawe clean up should mark and clean up the i3 scratchpads
-# bindsym $mod+Shift+s mark "spotify", move scratchpad
-bindsym $mod+s [con_mark="spotify"] scratchpad show
+bindsym $mod+s [class="Spotify"] scratchpad show
+# bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key spotify
 
 # toggle web
-bindsym $mod+Shift+t mark "web", move scratchpad
-bindsym $mod+t [con_mark="web"] scratchpad show
+bindsym $mod+t [class="firefox"] scratchpad show
+# bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key web
 
 # toggle dev browser
-bindsym $mod+Shift+b mark "dev-web", move scratchpad
-bindsym $mod+b [con_mark="dev-web"] scratchpad show
+bindsym $mod+b [class="firefoxdeveloperedition"] scratchpad show
+# bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key devweb
 
 ###################################################################
 ## workspaces
