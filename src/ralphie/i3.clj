@@ -23,12 +23,13 @@
 (defn tree []
   (-> (i3-msg! "-t" "get_tree")
       :out
-      (json/parse-string true)))
+      (json/parse-string
+        (fn [k] (keyword "i3" k)))))
 
 (defn workspaces-simple []
   (-> (i3-msg! "-t" "get_workspaces")
       :out
-      (json/parse-string true)))
+      (json/parse-string (fn [k] (keyword "i3" k)))))
 
 (comment
   (tree)
@@ -42,20 +43,20 @@
   []
   (let [monitor (config/monitor)]
     (some->> (tree)
-             :nodes
-             (filter #(= (:name %) monitor))
+             :i3/nodes
+             (filter #(= (:i3/name %) monitor))
              first)))
 
 (defn content-node [m-node]
   (some->> m-node
-           :nodes
-           (filter #(= (:name %) "content"))
+           :i3/nodes
+           (filter #(= (:i3/name %) "content"))
            first))
 
 (defn flatten-nodes
   "Joins and flattens `:nodes` and `:floating_nodes` in x"
   [x]
-  (flatten ((juxt :nodes :floating_nodes) x)))
+  (flatten ((juxt :i3/nodes :i3/floating_nodes) x)))
 
 (defn tree->nodes [tr]
   (tree-seq flatten-nodes flatten-nodes tr))
@@ -67,7 +68,7 @@
 (defn workspaces-from-tree []
   (->> (monitor-node)
        content-node
-       :nodes))
+       :i3/nodes))
 
 (comment
   (all-nodes)
@@ -82,13 +83,13 @@
   "TODO rewrite to use get_tree"
   []
   (some->> (workspaces-simple)
-           (filter :focused)
+           (filter :i3/focused)
            first
-           :name
+           :i3/name
            ((fn [name]
               (some->> (workspaces-from-tree)
                        (filter (fn [node]
-                                 (= (:name node) name)))
+                                 (= (:i3/name node) name)))
                        first)))))
 
 (comment
@@ -106,13 +107,13 @@
   "Returns a map describing the currently focused app."
   []
   (->> (all-nodes)
-       (filter :focused)
+       (filter :i3/focused)
        first))
 
 (defn focused-app
   [] (-> (focused-node)
-         :window_properties
-         :class))
+         :i3/window_properties
+         :i3/class))
 
 (comment
   (focused-node)
@@ -130,8 +131,8 @@
   [wsp-name]
   (some->> (monitor-node)
            content-node
-           :nodes
-           (filter #(string/includes? (:name %) wsp-name))
+           :i3/nodes
+           (filter #(string/includes? (:i3/name %) wsp-name))
            first
            ))
 
@@ -145,7 +146,7 @@
   [name]
   (->> name
        nodes-for-wsp-name
-       (map (comp :class :window_properties))))
+       (map (comp :i3/class :i3/window_properties))))
 
 (defn workspace-open?
   [name]
@@ -180,7 +181,7 @@
   "TODO Perhaps this logic should be in workspaces?"
   [{:keys [name]}]
   (let [name-to-update   (->> (workspaces-simple)
-                              (map :name)
+                              (map :i3/name)
                               (rofi/rofi {:msg "Workspace to update?"}))
         number-to-update (some-> name-to-update (string/split #":") first)]
     (rename-workspace name number-to-update)))
