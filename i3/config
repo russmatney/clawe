@@ -23,7 +23,6 @@ for_window [class="^.*"] border pixel 1
 gaps inner 8
 gaps outer 4
 gaps bottom 56
-smart_gaps on
 
 set $black       #212121
 set $darkblack   #000000
@@ -264,8 +263,10 @@ exec_always --no-startup-id compton --inactive-dim 0.1 --active-opacity 0.9 -i 0
 # exec_always --no-startup-id picom
 
 # exec_always --no-startup-id feh --bg-scale ~/Dropbox/wallpapers/cityscape-cartoon.jpg
-exec_always --no-startup-id variety --resume
+# exec_always --no-startup-id variety --resume
 
 exec_always --no-startup-id $HOME/.config/polybar/launch.sh
 exec_always --no-startup-id bluetoothctl -- power on
 exec_always --no-startup-id xautolock -time 5 -locker "i3lock -c 262626"
+
+exec_always --no-startup-id systemctl --user restart doctor-topbar
