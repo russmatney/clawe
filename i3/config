@@ -28,6 +28,7 @@ default_floating_border pixel 2
 for_window [class="Emacs"] border pixel 2
 for_window [title="Terminal"] border pixel 2
 
+no_focus [title="tauri-doctor-topbar"]
 for_window [title="tauri-doctor-topbar"] floating enable, sticky enable, \
     resize set width 100 ppt height 70 px, move position 0 px 36 px
     # resize set width 100 ppt height 70 px, move position 0 px 2080 px
