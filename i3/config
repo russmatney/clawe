@@ -22,7 +22,19 @@ for_window [class="^.*"] border pixel 1
 # Gaps - fyi could be custom per-workspace
 gaps inner 8
 gaps outer 4
-gaps bottom 56
+gaps top 60
+
+default_floating_border pixel 2
+for_window [class="Emacs"] border pixel 2
+for_window [title="Terminal"] border pixel 2
+
+for_window [title="tauri-doctor-topbar"] floating enable, sticky enable, \
+    resize set width 100 ppt height 70 px, move position 0 px 36 px
+    # resize set width 100 ppt height 70 px, move position 0 px 2080 px
+
+###################################################
+## Fonts and colors
+###################################################
 
 set $black       #212121
 set $darkblack   #000000
@@ -49,21 +61,6 @@ font pango:Helvetica Neue, FontAwesome 11
 
 # border colors
 client.focused #4c7899 #285577 #ffffff #2e9ef4 #285577
-default_floating_border pixel 2
-for_window [class="Emacs"] border pixel 2
-for_window [title="Terminal"] border pixel 2
-
-# bar {
-#     mode hide
-
-#     i3bar_command i3bar --transparency
-
-#     padding 30px 0px
-# }
-
-# y max: 2160
-for_window [title="tauri-doctor-topbar"] floating enable, sticky enable, \
-    resize set width 100 ppt height 70 px, move position 0 px 2090 px
 
 ###################################################
 ## Basic keybinds
