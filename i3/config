@@ -105,11 +105,6 @@ bindsym $mod+Shift+s exec --no-startup-id i3-scrot
 bindsym $mod+x exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-mx
 bindsym $mod+w exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-mx-suggestions
 
-# clean up
-# TODO should move all scratchpad toggles to scratchpads
-bindsym $mod+d [class="(Spotify|firefox|firefoxdeveloperedition)"] move scratchpad
-# bindsym $mod+d exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.rules/clean-up-workspaces
-
 # clawe reload
 bindsym $mod-r exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.restart/reload
 
@@ -201,9 +196,19 @@ bindsym XF86MonBrightnessDown exec --no-startup-id "light -U 5"
 # Apps/Scratchpads
 ################################################################################
 
+# clean up
+# TODO should move all scratchpad toggles to scratchpads
+bindsym $mod+d [class="(Spotify|firefox|firefoxdeveloperedition)"] move scratchpad
+# bindsym $mod+d exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.rules/clean-up-workspaces
+
+for_window [class="(Spotify|firefox)"] move scratchpad
+for_window [title="Firefox Developer Edition$"] move scratchpad
+for_window [class="Clove" title="tauri-doctor-focus"] move scratchpad
+for_window [class="Emacs" title="journal"] move scratchpad
+
 # cycle all scratchpads
 bindsym $mod+a scratchpad show
-bindsym $mod+Shift+d move scratchpad
+bindsym $mod+Shift+y move scratchpad
 
 # bindsym $mod+Return exec --no-startup-id "alacritty --working-directory=/home/russ/dotfiles -e 'tmux'"
 bindsym $mod+Return exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key terminal
@@ -212,25 +217,31 @@ bindsym $mod+Return exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -
 bindsym $mod+Shift+Return exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key emacs
 
 # toggle journal
-bindsym $mod+u exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key journal
+bindsym $mod+u exec --no-startup-id i3-msg [class="Emacs" title="journal"] scratchpad show || \
+  bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key journal
 # bindsym $mod+u [con_mark="journal"] scratchpad show
 bindsym $mod+Shift+u mark "journal", move scratchpad
 
 # toggle yodo/clawe dashboard
 # bindsym $mod+y [con_mark="yodo"] scratchpad show
-bindsym $mod+y exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key focus
+bindsym $mod+y exec --no-startup-id i3-msg [class="Clove" title="tauri-doctor-focus"] scratchpad show || \
+  bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key focus
 
 # toggle spotify
 # bindsym $mod+s [class="Spotify"] scratchpad show
-bindsym $mod+s exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key spotify
+# bindsym $mod+s exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key spotify
+bindsym $mod+s exec --no-startup-id i3-msg [class="Spotify"] scratchpad show || \
+  bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key spotify
 
 # toggle web
 # bindsym $mod+t [class="firefox$"] scratchpad show
-bindsym $mod+t exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key web
+bindsym $mod+t exec --no-startup-id i3-msg [class="firefox$"] scratchpad show || \
+  bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key web
 
 # toggle dev browser
 # bindsym $mod+b [class="firefoxdeveloperedition"] scratchpad show
-bindsym $mod+b exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key devweb
+bindsym $mod+b exec --no-startup-id i3-msg '[class="firefoxdeveloperedition"] scratchpad show' || \
+  bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key devweb
 
 ###################################################################
 ## workspaces
