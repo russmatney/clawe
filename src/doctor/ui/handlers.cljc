@@ -19,6 +19,7 @@
              [blog.db :as blog.db]
              [api.todos :as api.todos]
              [api.pomodoros :as api.pomodoros]
+             [api.repos :as api.repos]
              [taoensso.timbre :as log]]
        :cljs [[hiccup-icons.fa :as fa]
               [components.icons :as components.icons]
@@ -521,14 +522,25 @@
        :action/priority 1
        :action/disabled (not (:blog/published item))}]))
 
+(defhandler check-repo-status [repo]
+  (log/info "checking repo status" repo)
+  (api.repos/check-repo-status repo)
+  :ok)
+
 #?(:cljs
    (defn repo->actions [item]
-     [{:action/on-click #(delete-from-db item)
-       :action/label    "delete-from-db"
-       :action/icon     fa/trash-alt-solid}
+     [
+      {:action/label    "check-status"
+       :action/on-click (fn [_]
+                          (println "checking git status for item" item)
+                          (check-repo-status item))
+       :action/icon     fa/check-circle-solid}
       {:action/label    "ingest-commits"
        :action/on-click #(ingest-commits-for-repo item)
-       :action/icon     [:> HIMini/ArrowDownOnSquareStackIcon {:class ["w-4" "h-6"]}]}]))
+       :action/icon     [:> HIMini/ArrowDownOnSquareStackIcon {:class ["w-4" "h-6"]}]}
+      {:action/on-click #(delete-from-db item)
+       :action/label    "delete-from-db"
+       :action/icon     fa/trash-alt-solid}]))
 
 #?(:cljs
    (defn wallpaper->actions [item]

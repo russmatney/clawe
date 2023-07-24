@@ -118,6 +118,13 @@
     (map :e)
     dedupe))
 
+(comment
+  (->>
+    (repos->es)
+    (d/pull-many @db/*conn* '[*])
+    )
+  )
+
 (defn chess-games->es []
   (->>
     (db/datoms :avet :doctor/type :type/lichess-game)
