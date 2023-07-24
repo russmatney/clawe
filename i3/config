@@ -144,12 +144,6 @@ bindsym $mod+shift+Down resize set width 60 ppt height 100 ppt, move position 0 
 default_orientation vertical
 for_window [class=".*"] split toggle
 
-# layout rules
-for_window [title="my-floating-title"] floating enable, resize set width 50 ppt height 50 ppt, move position center
-for_window [title="floating-alacritty"] floating enable, move scratchpad, scratchpad show, resize set width 80 ppt height 80 ppt, move position center
-for_window [title="floating-emacs"] floating enable, move scratchpad, scratchpad show, resize set width 80 ppt height 80 ppt, move position center
-for_window [title="journal" class="Emacs"] floating enable, move scratchpad, scratchpad show, resize set width 80 ppt height 80 ppt, move position center
-
 ################################################################################
 # resize window modal
 ################################################################################
