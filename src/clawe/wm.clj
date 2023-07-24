@@ -8,6 +8,7 @@
    [clawe.config :as clawe.config]
    [clawe.wm.protocol :as wm.protocol]
    [clawe.yabai :as clawe.yabai]
+   [clawe.i3 :as clawe.i3]
    [clawe.client :as client]
    [clojure.string :as string]
    [timer :as timer])
@@ -15,6 +16,7 @@
    [clawe.awesome Awesome]
    [clawe.yabai Yabai]
    [clawe.i3 I3]))
+
 
 (timer/print-since "clawe.wm ns loading")
 
@@ -138,6 +140,9 @@
   ([opts]
    (sys/start! `*wm*)
    (some->> (current-workspaces opts) first)))
+
+(comment
+  (current-workspace))
 
 (defn active-workspaces
   ([] (active-workspaces nil))

@@ -25,8 +25,7 @@
     ;; TODO support prefetching/including clients
     (some->>
       [(r.i3/current-workspace)]
-      (map ->wsp)
-      first))
+      (map ->wsp)))
 
   (-active-workspaces [_this {:keys [_prefetched-clients] :as _opts}]
     (->>
