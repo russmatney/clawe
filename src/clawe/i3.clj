@@ -17,9 +17,13 @@
            :workspace/index (:i3/num wsp)
            :workspace/focused (:i3/focused wsp))))
 
+(defn ->client [client]
+  {})
+
+
 (comment
   (->>
-    (r.i3/workspaces-simple)
+    (r.i3/workspaces)
     (map ->wsp)))
 
 (defrecord I3 []
@@ -35,14 +39,14 @@
 
   (-active-workspaces [_this {:keys [_prefetched-clients] :as _opts}]
     (->>
-      (r.i3/workspaces-simple)
+      (r.i3/workspaces)
       (map ->wsp)))
 
   (-create-workspace [_this _opts workspace-title]
     (r.i3/create-workspace workspace-title))
 
   (-focus-workspace [_this _opts wsp]
-    (r.i3/visit-workspace (or (:i3/num wsp) (:workspace/index wsp))))
+    (r.i3/focus-workspace (or (:i3/num wsp) (:workspace/index wsp))))
 
   (-fetch-workspace [_this _opts workspace-title]
     (-> workspace-title r.i3/workspace-for-name ->wsp))
@@ -80,4 +84,5 @@
 
   (clawe.wm.protocol/-swap-workspaces-by-index
     (I3.) (first wsps) (second wsps))
+
   )
