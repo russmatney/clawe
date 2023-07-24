@@ -77,12 +77,18 @@
             (filter #(string/includes? (:i3/name %) wsp-name))
             first)))
 
-(defn current-workspace []
-  (some->> (workspaces-fast) (filter :i3/focused) first))
+(defn current-workspace
+  ([] (current-workspace nil))
+  ([opts]
+   (if (:include-clients opts)
+     (let [wsp (->> (workspaces-fast) (filter :i3/focused) first)]
+       (workspace-for-name (:i3/name wsp)))
+     (some->> (workspaces-fast) (filter :i3/focused) first))))
 
 (comment
   (workspaces)
   (current-workspace)
+  (current-workspace {:include-clients true})
   (workspace-for-name "clawe"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -146,7 +152,7 @@
   (workspace-for-name "clawe")
   (clients-for-wsp-name "clawe"))
 
-(defn focused-app
+(defn focused-client
   "Returns a map describing the currently focused node."
   []
   (->> (->all-nodes)
@@ -155,4 +161,28 @@
        first))
 
 (comment
-  (focused-app))
+  (focused-client))
+
+(defn focus-client [client]
+  (i3-msg! (str " [con_id=" (:i3/id client) "] focus")))
+
+(defn close-client [client]
+  (i3-msg! (str " [con_id=" (:i3/id client) "] kill")))
+
+(defn bury-client [client]
+  (i3-msg! (str " [con_id=" (:i3/id client) "] floating disable")))
+
+(defn bury-clients [clients]
+  (i3-msg!
+    (string/join " ; "
+                 (->> clients
+                      (map (fn [client] (str " [con_id=" (:i3/id client) "] floating disable")))))))
+
+(defn move-client-to-workspace [client wsp]
+  (i3-msg!
+    ;; focus the client first
+    (str "[con_id=" (:i3/id client) "] focus, "
+         ;; move the client to the indicated workspace
+         "move container to workspace " (:i3/name wsp)
+         ;; toggle the current workspace (to trigger a go-back-to-prev wsp)
+         ", workspace " (:i3/name wsp))))

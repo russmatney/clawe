@@ -18,13 +18,23 @@
            :workspace/focused (:i3/focused wsp))))
 
 (defn ->client [client]
-  {})
+  (assoc client
+         :client/id (:i3/id client)
+         :client/app-name (-> client :i3/window_properties :i3/class string/lower-case)
+         :client/app-names (-> client :i3/window_properties ((juxt :i3/class :i3/instance)) (->> (map string/lower-case)))
+         :client/window-title (-> client :i3/window_properties :i3/title string/lower-case)
+         :client/focused (-> client :i3/focused)))
 
+(defn attach-clients [wsp]
+  (let [clients (r.i3/wsp->clients wsp)]
+    (assoc wsp :workspace/clients (->> clients (map ->client)))))
 
 (comment
   (->>
     (r.i3/workspaces)
-    (map ->wsp)))
+    (map ->wsp)
+    (map attach-clients)
+    ))
 
 (defrecord I3 []
   ClaweWM
@@ -32,15 +42,16 @@
   ;; workspaces
 
   (-current-workspaces [_this {:keys [_prefetched-clients] :as _opts}]
-    ;; TODO support prefetching/including clients
     (some->>
-      [(r.i3/current-workspace)]
-      (map ->wsp)))
+      [(r.i3/current-workspace {:include-clients true})]
+      (map ->wsp)
+      (map attach-clients)))
 
   (-active-workspaces [_this {:keys [_prefetched-clients] :as _opts}]
     (->>
       (r.i3/workspaces)
-      (map ->wsp)))
+      (map ->wsp)
+      (map attach-clients)))
 
   (-create-workspace [_this _opts workspace-title]
     (r.i3/create-workspace workspace-title))
@@ -49,7 +60,7 @@
     (r.i3/focus-workspace (or (:i3/num wsp) (:workspace/index wsp))))
 
   (-fetch-workspace [_this _opts workspace-title]
-    (-> workspace-title r.i3/workspace-for-name ->wsp))
+    (-> workspace-title r.i3/workspace-for-name ->wsp attach-clients))
 
   (-swap-workspaces-by-index [_this a b]
     ;; input is indexes? or wsps?
@@ -64,17 +75,25 @@
 
   ;; clients
 
-  (-close-client [_this _opts c])
+  (-close-client [_this _opts c]
+    (r.i3/close-client c))
 
-  (-active-clients [_this _opts])
+  (-active-clients [_this _opts]
+    (->>
+      (r.i3/all-clients)
+      (map ->client)))
 
-  (-bury-client [_this _opts client])
+  (-bury-client [_this _opts client]
+    (r.i3/bury-client client))
 
-  (-bury-clients [_this _opts clients])
+  (-bury-clients [_this _opts clients]
+    (r.i3/bury-clients clients))
 
-  (-focus-client [_this opts client])
+  (-focus-client [_this _opts client]
+    (r.i3/focus-client client))
 
-  (-move-client-to-workspace [this _opts c wsp]))
+  (-move-client-to-workspace [this _opts c wsp]
+    (r.i3/move-client-to-workspace c wsp)))
 
 (comment
 
@@ -84,5 +103,18 @@
 
   (clawe.wm.protocol/-swap-workspaces-by-index
     (I3.) (first wsps) (second wsps))
+
+  (def clients
+    (clawe.wm.protocol/-active-clients (I3.) nil))
+
+  (nth clients 4)
+  (clawe.wm.protocol/-focus-client
+    (I3.) nil (nth clients 4))
+
+  (nth clients 4)
+  (clawe.wm.protocol/-move-client-to-workspace
+    (I3.) nil (nth clients 4)
+    (first (clawe.wm.protocol/-current-workspaces
+             (I3.) nil)))
 
   )

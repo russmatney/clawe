@@ -204,15 +204,13 @@ bindsym XF86MonBrightnessDown exec --no-startup-id "light -U 5"
 # cycle all scratchpads
 bindsym $mod+a scratchpad show
 
-# TODO toggle per wsp tmux session
 # bindsym $mod+Return exec --no-startup-id "alacritty --working-directory=/home/russ/dotfiles -e 'tmux'"
-bindsym $mod+Return exec --no-startup-id "bb --config ~/russmatney/clawe/bb.edn -x clawe.client.create/create-client --key terminal"
-# bindsym $mod+Return exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key terminal
+# bindsym $mod+Return exec --no-startup-id "bb --config ~/russmatney/clawe/bb.edn -x clawe.client.create/create-client --key terminal"
+bindsym $mod+Return exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key terminal
 
-# TODO toggle per wsp emacs session
 # bindsym $mod+Shift+Return exec --no-startup-id emacsclient -c
-bindsym $mod+Shift+Return exec --no-startup-id "bb --config ~/russmatney/clawe/bb.edn -x clawe.client.create/create-client --key emacs"
-# shift + cmd - return : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key emacs
+# bindsym $mod+Shift+Return exec --no-startup-id "bb --config ~/russmatney/clawe/bb.edn -x clawe.client.create/create-client --key emacs"
+bindsym $mod+Shift+Return exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key emacs
 
 # toggle journal
 bindsym $mod+Shift+u mark "journal", move scratchpad
