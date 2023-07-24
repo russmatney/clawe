@@ -242,6 +242,21 @@
   (months)
   (months 5))
 
+(defn newer [a b]
+  (let [a (when a (parse-time-string a))
+        b (when b (parse-time-string b))]
+    (cond (and a b) (t/> a b)
+          a         true
+          :else     nil)))
+
+(defn older [a b]
+  (let [a (when a (parse-time-string a))
+        b (when b (parse-time-string b))]
+    (cond (and a b) (t/< a b)
+          a         true
+          :else     nil)))
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; sort
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
