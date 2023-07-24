@@ -203,6 +203,7 @@ bindsym XF86MonBrightnessDown exec --no-startup-id "light -U 5"
 
 # cycle all scratchpads
 bindsym $mod+a scratchpad show
+bindsym $mod+Shift+d move scratchpad
 
 # bindsym $mod+Return exec --no-startup-id "alacritty --working-directory=/home/russ/dotfiles -e 'tmux'"
 bindsym $mod+Return exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key terminal
@@ -216,7 +217,6 @@ bindsym $mod+u exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x cla
 bindsym $mod+Shift+u mark "journal", move scratchpad
 
 # toggle yodo/clawe dashboard
-# bindsym $mod+Shift+y mark "yodo", move scratchpad
 # bindsym $mod+y [con_mark="yodo"] scratchpad show
 bindsym $mod+y exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key focus
 
