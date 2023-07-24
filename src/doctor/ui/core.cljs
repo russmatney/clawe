@@ -31,6 +31,7 @@
    [doctor.ui.views.todos :as views.todos]
    [doctor.ui.views.today :as views.today]
    [doctor.ui.views.pomodoro :as views.pomodoro]
+   [doctor.ui.views.git-status :as views.git-status]
    [doctor.ui.views.topbar :as views.topbar]
    [doctor.ui.views.chess-games :as views.chess-games]
    [doctor.ui.views.dashboard :as views.dashboard]
@@ -84,6 +85,8 @@
    {:route "/events" :page-name :page/events :label "Events" :comp pages.events/page
     :icon  octicons/calendar16}
    {:route "/pomodoros" :page-name :page/pomodoros :label "Pomodoros" :comp views.pomodoro/widget
+    :icon  octicons/clock16}
+   {:route "/git-status" :page-name :page/git-status :label "Git-Status" :comp views.git-status/widget
     :icon  octicons/clock16}
    {:route "/commits" :page-name :page/commits :label "Commits" :comp views.commits/widget
     :icon  views.commits/icon}

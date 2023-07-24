@@ -20,6 +20,7 @@
    ["@heroicons/react/20/solid" :as HIMini]
 
    [doctor.ui.views.pomodoro :as pomodoro]
+   [doctor.ui.views.git-status :as git-status]
    [doctor.ui.views.focus :as focus]))
 
 (defn skip-bar-app? [client]
@@ -236,6 +237,10 @@
       [:div
        {:class ["overflow-scroll"]}
        [focus/current-task opts]]
+
+      [:div
+       {:class ["overflow-scroll"]}
+       [git-status/bar opts]]
 
       [:div
        {:class ["overflow-scroll"]}

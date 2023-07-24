@@ -17,6 +17,7 @@
    [doctor.ui.views.today :as today]
    [doctor.ui.views.blog :as blog]
    [doctor.ui.views.pomodoro :as pomodoro]
+   [doctor.ui.views.git-status :as git-status]
    [doctor.ui.views.chess-games :as chess-games]
    [doctor.ui.views.workspaces :as workspaces]
    [hooks.workspaces :as hooks.workspaces]
@@ -74,6 +75,7 @@
                  actions)}]]]
      (when @show? [comp (or opts {})])]))
 
+
 (defn widget [opts]
   [:div
    {:class ["text-city-pink-200"
@@ -91,6 +93,10 @@
                               [ingest/commit-ingest-buttons (:conn opts)]])
                   :label   "ingestors"
                   :actions (ingest/ingest-actions)}]
+
+     [widget-bar {:comp  git-status/widget
+                  :label "git-status"
+                  :bar   git-status/bar}]
 
      [widget-bar {:comp  pomodoro/widget
                   :label "pomodoro"
