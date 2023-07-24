@@ -39,6 +39,8 @@ for_window [title="^Windowed Projector" class="obs"] floating enable, sticky ena
 no_focus [title="twitch-chat" class="Clove"]
 for_window [title="twitch-chat" class="Clove"] floating enable, sticky enable
 
+for_window [class="Rofi"] floating enable, sticky enable
+
 ###################################################
 ## Fonts and colors
 ###################################################
