@@ -33,6 +33,12 @@ for_window [title="tauri-doctor-topbar"] floating enable, sticky enable, \
     resize set width 100 ppt height 70 px, move position 0 px 36 px
     # resize set width 100 ppt height 70 px, move position 0 px 2080 px
 
+no_focus [title="^Windowed Projector" class="obs"]
+for_window [title="^Windowed Projector" class="obs"] floating enable, sticky enable
+
+no_focus [title="twitch-chat" class="Clove"]
+for_window [title="twitch-chat" class="Clove"] floating enable, sticky enable
+
 ###################################################
 ## Fonts and colors
 ###################################################
@@ -184,7 +190,7 @@ mode "window" {
 # Media keybinds
 ################################################################################
 
-bindsym XF86AudioPlay exec --no-startup-id "playerctl --play-pause"
+bindsym XF86AudioPlay exec --no-startup-id "playerctl play-pause"
 bindsym XF86AudioNext exec --no-startup-id "playerctl next"
 bindsym XF86AudioPrev exec --no-startup-id "playerctl previous"
 bindsym XF86AudioMute exec --no-startup-id "pactl set-sink-mute @DEFAULT_SINK@ toggle"
@@ -238,15 +244,25 @@ bindsym $mod+b [class="firefoxdeveloperedition"] scratchpad show
 bindsym $mod+comma exec i3-input -F 'rename workspace to "%s"' -P 'New name for this workspace (n:<name>): '
 
 bindsym $mod+1 workspace 1: journal
+bindsym $mod+Shift+1 move container to workspace 1: journal
 bindsym $mod+2 workspace 2: dotfiles
+bindsym $mod+Shift+2 move container to workspace 2: dotfiles
 bindsym $mod+3 workspace 3: clawe
+bindsym $mod+Shift+3 move container to workspace 3: clawe
 bindsym $mod+4 workspace 4: dino
+bindsym $mod+Shift+4 move container to workspace 4: dino
 bindsym $mod+5 workspace 5: mealprep
+bindsym $mod+Shift+5 move container to workspace 5: mealprep
 bindsym $mod+6 workspace 6
+bindsym $mod+Shift+6 move container to workspace 6
 bindsym $mod+7 workspace 7
+bindsym $mod+Shift+7 move container to workspace 7
 bindsym $mod+8 workspace 8
+bindsym $mod+Shift+8 move container to workspace 8
 bindsym $mod+9 workspace 9
-bindsym $mod+0 workspace 0
+bindsym $mod+Shift+9 move container to workspace 9
+bindsym $mod+0 workspace 0: obs
+bindsym $mod+Shift+0 move container to workspace 0: obs
 
 bindsym $mod+n workspace prev
 bindsym $mod+p workspace next
@@ -256,9 +272,9 @@ bindsym $mod+p workspace next
 ###################################################################
 
 # Compositor (Animations, Shadows, Transparency)
-exec_always --no-startup-id compton --inactive-dim 0.1 --active-opacity 0.9 -i 0.95
+# exec_always --no-startup-id compton --inactive-dim 0.1 --active-opacity 0.9 -i 0.95
 # exec_always --no-startup-id compton -cCfb --backend glx --vsync opengl
-# exec_always --no-startup-id picom
+exec_always --no-startup-id picom
 
 # exec_always --no-startup-id feh --bg-scale ~/Dropbox/wallpapers/cityscape-cartoon.jpg
 # exec_always --no-startup-id variety --resume
