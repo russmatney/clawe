@@ -58,7 +58,7 @@
       [:div
        {:class ["ml-auto"]}
        [components.actions/actions-list
-        {:n 5
+        {:n 2
          :actions
          (concat [{:action/on-click (fn [_]
                                       (reset! show? true)
