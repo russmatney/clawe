@@ -5,10 +5,16 @@
    [ralphie.i3 :as r.i3]))
 
 (defn ->wsp [i3-wsp]
-  (assoc i3-wsp
-         :workspace/title (:i3/name i3-wsp)
-         :workspace/index (:i3/num i3-wsp))
-  )
+  (let [title (string/replace (:i3/name i3-wsp) #"^.*: ?" "")]
+    (assoc i3-wsp
+           :workspace/title title
+           :workspace/index (:i3/num i3-wsp)
+           :workspace/focused (:i3/focused i3-wsp))))
+
+(comment
+  (->>
+    (r.i3/workspaces-simple)
+    (map ->wsp)))
 
 (defrecord I3 []
   ClaweWM
@@ -17,13 +23,14 @@
 
   (-current-workspaces [_this {:keys [_prefetched-clients] :as _opts}]
     ;; TODO support prefetching/including clients
-    (->>
+    (some->>
       [(r.i3/current-workspace)]
-      (map ->wsp)))
+      (map ->wsp)
+      first))
 
   (-active-workspaces [_this {:keys [_prefetched-clients] :as _opts}]
     (->>
-      (r.i3/workspaces-from-tree)
+      (r.i3/workspaces-simple)
       (map ->wsp)))
 
   (-create-workspace [_this _opts workspace-title]

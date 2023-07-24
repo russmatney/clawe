@@ -6,30 +6,40 @@
    [ralphie.rofi :as rofi]
    [clojure.java.shell :as sh]
    [clojure.set :as set]
-   [defthing.defcom :as defcom :refer [defcom]]))
+   [defthing.defcom :as defcom :refer [defcom]]
+   [babashka.process :as process]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; i3-msg
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; TODO refactor when in i3
-(defn i3-msg! [& args]
-  (apply sh/sh "i3-msg" args))
+(defn i3-msg! [msg]
+  (let [cmd (str "i3-msg " msg)]
+    (println cmd)
+    (-> (process/process
+          {:cmd cmd :out :string})
+        ;; throws when error occurs
+        (process/check)
+        :out
+        (json/parse-string
+          (fn [k] (keyword "i3" k))))))
+
+(comment
+  (i3-msg! "-t get_tree")
+  (string/join " "  (concat "i3-msg" ["-t" "get_tree"]))
+
+
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; i3-data roots
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn tree []
-  (-> (i3-msg! "-t" "get_tree")
-      :out
-      (json/parse-string
-        (fn [k] (keyword "i3" k)))))
+  (-> (i3-msg! "-t get_tree")))
 
 (defn workspaces-simple []
-  (-> (i3-msg! "-t" "get_workspaces")
-      :out
-      (json/parse-string (fn [k] (keyword "i3" k)))))
+  (-> (i3-msg! "-t get_workspaces")))
 
 (comment
   (tree)
@@ -80,17 +90,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn current-workspace
-  "TODO rewrite to use get_tree"
   []
   (some->> (workspaces-simple)
            (filter :i3/focused)
-           first
-           :i3/name
-           ((fn [name]
-              (some->> (workspaces-from-tree)
-                       (filter (fn [node]
-                                 (= (:i3/name node) name)))
-                       first)))))
+           first))
 
 (comment
   (current-workspace)
@@ -171,11 +174,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn visit-workspace [number]
-  (i3-msg! "workspace" "number" number))
+  (i3-msg! (str "workspace number " number)))
 
 (defn rename-workspace [name number]
-  []
-  (i3-msg! "rename" "workspace" "to" (str number ":" name)))
+  (i3-msg! (str "rename workspace to " (str number ":" name))))
 
 (defn upsert
   "TODO Perhaps this logic should be in workspaces?"
@@ -189,9 +191,6 @@
 (comment
   (upsert {:name "timeline"})
   (rename-workspace "clawe" 3)
-
-  (i3-msg! "rename" "workspace" "to" (str 3 ":clawe"))
-
   (visit-workspace "4:4"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -286,3 +286,5 @@ exec_always --no-startup-id bluetoothctl -- power on
 exec_always --no-startup-id xautolock -time 5 -locker "i3lock -c 262626"
 
 exec_always --no-startup-id systemctl --user restart doctor-topbar
+
+exec_always --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.config/set-wm :wm i3

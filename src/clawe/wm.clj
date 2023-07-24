@@ -13,7 +13,8 @@
    [timer :as timer])
   (:import
    [clawe.awesome Awesome]
-   [clawe.yabai Yabai]))
+   [clawe.yabai Yabai]
+   [clawe.i3 I3]))
 
 (timer/print-since "clawe.wm ns loading")
 
@@ -25,7 +26,10 @@
   :extra-deps
   [clawe.config/*config*]
   :start
-  (if (clawe.config/is-mac?) (Yabai.) (Awesome.)))
+  (let [wm (clawe.config/get-wm)]
+    (cond (= wm :wm/i3) (I3.)
+          :else
+          (if (clawe.config/is-mac?) (Yabai.) (Awesome.)))))
 
 (defn reload-wm []
   (when (sys/running? `*wm*)
