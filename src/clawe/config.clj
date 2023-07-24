@@ -104,6 +104,34 @@
   (:common-urls @*config* []))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; set/get current window manager
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn get-wm
+  ([] (get-wm nil))
+  ([_opts]
+   (sys/start! `*config*)
+   (:wm @*config*)))
+
+(defn set-wm [{:keys [wm]}]
+  {:org.babashka/cli {}}
+  (sys/start! `*config*)
+  (let [val (cond
+              (#{"i3" :i3 :wm/i3} wm)                :wm/i3
+              (#{"awesome" :awesome :wm/awesome} wm) :wm/awesome
+              (#{"yabai" :yabai :wm/yabai} wm)       :wm/yabai)]
+    (when-not val
+      (log/warn "Unhandled set-wm val" wm))
+
+    (-> @*config* (assoc :wm val) write-config))
+  (reload-config)
+  (get-wm))
+
+(comment
+  (set-wm {:wm "i3"})
+  (get-wm))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; workspace-defs
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
