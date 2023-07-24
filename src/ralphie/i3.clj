@@ -10,7 +10,6 @@
 
 (defn i3-msg! [msg]
   (let [cmd (str "i3-msg " msg)]
-    (println cmd)
     (-> (process/process
           {:cmd cmd :out :string})
         ;; throws when error occurs
@@ -180,9 +179,11 @@
 
 (defn move-client-to-workspace [client wsp]
   (i3-msg!
-    ;; focus the client first
-    (str "[con_id=" (:i3/id client) "] focus, "
+    (str "[con_id=" (:i3/id client) "] "
+         ;; focus the client first
+         ;; " focus, "
          ;; move the client to the indicated workspace
          "move container to workspace " (:i3/name wsp)
          ;; toggle the current workspace (to trigger a go-back-to-prev wsp)
-         ", workspace " (:i3/name wsp))))
+         ;; ", workspace " (:i3/name wsp)
+         )))

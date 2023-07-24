@@ -205,34 +205,32 @@ bindsym XF86MonBrightnessDown exec --no-startup-id "light -U 5"
 bindsym $mod+a scratchpad show
 
 # bindsym $mod+Return exec --no-startup-id "alacritty --working-directory=/home/russ/dotfiles -e 'tmux'"
-# bindsym $mod+Return exec --no-startup-id "bb --config ~/russmatney/clawe/bb.edn -x clawe.client.create/create-client --key terminal"
-bindsym $mod+Return exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key terminal
+bindsym $mod+Return exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key terminal
 
 # bindsym $mod+Shift+Return exec --no-startup-id emacsclient -c
-# bindsym $mod+Shift+Return exec --no-startup-id "bb --config ~/russmatney/clawe/bb.edn -x clawe.client.create/create-client --key emacs"
-bindsym $mod+Shift+Return exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key emacs
+bindsym $mod+Shift+Return exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key emacs
 
 # toggle journal
+bindsym $mod+u exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key journal
+# bindsym $mod+u [con_mark="journal"] scratchpad show
 bindsym $mod+Shift+u mark "journal", move scratchpad
-bindsym $mod+u [con_mark="journal"] scratchpad show
-# bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key journal
 
 # toggle yodo/clawe dashboard
-bindsym $mod+Shift+y mark "yodo", move scratchpad
-bindsym $mod+y [con_mark="yodo"] scratchpad show
-bindsym $mod+Shift+d exec --no-startup-id "bb --config ~/russmatney/clawe/bb.edn -x clawe.client.create/create-client --key focus"
+# bindsym $mod+Shift+y mark "yodo", move scratchpad
+# bindsym $mod+y [con_mark="yodo"] scratchpad show
+bindsym $mod+y exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key focus
 
 # toggle spotify
-bindsym $mod+s [class="Spotify"] scratchpad show
-# bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key spotify
+# bindsym $mod+s [class="Spotify"] scratchpad show
+bindsym $mod+s exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key spotify
 
 # toggle web
-bindsym $mod+t [class="firefox$"] scratchpad show
-# bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key web
+# bindsym $mod+t [class="firefox$"] scratchpad show
+bindsym $mod+t exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key web
 
 # toggle dev browser
-bindsym $mod+b [class="firefoxdeveloperedition"] scratchpad show
-# bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key devweb
+# bindsym $mod+b [class="firefoxdeveloperedition"] scratchpad show
+bindsym $mod+b exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key devweb
 
 ###################################################################
 ## workspaces

@@ -322,6 +322,9 @@
   "Opts `:current-workspace`, `:focus/float-and-center`, `focus-client` opts"
   ([client] (show-client nil client))
   ([opts client]
+
+   ;; TODO support showing via i3 scratchpad mechanics (faster, less jank)
+
    (let [client (cond (map? client)    client
                       (string? client) (fetch-client client))]
      ;; TODO would like to focus+center first to avoid the jank on linux
@@ -367,11 +370,18 @@
   ([opts client]
    (sys/start! `*wm*)
    ;; TODO document :hide/ types for clients
-   (case (:hide/type client :hide/scratchpad)
-     :hide/scratchpad
+   (case (:hide/type client :hide/fallback)
+     :hide/fallback
      (wm.protocol/-move-client-to-workspace
        *wm* nil client
        (client->workspace-title client))
+
+     :hide/scratchpad
+     (do
+       (println "to impl, :hide/scratchpad")
+       (wm.protocol/-move-client-to-workspace
+         *wm* nil client
+         (client->workspace-title client)))
 
      :hide/os-hide
      (println "to impl!")
