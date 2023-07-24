@@ -18,6 +18,9 @@
         (json/parse-string
           (fn [k] (keyword "i3" k))))))
 
+(defn i3-cmd! [msg]
+  (i3-msg! (str "\"" msg "\"")))
+
 (comment
   (i3-msg! "-t get_tree")
   (string/join " "  (concat "i3-msg" ["-t" "get_tree"])))
@@ -120,7 +123,7 @@
         name_b (:workspace/title b)
         num_b  (:i3/num b)]
     ;; TODO finish impling
-    (i3-msg! (str "rename workspace \\\"" num_a ": " name_a "\\\" to \\\"" num_b ": " name_a "\\\" ; "
+    (i3-cmd! (str "rename workspace \\\"" num_a ": " name_a "\\\" to \\\"" num_b ": " name_a "\\\" ; "
                   "rename workspace \\\"" num_b ": " name_b "\\\" to \\\"" num_a ": " name_b "\\\""))))
 
 (defn delete-workspace [_wsp]
@@ -178,12 +181,13 @@
                       (map (fn [client] (str " [con_id=" (:i3/id client) "] floating disable")))))))
 
 (defn move-client-to-workspace [client wsp]
-  (i3-msg!
+  (i3-cmd!
     (str "[con_id=" (:i3/id client) "] "
          ;; focus the client first
          ;; " focus, "
          ;; move the client to the indicated workspace
-         "move container to workspace " (:i3/name wsp)
+         ;; "move window to workspace " (:i3/name wsp)
+         "move --no-auto-back-and-forth to workspace " (:i3/name wsp)
          ;; toggle the current workspace (to trigger a go-back-to-prev wsp)
          ;; ", workspace " (:i3/name wsp)
          )))
