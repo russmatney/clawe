@@ -4,6 +4,7 @@
    [components.actions :as components.actions]
    [components.git :as components.git]
    [components.table :as components.table]
+   [components.debug :as components.debug]
    [tick.core :as t]
    [uix.core.alpha :as uix]
    [dates.tick :as dates]
@@ -29,7 +30,11 @@
 (defn repo-status-table-def []
   {:headers ["Repo" ":dirty?" ":needs-push?" ":needs-pull?" "Actions"]
    :->row   (fn [repo]
-              [(components.git/short-repo repo)
+              [
+               [components.debug/raw-metadata
+                {:label
+                 (components.git/short-repo repo)}
+                repo]
 
                "false"
                "false"
