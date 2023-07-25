@@ -218,7 +218,6 @@
   :stop
   (.stop *server*))
 
-
 (defn restart []
   (if (sys/running? `*server*)
     (sys/restart! `*server*)

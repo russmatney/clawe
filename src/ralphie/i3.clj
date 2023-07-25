@@ -201,9 +201,6 @@
 (defn focus-client [client]
   (i3-msg! (str " [con_id=" (:i3/id client) "] focus")))
 
-(defn close-client [client]
-  (i3-msg! (str " [con_id=" (:i3/id client) "] kill")))
-
 (defn bury-client [client]
   (i3-msg! (str " [con_id=" (:i3/id client) "] floating disable")))
 
@@ -212,6 +209,12 @@
     (string/join " ; "
                  (->> clients
                       (map (fn [client] (str " [con_id=" (:i3/id client) "] floating disable")))))))
+
+(defn close-client [client]
+  (i3-msg! (str " [con_id=" (:i3/id client) "] kill")))
+
+(defn hide-scratchpad [client]
+  (i3-msg! (str " [con_id=" (:i3/id client) "] move scratchpad")))
 
 (defn move-client-to-workspace [client wsp]
   (when (and (:i3/id client) wsp)

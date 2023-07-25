@@ -386,10 +386,8 @@
        (move-client-to-workspace nil client wsp-title))
 
      :hide/scratchpad
-     (do
-       (println "to impl, :hide/scratchpad")
-       (let [wsp-title (or (client->workspace-title client) "scratchpad")]
-         (move-client-to-workspace nil client wsp-title)))
+     ;; TODO impl in yabai and awesomewm
+     (wm.protocol/-hide-scratchpad *wm* nil client)
 
      :hide/os-hide
      (println "to impl!")

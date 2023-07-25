@@ -89,13 +89,13 @@
 
   ;; clients
 
-  (-close-client [_this _opts c]
-    (r.i3/close-client c))
-
   (-active-clients [_this _opts]
     (->>
       (r.i3/all-clients)
       (map ->client)))
+
+  (-focus-client [_this _opts client]
+    (r.i3/focus-client client))
 
   (-bury-client [_this _opts client]
     (r.i3/bury-client client))
@@ -103,8 +103,11 @@
   (-bury-clients [_this _opts clients]
     (r.i3/bury-clients clients))
 
-  (-focus-client [_this _opts client]
-    (r.i3/focus-client client))
+  (-close-client [_this _opts c]
+    (r.i3/close-client c))
+
+  (-hide-scratchpad [_this _opts c]
+    (r.i3/hide-scratchpad c))
 
   (-move-client-to-workspace [_this _opts c wsp]
     (when (and c wsp)
