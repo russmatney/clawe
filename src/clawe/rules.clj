@@ -39,9 +39,12 @@
        ;; sort and map-indexed to set new_indexes
        (sort-by :sort-key)
        (map-indexed (fn [i wsp]
-                      ;; lua indexes start at 1, and osx's first wsp as 1...
-                      ;; this is probably right for most wm indexes (to match the keyboard)
-                      (assoc wsp :new-index (+ i 1))))
+                      (assoc wsp :new-index
+                             (case (clawe.config/get-wm)
+                               :wm/i3 i
+                               ;; lua indexes start at 1, and osx's first wsp as 1...
+                               ;; this is probably right for most wm indexes (to match the keyboard)
+                               (+ i 1)))))
        (remove #(= (:new-index %) (:workspace/index %)))))
 
 (comment
