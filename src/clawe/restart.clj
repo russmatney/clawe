@@ -71,6 +71,11 @@
   ([] (reload nil))
   ([_]
    (log "reloading...")
+
+   (log "(clawe.config/reload-config)")
+   ;; note this doesn't reload the backend config unless called from there
+   (clawe.config/reload-config)
+
    ;; Bindings
    (when-not (clawe.config/is-mac?)
      (log "rewriting awm bindings")
@@ -96,11 +101,6 @@
    (tmux/fire {:tmux.fire/cmd     "doom env"
                :tmux.fire/session "dotfiles"})
    (emacs/fire "(doom/reload-env)")
-
-   ;; Doctor - Wallpaper, etc
-   (when-not (clawe.config/is-mac?)
-     (log "Firing doctor reload")
-     (clawe.doctor/reload))
 
    (clawe.doctor/update-topbar)
    (log "Reload complete")

@@ -8,8 +8,8 @@
    [api.pomodoros :as pomodoros]
    [screenshots.core :as screenshots]
    [clips.core :as clips]
-   [wallpapers.core :as wallpapers]
 
+   [clawe.restart :as clawe.restart]
    [clawe.mx :as clawe.mx]
    [clawe.toggle :as clawe.toggle]
    [clojure.string :as string]))
@@ -26,8 +26,8 @@
 
     (= uri "/reload")
     (do
-      (wallpapers/reload)
-      {:status 200 :body "reloaded doctor"})
+      (clawe.restart/reload)
+      {:status 200 :body "reloaded clawe"})
 
     (= uri "/topbar/update")
     (do

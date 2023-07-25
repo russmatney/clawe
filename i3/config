@@ -111,8 +111,8 @@ bindsym $mod+w exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x cla
 # bindsym $mod-r exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.restart/reload
 
 # cycle window focus
-# TODO impl
-# bindsym $mod-` focus next
+# because of the tree structure, cycling windows in a workspace is complicated :/
+# bindsym $mod-Tab focus next
 
 ################################################################################
 # Layout/Window Position
@@ -178,6 +178,7 @@ for_window [class="(Spotify|firefox)"] move scratchpad
 for_window [title="Firefox Developer Edition$"] move scratchpad
 for_window [class="Clove" title="tauri-doctor-focus"] move scratchpad
 for_window [class="Emacs" title="journal"] move scratchpad
+for_window [class="^1Password$"] move scratchpad
 
 # cycle all scratchpads
 bindsym $mod+a scratchpad show
@@ -192,29 +193,26 @@ bindsym $mod+Shift+Return exec --no-startup-id bb --config ~/russmatney/clawe/bb
 # toggle journal
 bindsym $mod+u exec --no-startup-id i3-msg [class="Emacs" title="journal"] scratchpad show || \
   bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key journal
-# bindsym $mod+u [con_mark="journal"] scratchpad show
-bindsym $mod+Shift+u mark "journal", move scratchpad
 
 # toggle yodo/clawe dashboard
-# bindsym $mod+y [con_mark="yodo"] scratchpad show
 bindsym $mod+y exec --no-startup-id i3-msg [class="Clove" title="tauri-doctor-focus"] scratchpad show || \
   bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key focus
 
 # toggle spotify
-# bindsym $mod+s [class="Spotify"] scratchpad show
-# bindsym $mod+s exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key spotify
 bindsym $mod+s exec --no-startup-id i3-msg [class="Spotify"] scratchpad show || \
   bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key spotify
 
 # toggle web
-# bindsym $mod+t [class="firefox$"] scratchpad show
 bindsym $mod+t exec --no-startup-id i3-msg [class="firefox$"] scratchpad show || \
   bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key web
 
 # toggle dev browser
-# bindsym $mod+b [class="firefoxdeveloperedition"] scratchpad show
 bindsym $mod+b exec --no-startup-id i3-msg '[class="firefoxdeveloperedition"] scratchpad show' || \
   bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key devweb
+
+# toggle 1password
+bindsym $mod+period exec --no-startup-id i3-msg '[class="1Password"] scratchpad show' || \
+  bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key onepass
 
 ###################################################################
 ## workspaces
@@ -265,5 +263,5 @@ exec_always --no-startup-id xautolock -time 5 -locker "i3lock -c 262626"
 exec_always --no-startup-id systemctl --user restart doctor-topbar
 
 exec_always --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.config/set-wm :wm i3
-exec_always --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.rules/clean-up-workspaces
-# maybe clawe reload?
+# exec_always --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.rules/clean-up-workspaces
+exec_always --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/reload
