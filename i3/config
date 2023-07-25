@@ -101,12 +101,14 @@ bindsym $mod+Shift+s exec --no-startup-id i3-scrot
 # clawe
 ################################################################################
 
+# these are also impled via sxhkd...
+
 # clawe-mx
 bindsym $mod+x exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-mx
 bindsym $mod+w exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-mx-suggestions
 
 # clawe reload
-bindsym $mod-r exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.restart/reload
+# bindsym $mod-r exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.restart/reload
 
 # cycle window focus
 # TODO impl
@@ -140,42 +142,13 @@ default_orientation vertical
 for_window [class=".*"] split toggle
 
 ################################################################################
-# resize window modal
+# resize windows
 ################################################################################
 
-bindsym $mod+Shift+w mode "window"
-mode "window" {
-  bindsym h resize shrink width 30 px or 5 ppt
-  bindsym k resize grow height 30 px or 5 ppt
-  bindsym j resize shrink height 30 px or 5 ppt
-  bindsym l resize grow width 30 px or 5 ppt
-
-  # swap in direction
-  bindsym Shift+h move left
-  bindsym Shift+l move right
-  bindsym Shift+j move down
-  bindsym Shift+k move up
-
-  # maintain focus controls
-  bindsym $mod+h focus left
-  bindsym $mod+l focus right
-  bindsym $mod+j focus down
-  bindsym $mod+k focus up
-
-  bindsym Return mode "default"
-  bindsym Escape mode "default"
-  bindsym q mode "default"
-
-  # window position commands
-  bindsym c floating enable, resize set width 50 ppt height 50 ppt, move position center; mode "default"
-  bindsym Shift+c floating enable, resize set width 90 ppt height 90 ppt, move position center; mode "default"
-  bindsym w floating enable, resize set width 40 ppt height 80 ppt, move position center; mode "default"
-
-  # absolute positioning
-  bindsym Right floating enable, resize set width 45 ppt height 90 ppt, move position 1008 48; mode "default"
-  bindsym Left floating enable, resize set width 45 ppt height 90 ppt, move position 48 48; mode "default"
-  bindsym Down floating enable, resize set width 60 ppt height 100 ppt, move position 0 px 0 px; mode "default"
-}
+bindsym Ctrl+Shift+h resize shrink width 30 px or 5 ppt
+bindsym Ctrl+Shift+l resize grow width 30 px or 5 ppt
+bindsym Ctrl+Shift+j resize shrink height 30 px or 5 ppt
+bindsym Ctrl+Shift+k resize grow height 30 px or 5 ppt
 
 ################################################################################
 # Media keybinds
@@ -292,3 +265,5 @@ exec_always --no-startup-id xautolock -time 5 -locker "i3lock -c 262626"
 exec_always --no-startup-id systemctl --user restart doctor-topbar
 
 exec_always --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.config/set-wm :wm i3
+exec_always --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.rules/clean-up-workspaces
+# maybe clawe reload?

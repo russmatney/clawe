@@ -48,8 +48,7 @@
        (remove #(= (:new-index %) (:workspace/index %)))))
 
 (comment
-  (workspaces-to-swap-indexes)
-  )
+  (workspaces-to-swap-indexes))
 
 (defn sort-workspace-indexes
   "Re-sorts workspace indexes according to the sort key in `wsp-sort-key`,
