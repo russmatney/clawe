@@ -47,6 +47,9 @@
   ;; (client.create/create-client "emacs")
   ;; (client.create/create-client "terminal")
   ;; (clawe.rules/clean-up-workspaces) ;; deletes empty workspace immediately after creating it
+
+  (clawe.rules/return-clients-to-expected-workspaces)
+  (clawe.rules/consolidate-workspaces)
   (clawe.rules/sort-workspace-indexes)
   (clawe.doctor/update-topbar)
   wsp)

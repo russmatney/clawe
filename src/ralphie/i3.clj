@@ -119,7 +119,8 @@
   (rename-workspace "clawe" 3)
   (focus-workspace "4:4"))
 
-;; TODO these are indexes, not workspaces passed in
+(defn swap-workspaces-by-index [ixa ixb])
+
 (defn swap-workspaces [a b]
   (let [name_a (:workspace/title a)
         num_a  (:i3/num a)
@@ -184,13 +185,20 @@
                       (map (fn [client] (str " [con_id=" (:i3/id client) "] floating disable")))))))
 
 (defn move-client-to-workspace [client wsp]
-  (i3-cmd!
-    (str "[con_id=" (:i3/id client) "] "
-         ;; focus the client first
-         ;; " focus, "
-         ;; move the client to the indicated workspace
-         ;; "move window to workspace " (:i3/name wsp)
-         "move --no-auto-back-and-forth to workspace " (:i3/name wsp)
-         ;; toggle the current workspace (to trigger a go-back-to-prev wsp)
-         ;; ", workspace " (:i3/name wsp)
-         )))
+  (when (and (:i3/id client) wsp)
+    (let [wsp-name (or (:i3/name wsp)
+                       (and (:workspace/title wsp)
+                            (let [ix (next-wsp-number)]
+                              (str ix ": " (:workspace/title wsp)))))]
+      (when wsp-name
+        (println "moving client to wsp" client wsp)
+        (i3-cmd!
+          (str "[con_id=" (:i3/id client) "] "
+               ;; focus the client first
+               ;; " focus, "
+               ;; move the client to the indicated workspace
+               ;; "move window to workspace " (:i3/name wsp)
+               "move --no-auto-back-and-forth to workspace " wsp-name
+               ;; toggle the current workspace (to trigger a go-back-to-prev wsp)
+               ;; ", workspace " (:i3/name wsp)
+               ))))))

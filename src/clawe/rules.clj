@@ -155,6 +155,8 @@
   ([opts]
    (let [clients    (wm/active-clients)
          workspaces (wm/active-workspaces {:prefetched-clients clients})
+
+         ;; TODO consider branching for opt-in :scratchpads here (vs creating on-the-fly workspaces)
          corrections
          (->> clients
               (map (fn [client]

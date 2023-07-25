@@ -421,7 +421,10 @@
   (drag-workspace :dir/down))
 
 (defn move-client-to-workspace
-  ([c wsp] (move-client-to-workspace nil c wsp))
-  ([opts c wsp]
-   (sys/start! `*wm*)
-   (wm.protocol/-move-client-to-workspace *wm* opts c wsp)))
+  ([c wsp-or-title] (move-client-to-workspace nil c wsp-or-title))
+  ([opts c wsp-or-title]
+   (when (and c wsp-or-title)
+     (sys/start! `*wm*)
+     (when-let [wsp (cond (map? wsp-or-title)    wsp-or-title
+                          (string? wsp-or-title) (key->workspace wsp-or-title))]
+       (wm.protocol/-move-client-to-workspace *wm* opts c wsp)))))

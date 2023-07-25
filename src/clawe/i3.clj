@@ -5,7 +5,12 @@
    [ralphie.i3 :as r.i3]))
 
 (defn wsp->i3-wsp-name [wsp]
-  (str (:workspace/index wsp) ": " (:workspace/title wsp)))
+  (when-not (nil? (:workspace/index wsp))
+    (str (:workspace/index wsp) ": " (:workspace/title wsp))))
+
+(defn ensure-i3-name [wsp]
+  (cond-> wsp
+    (not (:i3/name wsp)) (assoc :i3/name (wsp->i3-wsp-name wsp))))
 
 (defn i3-wsp->workspace-title [wsp]
   (string/replace (:i3/name wsp) #"^.*: ?" ""))
@@ -21,7 +26,9 @@
   (assoc client
          :client/id (:i3/id client)
          :client/app-name (-> client :i3/window_properties :i3/class string/lower-case)
-         :client/app-names (-> client :i3/window_properties ((juxt :i3/class :i3/instance)) (->> (map string/lower-case)))
+         :client/app-names (-> client :i3/window_properties
+                               ((juxt :i3/class :i3/instance))
+                               (->> (map string/lower-case)))
          :client/window-title (-> client :i3/window_properties :i3/title string/lower-case)
          :client/focused (-> client :i3/focused)))
 
@@ -63,12 +70,11 @@
     (some-> workspace-title r.i3/workspace-for-name ->wsp attach-clients))
 
   (-swap-workspaces-by-index [_this a b]
-    ;; input is indexes? or wsps?
-    #_(r.i3/swap-workspaces a b))
+    (r.i3/swap-workspaces-by-index a b))
 
-  (-drag-workspace [_this dir])
+  (-drag-workspace [_this _dir])
 
-  (-delete-workspace [_this workspace]
+  (-delete-workspace [_this _workspace]
     ;; switch to this workspace, move it's contents elsewhere (scratchpad?)
     ;; then 'kill' it
     )
@@ -92,8 +98,9 @@
   (-focus-client [_this _opts client]
     (r.i3/focus-client client))
 
-  (-move-client-to-workspace [this _opts c wsp]
-    (r.i3/move-client-to-workspace c wsp)))
+  (-move-client-to-workspace [_this _opts c wsp]
+    (when (and c wsp)
+      (r.i3/move-client-to-workspace c (-> wsp ensure-i3-name)))))
 
 (comment
 
