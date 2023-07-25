@@ -198,8 +198,8 @@ bindsym XF86MonBrightnessDown exec --no-startup-id "light -U 5"
 
 # clean up
 # TODO should move all scratchpad toggles to scratchpads
-bindsym $mod+d [class="(Spotify|firefox|firefoxdeveloperedition)"] move scratchpad
-# bindsym $mod+d exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.rules/clean-up-workspaces
+# bindsym $mod+d [class="(Spotify|firefox|firefoxdeveloperedition)"] move scratchpad
+bindsym $mod+d exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.rules/clean-up-workspaces
 
 for_window [class="(Spotify|firefox)"] move scratchpad
 for_window [title="Firefox Developer Edition$"] move scratchpad

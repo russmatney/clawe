@@ -97,6 +97,8 @@
 ;; i3 Workspace Upsert
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+
+
 (defn next-wsp-number []
   (let [existing-wsp-nums (->> (workspaces-fast) (map :i3/num) (into #{}))]
     (->> (range 10)
@@ -184,21 +186,26 @@
                  (->> clients
                       (map (fn [client] (str " [con_id=" (:i3/id client) "] floating disable")))))))
 
+(defn find-or-create-wsp-name [wsp]
+  (when wsp
+    (if (:i3/name wsp) (:i3/name wsp)
+        (if-let [title (:workspace/title wsp)]
+          (if-let [w (workspace-for-name title)]
+            (:i3/name w)
+            (str (next-wsp-number) ": " title))
+          (println "No :i3/name or :workspace/title on passed wsp" wsp)))))
+
 (defn move-client-to-workspace [client wsp]
   (when (and (:i3/id client) wsp)
-    (let [wsp-name (or (:i3/name wsp)
-                       (and (:workspace/title wsp)
-                            (let [ix (next-wsp-number)]
-                              (str ix ": " (:workspace/title wsp)))))]
-      (when wsp-name
-        (println "moving client to wsp" client wsp)
-        (i3-cmd!
-          (str "[con_id=" (:i3/id client) "] "
-               ;; focus the client first
-               ;; " focus, "
-               ;; move the client to the indicated workspace
-               ;; "move window to workspace " (:i3/name wsp)
-               "move --no-auto-back-and-forth to workspace " wsp-name
-               ;; toggle the current workspace (to trigger a go-back-to-prev wsp)
-               ;; ", workspace " (:i3/name wsp)
-               ))))))
+    (when-let [wsp-name (find-or-create-wsp-name wsp)]
+      (println "moving client to wsp" client wsp)
+      (i3-cmd!
+        (str "[con_id=" (:i3/id client) "] "
+             ;; focus the client first
+             ;; " focus, "
+             ;; move the client to the indicated workspace
+             ;; "move window to workspace " (:i3/name wsp)
+             "move --no-auto-back-and-forth to workspace " wsp-name
+             ;; toggle the current workspace (to trigger a go-back-to-prev wsp)
+             ;; ", workspace " (:i3/name wsp)
+             )))))
