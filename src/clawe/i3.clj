@@ -60,7 +60,7 @@
     (r.i3/focus-workspace (or (:i3/num wsp) (:workspace/index wsp))))
 
   (-fetch-workspace [_this _opts workspace-title]
-    (-> workspace-title r.i3/workspace-for-name ->wsp attach-clients))
+    (some-> workspace-title r.i3/workspace-for-name ->wsp attach-clients))
 
   (-swap-workspaces-by-index [_this a b]
     ;; input is indexes? or wsps?

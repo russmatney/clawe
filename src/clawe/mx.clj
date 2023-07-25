@@ -273,29 +273,43 @@ hi there
     {:msg "Workspace def actions"}
     (wsp-def->actions wsp)))
 
+(defn open-new-wsp-with-emacs [w]
+  (workspace.open/open-new-workspace w)
+
+  ;; future so this doesn't block
+  (future
+    ;; invoke clawe-mx to warm up the mx-cache for this workspace
+    ;; maybe want an option to NOT open rofi in this case
+    (mx {:wsp w}))
+
+  ;; TODO may need to handle a race-case, or pass in new wsp info to avoid it
+  (client.create/create-client "emacs"))
+
+(defn test-fn [key]
+  (if-let [wm (wm/key->workspace key)]
+    (open-new-wsp-with-emacs wm)
+    (println "couldn't find a wsp for def key" key)))
+
+(comment
+  (->> (wm/workspace-defs)
+       (filter (comp #{"clove"} :workspace/title))
+       first)
+  (test-fn "clove")
+  )
+
 (defn workspace-defs []
   (->>
     (clawe.config/workspace-defs-with-titles)
     vals
     (mapcat
       (fn [w]
-        [
+        [(-> w (assoc :rofi/label (str "wsp-open: " (:workspace/title w))
+                      :rofi/description (:workspace/directory w)
+                      :rofi/on-select open-new-wsp-with-emacs))
          (-> w (assoc :rofi/label (str "wsp-actions: " (:workspace/title w))
                       :rofi/description (:workspace/directory w)
                       :rofi/on-select
-                      (fn [w] (wsp-action-rofi w))))
-         (-> w (assoc :rofi/label (str "wsp-open: " (:workspace/title w))
-                      :rofi/description (:workspace/directory w)
-                      :rofi/on-select
-                      (fn [_]
-                        (workspace.open/open-new-workspace w)
-
-                        ;; invoke clawe-mx to warm up the mx-cache for this workspace
-                        ;; maybe want an option to NOT open rofi in this case
-                        (mx {:wsp w})
-
-                        ;; TODO may need to handle a race-case, or pass in new wsp info to avoid it
-                        (client.create/create-client "emacs"))))]))))
+                      (fn [w] (wsp-action-rofi w))))]))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; neil

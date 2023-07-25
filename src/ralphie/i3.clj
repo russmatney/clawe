@@ -104,11 +104,13 @@
          first)))
 
 (defn create-workspace [title]
-  (let [num (next-wsp-number)]
-    (i3-msg! (str "workspace " num ": " title))))
+  (when title
+    (let [num (next-wsp-number)]
+      (i3-msg! (str "workspace " num ": " title)))))
 
 (defn focus-workspace [number]
-  (i3-msg! (str "workspace number " number)))
+  (when number
+    (i3-msg! (str "workspace number " number))))
 
 (defn rename-workspace [name number]
   (i3-msg! (str "rename workspace to " (str number ":" name))))
@@ -117,6 +119,7 @@
   (rename-workspace "clawe" 3)
   (focus-workspace "4:4"))
 
+;; TODO these are indexes, not workspaces passed in
 (defn swap-workspaces [a b]
   (let [name_a (:workspace/title a)
         num_a  (:i3/num a)

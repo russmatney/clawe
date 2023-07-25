@@ -40,8 +40,7 @@
 (defn open-new-workspace
   "Creates a new tag and focuses it, and run the workspace's on-create hook."
   [wsp]
-  ;; creates (ensures) workspace before focusing
-  (wm/focus-workspace wsp)
+  (wm/open-new-workspace wsp)
 
   ;; TODO open clients for workspace
   ;; could be clients with matching workspace titles, or some other matching rule
@@ -51,6 +50,15 @@
   (clawe.rules/sort-workspace-indexes)
   (clawe.doctor/update-topbar)
   wsp)
+
+(comment
+  (->> (wm/workspace-defs)
+       (filter (comp #{"dino"} :workspace/title))
+       first
+       open-new-workspace
+       )
+  )
+
 
 (defn create-workspace-def [repo-wsp]
   (clawe.config/update-workspace-def

@@ -1,7 +1,6 @@
 (ns clawe.wm
   (:require
    [systemic.core :as sys :refer [defsys]]
-   [ralphie.zsh :as zsh]
    [babashka.fs :as fs]
 
    [clawe.awesome :as clawe.awesome]
@@ -58,9 +57,7 @@
     (assoc wsp :workspace/directory default-directory)
 
     (re-seq #"^~" directory)
-    (assoc wsp :workspace/directory (zsh/expand directory))
-
-    ;; TODO consider checking/converting mismatched /Users/<user> vs /home/<user> paths
+    (update wsp :workspace/directory #(string/replace % "~" (str (fs/home))))
 
     :else wsp))
 
@@ -123,6 +120,11 @@
    (->> (clawe.config/workspace-defs)
         (map (fn [[title def]] (assoc def :workspace/title title)))
         (map ensure-directory))))
+
+(defn key->workspace [key]
+  (some->> (workspace-defs)
+           (filter (comp #{key} :workspace/title))
+           first))
 
 (defn current-workspaces
   ([] (current-workspaces nil))
@@ -246,10 +248,12 @@
 ;; crud
 
 (defn create-workspace
-  ([wsp-title] (create-workspace nil wsp-title))
-  ([opts wsp-title]
+  ([workspace-or-title] (create-workspace nil workspace-or-title))
+  ([opts workspace-or-title]
    (sys/start! `*wm*)
-   (wm.protocol/-create-workspace *wm* opts wsp-title)))
+   (let [title (if (string? workspace-or-title)
+                 workspace-or-title (:workspace/title workspace-or-title))]
+     (wm.protocol/-create-workspace *wm* opts title))))
 
 (defn delete-workspace
   [workspace]
@@ -279,6 +283,12 @@
   ([opts workspace]
    (sys/start! `*wm*)
    (wm.protocol/-focus-workspace *wm* opts workspace)))
+
+(defn open-new-workspace [wsp]
+  ;; not all wms need the wsp to exist... some 'create' via 'focus'
+  (when-not (fetch-workspace wsp)
+    (create-workspace wsp))
+  (focus-workspace wsp))
 
 (defn bury-client
   ([client] (bury-client nil client))
