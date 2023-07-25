@@ -382,16 +382,14 @@
    ;; TODO document :hide/ types for clients
    (case (:hide/type client :hide/fallback)
      :hide/fallback
-     (wm.protocol/-move-client-to-workspace
-       *wm* nil client
-       (client->workspace-title client))
+     (let [wsp-title (or (client->workspace-title client) "fallback")]
+       (move-client-to-workspace nil client wsp-title))
 
      :hide/scratchpad
      (do
        (println "to impl, :hide/scratchpad")
-       (wm.protocol/-move-client-to-workspace
-         *wm* nil client
-         (client->workspace-title client)))
+       (let [wsp-title (or (client->workspace-title client) "scratchpad")]
+         (move-client-to-workspace nil client wsp-title)))
 
      :hide/os-hide
      (println "to impl!")
