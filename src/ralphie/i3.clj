@@ -4,6 +4,11 @@
    [cheshire.core :as json]
    [babashka.process :as process]))
 
+(defn wsp->workspace-title [wsp]
+  (if (:i3/name wsp)
+    (string/replace (:i3/name wsp) #"^.*: ?" "")
+    (:workspace/title wsp)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; i3-msg
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -79,6 +84,25 @@
             (filter #(string/includes? (:i3/name %) wsp-name))
             first)))
 
+(defn next-wsp-number []
+  (let [existing-wsp-nums (->> (workspaces-fast) (map :i3/num) (into #{}))]
+    (->> (range 10)
+         (remove existing-wsp-nums)
+         first)))
+
+(defn find-or-create-wsp-name [wsp]
+  (when wsp
+    (if (:i3/name wsp) (:i3/name wsp)
+        (if-let [title (:workspace/title wsp)]
+          (if-let [w (workspace-for-name title)]
+            (:i3/name w)
+            (str (next-wsp-number) ": " title))
+          (println "No :i3/name or :workspace/title on passed wsp" wsp)))))
+
+(defn ix->wsp
+  ([ix] (ix->wsp (workspaces-fast) ix))
+  ([wsps ix] (some->> wsps (filter (comp #{ix} :i3/num)) first)))
+
 (defn current-workspace
   ([] (current-workspace nil))
   ([opts]
@@ -97,14 +121,6 @@
 ;; i3 Workspace Upsert
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
-
-(defn next-wsp-number []
-  (let [existing-wsp-nums (->> (workspaces-fast) (map :i3/num) (into #{}))]
-    (->> (range 10)
-         (remove existing-wsp-nums)
-         first)))
-
 (defn create-workspace [title]
   (when title
     (let [num (next-wsp-number)]
@@ -121,7 +137,18 @@
   (rename-workspace "clawe" 3)
   (focus-workspace "4:4"))
 
-(defn swap-workspaces-by-index [ixa ixb])
+
+(defn swap-workspaces-by-index [ixa ixb]
+  (let [wsps (workspaces-fast)
+        a    (ix->wsp wsps ixa) name_a (wsp->workspace-title a)
+        b    (ix->wsp wsps ixb) name_b (wsp->workspace-title b)]
+    (i3-cmd! (str "rename workspace \\\"" (:i3/name a)  "\\\" to " ixb ":" name_a " ; "
+                  (when b
+                    (str "rename workspace \\\"" (:i3/name b) "\\\" to " ixa ":" name_b))))))
+
+(comment
+  (swap-workspaces-by-index 4 5))
+
 
 (defn swap-workspaces [a b]
   (let [name_a (:workspace/title a)
@@ -186,19 +213,9 @@
                  (->> clients
                       (map (fn [client] (str " [con_id=" (:i3/id client) "] floating disable")))))))
 
-(defn find-or-create-wsp-name [wsp]
-  (when wsp
-    (if (:i3/name wsp) (:i3/name wsp)
-        (if-let [title (:workspace/title wsp)]
-          (if-let [w (workspace-for-name title)]
-            (:i3/name w)
-            (str (next-wsp-number) ": " title))
-          (println "No :i3/name or :workspace/title on passed wsp" wsp)))))
-
 (defn move-client-to-workspace [client wsp]
   (when (and (:i3/id client) wsp)
     (when-let [wsp-name (find-or-create-wsp-name wsp)]
-      (println "moving client to wsp" client wsp)
       (i3-cmd!
         (str "[con_id=" (:i3/id client) "] "
              ;; focus the client first

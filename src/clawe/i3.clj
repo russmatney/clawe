@@ -13,7 +13,9 @@
     (not (:i3/name wsp)) (assoc :i3/name (wsp->i3-wsp-name wsp))))
 
 (defn i3-wsp->workspace-title [wsp]
-  (string/replace (:i3/name wsp) #"^.*: ?" ""))
+  (-> wsp :i3/name
+      (string/replace  #"^.*: ?" "")
+      (string/trim)))
 
 (defn ->wsp [wsp]
   (let [title (i3-wsp->workspace-title wsp)]
@@ -41,7 +43,11 @@
     (r.i3/workspaces)
     (map ->wsp)
     (map attach-clients)
-    ))
+    )
+
+  (clawe.wm.protocol/-current-workspaces
+    (I3.) nil)
+  )
 
 (defrecord I3 []
   ClaweWM
@@ -53,6 +59,8 @@
       [(r.i3/current-workspace {:include-clients true})]
       (map ->wsp)
       (map attach-clients)))
+
+
 
   (-active-workspaces [_this {:keys [_prefetched-clients] :as _opts}]
     (->>
