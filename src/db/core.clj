@@ -1,15 +1,18 @@
 (ns db.core
   "Exposes functions for working with a datascript database."
   (:require
-   [babashka.fs :as fs]
    [clojure.edn :as edn]
+
+   [babashka.fs :as fs]
    [datascript.core :as d]
+   [taoensso.timbre :as log]
+   [systemic.core :refer [defsys] :as sys]
+   [time-literals.read-write :as tl]
+
    [dates.tick :as dates.tick]
    [db.schema :refer [schema]]
    [db.config :as db.config]
-   [db.helpers :as helpers]
-   [systemic.core :refer [defsys] :as sys]
-   [taoensso.timbre :as log]))
+   [db.helpers :as helpers]))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -22,7 +25,7 @@
       (let [datoms (some->
                      (some->> db-file slurp
                               ((fn [s] (if (= s "") nil s)))
-                              (edn/read-string {:readers d/data-readers}))
+                              (edn/read-string {:readers (merge d/data-readers tl/tags)}))
                      (d/datoms :eavt))]
         (if datoms
           (-> datoms (d/conn-from-datoms schema) d/db)
