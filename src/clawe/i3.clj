@@ -80,7 +80,11 @@
   (-swap-workspaces-by-index [_this a b]
     (r.i3/swap-workspaces-by-index a b))
 
-  (-drag-workspace [_this _dir])
+  (-drag-workspace [_this dir]
+    (let [i   (case dir :dir/up 1 :dir/down -1)
+          wsp (r.i3/current-workspace)]
+      ;; TODO swap around the corner to the highest wsp
+      (r.i3/swap-workspaces-by-index (:i3/num wsp) (+ (:i3/num wsp) i))))
 
   (-delete-workspace [_this _workspace]
     ;; switch to this workspace, move it's contents elsewhere (scratchpad?)
