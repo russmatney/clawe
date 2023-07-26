@@ -2,9 +2,9 @@
   (:require
    [systemic.core :refer [defsys] :as sys]
    [manifold.stream :as s]
-   ;; [ralphie.battery :as r.battery]
-   ;; [ralphie.pulseaudio :as r.pulseaudio]
-   ;; [ralphie.spotify :as r.spotify]
+   [ralphie.battery :as r.battery]
+   [ralphie.pulseaudio :as r.pulseaudio]
+   [ralphie.spotify :as r.spotify]
    [babashka.process :as process]
    [clojure.string :as string]
    [db.core :as db]
@@ -82,13 +82,13 @@
 
 (defn build-topbar-metadata []
   (->
-    {:microphone/muted false  #_ (r.pulseaudio/input-muted?)
-     :spotify/volume   "TODO" #_ (r.spotify/spotify-volume-label)
-     :audio/volume     "TODO" #_ (r.pulseaudio/default-sink-volume-label)
+    {:microphone/muted (r.pulseaudio/input-muted?)
+     :spotify/volume   (r.spotify/spotify-volume-label)
+     :audio/volume     (r.pulseaudio/default-sink-volume-label)
      :hostname         (-> (process/$ hostname) process/check :out slurp string/trim
                            (string/replace ".local" ""))}
-    #_(merge (r.spotify/spotify-current-song)
-             (r.battery/info))
+    (merge #_(r.spotify/spotify-current-song)
+           (r.battery/info))
     (dissoc :spotify/album-url :spotify/album)
     (assoc :topbar/background-mode (background-mode))))
 
@@ -96,7 +96,7 @@
   (build-topbar-metadata))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; systemic
+;; push data to frontend
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defsys ^:dynamic *topbar-metadata-stream*
@@ -116,3 +116,15 @@
     first)
 
   (push-topbar-metadata))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; subscribe to i3
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; (defsys ^:dynamic *i3-subscribe-stream*
+;;   :start (s/stream)
+;;   :stop (s/close! *i3-subscribe-stream*))
+
+;; (comment
+;;   (sys/start! `*i3-subscribe-stream*))
