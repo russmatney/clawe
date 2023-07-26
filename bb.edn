@@ -61,7 +61,8 @@
              title (str "tauri-doctor-" name)
              label name
              cmd   (str clove-exec " create-window"
-                        " --title " title " --label " label " --url " url)]
+                        " --title " title " --label " label " --url " url
+                        " --transparent")]
          (pp (str "Running clove app: " cmd))
          (shell {:dir (str (home-dir) "/russmatney/clawe")} cmd)))))
 
