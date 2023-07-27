@@ -155,7 +155,8 @@
   "Runs over all open clients, moving them to their expected workspace."
   ([] (return-clients-to-expected-workspaces nil))
   ([opts]
-   (let [clients    (wm/active-clients)
+   (let [clients    (->> (wm/active-clients)
+                         (remove (comp #{"topbar"} :client/key)))
          workspaces (wm/active-workspaces {:prefetched-clients clients})
 
          ;; TODO consider branching for opt-in :scratchpads here (vs creating on-the-fly workspaces)
@@ -163,16 +164,16 @@
          (->> clients
               (map (fn [client]
                      (if-let [wsp (some->> workspaces
-                                           (filter #(workspace/find-matching-client % client))
+                                           (filter (comp seq #(workspace/find-matching-clients % client)))
                                            first)]
                        (assoc client :client/workspace wsp)
                        client)))
               ;; assuming all clients have workspaces...and just one....
               (remove (fn [client]
-                        (= (wm/client->workspace-title client)
+                        (= (client/client->workspace-title client)
                            (-> client :client/workspace :workspace/title))))
               (map (fn [client]
-                     [:move-client-to-wsp client (wm/client->workspace-title client)])))]
+                     [:move-client-to-wsp client (client/client->workspace-title client)])))]
      (if (:dry-run opts)
        corrections
        (do

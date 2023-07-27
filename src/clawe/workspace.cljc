@@ -61,10 +61,15 @@
     (= (:workspace/title a) (:workspace/title b))
     (= (:workspace/index a) (:workspace/index b))))
 
+(defn find-matching-clients
+  "Expects the passed workspace to have :workspace/clients included"
+  [wsp client]
+  (->> wsp :workspace/clients (filter (partial client/match? client))))
+
 (defn find-matching-client
   "Expects the passed workspace to have :workspace/clients included"
   [wsp client]
-  (let [matches (->> wsp :workspace/clients (filter (partial client/match? client)))]
+  (let [matches (find-matching-clients wsp client)]
     (if (> (count matches) 1)
       (do
         (println "WARN: multiple matching clients found in workspace" (strip wsp) (strip client))

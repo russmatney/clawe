@@ -74,4 +74,5 @@ yabai -m signal --add event=window_created label=focus-after-create app="^Emacs$
 # yabai -m signal --add event=space_changed label=focus-after-change app="^Emacs$" action='yabai -m window --focus $YABAI_WINDOW_ID'
 
 bb --config ~/russmatney/clawe/bb.edn -x clawe.config/set-wm :wm yabai
+# bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/reload
 echo "yabai configuration loaded."
