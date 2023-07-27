@@ -166,3 +166,17 @@
                         (string/includes? b-title a-window-title)
                         (string/includes? a-window-title b-title))
                       (= b-title a-window-title)))))))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; client->workspace-title
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn client->workspace-title [client]
+  (or (:client/workspace-title client)
+      (let [wt (:client/window-title client)]
+        (cond
+          (re-seq #" " wt)
+          ;; term before first space
+          (->> (string/split wt #" ") first)
+
+          :else wt))))

@@ -28,9 +28,12 @@
   [clawe.config/*config*]
   :start
   (let [wm (clawe.config/get-wm)]
-    (cond (= wm :wm/i3) (I3.)
-          :else
-          (if (clawe.config/is-mac?) (Yabai.) (Awesome.)))))
+    (cond
+      (= wm :wm/i3)      (I3.)
+      (= wm :wm/yabai)   (Yabai.)
+      (= wm :wm/awesome) (Awesome.)
+      :else
+      (if (clawe.config/is-mac?) (Yabai.) (Awesome.)))))
 
 (defn reload-wm []
   (when (sys/running? `*wm*)
@@ -354,25 +357,13 @@
    (current-workspace
      {:prefetched-clients (active-clients)})))
 
-(defn client->workspace-title [client]
-  (or (:client/workspace-title client)
-      (let [wt (:client/window-title client)]
-        (cond
-          (re-seq #" " wt)
-          ;; term before first space
-          (->> (string/split wt #" ") first)
-
-          :else wt))))
-
 (comment
   (clawe.config/reload-config)
   (->>
     (active-clients)
     (filter (comp #{"Emacs"} :client/app-name))
     (map client/strip)
-    (map #(assoc % :wsp-title (client->workspace-title %)))
-    )
-  )
+    (map #(assoc % :wsp-title (client/client->workspace-title %)))))
 
 ;; maybe something more like toggle->away - something more specific to the toggle UX
 (defn hide-client
@@ -382,7 +373,7 @@
    ;; TODO document :hide/ types for clients
    (case (:hide/type client :hide/fallback)
      :hide/fallback
-     (let [wsp-title (or (client->workspace-title client) "fallback")]
+     (let [wsp-title (or (client/client->workspace-title client) "fallback")]
        (move-client-to-workspace nil client wsp-title))
 
      :hide/scratchpad

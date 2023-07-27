@@ -1,6 +1,7 @@
 (ns clawe.yabai
   (:require
    [clawe.wm.protocol :refer [ClaweWM]]
+   [clawe.client :as client]
    [ralphie.yabai :as yabai]
    [clojure.string :as string]))
 
@@ -113,6 +114,11 @@
 
   (-bury-clients [_this _opts _cs]
     (println "[WARN] bury-clients not impled"))
+
+  (-hide-scratchpad [this _opts c]
+    (let [wsp-title (client/client->workspace-title c)]
+      (clawe.wm.protocol/-create-workspace this nil wsp-title)
+      (yabai/move-window-to-space c wsp-title)))
 
   (-move-client-to-workspace [this _opts c wsp]
     (let [workspace-title (if (string? wsp) wsp (:workspace/title wsp))
