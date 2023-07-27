@@ -271,11 +271,16 @@ shift + cmd - return : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/tog
 cmd - return : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key terminal
 
 shift + cmd - u : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key journal
-cmd - y : bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key focus
+cmd - y : bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key dashboard
 cmd - u : bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key journal
 cmd - t : bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key web
 cmd - b : bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key devweb
+
+# cmd - s : wid=$(yabai -m query --windows | jq 'map(select(."title" | test("^Spotify")))[-1].id'); \
+#   yabai -m window $wid --space mouse && yabai -m window --focus $wid \
+#   || bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key spotify
 cmd - s : bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key spotify
+
 cmd - e : bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key aseprite
 cmd - a : bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key slack
 shift + cmd - d : bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key discord
