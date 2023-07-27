@@ -470,7 +470,7 @@
 (defn add-tags-list
   [it tags]
   (let [selections (hooks.use-selection/last-n-selections)
-        sels       (->> selections (remove #{"" nil}))
+        sels       (->> selections (map #(-> % string/trim (string/replace " " ""))) (remove #{"" nil}))
         tags       (-> tags
                        (set/difference
                          (-> it note/->all-tags (into #{})))
