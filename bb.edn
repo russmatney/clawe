@@ -62,7 +62,8 @@
              label name
              cmd   (str clove-exec " create-window"
                         " --title " title " --label " label " --url " url
-                        " --transparent")]
+                        " --transparent"
+                        (when (:decorations opts) " --decorations"))]
          (pp (str "Running clove app: " cmd))
          (shell {:dir (str (home-dir) "/russmatney/clawe")} cmd)))))
 
@@ -140,13 +141,9 @@
   topbar    {:doc  "Run the doctor topbar via tauri. Consumed from systemd service."
              :task (run-doctor-tauri-app "topbar")}
   dashboard {:doc  "Run the doctor focus window via tauri."
-             :task (run-doctor-tauri-app "dashboard")}
-  popup     {:doc  "Run the doctor popup window via tauri."
-             :task (run-doctor-tauri-app "popup")}
-  todo      {:doc  "Run the doctor todo window via tauri."
-             :task (run-doctor-tauri-app "todo")}
+             :task (run-doctor-tauri-app {:decorations true} "dashboard")}
   focus     {:doc  "Run the doctor focus window via tauri."
-             :task (run-doctor-tauri-app "focus")}
+             :task (run-doctor-tauri-app {:decorations true} "focus")}
 
   restart-doctor (do
                    (shell "systemctl --user daemon-reload")
