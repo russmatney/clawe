@@ -80,15 +80,18 @@
 ;; build metadata
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn hostname []
+  (-> (process/$ hostname) process/check :out slurp string/trim
+      (string/replace ".local" "")))
+
 (defn build-topbar-metadata []
   (->
-    {:microphone/muted (r.pulseaudio/input-muted?)
-     :spotify/volume   (r.spotify/spotify-volume-label)
-     :audio/volume     (r.pulseaudio/default-sink-volume-label)
-     :hostname         (-> (process/$ hostname) process/check :out slurp string/trim
-                           (string/replace ".local" ""))}
+    {:microphone/muted (try (r.pulseaudio/input-muted?) (catch Exception _e #_(println "topbar mute status error")))
+     :spotify/volume   (try (r.spotify/spotify-volume-label) (catch Exception _e #_(println "topbar spotify volume error")))
+     :audio/volume     (try (r.pulseaudio/default-sink-volume-label) (catch Exception _e #_(println "topbar volume error")))
+     :hostname         (hostname)}
     (merge #_(r.spotify/spotify-current-song)
-           (r.battery/info))
+           (try (r.battery/info) (catch Exception _e #_(println "topbar battery info error"))))
     (dissoc :spotify/album-url :spotify/album)
     (assoc :topbar/background-mode (background-mode))))
 

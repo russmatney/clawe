@@ -5,7 +5,7 @@
    [ralphie.yabai :as yabai]
    [clojure.string :as string]))
 
-;; TODO refactor in malli transforms?
+;; TODO refactor into malli transforms?
 (defn window->clawe-client
   [{:yabai.window/keys [has-focus app title window-id] :as window}]
   (-> window
