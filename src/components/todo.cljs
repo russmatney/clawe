@@ -536,7 +536,8 @@
          (->>
            (concat
              (:sibling-tags opts)
-             (item->suggested-tags todo))
+             (item->suggested-tags todo)
+             #{"bug" "feat" "chore" "spike"})
            (into #{}))]
      ;; NOTE attaching non transit properties breaks defhandlers
      (update todo :actions/inferred concat

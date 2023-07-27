@@ -96,10 +96,13 @@
 (defhandler add-tag [item tag]
   (log/debug "adding tag to item" tag (:org/name-string item))
   (when (:db/id item)
-    (db/transact {:db/id (:db/id item) :org/tags
-                  (into (:org/tags item) tag)}))
+    (db/transact {:db/id (:db/id item) :org/tags (into (or (:org/tags item) #{}) #{tag})}))
   (org-crud.api/update! item {:org/tags tag})
   :ok)
+
+(comment
+  (into #{} #{"sometag"})
+  (into #{"existing"} #{"sometag"}))
 
 (defhandler remove-tag [item tag]
   (db/retract! [:db/retract (:db/id item) :org/tags tag])
