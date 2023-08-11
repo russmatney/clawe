@@ -90,7 +90,6 @@
 (comment
   (->> (resource-notes-from-blog-db) first url-block))
 
-
 ;; could group-by :org/urls to show multiple contexts with same link
 ;; could group domain: github, youtube, reddit, etc
 ;; probably fairly well grouped by topic already
@@ -111,5 +110,20 @@
      :content (page)
      :title   "Resources"}))
 
+
 (comment
-  (publish))
+  (publish)
+
+  :hi
+  (->>
+    (resource-notes-from-blog-db)
+    (mapcat org-crud/nested-item->flattened-items)
+    (filter (fn [note]
+              (when (seq (:org/urls note))
+                (println (:org/urls note)))
+              (->> note
+                   :org/urls
+                   (filter #(string/includes? % "handcrafted"))
+                   first)))
+    seq)
+  )

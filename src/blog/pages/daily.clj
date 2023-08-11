@@ -12,7 +12,7 @@
            (remove :org/status)
            (filter item/item-has-any-tags)))
 
-(defn note->todos [note]
+(defn note->all-todos [note]
   (some->> note :org/items
            (filter item/item-has-any-tags)
            (mapcat item/item->all-todos)))
@@ -52,10 +52,13 @@
 
    (item/backlink-hiccup note)
 
-   (when-let [todos (seq (note->todos note))]
+   (when-let [todos (seq (note->all-todos note))]
      (->> todos
           ;; TODO consider a new todo renderer that exposes parent-names
-          (map item/item->hiccup-content)
+
+          (map #(item/item->hiccup-content
+                  ;; skip children b/c we all ready fetch them
+                  % {:skip-children true}))
           (into [:div
                  [:hr]
                  [:h3 "Todos"]])))])
@@ -68,9 +71,7 @@
              (filter (comp #(re-seq #"daily" %) :org/source-file))
              ;; (filter (comp #(re-seq #"Things I Love" %) :org/name-string))
              ;; (filter (comp #(re-seq #"^brainstorm" %) :org/name-string))
-             #_(filter (comp #(re-seq #"2022-10-08" %) :org/name-string))
-             ;; (filter (comp #(re-seq #"2022-12-04" %) :org/name-string))
-             (filter (comp #(re-seq #"2023-07-13" %) :org/name-string))
+             (filter (comp #(re-seq #"2022-11-21" %) :org/name-string))
              first)]
     #_(str (config/blog-content-public) (db/note->uri note))
     #_(page note)

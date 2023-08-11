@@ -162,6 +162,7 @@
 
 (defn path->uri [path]
   (-> path fs/file-name fs/strip-ext
+      (string/replace "[*`()]" "")
       (#(str (cond
                (string/includes? path "/daily/") "/daily"
                :else                             "/note")

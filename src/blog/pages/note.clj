@@ -6,7 +6,7 @@
    [org-crud.core :as org-crud]
    ))
 
-(defn note->todos [note]
+(defn note->all-todos [note]
   (some->> note blog.item/item->all-todos))
 
 (defn toc [note]
@@ -43,9 +43,9 @@
 
    (item/backlink-hiccup note)
 
-   (when-let [todos (seq (note->todos note))]
+   (when-let [todos (seq (note->all-todos note))]
      (->> todos
-          (map item/item->hiccup-content)
+          (map #(item/item->hiccup-content % {:skip-children true}))
           (into [:div
                  [:hr]
                  [:h3 "Todos"]])))])
@@ -60,13 +60,19 @@
                   ;; (filter (comp #(re-seq #"^future" %) :org/name-string))
                   ;; (filter (comp #(re-seq #"^clojure$" %) :org/name-string))
                   ;; (filter (comp #(re-seq #"^clawe$" %) :org/name-string))
-                  (filter (comp #(re-seq #"^Juice in Games" %) :org/name-string))
-                  #_(filter (comp #(re-seq #"^Juice in Games" %) :org/name-string))
+                  ;; (filter (comp #(re-seq #"^Juice in Games" %) :org/name-string))
+                  ;; (filter (comp #(re-seq #"^Beat Em Up City \(dino" %) :org/name-string))
+                  ;; (filter (comp #(re-seq #"^Fennel index" %) :org/name-string))
+                  (filter (comp #(re-seq #"^prototype jam" %) :org/name-string))
                   first
                   )]
     #_(str (config/blog-content-public) (db/note->uri note))
     #_(page note)
+    #_(db/note->uri note)
     (render/write-page
       {:note    note
        :content (page note)
        :title   (:org/name note)})))
+
+
+

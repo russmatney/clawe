@@ -10,20 +10,26 @@
    [blog.db :as blog.db]))
 
 (defn format-html-file [path]
-  (-> ^{:out :string}
-      (process/$ tidy -mqi
-                 --indent-spaces 1
-                 --tidy-mark no
-                 --enclose-block-text yes
-                 --enclose-text yes
-                 --drop-empty-elements no
-                 ~path)
-      process/check :out))
+  (try
+    (-> ^{:out :string}
+        (process/$ tidy -mqi
+                   --indent-spaces 1
+                   --tidy-mark no
+                   --enclose-block-text yes
+                   --enclose-text yes
+                   --drop-empty-elements no
+                   ~path)
+        process/check :out)
+    (catch Exception e
+      (log/warn "Error formatting file: " path ", throwing exception!")
+      (throw e))))
 
 ;; --new-inline-tags fn
 (comment
   (format-html-file "public/test.html")
-  (format-html-file "public/last-modified.html"))
+  (format-html-file "public/last-modified.html")
+  (format-html-file "public/resources.html")
+  )
 
 
 (def main-title "Danger Russ Notes")
@@ -196,7 +202,7 @@ gtag('config', '" ga-id "');"))])]
           content]
          (footer)]]])))
 
-(defn write-page [{:keys [note path title content]}]
+(defn write-page [{:keys [note path title content skip-format]}]
   (let [public-path (blog.config/blog-content-public)
         path        (cond
                       note  (str public-path (blog.db/note->uri note))
@@ -208,7 +214,8 @@ gtag('config', '" ga-id "');"))])]
     (spit path (->html-with-escaping
                  (if title (str title " - " main-title) main-title)
                  content))
-    (format-html-file path)))
+    (when-not skip-format
+      (format-html-file path))))
 
 (defn write-styles []
   (log/info "[PUBLISH]: exporting tailwind styles")

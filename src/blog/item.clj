@@ -257,7 +257,7 @@ and [[https://github.com/russmatney/org-crud][this other repo]]")
         (apply str (:org/parent-names item))
         (:org/name-string item))
       string/lower-case
-      (string/replace #"[ |\(\)]" "")))
+      (string/replace #"[:\/\\!.,*`_\-?<>~ |\(\)\\\"\"\'\[\]\{\}]" "")))
 
 (defn item->hiccup-headline
   ([item] (item->hiccup-headline item nil))
@@ -299,11 +299,12 @@ and [[https://github.com/russmatney/org-crud][this other repo]]")
                    (when (and (item->anchor-link item)
                               (not (#{:level/root} (:org/level item)))
                               (not (:no-anchor opts)))
-                     [[:a
-                       (let [href (item->anchor-link item)]
-                         {:id    href :href (str "#" href)
-                          :class ["ml-auto"]})
-                       "a"]]))))))))))
+                     [(when-let [href (item->anchor-link item)]
+                        [:span.pl-6.not-prose
+                         [:a
+                          {:id    href :href (str "#" href)
+                           :class ["ml-auto" "text-sm" "font-mono"]}
+                          ":anchor:"]])]))))))))))
 
 (defn merge-non-list-lines-up
   "Moves non-li text into the previous list-item."
@@ -629,7 +630,7 @@ and [[https://github.com/russmatney/org-crud][this other repo]]")
        [:span
         {:class []}
         [:a {:href  (str uri "#" (item->anchor-link item))
-             :class (concat ["no-prose"]
+             :class (concat ["no-prose" "font-mono"]
                             (case (:org/level item)
                               :level/root []
                               1           []
