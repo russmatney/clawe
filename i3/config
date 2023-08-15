@@ -82,7 +82,7 @@ bindsym $mod+Shift+r restart
 bindsym $mod+q kill
 
 # open rofi/launcher to start programs
-bindsym $mod+space exec --no-startup-id rofi -show run
+bindsym $mod+space exec --no-startup-id "rofi -show combi -combi-modi window,drun,run"
 
 # move focus
 bindsym $mod+h focus left
