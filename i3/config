@@ -179,6 +179,7 @@ for_window [title="Firefox Developer Edition$"] move scratchpad
 for_window [class="Clove" title="tauri-doctor-focus"] move scratchpad
 for_window [class="Emacs" title="journal"] move scratchpad
 for_window [class="^1Password$"] move scratchpad
+# for_window [class="Aseprite"] move scratchpad
 
 # cycle all scratchpads
 bindsym $mod+a scratchpad show
@@ -213,6 +214,14 @@ bindsym $mod+b exec --no-startup-id i3-msg '[class="firefoxdeveloperedition"] sc
 # toggle 1password
 bindsym $mod+period exec --no-startup-id i3-msg '[class="1Password"] scratchpad show' || \
   bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key onepass
+
+# toggle aseprite
+bindsym $mod+Shift+p exec --no-startup-id i3-msg '[class="^Aseprite"] scratchpad show' || \
+  bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key aseprite
+
+# toggle Godot
+bindsym $mod+Shift+g exec --no-startup-id i3-msg '[instance="Godot_Engine"] scratchpad show' || \
+  bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key godot
 
 ###################################################################
 ## workspaces
