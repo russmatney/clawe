@@ -87,6 +87,7 @@
 (defn next-wsp-number []
   (let [existing-wsp-nums (->> (workspaces-fast) (map :i3/num) (into #{}))]
     (->> (range 10)
+         (drop 1)
          (remove existing-wsp-nums)
          first)))
 
