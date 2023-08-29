@@ -4,6 +4,7 @@
    [aero.core :as aero]
    [clojure.java.io :as io]
    [ralphie.zsh :as zsh]
+   [ralphie.emacs :as emacs]
    [babashka.fs :as fs]
    [systemic.core :as sys :refer [defsys]]
    [zprint.core :as zp]
@@ -70,7 +71,10 @@
         writable-config (apply dissoc updated-config do-not-write-keys)]
     (spit (config-res) (-> writable-config
                            (zp/zprint-str 100)
-                           (string/replace "," "")))))
+                           (string/replace "," "")))
+    ;; emacsclient -e '(progn (find-file "~/.config/clawe/clawe.edn") (aggressive-indent-indent-region-and-on (point-min) (point-max)) (save-buffer))'
+    ;; TODO may need to 'force' the save? or wait to avoid a race-case?
+    (ralphie.emacs/fire "(progn (find-file \"~/.config/clawe/clawe.edn\") (aggressive-indent-indent-region-and-on (point-min) (point-max)) (save-buffer))")))
 
 (comment
   (write-config nil))
