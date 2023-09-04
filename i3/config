@@ -154,6 +154,7 @@ bindsym Ctrl+Shift+k resize grow height 30 px or 5 ppt
 # Media keybinds
 ################################################################################
 
+bindsym $mod+XF86AudioPlay exec --no-startup-id "spotifycli --playpause"
 bindsym XF86AudioPlay exec --no-startup-id "playerctl play-pause"
 bindsym XF86AudioNext exec --no-startup-id "playerctl next"
 bindsym XF86AudioPrev exec --no-startup-id "playerctl previous"
