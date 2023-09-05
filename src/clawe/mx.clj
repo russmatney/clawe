@@ -24,6 +24,7 @@
    [clawe.toggle :as toggle]
    [clawe.wm :as wm]
    [clawe.workspace.open :as workspace.open]
+   [clawe.workspace :as workspace]
 
    [timer :as timer]))
 
@@ -479,7 +480,7 @@ hi there
    (timer/print-since "clawe.mx/mx\tstart")
    (let [wsp (or wsp (wm/current-workspace))]
      (timer/print-since "clawe.mx/mx\tfetched current workspace (or it's lazy?)")
-     (->> (mx-commands-memoized {:wsp wsp})
+     (->> (mx-commands-memoized {:wsp (workspace/strip wsp)})
           (#(do (timer/print-since "clawe.mx/mx\tcommands") %))
           (rofi/rofi {:require-match? true
                       :msg            "Clawe commands"
