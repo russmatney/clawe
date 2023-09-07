@@ -74,7 +74,9 @@
                            (string/replace "," "")))
     ;; emacsclient -e '(progn (find-file "~/.config/clawe/clawe.edn") (aggressive-indent-indent-region-and-on (point-min) (point-max)) (save-buffer))'
     ;; TODO may need to 'force' the save? or wait to avoid a race-case?
-    (ralphie.emacs/fire "(progn (find-file \"~/.config/clawe/clawe.edn\") (aggressive-indent-indent-region-and-on (point-min) (point-max)) (save-buffer))")))
+    ;; TODO prevent the file from opening, and the save from prompting for confirmation, etc
+    ;;(ralphie.emacs/fire "(progn (find-file \"~/.config/clawe/clawe.edn\") (aggressive-indent-indent-region-and-on (point-min) (point-max)) (save-buffer))")
+    ))
 
 (comment
   (write-config nil))
@@ -120,14 +122,17 @@
 (defn set-wm [{:keys [wm]}]
   {:org.babashka/cli {}}
   (sys/start! `*config*)
-  (let [val (cond
-              (#{"i3" :i3 :wm/i3} wm)                :wm/i3
-              (#{"awesome" :awesome :wm/awesome} wm) :wm/awesome
-              (#{"yabai" :yabai :wm/yabai} wm)       :wm/yabai)]
+  (let [val        (cond
+                     (#{"i3" :i3 :wm/i3} wm)                :wm/i3
+                     (#{"awesome" :awesome :wm/awesome} wm) :wm/awesome
+                     (#{"yabai" :yabai :wm/yabai} wm)       :wm/yabai)
+        current-wm (get-wm)]
     (when-not val
       (log/warn "Unhandled set-wm val" wm))
 
-    (-> @*config* (assoc :wm val) write-config))
+    (when-not (= val current-wm)
+      (log/warn "New window-manager, writing config")
+      (-> @*config* (assoc :wm val) write-config)))
   (reload-config)
   (get-wm))
 

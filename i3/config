@@ -106,6 +106,7 @@ bindsym $mod+Shift+s exec --no-startup-id i3-scrot
 # clawe-mx
 bindsym $mod+x exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-mx
 bindsym $mod+w exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-mx-suggestions
+bindsym $mod+o exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-mx-open
 
 # clawe reload
 # bindsym $mod-r exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.restart/reload
@@ -180,10 +181,12 @@ for_window [title="Firefox Developer Edition$"] move scratchpad
 for_window [class="Clove" title="tauri-doctor-focus"] move scratchpad
 for_window [class="Emacs" title="journal"] move scratchpad
 for_window [class="^1Password$"] move scratchpad
+for_window [class="^Slack"] move scratchpad
 # for_window [class="Aseprite"] move scratchpad
 
 # cycle all scratchpads
-bindsym $mod+a scratchpad show
+# tick ` == grave
+bindsym $mod+grave scratchpad show
 bindsym $mod+Shift+y move scratchpad
 
 # bindsym $mod+Return exec --no-startup-id "alacritty --working-directory=/home/russ/dotfiles -e 'tmux'"
@@ -203,6 +206,10 @@ bindsym $mod+y exec --no-startup-id i3-msg [class="Clove" title="tauri-doctor-fo
 # toggle spotify
 bindsym $mod+s exec --no-startup-id i3-msg [class="Spotify"] scratchpad show || \
   bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key spotify
+
+# toggle slack
+bindsym $mod+a exec --no-startup-id i3-msg [class="Slack"] scratchpad show || \
+  bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key slack
 
 # toggle web
 bindsym $mod+t exec --no-startup-id i3-msg [class="firefox$"] scratchpad show || \

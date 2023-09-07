@@ -345,7 +345,7 @@ hi there
          (filter :repo-id))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; mx-ctx-suggestions
+;; mx-ctx-suggestions, mx-open
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn common-wsps []
@@ -384,6 +384,16 @@ hi there
        ;; TODO show only common but unopen workspaces (clawe, dotfiles, dino)
        (common-wsps-mem))
      (remove nil?))))
+
+(defn mx-open-commands []
+  (->>
+    (clawe.config/workspace-defs-with-titles)
+    vals
+    (filter :workspace/directory)
+    (map (fn [w] (-> w (assoc :rofi/label (str "wsp-open: " (:workspace/title w))
+                              :rofi/description (:workspace/directory w)
+                              :rofi/on-select open-new-wsp-with-emacs))))))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; mx fast
@@ -501,7 +511,7 @@ hi there
    (timer/print-since "mx-fast\tend")))
 
 (defn mx-suggestions
-  "Run rofi with commands created in `mx-commands`."
+  "a rofi for context-based suggestions."
   ([] (mx-suggestions nil))
   ([_]
    (timer/print-since "clawe.mx/mx-suggestions\tstart")
@@ -510,3 +520,17 @@ hi there
         (rofi/rofi {:require-match? true
                     :msg            "Clawe suggestions"}))
    (timer/print-since "mx-suggestions\tend")))
+
+(defn mx-open
+  "A rofi for opening apps and workspaces"
+  ([] (mx-open nil))
+  ([_]
+   (timer/print-since "clawe.mx/mx-open\tstart")
+   (->> (mx-open-commands)
+        (#(do (timer/print-since "clawe.mx/mx-open\tcommands") %))
+        (rofi/rofi {:require-match? true
+                    :msg            "Clawe open"}))
+   (timer/print-since "mx-open\tend")))
+
+(comment
+  (mx-open))

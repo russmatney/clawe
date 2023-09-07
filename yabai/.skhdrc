@@ -294,3 +294,4 @@ cmd - x : bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-mx
 shift + cmd - x : bb --config ~/russmatney/clawe/bb.edn -x clawe.mx/mx-fast
 cmd - w : bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-mx-suggestions
 shift + cmd - w : bb --config ~/russmatney/clawe/bb.edn -x clawe.mx/mx-suggestions
+cmd - o : bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-mx-open

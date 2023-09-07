@@ -86,6 +86,11 @@
       (clawe.mx/mx-suggestions)
       {:status 200})
 
+    (= uri "/clawe-mx-open")
+    (do
+      (clawe.mx/mx-open)
+      {:status 200})
+
     (= uri "/clawe-toggle")
     (do
       ;; TODO handle query params/body

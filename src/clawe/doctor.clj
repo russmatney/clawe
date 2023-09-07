@@ -47,6 +47,10 @@
   ([] (clawe-mx-suggestions))
   ([_] (slurp (str (clawe.config/doctor-base-url) "/clawe-mx-suggestions"))))
 
+(defn clawe-mx-open
+  ([] (clawe-mx-open))
+  ([_] (slurp (str (clawe.config/doctor-base-url) "/clawe-mx-open"))))
+
 (defn clawe-toggle
   {:org.babashka/cli {:alias {:key :client/key}}}
   [opts]
