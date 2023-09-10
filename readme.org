@@ -184,7 +184,7 @@ ln -s ~/Dropbox/wallpapers public/assets/wallpapers
 #+end_src
 
 #+begin_src
-l ~/russmatney/doctor/public/assets/
+l ~/russmatney/clawe/public/assets/
 Name
 candy-icons -> /home/russ/EliverLara/candy-icons/apps/scalable/
 screenshots -> /home/russ/Screenshots/
