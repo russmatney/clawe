@@ -231,6 +231,10 @@ bindsym $mod+Shift+p exec --no-startup-id i3-msg '[class="^Aseprite"] scratchpad
 bindsym $mod+Shift+g exec --no-startup-id i3-msg '[instance="Godot_Engine"] scratchpad show' || \
   bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key godot
 
+for_window [instance="Godot_Engine" title="Dino"] floating enable, sticky enable, move position center
+# resize set width 50 ppt height 50 ppt
+
+
 ###################################################################
 ## workspaces
 ###################################################################
