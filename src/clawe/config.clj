@@ -4,7 +4,7 @@
    [aero.core :as aero]
    [clojure.java.io :as io]
    [ralphie.zsh :as zsh]
-   [ralphie.emacs :as emacs]
+   ;; [ralphie.emacs :as emacs]
    [babashka.fs :as fs]
    [systemic.core :as sys :refer [defsys]]
    [zprint.core :as zp]

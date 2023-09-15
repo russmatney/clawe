@@ -414,4 +414,6 @@
      (sys/start! `*wm*)
      (when-let [wsp (cond (map? wsp-or-title)    wsp-or-title
                           (string? wsp-or-title) (key->workspace wsp-or-title))]
+       ;; TODO support moving to a workspace for only a string
+       ;; (even if there's no workspace def for it)
        (wm.protocol/-move-client-to-workspace *wm* opts c wsp)))))
