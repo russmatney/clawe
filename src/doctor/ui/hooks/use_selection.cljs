@@ -4,7 +4,7 @@
 
 (defn use-selection []
   (let [val*    (uix/state nil)
-        set-val (fn [ev]
+        set-val (fn [_ev]
                   (reset! val* (str (js/window.getSelection))))]
     (uix/with-effect [@val*]
       (js/document.addEventListener
