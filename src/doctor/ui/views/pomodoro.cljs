@@ -35,14 +35,14 @@
     [:div
      {:class ["flex flex-row" "items-center" "justify-between" "whitespace-nowrap"]}
      [:div
-      {:class ["text-slate-200" "font-nes" "pr-2"]}
+      {:class ["text-slate-200" "font-nes" "text-sm" "pr-2"]}
       (cond current
             [:span (dates/human-time-since (:pomodoro/started-at current))]
             last
             [:span
-             "Break: "
+             "B: "
              (dates/human-time-since (:pomodoro/finished-at last))])]
-     [components.actions/actions-list (handlers/pomodoro-actions conn)]]))
+     #_[components.actions/actions-list (handlers/pomodoro-actions conn)]]))
 
 (defn pomodoro-list [pomodoros]
   (let [pairs (->> pomodoros

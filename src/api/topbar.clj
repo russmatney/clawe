@@ -82,7 +82,8 @@
 
 (defn hostname []
   (-> (process/$ hostname) process/check :out slurp string/trim
-      (string/replace ".local" "")))
+      (string/replace ".local" "")
+      (string/replace ".nyc.rr.com" "")))
 
 (defn build-topbar-metadata []
   (->

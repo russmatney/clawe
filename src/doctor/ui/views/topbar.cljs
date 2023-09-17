@@ -127,33 +127,39 @@
       (if (#{:bg/dark} background-mode)
         :bg/light :bg/dark))))
 
-(defn topbar-actions-list [metadata]
+(defn topbar-actions-list [{:keys [conn]} metadata]
   [components.actions/actions-list
    {:actions
-    [{:action/on-click (fn [_]
-                         ;; TODO toggle mute
-                         )
-      :action/icon     (if (:microphone/muted metadata)
-                         fa/microphone-slash-solid fa/microphone-solid)}
+    (concat
+      (handlers/pomodoro-actions conn)
+      [{:action/on-click (fn [_]
+                           ;; TODO toggle mute
+                           )
+        :action/icon     (if (:microphone/muted metadata)
+                           fa/microphone-slash-solid fa/microphone-solid)}
 
-     {:action/on-click (toggle-background-mode metadata)
-      :action/label    "toggle"
-      :action/icon
+       {:action/on-click (toggle-background-mode metadata)
+        :action/label    "toggle"
+        :action/icon
 
-      (if (#{:bg/dark} (:topbar/background-mode metadata))
-        [:> HIMini/SunIcon {:class ["w-6" "h-6"]}]
-        [:> HIMini/MoonIcon {:class ["w-6" "h-6"]}])}
-     ;; reload
+        (if (#{:bg/dark} (:topbar/background-mode metadata))
+          [:> HIMini/SunIcon {:class ["w-6" "h-6"]}]
+          [:> HIMini/MoonIcon {:class ["w-6" "h-6"]}])}
+       ;; reload
 
-     {:action/on-click (fn [_] (js/location.reload))
-      :action/label    "reload"
-      :action/icon     [:> HIMini/ArrowPathIcon {:class ["w-6" "h-6"]}]}]}])
+       {:action/on-click (fn [_] (js/location.reload))
+        :action/label    "reload"
+        :action/icon     [:> HIMini/ArrowPathIcon {:class ["w-6" "h-6"]}]}])}])
 
-(defn clock-host-metadata [{:keys [time]} metadata]
+(defn clock-host-metadata [{:keys [time] :as opts} metadata]
   [:div
    {:class ["flex" "flex-row" "justify-end" "items-center"]}
 
-   [topbar-actions-list metadata]
+   [:div
+    {:class ["overflow-scroll"]}
+    [pomodoro/bar opts]]
+
+   [topbar-actions-list opts metadata]
 
    [sep]
 
@@ -220,7 +226,7 @@
       {:class ["flex" "flex-row" "h-full"
                "justify-between" "items-center"]}
 
-      [workspace-list topbar-state active-workspaces]
+      [workspace-list (merge opts topbar-state) active-workspaces]
 
       ;; workspace title
       (let [current-workspace
@@ -242,8 +248,4 @@
        {:class ["overflow-scroll"]}
        [git-status/bar opts]]
 
-      [:div
-       {:class ["overflow-scroll"]}
-       [pomodoro/bar opts]]
-
-      [clock-host-metadata topbar-state metadata]]]))
+      [clock-host-metadata (merge opts topbar-state) metadata]]]))
