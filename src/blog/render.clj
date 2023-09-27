@@ -6,6 +6,7 @@
    [hiccup.page :as hiccup.page]
    [hiccup2.core :as hiccup2.core]
    [clojure.string :as string]
+   [ralphie.notify :as notify]
    [blog.config :as blog.config]
    [blog.db :as blog.db]))
 
@@ -21,6 +22,8 @@
                    ~path)
         process/check :out)
     (catch Exception e
+      (notify/notify {:subject "Error formatting html file!"
+                      :body    path})
       (log/warn "Error formatting file: " path ", throwing exception!")
       (throw e))))
 

@@ -71,10 +71,12 @@
              (filter (comp #(re-seq #"daily" %) :org/source-file))
              ;; (filter (comp #(re-seq #"Things I Love" %) :org/name-string))
              ;; (filter (comp #(re-seq #"^brainstorm" %) :org/name-string))
-             (filter (comp #(re-seq #"2022-11-21" %) :org/name-string))
+             #_(filter (comp #(re-seq #"2022-11-21" %) :org/name-string))
+             (filter (comp #(re-seq #"2023-09-25" %) :org/name-string))
              first)]
+    (def note note)
     #_(str (config/blog-content-public) (db/note->uri note))
-    #_(page note)
+    (page note)
     (render/write-page
       {:note    note
        :content (page note)

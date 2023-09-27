@@ -257,7 +257,13 @@ and [[https://github.com/russmatney/org-crud][this other repo]]")
         (apply str (:org/parent-names item))
         (:org/name-string item))
       string/lower-case
-      (string/replace #"[:\/\\!.,*`_\-?<>~ |\(\)\\\"\"\'\[\]\{\}]" "")))
+      (string/replace #"[%#:\/\\!.,*`_\-—?<>~ |\(\)\\\"\"\'\[\]\{\}]" "")))
+
+(comment
+  (item->anchor-link {:org/name-string "somename%80#"})
+  (item->anchor-link {:org/name-string "https://www.chiark.greenend.org.uk/%7Esgtatham/puzzles/"})
+
+  )
 
 (defn item->hiccup-headline
   ([item] (item->hiccup-headline item nil))
