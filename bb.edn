@@ -65,7 +65,8 @@
                         " --transparent"
                         (when (:decorations opts) " --decorations"))]
          (pp (str "Running clove app: " cmd))
-         (shell {:dir (str (home-dir) "/russmatney/clawe")} cmd)))))
+         (shell {:dir       (str (home-dir) "/russmatney/clawe")
+                 :extra-env {"WEBKIT_DISABLE_DMABUF_RENDERER" "1"}} cmd)))))
 
   home (pp (home-dir))
 
