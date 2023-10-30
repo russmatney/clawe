@@ -278,10 +278,11 @@ hi there
   (workspace.open/open-new-workspace w)
 
   ;; future so this doesn't block
-  (future
-    ;; invoke clawe-mx to warm up the mx-cache for this workspace
-    ;; maybe want an option to NOT open rofi in this case
-    (mx {:wsp w}))
+  ;; disabled for now, not used so much lately
+  ;; (future
+  ;;   ;; invoke clawe-mx to warm up the mx-cache for this workspace
+  ;;   ;; maybe want an option to NOT open rofi in this case
+  ;;   (mx {:wsp w}))
 
   ;; TODO may need to handle a race-case, or pass in new wsp info to avoid it
   (client.create/create-client "emacs"))
