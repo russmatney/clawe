@@ -47,6 +47,13 @@ yabai -m config right_padding                4
 yabai -m config window_gap                   8
 # yabai -m config external_bar                 main:0:16
 
+
+# suggested fix for yabai 6.0 layer change
+# https://github.com/koekeishiya/yabai/issues/1912
+# Set all windows layer to normal
+yabai -m signal --add event=application_front_switched action="yabai -m window --layer normal"
+
+
 # float system preferences
 yabai -m rule --add app="^System Preferences$" manage=off
 yabai -m rule --add app="choose" manage=off
