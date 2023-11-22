@@ -83,8 +83,10 @@
 
 (defn list-xs [] (sut/list-things ::x))
 
+#_{:clj-kondo/ignore [:uninitialized-var]}
 (defx one)
 (defx two {:hi :world})
+#_{:clj-kondo/ignore [:uninitialized-var]}
 (defx three)
 
 (t/deftest list-things-test

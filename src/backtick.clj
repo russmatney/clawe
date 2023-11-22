@@ -1,8 +1,10 @@
 (ns backtick
   (:refer-clojure :exclude [resolve]))
 
+#_{:clj-kondo/ignore [:uninitialized-var]}
 (def ^:dynamic *resolve*)
 
+#_{:clj-kondo/ignore [:uninitialized-var]}
 (def ^:dynamic ^:private *gensyms*)
 
 (defn error [msg form]
