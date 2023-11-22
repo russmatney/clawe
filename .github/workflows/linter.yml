@@ -4,10 +4,10 @@ jobs:
   Linter:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Setup clj-kondo
-      uses: DeLaGuardo/setup-clojure@11.0
+      uses: DeLaGuardo/setup-clojure@12.1
       with:
         clj-kondo: '2023.07.13'
 

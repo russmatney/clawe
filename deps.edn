@@ -3,41 +3,41 @@
          "bench"
          "resources"]
  :deps
- {teknql/systemic                    {:git/sha "d6e4ddc16bc08c7823e2c775084530867b1a03e0"
+ {teknql/systemic                    {:git/sha "2c0be3a90884f998a61f2a8174cff3c5a15a30bf"
                                       :git/url "https://github.com/teknql/systemic"}
   wing/wing                          {:git/sha "08288f4ae6837b5fe386a321361b7b910bc00660"
                                       :git/url "https://github.com/teknql/wing"}
   aero/aero                          {:mvn/version "1.1.6"}
-  babashka/babashka                  {:mvn/version "1.3.181"}
+  babashka/babashka                  {:mvn/version "1.3.186"}
   babashka/babashka.pods             {:mvn/version "0.2.0"}
   babashka/babashka.curl             {:mvn/version "0.1.2"}
   babashka/process                   {:mvn/version "0.5.21"}
-  org.babashka/cli                   {:mvn/version "0.7.52"}
+  org.babashka/cli                   {:mvn/version "0.7.53"}
   babashka/fs                        {:mvn/version "0.4.19"}
   juxt/dirwatch                      {:mvn/version "0.2.5"}
-  metosin/malli                      {:mvn/version "0.11.0"}
+  metosin/malli                      {:mvn/version "0.13.0"}
   com.lambdaisland/specmonstah-malli {:mvn/version "0.0.7"}
-  cheshire/cheshire                  {:mvn/version "5.11.0"}
-  org.clojure/tools.reader           {:mvn/version "1.3.6"}
-  backtick/backtick                  {:mvn/version "0.3.4"}
+  cheshire/cheshire                  {:mvn/version "5.12.0"}
+  org.clojure/tools.reader           {:mvn/version "1.3.7"}
+  backtick/backtick                  {:mvn/version "0.3.5"}
   aysylu/loom                        {:mvn/version "1.0.2"}
 
 
   russmatney/org-crud {:git/url "https://github.com/russmatney/org-crud"
                        :git/sha "08279ca901ab6ec243faee1fb09442613999bd54"}
-  zprint/zprint       {:mvn/version "1.2.7"}
+  zprint/zprint       {:mvn/version "1.2.8"}
 
-  clj-kondo/clj-kondo {:mvn/version "2023.07.13"}
+  clj-kondo/clj-kondo {:mvn/version "2023.10.20"}
   }
  :aliases
  {:dev      {:jvm-opts ["-XX:-OmitStackTraceInFastThrow"]}
-  :outdated {:extra-deps {com.github.liquidz/antq {:mvn/version "2.5.1095"}}
+  :outdated {:extra-deps {com.github.liquidz/antq {:mvn/version "2.7.1133"}}
              :main-opts  ["-m" "antq.core"]}
 
   :doctor-server {:main-opts ["-m" "doctor.main"]}
 
   :kaocha {:extra-deps
-           {lambdaisland/kaocha          {:mvn/version "1.85.1342"}
+           {lambdaisland/kaocha          {:mvn/version "1.87.1366"}
             com.lambdaisland/kaocha-cljs {:mvn/version "1.5.154"}}
            :main-opts ["-m" "kaocha.runner"]}
 
@@ -47,15 +47,15 @@
   :full-stack-deps
   {:extra-deps
    { ;; dev
-    cider/cider-nrepl             {:mvn/version "0.31.0"}
-    refactor-nrepl/refactor-nrepl {:mvn/version "3.7.1"}
+    cider/cider-nrepl             {:mvn/version "0.43.3"}
+    refactor-nrepl/refactor-nrepl {:mvn/version "3.9.0"}
 
     ;; db
-    datascript/datascript                 {:mvn/version "1.4.2"}
+    datascript/datascript                 {:mvn/version "1.5.4"}
     datascript-transit/datascript-transit {:mvn/version "0.3.0"}
 
     ;; core
-    org.clojure/core.async      {:mvn/version "1.6.673"}
+    org.clojure/core.async      {:mvn/version "1.6.681"}
     org.clojure/tools.namespace {:mvn/version "1.4.4"}
 
     ;; web
@@ -65,14 +65,14 @@
     metosin/muuntaja-form         {:mvn/version "0.6.8"}
 
     ;; logging
-    com.taoensso/timbre {:mvn/version "6.2.1"}
+    com.taoensso/timbre {:mvn/version "6.3.1"}
 
     ;; file-watching
     hawk/hawk {:mvn/version "0.2.11"}
 
     ;; time
     com.widdindustries/time-literals {:mvn/version "0.1.10"}
-    tick/tick                        {:mvn/version "0.6.2"}
+    tick/tick                        {:mvn/version "0.7.5"}
 
     ;; serialization
     com.cognitect/transit-clj {:mvn/version "1.0.333"}
@@ -83,7 +83,7 @@
     ;;  :git/url "https://github.com/teknql/plasma"}
 
     ;; ui dev env
-    thheller/shadow-cljs {:mvn/version "2.24.1"}
+    thheller/shadow-cljs {:mvn/version "2.26.2"}
 
     ;; tailwind
     com.teknql/shadow-cljs-tailwind-jit {:mvn/version "1.0.0"}

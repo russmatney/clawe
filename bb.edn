@@ -1,12 +1,12 @@
 {:paths ["src" "test" "resources"]
  :deps  {
-         org.babashka/cli                   {:mvn/version "0.7.52"}
+         org.babashka/cli                   {:mvn/version "0.7.53"}
          babashka/fs                        {:mvn/version "0.4.19"}
-         metosin/malli                      {:mvn/version "0.11.0"}
+         metosin/malli                      {:mvn/version "0.13.0"}
          com.lambdaisland/specmonstah-malli {:mvn/version "0.0.7"}
          aero/aero                          {:mvn/version "1.1.6"}
 
-         teknql/systemic {:git/sha "d6e4ddc16bc08c7823e2c775084530867b1a03e0"
+         teknql/systemic {:git/sha "2c0be3a90884f998a61f2a8174cff3c5a15a30bf"
                           :git/url "https://github.com/teknql/systemic"}
          wing/wing       {:git/sha "08288f4ae6837b5fe386a321361b7b910bc00660"
                           :git/url "https://github.com/teknql/wing"}
@@ -19,7 +19,7 @@
          russmatney/org-crud {:git/url "https://github.com/russmatney/org-crud"
                               :git/sha "08279ca901ab6ec243faee1fb09442613999bd54"}
 
-         zprint/zprint {:mvn/version "1.2.7"}}
+         zprint/zprint {:mvn/version "1.2.8"}}
  :tasks
  {:requires ([clojure.string :as string]
              [clojure.pprint :as pprint]

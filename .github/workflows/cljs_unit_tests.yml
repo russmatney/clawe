@@ -5,7 +5,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Prepare java
         uses: actions/setup-java@v3
@@ -14,9 +14,9 @@ jobs:
           java-version: '16'
 
       - name: Install clojure tools
-        uses: DeLaGuardo/setup-clojure@11.0
+        uses: DeLaGuardo/setup-clojure@12.1
         with:
-          cli: 1.11.1.1347
+          cli: 1.11.1.1413
 
       - name: Cache dependencies
         uses: actions/cache@v3
@@ -31,7 +31,7 @@ jobs:
           restore-keys: cljdeps-
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '16'
           cache: 'yarn'
