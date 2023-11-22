@@ -19,7 +19,7 @@
          russmatney/org-crud {:git/url "https://github.com/russmatney/org-crud"
                               :git/sha "08279ca901ab6ec243faee1fb09442613999bd54"}
 
-         zprint/zprint {:mvn/version "1.2.8"}}
+         zprint/zprint {:mvn/version "1.2.7"}}
  :tasks
  {:requires ([clojure.string :as string]
              [clojure.pprint :as pprint]
@@ -73,6 +73,7 @@
   clj-kondo      (shell "clj-kondo --lint src")
   clj-kondo-test (shell "clj-kondo --lint test")
   clj-kondo-all  (shell "clj-kondo --lint src:test")
+  lint           (shell "clj-kondo --lint src:test")
 
   test-unit
   {:doc  "Run bb unit tests."
