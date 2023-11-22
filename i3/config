@@ -30,7 +30,7 @@ for_window [title="Terminal"] border pixel 2
 
 no_focus [title="tauri-doctor-topbar"]
 for_window [title="tauri-doctor-topbar"] floating enable, sticky enable, \
-    resize set width 100 ppt height 70 px, move position 0 px 36 px
+    resize set width 100 ppt height 60 px, move position 0 px 36 px
     # resize set width 100 ppt height 70 px, move position 0 px 2080 px
 
 no_focus [title="^Windowed Projector" class="obs"]
@@ -78,6 +78,9 @@ client.focused #4c7899 #285577 #ffffff #2e9ef4 #285577
 # restart i3 in place
 bindsym $mod+Shift+r restart
 
+# reload clawe
+bindsym $mod+r exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/reload
+
 # Kill focused window
 bindsym $mod+q kill
 
@@ -113,7 +116,8 @@ bindsym $mod+o exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x cla
 
 # cycle window focus
 # because of the tree structure, cycling windows in a workspace is complicated :/
-# bindsym $mod-Tab focus next
+focus_wrapping workspace
+bindsym $mod+Tab focus parent; focus next
 
 ################################################################################
 # Layout/Window Position
