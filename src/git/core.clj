@@ -91,7 +91,9 @@
     (assoc :doctor/type :type/commit)
 
     (:commit/directory commit)
-    (assoc :commit/repo [:repo/directory (:commit/directory commit)])
+    (->
+      (assoc :commit/directory (str (:commit/directory commit)))
+      (assoc :commit/repo [:repo/directory (str (:commit/directory commit))]))
 
     true
     ;; TODO support these in the db!
@@ -151,6 +153,7 @@
 (comment
   (fetch-repo {:repo/short-path "russmatney/clawe"})
   (ingest-commits-for-repo {:repo/short-path "russmatney/clawe"})
+  (ingest-commits-for-repo {:repo/short-path "russmatney/dino"})
   (ingest-commits-for-repo {:repo/short-path "russmatney/dotfiles"}))
 
 (defn list-db-commits []
