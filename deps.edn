@@ -78,9 +78,9 @@
     com.cognitect/transit-clj {:mvn/version "1.0.333"}
 
     teknql/plasma
-    {:local/root "../../teknql/plasma"}
-    ;; {:git/sha "490c1fc09e70b0ae8fd704891857972e833997db"
-    ;;  :git/url "https://github.com/teknql/plasma"}
+    ;; {:local/root "../../teknql/plasma"}
+    {:git/sha "87b3e48f6001bc6b20e98654a8deff4123c2e27d"
+     :git/url "https://github.com/teknql/plasma"}
 
     ;; ui dev env
     thheller/shadow-cljs {:mvn/version "2.26.2"}
