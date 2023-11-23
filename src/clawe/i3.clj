@@ -27,11 +27,11 @@
 (defn ->client [client]
   (assoc client
          :client/id (:i3/id client)
-         :client/app-name (-> client :i3/window_properties :i3/class string/lower-case)
+         :client/app-name (some-> client :i3/window_properties :i3/class string/lower-case)
          :client/app-names (-> client :i3/window_properties
                                ((juxt :i3/class :i3/instance))
-                               (->> (map string/lower-case)))
-         :client/window-title (-> client :i3/window_properties :i3/title string/lower-case)
+                               (some->> (map string/lower-case)))
+         :client/window-title (some-> client :i3/window_properties :i3/title string/lower-case)
          :client/focused (-> client :i3/focused)))
 
 (defn attach-clients [wsp]

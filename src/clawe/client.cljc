@@ -80,10 +80,22 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn ->app-names [{:client/keys [app-name app-names]}]
-  (->> (concat [app-name] app-names)
-       (remove nil?)
-       (map string/lower-case)
-       (into #{})))
+  #?(:clj
+     (try
+       (when (or app-name app-names)
+         (some->> (concat [app-name] app-names)
+                  (remove nil?)
+                  (map string/lower-case)
+                  (into #{})))
+       (catch Exception e
+         (println app-name app-names e)
+         nil))
+     :cljs
+     (when (or app-name app-names)
+       (some->> (concat [app-name] app-names)
+                (remove nil?)
+                (map string/lower-case)
+                (into #{})))))
 
 (defn match?
   "Returns true if the clients are a match.
