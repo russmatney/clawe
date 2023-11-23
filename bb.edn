@@ -87,6 +87,13 @@
   {:doc  "Run cljs unit tests."
    :task (clojure "-M:oli-test:full-stack-deps")}
 
+  test {:doc "Run all test suites"
+        :task
+        (do
+          (run 'test-unit)
+          (run 'test-jvm-unit)
+          (run 'test-cljs-unit))}
+
   ;; test-kaocha {:task (let [args *command-line-args*])}
 
   clawe-install
