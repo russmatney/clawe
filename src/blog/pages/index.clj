@@ -1,42 +1,42 @@
 (ns blog.pages.index
   (:require
-   [tick.core :as t]
-   [clojure.set :as set]
+   ;; [tick.core :as t]
+   ;; [clojure.set :as set]
 
-   [dates.tick :as dates]
+   ;; [dates.tick :as dates]
    [blog.item :as blog.item]
    [blog.render :as render]
    [blog.db :as blog.db]))
 
-(defn notes-by-day [notes]
-  (->> notes
-       (filter :file/last-modified)
-       (map #(dissoc % :org/body))
-       (group-by #(-> % :file/last-modified dates/parse-time-string t/date))
-       (map (fn [[k v]] [k (into [] v)]))
-       (sort-by first t/>)))
+;; (defn notes-by-day [notes]
+;;   (->> notes
+;;        (filter :file/last-modified)
+;;        (map #(dissoc % :org/body))
+;;        (group-by #(-> % :file/last-modified dates/parse-time-string t/date))
+;;        (map (fn [[k v]] [k (into [] v)]))
+;;        (sort-by first t/>)))
 
-(defn day-block [{:keys [day notes]}]
-  [:div
-   [:div
-    {:class ["flex" "flex-row" "justify-center"]}
-    [:h3
-     {:class ["pb-2"]}
-     (t/format (t/formatter "EEEE, MMM dd") day)]]
+;; (defn day-block [{:keys [day notes]}]
+;;   [:div
+;;    [:div
+;;     {:class ["flex" "flex-row" "justify-center"]}
+;;     [:h3
+;;      {:class ["pb-2"]}
+;;      (t/format (t/formatter "EEEE, MMM dd") day)]]
 
-   (when (seq notes)
-     (->> notes (map blog.item/note-row) (into [:div])))
-   [:hr]])
+;;    (when (seq notes)
+;;      (->> notes (map blog.item/note-row) (into [:div])))
+;;    [:hr]])
 
-(defn list-of-links [{:keys [links header subheader]}]
-  [:div
-   [:h3 header]
-   (when subheader
-     (cond
-       (string? subheader) [:p subheader]
-       :else               subheader))
-   (->> links
-        (into [:div]))])
+;; (defn list-of-links [{:keys [links header subheader]}]
+;;   [:div
+;;    [:h3 header]
+;;    (when subheader
+;;      (cond
+;;        (string? subheader) [:p subheader]
+;;        :else               subheader))
+;;    (->> links
+;;         (into [:div]))])
 
 (defn page []
   [:div
@@ -58,9 +58,7 @@
      {:class ["flex flex-row" "justify-center"]}
      [:h2 "Find notes..."]]
     [:div
-     {:class ["flex flex-row" "flex-wrap"
-              "space-x-4"
-              "justify-between"]}
+     ;; {:class ["flex flex-col" "space-x-4" "justify-between"]}
      [:p
       {:class ["not-prose"]}
       [:a {:href  "/tags.html"
@@ -102,82 +100,83 @@
        ]]
      ]]
 
-   [:hr]
+   ;; [:hr]
 
-   (list-of-links
-     {:header "Dino Games and Addons"
-      :subheader
-      [:p
-       "I'm building a suite of games in "
-       [:span
-        {:class ["not-prose"]}
-        [:a {:href  "https://github.com/russmatney/dino"
-             :class ["text-city-red-400"
-                     "hover:text-city-red-200"
-                     "font-mono" "font-bold"]}
-         "Dino"]]
-       (str ", a godot sandbox and monorepo.")]
-      :links
-      (->> (blog.db/published-notes)
-           (filter (comp seq
-                         (fn [tags]
-                           (and
-                             (seq (set/intersection #{"dino" "dinogame" "dinoaddon"} tags))
-                             (seq (set/intersection #{"project" "game" "addon"} tags))))
-                         :org/tags))
-           (map blog.item/note-row))})
+   ;; (list-of-links
+   ;;   {:header "Dino Games and Addons"
+   ;;    :subheader
+   ;;    [:p
+   ;;     "I'm building a suite of games in "
+   ;;     [:span
+   ;;      {:class ["not-prose"]}
+   ;;      [:a {:href  "https://github.com/russmatney/dino"
+   ;;           :class ["text-city-red-400"
+   ;;                   "hover:text-city-red-200"
+   ;;                   "font-mono" "font-bold"]}
+   ;;       "Dino"]]
+   ;;     (str ", a godot sandbox and monorepo.")]
+   ;;    :links
+   ;;    (->> (blog.db/published-notes)
+   ;;         (filter (comp seq
+   ;;                       (fn [tags]
+   ;;                         (and
+   ;;                           (seq (set/intersection #{"dino" "dinogame" "dinoaddon"} tags))
+   ;;                           (seq (set/intersection #{"project" "game" "addon"} tags))))
+   ;;                       :org/tags))
+   ;;         (map blog.item/note-row))})
 
-   [:hr]
+   ;; [:hr]
 
-   (list-of-links
-     {:header "Clojure Projects"
-      :subheader
-      [:p
-       [:span
-        {:class ["not-prose"]}
-        [:a {:href  "https://github.com/russmatney/clawe"
-             :class ["text-city-red-400"
-                     "hover:text-city-red-200"
-                     "font-mono" "font-bold"]}
-         "Clawe"]]
-       " is my clojure monorepo, and it's absorbed most of the projects here already."]
-      :links
-      (->> (blog.db/published-notes)
-           (filter (comp
-                     (fn [tags]
-                       (and
-                         (or
-                           (seq (set/intersection #{"clojure"} tags))
-                           (seq (set/intersection #{"orgcrud"} tags))
-                           (seq (set/intersection #{"clawe"} tags)))
-                         (seq (set/intersection #{"project"} tags))))
-                     :org/tags))
-           (map blog.item/note-row))})
+   ;; (list-of-links
+   ;;   {:header "Clojure Projects"
+   ;;    :subheader
+   ;;    [:p
+   ;;     [:span
+   ;;      {:class ["not-prose"]}
+   ;;      [:a {:href  "https://github.com/russmatney/clawe"
+   ;;           :class ["text-city-red-400"
+   ;;                   "hover:text-city-red-200"
+   ;;                   "font-mono" "font-bold"]}
+   ;;       "Clawe"]]
+   ;;     " is my clojure monorepo, and it's absorbed most of the projects here already."]
+   ;;    :links
+   ;;    (->> (blog.db/published-notes)
+   ;;         (filter (comp
+   ;;                   (fn [tags]
+   ;;                     (and
+   ;;                       (or
+   ;;                         (seq (set/intersection #{"clojure"} tags))
+   ;;                         (seq (set/intersection #{"orgcrud"} tags))
+   ;;                         (seq (set/intersection #{"clawe"} tags)))
+   ;;                       (seq (set/intersection #{"project"} tags))))
+   ;;                   :org/tags))
+   ;;         (map blog.item/note-row))})
 
-   [:hr]
+   ;; [:hr]
 
-   (list-of-links
-     {:header "Posts"
-      :links
-      (->> (blog.db/published-notes)
-           (filter (comp
-                     (fn [tags]
-                       (and
-                         (not (seq (set/intersection #{"draft"} tags)))
-                         (seq (set/intersection #{"post" "posts"} tags))))
-                     :org/tags))
-           (map blog.item/note-row))})
+   ;; (list-of-links
+   ;;   {:header "Posts"
+   ;;    :links
+   ;;    (->> (blog.db/published-notes)
+   ;;         (filter (comp
+   ;;                   (fn [tags]
+   ;;                     (and
+   ;;                       (not (seq (set/intersection #{"draft"} tags)))
+   ;;                       (seq (set/intersection #{"post" "posts"} tags))))
+   ;;                   :org/tags))
+   ;;         (map blog.item/note-row))})
 
-   [:hr]
+   ;; [:hr]
 
-   [:div
-    [:h3 "Recently modified"]
-    [:div
-     (->>
-       (notes-by-day (blog.db/published-notes))
-       (take 5) ;; 5 most recent day blocks
-       (map (fn [[day notes]] (day-block {:day day :notes notes})))
-       (into [:div]))]]])
+   ;; [:div
+   ;;  [:h3 "Recently modified"]
+   ;;  [:div
+   ;;   (->>
+   ;;     (notes-by-day (blog.db/published-notes))
+   ;;     (take 5) ;; 5 most recent day blocks
+   ;;     (map (fn [[day notes]] (day-block {:day day :notes notes})))
+   ;;     (into [:div]))]]
+   ])
 
 (comment
   (render/write-page

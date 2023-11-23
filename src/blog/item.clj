@@ -105,7 +105,7 @@
          (and id (not note-uri))
          (->> text-elems
               (into
-                [:span {:class      ["text-city-orange-400"
+                [:span {:class      ["text-city-red-400"
                                      "hover:underline"]
                         :aria-label (str "Unpublished note"
                                          (when note
@@ -113,7 +113,7 @@
 
          (string/starts-with? link "http")
          (->> text-elems (into [:a {:href       link
-                                    :class      ["text-city-red-400"
+                                    :class      ["text-city-orange-400"
                                                  "font-bold"
                                                  "hover:underline"]
                                     :aria-label "External Link"}]))
@@ -297,8 +297,12 @@ and [[https://github.com/russmatney/org-crud][this other repo]]")
                  (into
                    (into
                      [(or (:header-override opts) header-elem)
-                      (merge (:header-override-opts opts
-                                                    {}))
+                      (let [default-classes [] #_ ["flex" "items-center" "space-x-2"]
+                            classes         (->> opts :header-override-opts :class
+                                                 (concat default-classes))]
+                        (merge
+                          (:header-override-opts opts {})
+                          {:class classes}))
                       prefix]
                      elems)
                    ;; TODO share/copy anchor link to clipboard
@@ -306,11 +310,11 @@ and [[https://github.com/russmatney/org-crud][this other repo]]")
                               (not (#{:level/root} (:org/level item)))
                               (not (:no-anchor opts)))
                      [(when-let [href (item->anchor-link item)]
-                        [:span.pl-6.not-prose
+                        [:span.pl-6.not-prose.w-full.ml-auto
                          [:a
                           {:id    href :href (str "#" href)
-                           :class ["ml-auto" "text-sm" "font-mono"]}
-                          ":anchor:"]])]))))))))))
+                           :class ["text-sm" "font-mono" "ml-auto"]}
+                          ":a:"]])]))))))))))
 
 (defn merge-non-list-lines-up
   "Moves non-li text into the previous list-item."
