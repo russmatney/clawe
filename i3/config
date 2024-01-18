@@ -39,6 +39,10 @@ for_window [title="^Windowed Projector" class="obs"] floating enable, sticky ena
 no_focus [title="twitch-chat" class="Clove"]
 for_window [title="twitch-chat" class="Clove"] floating enable, sticky enable
 
+no_focus [title="garden-reveal-slides" class="Clove"]
+for_window [title="garden-reveal-slides" class="Clove"] floating enable, \
+    resize set width 2160 px height 1440 px
+
 for_window [class="Rofi"] floating enable, sticky enable
 
 ###################################################
@@ -236,6 +240,7 @@ bindsym $mod+Shift+g exec --no-startup-id i3-msg '[instance="Godot_Engine"] scra
   bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key godot
 
 for_window [instance="Godot_Engine" title="Dino"] floating enable, sticky enable, move position center
+for_window [instance="Godot_Engine" title="Dot Hop"] floating enable, sticky enable, move position center
 # resize set width 50 ppt height 50 ppt
 
 
