@@ -55,6 +55,7 @@
 (defn get-google-analytics-id [] (:google-analytics-id @*config*))
 (defn get-mastodon-href [] (:mastodon-href @*config*))
 (defn get-lemmy-href [] (:lemmy-href @*config*))
+(defn get-youtube-href [] (:youtube-href @*config*))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; debug-mode

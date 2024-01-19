@@ -40,7 +40,8 @@
 
 (defn header []
   (let [mastodon-href (blog.config/get-mastodon-href)
-        lemmy-href    (blog.config/get-lemmy-href)]
+        _lemmy-href   (blog.config/get-lemmy-href)
+        youtube-href  (blog.config/get-youtube-href)]
     [:div
      {:class ["flex" "flex-col" "items-center"
               "text-gray-100" "w-full"]}
@@ -85,13 +86,21 @@
                 :href  mastodon-href
                 :rel   "me"} "mastodon"]]])
 
-       (when lemmy-href
+       (when youtube-href
          [:div
           [:h4
            [:a {:class ["font-mono"
                         "hover:underline"
                         "cursor-pointer"]
-                :href  lemmy-href} "lemmy"]]])
+                :href  youtube-href} "youtube"]]])
+
+       #_(when lemmy-href
+           [:div
+            [:h4
+             [:a {:class ["font-mono"
+                          "hover:underline"
+                          "cursor-pointer"]
+                  :href  lemmy-href} "lemmy"]]])
 
        [:div
         [:h4
