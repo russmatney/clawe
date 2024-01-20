@@ -127,6 +127,7 @@
       :create-client
       (do
         (println "create" (client/strip client-or-def))
+        (notify/notify "Creating client" (:client/key opts "no --key"))
         (client.create/create-client client-or-def opts))
 
       :hide-client
