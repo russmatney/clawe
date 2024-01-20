@@ -7,6 +7,7 @@
    [hiccup2.core :as hiccup2.core]
    [clojure.string :as string]
    [ralphie.notify :as notify]
+   [blog.components.header :as blog.components.header]
    [blog.config :as blog.config]
    [blog.db :as blog.db]))
 
@@ -31,133 +32,13 @@
 (comment
   (format-html-file "public/test.html")
   (format-html-file "public/last-modified.html")
-  (format-html-file "public/resources.html")
-  )
-
+  (format-html-file "public/resources.html"))
 
 (def main-title "Danger Russ Notes")
-(def about-link-uri "/note/blog_about.html")
 
-(defn header []
-  (let [mastodon-href (blog.config/get-mastodon-href)
-        _lemmy-href   (blog.config/get-lemmy-href)
-        youtube-href  (blog.config/get-youtube-href)]
-    [:div
-     {:class ["flex" "flex-col" "items-center"
-              "text-gray-100" "w-full"]}
-     [:div
-      {:class ["flex" "flex-row"
-               "items-center"
-               "max-w-prose" "w-full" "px-8" "py-2"]}
-      [:a {:class ["font-mono"
-                   "hover:underline"
-                   "cursor-pointer"
-                   "text-gray-100"]
-           :href  "/index.html"}
-       [:div
-        {:class ["flex" "flex-row" "align-center"]}
-        [:img {:class ["object-scale-down"]
-               :src   "/images/portrait-nobg-2x.png"
-               :alt   "Pixellated Portrait of a ginger with a beard."}]
-        [:h3 {:class ["ml-4" "mt-0" "font-nes"]} "Danger" [:br] "Russ" [:br] "Notes"]]]
-
-      [:div
-       {:class ["ml-auto" "flex" "flex-col" "md:flex-row"
-                "md:space-x-4"]}
-       [:div
-        [:h4
-         [:a {:class ["font-mono"
-                      "hover:underline"
-                      "cursor-pointer"]
-              :href  "/index.html"} "home"]]]
-       [:div
-        [:h4
-         [:a {:class ["font-mono"
-                      "hover:underline"
-                      "cursor-pointer"]
-              :href  about-link-uri} "about"]]]
-
-       (when mastodon-href
-         [:div
-          [:h4
-           [:a {:class ["font-mono"
-                        "hover:underline"
-                        "cursor-pointer"]
-                :href  mastodon-href
-                :rel   "me"} "mastodon"]]])
-
-       (when youtube-href
-         [:div
-          [:h4
-           [:a {:class ["font-mono"
-                        "hover:underline"
-                        "cursor-pointer"]
-                :href  youtube-href} "youtube"]]])
-
-       #_(when lemmy-href
-           [:div
-            [:h4
-             [:a {:class ["font-mono"
-                          "hover:underline"
-                          "cursor-pointer"]
-                  :href  lemmy-href} "lemmy"]]])
-
-       [:div
-        [:h4
-         [:a {:class ["font-mono"
-                      "hover:underline"
-                      "cursor-pointer"]
-              :href  "https://github.com/russmatney"} "github"]]]
-       ]]
-     [:hr]]))
-
-(defn footer []
-  (let [mastodon-href (blog.config/get-mastodon-href)
-        lemmy-href    (blog.config/get-lemmy-href)]
-    [:div
-     {:class ["flex" "flex-col" "items-center"
-              "text-gray-100" "pb-8"]}
-
-     [:hr]
-     [:div
-      {:class ["flex" "flex-row" "space-x-4"]}
-      [:div
-       [:h4
-        [:a {:class ["font-mono"
-                     "hover:underline"
-                     "cursor-pointer"]
-             :href  "/index.html"} "home"]]]
-      [:div
-       [:h4
-        [:a {:class ["font-mono"
-                     "hover:underline"
-                     "cursor-pointer"]
-             :href  about-link-uri} "about"]]]
-
-      (when mastodon-href
-        [:div
-         [:h4
-          [:a {:class ["font-mono"
-                       "hover:underline"
-                       "cursor-pointer"]
-               :href  mastodon-href
-               :rel   "me"} "mastodon"]]])
-
-      (when lemmy-href
-        [:div
-         [:h4
-          [:a {:class ["font-mono"
-                       "hover:underline"
-                       "cursor-pointer"]
-               :href  lemmy-href} "lemmy"]]])
-
-      [:div
-       [:h4
-        [:a {:class ["font-mono"
-                     "hover:underline"
-                     "cursor-pointer"]
-             :href  "https://github.com/russmatney"} "github"]]]]]))
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; ensure-path
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn ensure-path [path]
   (let [parent (fs/parent path)]
@@ -165,8 +46,12 @@
       (log/info "ensuring parent dir exists")
       (fs/create-dirs parent))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn ->html-with-escaping [title content]
+(defn ->html-with-escaping
+  "Pass in a title and some hiccup, get a blog html string."
+  [title content]
   (let [ga-id (blog.config/get-google-analytics-id)]
     (hiccup2.core/html
       {:mode :html}
@@ -206,21 +91,30 @@ gtag('config', '" ga-id "');"))])]
        [:body
         {:class ["bg-city-blue-900"]}
         [:div.flex.flex-col.items-center
-         (header)
+         (blog.components.header/header)
          [:div
           {:class ["w-full" "max-w-prose"
                    "px-8" "py-16"
                    "blog-prose"]}
           content]
-         (footer)]]])))
+         (blog.components.header/footer)]]])))
 
-(defn write-page [{:keys [note path title content skip-format]}]
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; write-page
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn write-page
+  "Write the passed hiccup :content to disk at the passed :path.
+
+  :skip-format does not reformat the html file.
+  "
+  [{:keys [note path title content skip-format]}]
   (let [public-path (blog.config/blog-content-public)
-        path        (cond
-                      note  (str public-path (blog.db/note->uri note))
-                      (and path (string/includes? path public-path))
-                      path
-                      :else (str public-path path))]
+        path        (cond note (str public-path (blog.db/note->uri note))
+
+                          (and path (string/includes? path public-path)) path
+
+                          :else (str public-path path))]
     (ensure-path path)
     (log/info "[PUBLISH]: writing path" path)
     (spit path (->html-with-escaping
@@ -229,17 +123,23 @@ gtag('config', '" ga-id "');"))])]
     (when-not skip-format
       (format-html-file path))))
 
-(defn write-styles []
-  (log/info "[PUBLISH]: exporting tailwind styles")
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; write-styles
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn write-styles
+"Generate and write tailwind styles for the current blog public/ dir."
+[]
+(log/info "[PUBLISH]: exporting tailwind styles")
   (let [content-path (str (blog.config/blog-content-public) "/**/*.html")]
-    (->
-      ^{:out :string :dir (blog.config/blog-content-root)}
-      (process/$ npx tailwindcss
-                 -c "resources/tailwind.config.js"
-                 -i "resources/styles.css"
-                 --content ~content-path
-                 -o ~(str "public/styles.css"))
-      process/check :out)))
+  (->
+    ^{:out :string :dir (blog.config/blog-content-root)}
+    (process/$ npx tailwindcss
+               -c "resources/tailwind.config.js"
+               -i "resources/styles.css"
+               --content ~content-path
+               -o ~(str "public/styles.css"))
+    process/check :out)))
 
 (comment
   (write-page
