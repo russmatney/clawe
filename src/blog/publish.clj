@@ -18,7 +18,7 @@
    [babashka.fs :as fs]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-#_ "publish funcs"
+;; publish notes
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn publish-note [path-or-note]
@@ -49,6 +49,10 @@
     (log/info "[PUBLISH] publishing " (count notes-to-publish) " notes")
     (doseq [note notes-to-publish]
       (publish-note note))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; publish indexes
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn publish-index-by-tag []
   (log/info "[PUBLISH] exporting index-by-tag.")
@@ -92,6 +96,10 @@
   (publish-index)
   (pages.resources/publish))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; publish images
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defn ensure-image-dir []
   (let [dir (blog.config/blog-content-images)]
     (when-not (fs/exists? dir)
@@ -119,6 +127,33 @@
          count
          (#(log/info "[PUBLISH] Copied" % "images")))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; publish devlogs
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn ensure-devlogs-dir []
+  (let [dir (blog.config/blog-content-devlogs)]
+    (when-not (fs/exists? dir)
+      (log/info "creating devlog dir")
+      (fs/create-dirs dir))))
+
+(defn publish-devlogs []
+  (ensure-devlogs-dir)
+  (let [paths (blog.config/devlog-html-paths)]
+    (log/info "[PUBLISH] exporting" (count paths) "devlog html files")
+    (->> paths (map (fn [path]
+                      (let [new-path (blog.config/path->devlog-path path)]
+                        (log/debug "[PUBLISH] copying path" new-path)
+                        (fs/copy path new-path {:replace-existing true}))))
+         doall
+         (remove nil?)
+         count
+         (#(log/info "[PUBLISH] Copied" % "images")))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; publish-all
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defn publish-all
   ;; TODO delete notes/files that aren't here?
   []
@@ -132,6 +167,7 @@
     (publish-images)
     (publish-notes)
     (publish-indexes)
+    (publish-devlogs)
     (render/write-styles)
     (let [time-str (str (dates/millis-since start-t) "ms")]
       (log/info "[PUBLISH]: blog publish complete " time-str)

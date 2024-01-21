@@ -21,9 +21,17 @@
 (defn blog-content-images []
   (str (blog-content-root) "/public/images"))
 
+(defn blog-content-devlogs []
+  (str (blog-content-root) "/public/devlogs"))
+
 (defn blog-content-config []
   (str (blog-content-root) "/blog.edn"))
 
+(defn blog-org-dir-root []
+  (str (fs/home) "/todo"))
+
+(defn blog-garden-root []
+  (str (blog-org-dir-root) "/garden"))
 
 (def blog-edn (blog-content-config))
 
@@ -207,3 +215,23 @@
 (defn image->blog-path [{:keys [image/path]}]
   (when path
     (str (blog-content-images) "/" (path->url-safe-file-name path))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; devlog paths
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn devlog-html-paths []
+  (->>
+    (fs/list-dir
+      (blog-garden-root))
+    (map str)
+    (filter #(re-seq #"\.html$" %))
+    (filter #(re-seq #"garden/devlog_" %))))
+
+(comment
+  )
+
+(defn path->devlog-path [path]
+  (when path
+    (str (blog-content-devlogs) "/" (path->url-safe-file-name path)))
+  )
