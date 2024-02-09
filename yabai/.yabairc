@@ -59,6 +59,9 @@ yabai -m rule --add app="^System Preferences$" manage=off
 yabai -m rule --add app="choose" manage=off
 yabai -m rule --add app="Kap" manage=off
 
+# float all godot!?
+yabai -m rule --add app="godot" manage=off
+
 # yabai -m rule --add app="^Emacs$" title="^journal" space=journal
 # yabai -m rule --add app="^Emacs$" title="^clawe" space=clawe
 # yabai -m rule --add app="^Spotify$" space=spotify
