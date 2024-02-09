@@ -140,6 +140,7 @@ bindsym $mod+Shift+semicolon layout toggle tabbed stacking
 # window position commands
 bindsym $mod+c floating enable, resize set width 70 ppt height 70 ppt, move position center
 bindsym $mod+Shift+c floating enable, resize set width 90 ppt height 90 ppt, move position center
+bindsym $mod+Shift+v floating enable, resize set width 1920 px height 1080 px, move position center
 
 # absolute positioning
 bindsym $mod+shift+Right floating enable, resize set width 45 ppt height 90 ppt, move position 1008 48
