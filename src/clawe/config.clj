@@ -19,21 +19,25 @@
   (boolean (string/includes? (zsh/expand "$OSTYPE") "darwin")))
 
 (def clawe-config-path ".config/clawe/clawe.edn")
+(def clawe-local-config-path ".local/share/clawe/local.edn")
 
-(defn config-res []
-  (let [conf-clawe (io/file (str (fs/home) "/" clawe-config-path))]
+(defn config-resource [path]
+  (let [conf-clawe (io/file (str (fs/home) "/" path))]
     (if (fs/exists? conf-clawe) conf-clawe
         (do
-          ;; TODO add check for clawe.edn to doctor check-in
-          (log/error "clawe.edn not found, falling back on template.")
+          (log/error (str path "not found, falling back on template."))
           (io/resource "clawe-template.edn")))))
 
+(defn read-config [path]
+  (aero/read-config (config-resource path)))
+
 (defn ->config []
-  (let [conf
-        (->
-          (aero/read-config (config-res))
-          (assoc :is-mac (calc-is-mac?))
-          (assoc :home-dir (str (fs/home))))]
+  (let [conf (->
+               (read-config clawe-config-path)
+               (assoc :is-mac (calc-is-mac?))
+               (assoc :home-dir (str (fs/home)))
+               (->> ;; i think this means local will overwrite global?
+                 (merge (read-config clawe-local-config-path))))]
     (timer/print-since "parsed and returning clawe config")
     conf))
 
@@ -55,31 +59,42 @@
 
 (comment
   (sys/restart! `*config*)
+  @*config*
   (reload-config))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; write config to file
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def do-not-write-keys #{:is-mac :home-dir})
+(def do-not-write-global-keys #{:is-mac :home-dir :wm})
 
 (defn write-config
   "Writes the current config to `resources/clawe.edn`"
-  [updated-config]
-  (sys/start! `*config*)
-  (let [updated-config  (merge @*config* updated-config)
-        writable-config (apply dissoc updated-config do-not-write-keys)]
-    (spit (config-res) (-> writable-config
-                           (zp/zprint-str 100)
-                           (string/replace "," "")))
-    ;; emacsclient -e '(progn (find-file "~/.config/clawe/clawe.edn") (aggressive-indent-indent-region-and-on (point-min) (point-max)) (save-buffer))'
-    ;; TODO may need to 'force' the save? or wait to avoid a race-case?
-    ;; TODO prevent the file from opening, and the save from prompting for confirmation, etc
-    ;;(ralphie.emacs/fire "(progn (find-file \"~/.config/clawe/clawe.edn\") (aggressive-indent-indent-region-and-on (point-min) (point-max)) (save-buffer))")
-    ))
+  ([updated-config] (write-config updated-config nil))
+  ([updated-config opts]
+   (sys/start! `*config*)
+   (let [path             (:path opts clawe-config-path)
+         writeable-config (if (:is-local? opts false)
+                            ;; read and merge into the local file
+                            (-> (read-config clawe-local-config-path)
+                                (merge updated-config))
+                            ;; merge with *config*, filter computed keys
+                            (-> @*config*
+                                (merge updated-config)
+                                (#(apply dissoc % do-not-write-global-keys))))]
+     (spit (config-resource path)
+           (-> writeable-config
+               (zp/zprint-str 100)
+               (string/replace "," "")))
+     ;; emacsclient -e '(progn (find-file "~/.config/clawe/clawe.edn") (aggressive-indent-indent-region-and-on (point-min) (point-max)) (save-buffer))'
+     ;; TODO may need to 'force' the save? or wait to avoid a race-case?
+     ;; TODO prevent the file from opening, and the save from prompting for confirmation, etc
+     ;;(ralphie.emacs/fire "(progn (find-file \"~/.config/clawe/clawe.edn\") (aggressive-indent-indent-region-and-on (point-min) (point-max)) (save-buffer))")
+     )))
 
 (comment
-  (write-config nil))
+  (write-config nil)
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; public
@@ -131,13 +146,15 @@
       (log/warn "Unhandled set-wm val" wm))
 
     (when-not (= val current-wm)
-      (log/warn "New window-manager, writing config")
-      (-> @*config* (assoc :wm val) write-config)))
+      (log/warn "New window-manager, writing local config")
+      (-> {:wm val} (write-config
+                      {:path      clawe-local-config-path
+                       :is-local? true}))))
   (reload-config)
   (get-wm))
 
 (comment
-  (set-wm {:wm "i3"})
+  (set-wm {:wm "yabai"})
   (get-wm))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
