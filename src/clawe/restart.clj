@@ -13,10 +13,12 @@
    ;; required to put bindings in place, otherwise we write empty rc configs
    clawe.defs.bindings
    [clawe.awesome.bindings :as awm.bindings]
+   [clawe.client.create :as client.create]
    [clawe.config :as clawe.config]
    [clawe.doctor :as clawe.doctor]
    [clawe.rules :as rules]
-   [clawe.sxhkd.bindings :as sxhkd.bindings]))
+   [clawe.sxhkd.bindings :as sxhkd.bindings]
+   [clawe.wm :as wm]))
 
 (defn log [msg]
   (let [msg (str "[CLAWE] " msg)]
@@ -57,6 +59,37 @@
         [:fail out exit]))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; default workspaces and clients
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn ensure-default-workspaces []
+  (->>
+    (wm/workspace-defs)
+    (filter #(-> % :workspace/open #{:clawe/restart}))
+    (map wm/create-workspace)
+    ;; on i3 these don't stay open b/c they don't have clients
+    ;; for a similar reason this won't work in yabai - in that impl, workspaces are derived from existing clients
+    ;; maybe worth having an in-memory clawe wm (vs the expressed wm workspace?)
+    ;; could support features for 'open' vs 'active' workspaces... naming will be important
+    ))
+
+(defn ensure-default-clients []
+  (let [active-client-keys (->> (wm/active-clients) (map :client/key) (into #{}))]
+    (->> (wm/client-defs)
+         (filter (fn [def]
+                   (and
+                     (not (-> def :client/key active-client-keys))
+                     (-> def :client/open #{:clawe/restart}))))
+         ;; TODO document/relearn who owns this process (emacs? tmux? the jvm?)
+         ;; have seen bugs where restarting emacs kills spotify, for eg.
+         (map client.create/create-client))))
+
+(comment
+  (ensure-default-workspaces)
+  ;; (ensure-default-clients)
+  )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Reload
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -84,6 +117,8 @@
      ;; NOTE this ensures the sxhkd tmux session as well, which is required for keybindings to work!
      (sxhkd.bindings/reset-bindings))
 
+   (ensure-default-workspaces)
+   (ensure-default-clients)
    (rules/clean-up-workspaces)
 
    ;; Restart Notifications service
