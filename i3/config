@@ -203,6 +203,8 @@ bindsym $mod+Return exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -
 
 # bindsym $mod+Shift+Return exec --no-startup-id emacsclient -c
 bindsym $mod+Shift+Return exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key emacs
+bindsym $mod+e exec --no-startup-id i3-msg [class="Emacs" title="floating-emacs"] scratchpad show || \
+  bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key floating-emacs
 
 # toggle journal
 bindsym $mod+u exec --no-startup-id i3-msg [class="Emacs" title="journal"] scratchpad show || \
