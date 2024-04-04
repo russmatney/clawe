@@ -185,8 +185,9 @@ bindsym XF86MonBrightnessDown exec --no-startup-id "light -U 5"
 # bindsym $mod+d [class="(Spotify|firefox|firefoxdeveloperedition)"] move scratchpad
 bindsym $mod+d exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.rules/clean-up-workspaces
 
-for_window [class="(Spotify|firefox)"] move scratchpad
-for_window [title="Firefox Developer Edition$"] move scratchpad
+for_window [class="Spotify"] move scratchpad
+# for_window [class="(Spotify|firefox)"] move scratchpad
+# for_window [title="Firefox Developer Edition$" type="normal"] move scratchpad
 for_window [class="Clove" title="tauri-doctor-focus"] move scratchpad
 for_window [class="Emacs" title="journal"] move scratchpad
 for_window [class="^1Password$"] move scratchpad
@@ -203,6 +204,7 @@ bindsym $mod+Return exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -
 
 # bindsym $mod+Shift+Return exec --no-startup-id emacsclient -c
 bindsym $mod+Shift+Return exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key emacs
+
 bindsym $mod+e exec --no-startup-id i3-msg [class="Emacs" title="floating-emacs"] scratchpad show || \
   bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key floating-emacs
 
@@ -244,6 +246,7 @@ bindsym $mod+Shift+g exec --no-startup-id i3-msg '[instance="Godot_Engine"] scra
 
 for_window [instance="Godot_Engine" title="Dino"] floating enable, sticky enable, move position center
 for_window [instance="Godot_Engine" title="Dot Hop"] floating enable, sticky enable, move position center
+for_window [instance="Godot_Engine" title="GDUnit"] move scratchpad
 # resize set width 50 ppt height 50 ppt
 
 
