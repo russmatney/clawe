@@ -268,6 +268,7 @@ cmd - r : bb --config ~/russmatney/clawe/bb.edn -x clawe.restart/reload
 
 # emacs, term toggling
 shift + cmd - return : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key emacs
+cmd - e : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key floating-emacs
 cmd - return : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key terminal
 
 shift + cmd - u : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key journal
@@ -281,7 +282,7 @@ cmd - b : bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --k
 #   || bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key spotify
 cmd - s : bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key spotify
 
-cmd - e : bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key aseprite
+# cmd - e : bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key aseprite
 cmd - a : bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key slack
 shift + cmd - d : bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key discord
 cmd - m : bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key messages

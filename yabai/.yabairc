@@ -48,19 +48,14 @@ yabai -m config window_gap                   8
 # yabai -m config external_bar                 main:0:16
 
 
-# suggested fix for yabai 6.0 layer change
-# https://github.com/koekeishiya/yabai/issues/1912
-# Set all windows layer to normal
-yabai -m signal --add event=application_front_switched action="yabai -m window --layer normal"
-
-
 # float system preferences
 yabai -m rule --add app="^System Preferences$" manage=off
 yabai -m rule --add app="choose" manage=off
 yabai -m rule --add app="Kap" manage=off
 
 # float all godot!?
-yabai -m rule --add app="godot" manage=off
+yabai -m rule --add app="Godot" manage=off
+yabai -m rule --add app="Dino" manage=off
 
 # yabai -m rule --add app="^Emacs$" title="^journal" space=journal
 # yabai -m rule --add app="^Emacs$" title="^clawe" space=clawe
@@ -82,6 +77,11 @@ yabai -m signal --add event=window_destroyed label=focus-after-destroy active=ye
 yabai -m signal --add event=window_created label=focus-after-create app="^Emacs$" action='yabai -m window --focus $YABAI_WINDOW_ID'
 
 # yabai -m signal --add event=space_changed label=focus-after-change app="^Emacs$" action='yabai -m window --focus $YABAI_WINDOW_ID'
+
+# put everything in the same layer https://github.com/koekeishiya/yabai/issues/2170
+yabai -m rule --add app=".*" sub-layer=normal
+
+yabai -m rule --apply
 
 bb --config ~/russmatney/clawe/bb.edn -x clawe.config/set-wm :wm yabai
 # bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/reload
