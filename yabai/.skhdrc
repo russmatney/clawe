@@ -268,31 +268,38 @@ cmd - r : bb --config ~/russmatney/clawe/bb.edn -x clawe.restart/reload
 
 # emacs, term toggling
 shift + cmd - return : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key emacs
-cmd - e : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key floating-emacs
 cmd - return : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key terminal
 
-shift + cmd - u : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key journal
-cmd - y : bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key dashboard
-cmd - u : bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key journal
-cmd - t : bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key web
+# cmd - e : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key floating-emacs
+
+# shift + cmd - u : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key journal
+# cmd - t : bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key web
 cmd - b : bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key devweb
 
-# cmd - s : wid=$(yabai -m query --windows | jq 'map(select(."title" | test("^Spotify")))[-1].id'); \
-#   yabai -m window $wid --space mouse && yabai -m window --focus $wid \
-#   || bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key spotify
-cmd - s : bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key spotify
 
+# skhdrc
+# show all scratchpad windows if inaccessible due to yabai restart or crash
+cmd + alt - r : yabai -m window --scratchpad recover
+
+# toggle scratchpad windows or launch application if not running
+cmd - s : yabai -m window --toggle spotify || open  -a Spotify
+shift + cmd - d : yabai -m window --toggle discord || open -a Discord
+cmd - t : yabai -m window --toggle web || open  -a Firefox
+cmd - y : yabai -m window --toggle clawe-dashboard || bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key dashboard
+cmd - u : yabai -m window --toggle emacs-journal || bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key journal
+cmd - e : yabai -m window --toggle emacs-floating || bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key floating-emacs
+
+cmd - a : yabai -m window --toggle slack || bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key slack
+cmd - m : yabai -m window --toggle messages ||  bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key messages
+shift + cmd - g : yabai -m window --toggle godot || bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key godot
+
+# shift + cmd - m : bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key mindnode
 # cmd - e : bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key aseprite
-cmd - a : bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key slack
-shift + cmd - d : bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key discord
-cmd - m : bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key messages
-shift + cmd - m : bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key mindnode
-shift + cmd - g : bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key godot
 # shift + cmd - x : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key xcode
 
-cmd - d : bb --config ~/russmatney/clawe/bb.edn -x clawe.rules/clean-up-workspaces
-cmd - x : bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-mx
-shift + cmd - x : bb --config ~/russmatney/clawe/bb.edn -x clawe.mx/mx-fast
-cmd - w : bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-mx-suggestions
-shift + cmd - w : bb --config ~/russmatney/clawe/bb.edn -x clawe.mx/mx-suggestions
-cmd - o : bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-mx-open
+cmd + alt - d : bb --config ~/russmatney/clawe/bb.edn -x clawe.rules/clean-up-workspaces
+cmd + alt - x : bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-mx
+shift + cmd + alt - x : bb --config ~/russmatney/clawe/bb.edn -x clawe.mx/mx-fast
+cmd + alt - w : bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-mx-suggestions
+shift + cmd + alt - w : bb --config ~/russmatney/clawe/bb.edn -x clawe.mx/mx-suggestions
+cmd + alt - o : bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-mx-open
