@@ -4,6 +4,7 @@
    [hiccup-icons.fa :as fa]
    [tick.core :as t]
    [uix.core.alpha :as uix]
+   [wing.core :as w]
 
    [components.icons :as icons]
    [components.charts :as charts]
@@ -71,7 +72,8 @@
    {:as wsp :workspace/keys [index clients focused]}
    {:keys [is-last]}]
   (let [urgent      false
-        clients     (->> clients (remove skip-bar-app?))
+        clients     (->> clients (remove skip-bar-app?)
+                         (w/distinct-by :client/key)) ;; dedupe - could show a stack w/ a number
         show-number (or urgent focused (zero? (count clients)) is-last)
         hovering?   (uix/state nil)]
     [:div
