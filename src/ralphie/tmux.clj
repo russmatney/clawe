@@ -293,6 +293,7 @@
          cmd-str (or cmd-str cmd)
          ;; fallback to a session in the current tag/workspace
          session (or session "fallback-session-name")
+         session (-> session (string/replace "." "_"))
 
          ;; leave the window/pane empty to get the last-active ones
          initial-target (str session ":" window "." pane)]
@@ -374,6 +375,8 @@
   ;;   if the specified session does not exist, it should be created and the command run in there
 
   (fire "echo sup")
+  (fire "echo sup" {:tmux.fire/session    "log.gd"
+                    :tmux.fire/interrupt? true})
   (fire "echo sup" {:tmux.fire/session    "clawe"
                     :tmux.fire/interrupt? true})
   (fire "bb log-awesome"
