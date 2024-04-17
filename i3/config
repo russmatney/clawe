@@ -198,6 +198,7 @@ for_window [class="^Slack"] move scratchpad
 # cycle all scratchpads
 # tick ` == grave
 bindsym $mod+grave scratchpad show
+bindsym $mod+Shift+grave move scratchpad
 bindsym $mod+Shift+y move scratchpad
 
 # bindsym $mod+Return exec --no-startup-id "alacritty --working-directory=/home/russ/dotfiles -e 'tmux'"
