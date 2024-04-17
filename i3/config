@@ -44,6 +44,7 @@ for_window [title="garden-reveal-slides" class="Clove"] floating enable, \
     resize set width 2160 px height 1440 px
 
 for_window [class="Rofi"] floating enable, sticky enable
+for_window [class="NautilusPreviewer"] floating enable, resize set width 70 ppt height 70 ppt, move position center
 
 ###################################################
 ## Fonts and colors
@@ -248,7 +249,6 @@ for_window [instance="Godot_Engine" title="Dino"] floating enable, sticky enable
 for_window [instance="Godot_Engine" title="Dot Hop"] floating enable, sticky enable, move position center
 for_window [instance="Godot_Engine" title="GDUnit"] move scratchpad
 # resize set width 50 ppt height 50 ppt
-
 
 ###################################################################
 ## workspaces
