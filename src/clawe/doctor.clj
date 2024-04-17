@@ -54,6 +54,6 @@
 (defn clawe-toggle
   {:org.babashka/cli {:alias {:key :client/key}}}
   [opts]
-  (let [client-key (:client/key opts)]
+  (let [client-key (or (:client/key opts) (:key opts))]
     (timer/print-since "clawe.doctor/clawe-toggle\tslurping")
     (slurp (str (clawe.config/doctor-base-url) "/clawe-toggle" "?" client-key))))

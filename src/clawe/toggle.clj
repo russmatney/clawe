@@ -168,7 +168,8 @@
         opts              {:prefetched-clients all-clients
                            :current-workspace  current-workspace}]
     (timer/print-since "clawe.toggle/toggle deps calced")
-    (let [action (-> args :client/key (determine-toggle-action opts))]
+    (let [key    (or (:client/key args) (:key args))
+          action (-> key (determine-toggle-action opts))]
       (timer/print-since "clawe.toggle/toggle action determined")
       (execute-toggle-action action (merge args opts))
       (timer/print-since "clawe.toggle/toggle action executed")))
@@ -176,4 +177,4 @@
   (clawe.doctor/update-topbar))
 
 (comment
-  (toggle {:client/key "journal"}))
+  (toggle {:client/key "web"}))
