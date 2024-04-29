@@ -285,7 +285,9 @@ hi there
   ;;   (mx {:wsp w}))
 
   ;; TODO may need to handle a race-case, or pass in new wsp info to avoid it
-  (client.create/create-client "emacs"))
+  (client.create/create-client "emacs")
+  (client.create/create-client "terminal")
+  )
 
 (defn test-fn [key]
   (if-let [wm (wm/key->workspace key)]
