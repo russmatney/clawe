@@ -23,6 +23,7 @@ for_window [class="^.*"] border pixel 1
 gaps inner 8
 gaps outer 4
 gaps top 60
+# gaps right 120
 
 default_floating_border pixel 2
 for_window [class="Emacs"] border pixel 2
@@ -81,7 +82,7 @@ client.focused #4c7899 #285577 #ffffff #2e9ef4 #285577
 ###################################################
 
 # restart i3 in place
-bindsym $mod+Shift+r restart
+bindsym $mod+Shift+r exec "systemctl --user stop sxhkd && i3-msg restart"
 
 # reload clawe
 bindsym $mod+r exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/reload
@@ -284,18 +285,19 @@ bindsym $mod+p workspace next
 ###################################################################
 ## startup execs
 ###################################################################
+# all of these run again when you i3-msg "restart"
 
 # Compositor (Animations, Shadows, Transparency)
 # exec_always --no-startup-id compton --inactive-dim 0.1 --active-opacity 0.9 -i 0.95
 # exec_always --no-startup-id compton -cCfb --backend glx --vsync opengl
-exec_always --no-startup-id picom
+exec --no-startup-id picom
 
 # exec_always --no-startup-id feh --bg-scale ~/Dropbox/wallpapers/cityscape-cartoon.jpg
 # exec_always --no-startup-id variety --resume
 
-exec_always --no-startup-id $HOME/.config/polybar/launch.sh
-exec_always --no-startup-id bluetoothctl -- power on
-exec_always --no-startup-id xautolock -time 5 -locker "i3lock -c 262626"
+exec --no-startup-id $HOME/.config/polybar/launch.sh
+exec --no-startup-id bluetoothctl -- power on
+exec --no-startup-id xautolock -time 5 -locker "i3lock -c 262626"
 
 exec_always --no-startup-id systemctl --user restart doctor-topbar
 

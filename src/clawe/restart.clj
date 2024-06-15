@@ -114,7 +114,7 @@
      (log "rewriting awm bindings")
      (awm.bindings/write-awesome-bindings)
      (log "resetting sxhkd bindings")
-     ;; NOTE this ensures the sxhkd tmux session as well, which is required for keybindings to work!
+     ;; NOTE this ensures the sxhkd tmux session as well, which is required for (some) keybindings to work!
      (sxhkd.bindings/reset-bindings))
 
    (ensure-default-workspaces)
@@ -134,7 +134,9 @@
 
    ;; Doom env refresh - probably a race-case here....
    (tmux/fire {:tmux.fire/cmd     "doom env"
-               :tmux.fire/session "dotfiles"})
+               :tmux.fire/session "dotfiles"
+               :tmux.fire/directory "~/dotfiles"
+               })
    (emacs/fire "(doom/reload-env)")
 
    (clawe.doctor/update-topbar)

@@ -102,7 +102,7 @@
      (spit (str (fs/home) "/.config/sxhkd/sxhkdrc") config)
      (log "SXHKD bindings rewritten.")
      ;; this can cut off running apps if they are not started properly
-     ;; tho that should be rare
+     ;; tho that _should_ be rare
      (-> (proc/$ systemctl --user restart sxhkd)
          (proc/check))
      (ensure-sxhkd-tmux-session)
