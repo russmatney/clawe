@@ -82,16 +82,16 @@ yabai -m rule --add app="^Firefox Developer" scratchpad=devweb grid=11:11:1:1:9:
 yabai -m rule --add app="^Slack" scratchpad=slack grid=11:11:1:1:9:9
 yabai -m rule --add app="^Xcode" scratchpad=xcode grid=11:11:1:1:9:9
 yabai -m rule --add app="^Messages$" scratchpad=messages grid=11:11:1:1:9:9
-yabai -m rule --add app="godot" scratchpad=godot grid=11:11:1:1:9:9
-yabai -m rule --add app="Godot" scratchpad=godot grid=11:11:1:1:9:9
-yabai -m rule --add title="Godot Engine$" scratchpad=godot grid=11:11:1:1:9:9
+yabai -m rule --add app="godot" scratchpad=godot
+yabai -m rule --add app="Godot" scratchpad=godot
+yabai -m rule --add title="Godot Engine$" scratchpad=godot
 yabai -m rule --add app="^Aseprite$" scratchpad=aseprite grid=11:11:1:1:9:9
 
 # clawe
 yabai -m rule --add title="tauri-doctor-dashboard" scratchpad=clawe-dashboard grid=11:11:1:1:9:9
 
 # emacs
-yabai -m rule --add app="Emacs" title="journal" scratchpad=emacs-journal grid=11:11:1:1:9:9
+yabai -m rule --add app="Emacs" title="journal" scratchpad=emacs-journal
 yabai -m rule --add app="Emacs" title="floating-emacs" scratchpad=emacs-floating grid=11:11:1:1:9:9
 
 yabai -m rule --apply
