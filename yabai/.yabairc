@@ -85,10 +85,13 @@ yabai -m signal --add event=window_created label=focus-after-create app="^Emacs$
 # apps
 yabai -m rule --add app="^Spotify$" scratchpad=spotify grid=11:11:1:1:9:9
 yabai -m rule --add app="^Discord$" title!="^Discord Updater$" scratchpad=discord grid=11:11:1:1:9:9
-yabai -m rule --add app="^Firefox" scratchpad=web grid=11:11:1:1:9:9
+yabai -m rule --add app="^Firefox$" scratchpad=web grid=11:11:1:1:9:9
+yabai -m rule --add app="^Firefox Developer" scratchpad=devweb grid=11:11:1:1:9:9
 yabai -m rule --add app="^Slack" scratchpad=slack grid=11:11:1:1:9:9
+yabai -m rule --add app="^Xcode" scratchpad=xcode grid=11:11:1:1:9:9
 yabai -m rule --add app="^Messages$" scratchpad=messages grid=11:11:1:1:9:9
 yabai -m rule --add app="^Godot" scratchpad=godot grid=11:11:1:1:9:9
+yabai -m rule --add app="^Aseprite$" scratchpad=aseprite grid=11:11:1:1:9:9
 
 # clawe
 yabai -m rule --add title="tauri-doctor-dashboard" scratchpad=clawe-dashboard grid=11:11:1:1:9:9
