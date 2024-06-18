@@ -51,23 +51,17 @@ yabai -m config window_gap                   8
 # put everything in the same layer https://github.com/koekeishiya/yabai/issues/2170
 yabai -m rule --add app=".*" sub-layer=normal
 
-
 # float system preferences
-yabai -m rule --add app="^System Preferences$" manage=off
+yabai -m rule --add app="^System Settings$" manage=off
 yabai -m rule --add app="choose" manage=off
 yabai -m rule --add app="Kap" manage=off
 
 # float all godot!?
+yabai -m rule --add title="Godot Engine$" manage=off
+yabai -m rule --add app="godot" manage=off
 yabai -m rule --add app="Godot" manage=off
 yabai -m rule --add app="Dino" manage=off
 
-# yabai -m rule --add app="^Emacs$" title="^journal" space=journal
-# yabai -m rule --add app="^Emacs$" title="^clawe" space=clawe
-# yabai -m rule --add app="^Spotify$" space=spotify
-# yabai -m rule --add app="^Safari$" space=web
-# yabai -m rule --add app="^Slack$" space=slack
-
-# yabai -m rule --add title="tauri-doctor-topbar" sticky=on manage=off
 yabai -m rule --add title="tauri-doctor-topbar" sticky=on
 
 yabai -m signal --add event=window_created label=fix-topbar title="tauri-doctor-topbar" action="bb --config ~/russmatney/clawe/bb.edn -x ralphie.yabai/fix-topbar"
@@ -80,8 +74,6 @@ yabai -m signal --add event=window_destroyed label=focus-after-destroy active=ye
 # TODO need to ignore some windows here (notifications!!!)
 yabai -m signal --add event=window_created label=focus-after-create app="^Emacs$" action='yabai -m window --focus $YABAI_WINDOW_ID'
 
-# yabai -m signal --add event=space_changed label=focus-after-change app="^Emacs$" action='yabai -m window --focus $YABAI_WINDOW_ID'
-
 # apps
 yabai -m rule --add app="^Spotify$" scratchpad=spotify grid=11:11:1:1:9:9
 yabai -m rule --add app="^Discord$" title!="^Discord Updater$" scratchpad=discord grid=11:11:1:1:9:9
@@ -90,7 +82,9 @@ yabai -m rule --add app="^Firefox Developer" scratchpad=devweb grid=11:11:1:1:9:
 yabai -m rule --add app="^Slack" scratchpad=slack grid=11:11:1:1:9:9
 yabai -m rule --add app="^Xcode" scratchpad=xcode grid=11:11:1:1:9:9
 yabai -m rule --add app="^Messages$" scratchpad=messages grid=11:11:1:1:9:9
-yabai -m rule --add app="^Godot" scratchpad=godot grid=11:11:1:1:9:9
+yabai -m rule --add app="godot" scratchpad=godot grid=11:11:1:1:9:9
+yabai -m rule --add app="Godot" scratchpad=godot grid=11:11:1:1:9:9
+yabai -m rule --add title="Godot Engine$" scratchpad=godot grid=11:11:1:1:9:9
 yabai -m rule --add app="^Aseprite$" scratchpad=aseprite grid=11:11:1:1:9:9
 
 # clawe
