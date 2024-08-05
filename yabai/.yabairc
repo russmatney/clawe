@@ -82,6 +82,7 @@ yabai -m rule --add app="^Firefox Developer" scratchpad=devweb grid=11:11:1:1:9:
 yabai -m rule --add app="^Slack" scratchpad=slack grid=11:11:1:1:9:9
 yabai -m rule --add app="^Xcode" scratchpad=xcode grid=11:11:1:1:9:9
 yabai -m rule --add app="^Messages$" scratchpad=messages grid=11:11:1:1:9:9
+yabai -m rule --add app="^Notion$" scratchpad=notion grid=11:11:1:1:9:9
 yabai -m rule --add app="godot" scratchpad=godot
 yabai -m rule --add app="Godot" scratchpad=godot
 yabai -m rule --add title="Godot Engine$" scratchpad=godot
