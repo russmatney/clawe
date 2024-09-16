@@ -7,6 +7,8 @@ focus_follows_mouse no
 
 # super key
 set $mod Mod4
+# alt
+set $alt Mod1
 
 # Use Mouse+$mod to drag floating windows to their wanted position
 floating_modifier $mod
@@ -185,7 +187,7 @@ bindsym XF86MonBrightnessDown exec --no-startup-id "light -U 5"
 # clean up
 # TODO should move all scratchpad toggles to scratchpads
 # bindsym $mod+d [class="(Spotify|firefox|firefoxdeveloperedition)"] move scratchpad
-bindsym $mod+d exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.rules/clean-up-workspaces
+bindsym $mod+Shift+d exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.rules/clean-up-workspaces
 
 for_window [class="Spotify"] move scratchpad
 # for_window [class="(Spotify|firefox)"] move scratchpad
@@ -194,6 +196,7 @@ for_window [class="Clove" title="tauri-doctor-focus"] move scratchpad
 for_window [class="Emacs" title="journal"] move scratchpad
 for_window [class="^1Password$"] move scratchpad
 for_window [class="^Slack"] move scratchpad
+for_window [class="^Discord"] move scratchpad
 # for_window [class="Aseprite"] move scratchpad
 
 # cycle all scratchpads
@@ -220,12 +223,16 @@ bindsym $mod+y exec --no-startup-id i3-msg [class="Clove" title="tauri-doctor-fo
   bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key focus
 
 # toggle spotify
-bindsym $mod+s exec --no-startup-id i3-msg [class="Spotify"] scratchpad show || \
+bindsym $mod+$alt+s exec --no-startup-id i3-msg [class="Spotify"] scratchpad show || \
   bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key spotify
 
 # toggle slack
-bindsym $mod+a exec --no-startup-id i3-msg [class="Slack"] scratchpad show || \
+bindsym $mod+$alt+a exec --no-startup-id i3-msg [class="Slack"] scratchpad show || \
   bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key slack
+
+# toggle discord
+bindsym $mod+$alt+d exec --no-startup-id i3-msg [class="Discord"] scratchpad show || \
+  bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key discord
 
 # toggle web
 bindsym $mod+t exec --no-startup-id i3-msg [class="firefox$"] scratchpad show || \
@@ -240,11 +247,11 @@ bindsym $mod+period exec --no-startup-id i3-msg '[class="1Password"] scratchpad 
   bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key onepass
 
 # toggle aseprite
-bindsym $mod+Shift+p exec --no-startup-id i3-msg '[class="^Aseprite"] scratchpad show' || \
+bindsym $mod+$alt+p exec --no-startup-id i3-msg '[class="^Aseprite"] scratchpad show' || \
   bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key aseprite
 
 # toggle Godot
-bindsym $mod+Shift+g exec --no-startup-id i3-msg '[instance="Godot_Engine"] scratchpad show' || \
+bindsym $mod+$alt+g exec --no-startup-id i3-msg '[instance="Godot_Engine"] scratchpad show' || \
   bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key godot
 
 for_window [instance="Godot_Engine" title="Dino"] floating enable, sticky enable, move position center
@@ -285,17 +292,17 @@ bindsym $mod+p workspace next
 ###################################################################
 ## startup execs
 ###################################################################
-# all of these run again when you i3-msg "restart"
+# exec_always run again when you i3-msg "restart"
 
 # Compositor (Animations, Shadows, Transparency)
 # exec_always --no-startup-id compton --inactive-dim 0.1 --active-opacity 0.9 -i 0.95
 # exec_always --no-startup-id compton -cCfb --backend glx --vsync opengl
-exec --no-startup-id picom
+exec_always --no-startup-id picom
 
 # exec_always --no-startup-id feh --bg-scale ~/Dropbox/wallpapers/cityscape-cartoon.jpg
 # exec_always --no-startup-id variety --resume
 
-exec --no-startup-id $HOME/.config/polybar/launch.sh
+exec_always --no-startup-id $HOME/.config/polybar/launch.sh
 exec --no-startup-id bluetoothctl -- power on
 exec --no-startup-id xautolock -time 5 -locker "i3lock -c 262626"
 
