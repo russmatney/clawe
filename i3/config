@@ -197,6 +197,7 @@ for_window [class="Emacs" title="journal"] move scratchpad
 for_window [class="^1Password$"] move scratchpad
 for_window [class="^Slack"] move scratchpad
 for_window [class="^Discord"] move scratchpad
+for_window [class="^Obsidian"] move scratchpad
 # for_window [class="Aseprite"] move scratchpad
 
 # cycle all scratchpads
@@ -233,6 +234,10 @@ bindsym $mod+$alt+a exec --no-startup-id i3-msg [class="Slack"] scratchpad show 
 # toggle discord
 bindsym $mod+$alt+d exec --no-startup-id i3-msg [class="Discord"] scratchpad show || \
   bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key discord
+
+# toggle obsidian
+bindsym $mod+$alt+o exec --no-startup-id i3-msg [class="Obsidian"] scratchpad show || \
+  bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key obsidian
 
 # toggle web
 bindsym $mod+t exec --no-startup-id i3-msg [class="firefox$"] scratchpad show || \
