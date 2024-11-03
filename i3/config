@@ -115,9 +115,9 @@ bindsym $mod+Shift+s exec --no-startup-id i3-scrot
 # these are also impled via sxhkd...
 
 # clawe-mx
-bindsym $mod+x exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-mx
-bindsym $mod+w exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-mx-suggestions
-bindsym $mod+o exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-mx-open
+bindsym $mod+Shift+x exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-mx
+bindsym $mod+Shift+w exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-mx-suggestions
+bindsym $mod+Shift+o exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-mx-open
 
 # clawe reload
 # bindsym $mod-r exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.restart/reload
@@ -132,7 +132,7 @@ bindsym $mod+Tab focus parent; focus next
 ################################################################################
 
 # toggle floating
-bindsym $mod+f floating toggle
+bindsym $mod+Shift+f floating toggle
 
 # toggle fullscreen
 bindsym $mod+Shift+space fullscreen toggle
@@ -244,7 +244,7 @@ bindsym $mod+t exec --no-startup-id i3-msg [class="firefox$"] scratchpad show ||
   bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key web
 
 # toggle dev browser
-bindsym $mod+b exec --no-startup-id i3-msg '[class="firefoxdeveloperedition"] scratchpad show' || \
+bindsym $mod+$alt+b exec --no-startup-id i3-msg '[class="firefoxdeveloperedition"] scratchpad show' || \
   bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key devweb
 
 # toggle 1password
