@@ -92,6 +92,23 @@
            conn)
       (map first))))
 
+(def watched-usernames
+  #{"russmatney"}
+  )
+
+(defn watched-repos [conn]
+  (when conn
+    (->>
+      (d/q '[:find (pull ?e [*])
+             :in $ ?watched-usernames
+             :where
+             [?e :doctor/type :type/repo]
+             [?e :repo/user-name ?username]
+             [(contains? ?watched-usernames ?username)]]
+           conn
+           watched-usernames)
+      (map first))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; pomodoros
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

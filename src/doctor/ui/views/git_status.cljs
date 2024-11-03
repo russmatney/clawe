@@ -71,7 +71,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn widget [{:keys [conn] :as _opts}]
-  (let [repos (->> (ui.db/repos conn)
+  (let [repos (->> (ui.db/watched-repos conn)
                    (sort dirty?)
                    (sort needs-pull?)
                    (sort needs-push?))]
@@ -79,8 +79,6 @@
      {:class ["text-center" "my-36" "text-slate-200"]}
 
      (when (empty? repos)
-       [:div
-        [:div {:class ["font-nes"]} "Never fetched!"]
-        [:div {:class ["font-mono"]} "Are you this out of sync?"]])
+       [:div {:class ["font-nes"]} "No repos found!"])
 
      [repo-table repos]]))
