@@ -84,7 +84,7 @@ client.focused #4c7899 #285577 #ffffff #2e9ef4 #285577
 ###################################################
 
 # restart i3 in place
-bindsym $mod+Shift+r exec "systemctl --user stop sxhkd && i3-msg restart"
+bindsym $mod+Shift+r exec "systemctl --user stop sxhkd || i3-msg restart"
 
 # reload clawe
 bindsym $mod+r exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/reload
