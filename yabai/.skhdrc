@@ -196,6 +196,10 @@ shift + cmd - f : yabai -m window --toggle float;\
 shift + cmd - c : yabai -m window --toggle float; \
                   yabai -m window --grid 50:50:1:1:48:48
 
+# TODO set floating, not toggle? the toggle is kind of nice
+shift + cmd - v : yabai -m window --toggle float; \
+                  yabai -m window --grid 50:50:10:10:30:30
+
 # make floating window fill left-half of screen
 # shift + cmd - left : yabai -m window --toggle float;\
 #                      yabai -m window --grid 1:2:0:0:1:1
@@ -279,17 +283,18 @@ cmd + alt - r : yabai -m window --scratchpad recover
 cmd + alt - s : yabai -m window --toggle spotify || open  -a Spotify
 cmd + alt - d : yabai -m window --toggle discord || open -a Discord
 cmd - t : yabai -m window --toggle web || open  -a Firefox
-cmd - b : yabai -m window --toggle devweb || bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key devweb
 cmd - y : yabai -m window --toggle clawe-dashboard || bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key dashboard
 cmd - u : yabai -m window --toggle emacs-journal || bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key journal
 cmd - e : yabai -m window --toggle emacs-floating || bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key floating-emacs
 
+cmd + alt - b : yabai -m window --toggle devweb || bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key devweb
 cmd + alt - a : yabai -m window --toggle slack || bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key slack
 cmd + alt - m : yabai -m window --toggle messages ||  bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key messages
 cmd + alt - n : yabai -m window --toggle notion
 cmd + alt - g : yabai -m window --toggle godot || bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key godot
 cmd + alt - x : yabai -m window --toggle xcode || bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key xcode
 cmd + alt - p : yabai -m window --toggle aseprite || bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key aseprite
+cmd + alt - o : yabai -m window --toggle obsidian || bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key obsidian
 
 cmd + shift - d : bb --config ~/russmatney/clawe/bb.edn -x clawe.rules/clean-up-workspaces
 cmd + shift - x : bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-mx
