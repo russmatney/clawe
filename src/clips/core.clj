@@ -7,13 +7,20 @@
    [db.core :as db]))
 
 
-(defn local-file-paths []
-  (let [base-dir (str (fs/home) "/gifs/")]
-    (->
-      ^{:dir base-dir :out :string}
-      (proc/$ ls)
-      proc/check :out
-      (string/split #"\n"))))
+(defn local-clip-paths
+  ([] (local-clip-paths (str (fs/home) "/Dropbox/game-assets/game-clips")))
+  ([dir]
+   (if (not (fs/exists? dir))
+     (println "clip dir path does not exist!" dir)
+     (->> dir
+          fs/list-dir
+          (filter fs/directory?)
+          (#(fs/list-dirs % "*.{gif,mp4}"))
+          (map str)))))
+
+(comment
+  (local-clip-paths)
+  )
 
 
 (defn fname->clip [f]
@@ -23,6 +30,7 @@
               (string/replace #"Kapture " "")
               (string/replace #" \d{2}%" "")
               (string/replace #" at " "_")
+              (string/replace #" " "_")
               (string/replace #".gif" "")
               (string/replace #".mp4" ""))
           t (dates.tick/parse-time-string time-string)]
@@ -37,7 +45,7 @@
        :clip/time-string    time-string})))
 
 (defn all-clips []
-  (->> (local-file-paths)
+  (->> (local-clip-paths)
        (map fname->clip)
        (remove nil?)))
 
@@ -45,3 +53,6 @@
   (->> (all-clips)
        (take 200)
        (db/transact)))
+
+(comment
+  (ingest-clips))
