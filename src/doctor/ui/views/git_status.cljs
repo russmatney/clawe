@@ -78,7 +78,9 @@
     [:div
      {:class ["text-center" "my-36" "text-slate-200"]}
 
-     [:div {:class ["font-nes"]} "Never fetched!"]
-     [:div {:class ["font-mono"]} "Are you this out of sync?"]
+     (when (empty? repos)
+       [:div
+        [:div {:class ["font-nes"]} "Never fetched!"]
+        [:div {:class ["font-mono"]} "Are you this out of sync?"]])
 
      [repo-table repos]]))

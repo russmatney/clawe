@@ -92,10 +92,12 @@
                               [ingest/ingest-buttons]
                               [ingest/commit-ingest-buttons (:conn opts)]])
                   :label   "ingestors"
+                  :opts    opts
                   :actions (ingest/ingest-actions)}]
 
      [widget-bar {:comp  git-status/widget
                   :label "git-status"
+                  :opts  opts
                   :bar   git-status/bar}]
 
      [widget-bar {:comp  pomodoro/widget
