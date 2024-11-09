@@ -186,13 +186,24 @@
   (duration-since (parse-time-string "2022-02-26_15:47:52-0500")))
 
 (defn an-x-ago-ms
-  "Returns duration-ago as milliseconds."
+  "Returns duration-ago as milliseconds.
+  NOTE only useful for per-day units, not less than 1 day.
+  "
   [duration]
   (-> (t/today)
       (t/at (t/midnight))
       (t/<< duration)
       t/inst
       inst-ms))
+
+;; TODO support and update note above
+;; (defn an-hour-ago-ms
+;;   "Returns an-hour-ago as milliseconds."
+;;   []
+;;   (an-x-ago-ms (t/new-duration 1 :hours)))
+
+;; (comment
+;;   (an-hour-ago-ms))
 
 (defn a-week-ago-ms
   "Returns a-week-ago as milliseconds."

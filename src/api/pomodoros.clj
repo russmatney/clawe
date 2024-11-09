@@ -22,7 +22,7 @@
                          first)]
     {:current current :last last}))
 
-(defn start-new []
+(defn start-if-break []
   (let [current (:current (get-state))]
     (if current
       (log/warn "Attempted to start-new pomodoro when current exists, doing nothing")
@@ -34,6 +34,21 @@
             (db/transact))
         (notify/notify "Starting new pomodoro")))
     (get-state)))
+
+;; TODO write some kind of 'smart-toggle' logic in here
+;; e.g. if we're on a break, start the pomorodo
+;; e.g. if we're beyond 2x our 'break' time, stop the pomodoro
+;; e.g. if we're beyond 4/5x our 'break' time, start another one
+(defn start-pomodoro
+  "Starts a pomodoro regardless of the current state."
+  []
+  (-> {:doctor/type         :type/pomodoro
+       :pomodoro/started-at (dt/now)
+       :pomodoro/is-current true
+       :pomodoro/id         (random-uuid)}
+      (db/transact))
+  (notify/notify "Starting new pomodoro")
+  (get-state))
 
 (defn end-current []
   (let [{:keys [current]} (get-state)]
@@ -47,8 +62,10 @@
 
 (comment
   (get-state)
-  (start-new)
+  (start-if-break)
+  (start-pomodoro)
   (end-current))
+
 
 
 (defn clean-up-pomodoros []

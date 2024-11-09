@@ -133,13 +133,17 @@
      (install-zsh-tab-completion))
 
    ;; Doom env refresh - probably a race-case here....
-   (tmux/fire {:tmux.fire/cmd     "doom env"
-               :tmux.fire/session "dotfiles"
+   (tmux/fire {:tmux.fire/cmd       "doom env"
+               :tmux.fire/session   "dotfiles"
                :tmux.fire/directory "~/dotfiles"
                })
    (emacs/fire "(doom/reload-env)")
 
    (clawe.doctor/update-topbar)
+
+   ;; TODO move to 'smart-toggle' (or some other name)
+   (clawe.doctor/start-pomodoro)
+
    (log "Reload complete")
 
    (check-unit-tests)))

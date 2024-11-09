@@ -161,8 +161,8 @@
 ;; pomodoros
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defhandler pomodoro-start-new []
-  (api.pomodoros/start-new)
+(defhandler pomodoro-start-if-break []
+  (api.pomodoros/start-if-break)
   :ok)
 
 (defhandler pomodoro-end-current []
@@ -177,7 +177,7 @@
            :action/on-click #(pomodoro-end-current)
            :action/icon     octicons/stop16}
           {:action/label    "Start"
-           :action/on-click #(pomodoro-start-new)
+           :action/on-click #(pomodoro-start-if-break)
            :action/icon     octicons/play16})])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

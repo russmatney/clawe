@@ -24,6 +24,9 @@
     (string/starts-with? "/api/pomodoros" uri)
     (pomodoros/route req)
 
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;; clawe
+
     (= uri "/reload")
     (do
       (clawe.restart/reload)
@@ -35,6 +38,9 @@
       (topbar/push-topbar-metadata)
       {:status 200 :body "updated topbar"})
 
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;; screenshots/clips
+
     (= uri "/screenshots/update")
     (do
       (screenshots/ingest-screenshots)
@@ -45,10 +51,21 @@
       (clips/ingest-clips)
       {:status 200 :body "updated clips"})
 
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;; pomodoros/todos
+
+    (= uri "/pomodoros/start")
+    (do
+      (pomodoros/start-pomodoro)
+      {:status 200 :body "starting new pomodoro"})
+
     (= uri "/todos/update")
     (do
       (todos/reingest-todos)
       {:status 200 :body "updated todos"})
+
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;; blog
 
     (= uri "/blog/rebuild")
     (do
@@ -71,6 +88,9 @@
       (blog/restart-systems)
       {:status 200 :body "restarted blog systems"})
 
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;; clawe rofi/mx
+
     (= uri "/clawe-mx")
     (do
       (clawe.mx/mx)
@@ -90,6 +110,9 @@
     (do
       (clawe.mx/mx-open)
       {:status 200})
+
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;; clawe toggle
 
     (= uri "/clawe-toggle")
     (do
