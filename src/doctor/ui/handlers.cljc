@@ -527,7 +527,7 @@
 
 (defhandler check-repo-status [repo]
   (log/info "checking repo status" repo)
-  (api.repos/check-repo-status repo)
+  (api.repos/update-repo-status repo)
   :ok)
 
 #?(:cljs

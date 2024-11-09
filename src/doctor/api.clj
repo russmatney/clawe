@@ -6,6 +6,7 @@
    [api.todos :as todos]
    [api.blog :as blog]
    [api.pomodoros :as pomodoros]
+   [api.repos :as repos]
    [screenshots.core :as screenshots]
    [clips.core :as clips]
 
@@ -50,6 +51,14 @@
     (do
       (clips/ingest-clips)
       {:status 200 :body "updated clips"})
+
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;; git
+
+    (= uri "/git/refresh")
+    (do
+      (repos/refresh-git-status)
+      {:status 200 :body "refreshing git repo status"})
 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ;; pomodoros/todos

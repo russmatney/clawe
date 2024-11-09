@@ -7,7 +7,7 @@
    [db.core :as db]
    [git.core :as git]))
 
-(defn check-repo-status [repo]
+(defn update-repo-status [repo]
   (log/info "checking repo status" repo)
   (let [{:git/keys [dirty? needs-pull? needs-push?]}
         (ralphie.git/status (:repo/directory repo))
@@ -23,6 +23,52 @@
     (log/info "update" update)
     (db/transact (merge repo update) {:verbose? true}))
   :ok)
+
+(defn tracked-repo?
+  ;; TODO support a db-field that we set from the frontend/cli
+  ;; something like :repo/track-git-status
+  [repo]
+  (and
+    (#{"russmatney"} (:repo/user-name repo))
+    (#{"clawe"
+       "dotfiles"
+       "word-games"
+       "dino"
+       "bones"} (:repo/name repo))))
+
+
+(defn get-repos
+  ([] (get-repos nil))
+  ([_opts]
+   (->> (db/query
+          '[:find (pull ?e [*])
+            :where
+            [?e :doctor/type :type/repo]])
+        (map first))))
+
+(comment
+  (->>
+    (get-repos)
+    (map keys)
+    (into #{})))
+
+(defn refresh-git-status
+  "For opted-in repos, check and update the dirty/needs-pull/needs-push status.
+  "
+  []
+  (->>
+    (get-repos)
+    (filter tracked-repo?)
+    ;; TODO i'm sure we want some caching strategy here, but i'm not sure what it is
+    ;; maybe once per pomodoro, so we rely on it for a fresh context?
+    (map update-repo-status)
+    doall))
+
+(comment
+  (refresh-git-status)
+  )
+
+
 
 (defn get-commits
   ([] (get-commits nil))

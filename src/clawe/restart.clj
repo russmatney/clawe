@@ -144,6 +144,9 @@
    ;; TODO move to 'smart-toggle' (or some other name)
    (clawe.doctor/start-pomodoro)
 
+   ;; fire git-status check for repos
+   (clawe.doctor/refresh-git-status)
+
    (log "Reload complete")
 
    (check-unit-tests)))

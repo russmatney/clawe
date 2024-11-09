@@ -22,6 +22,9 @@
 (defn start-pomodoro []
   (slurp (str (clawe.config/doctor-base-url) "/pomodoros/start")))
 
+(defn refresh-git-status []
+  (slurp (str (clawe.config/doctor-base-url) "/git/refresh")))
+
 (defn rebuild-blog
   ([] (rebuild-blog nil))
   ([_] (slurp (str (clawe.config/doctor-base-url) "/blog/rebuild"))))
