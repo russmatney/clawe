@@ -117,7 +117,12 @@
   (let [current (some->>
                   (d/q '[:find (pull ?e [*])
                          :where [?e :pomodoro/is-current true]] conn)
-                  ffirst)
+                  (map first)
+                  ;; ((fn [xs]
+                  ;;    (println "current pomodoros" xs)
+                  ;;    xs))
+                  (sort-by :pomodoro/started-at dt/sort-latest-first)
+                  first)
         last    (some->>
                   (d/q '[:find (pull ?e [*])
                          :where [?e :pomodoro/finished-at _]] conn)

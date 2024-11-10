@@ -14,7 +14,9 @@
 (defn get-state []
   (let [current (some->> (db/query '[:find (pull ?e [*])
                                      :where [?e :pomodoro/is-current true]])
-                         ffirst)
+                         (map first)
+                         (sort-by :pomodoro/started-at dt/sort-latest-first)
+                         first)
         last    (some->> (db/query '[:find (pull ?e [*])
                                      :where [?e :pomodoro/finished-at _]])
                          (map first)
