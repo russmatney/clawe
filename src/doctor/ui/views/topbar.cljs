@@ -25,7 +25,10 @@
    [doctor.ui.views.focus :as focus]))
 
 (defn skip-bar-app? [client]
-  (-> client :client/window-title #{"tauri-doctor-topbar"}))
+  (or
+    (-> client :client/window-title #{"tauri-doctor-topbar"})
+    (-> client :client/app-name #{"1password"})
+    ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Icons
