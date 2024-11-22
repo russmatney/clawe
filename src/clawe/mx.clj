@@ -369,7 +369,12 @@ hi there
    (->>
      (concat
        (->>
-         (git/rofi-clone-suggestions-fast)
+         (try
+           (git/rofi-clone-suggestions-fast)
+           (catch Exception err
+             (notify/notify "Error building clone suggestions")
+             (println err)
+             []))
          (map (fn [x]
                 (-> x
                     (assoc :rofi/label (str "clone + create wsp: " (:rofi/label x)))

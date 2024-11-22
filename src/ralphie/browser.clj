@@ -39,12 +39,17 @@
   ([opts]
    (let [query         (:query opts nil)
          default-query "-pinned"]
-     (->> (p/$ bt query ~(if query query default-query ))
-          p/check
-          :out
-          slurp
-          (#(string/split % #"\n"))
-          (map line->tab)))))
+     (try
+       (->> (p/$ bt query ~(if query query default-query ))
+            p/check
+            :out
+            slurp
+            (#(string/split % #"\n"))
+            (map line->tab))
+       (catch Exception err
+         (notify/notify "Error building tabs list")
+         (println err)
+         [])))))
 
 (comment
   (tabs)
