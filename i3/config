@@ -84,7 +84,8 @@ client.focused #4c7899 #285577 #ffffff #2e9ef4 #285577
 ###################################################
 
 # restart i3 in place
-bindsym $mod+Shift+r exec "systemctl --user stop sxhkd || i3-msg restart"
+# bindsym $mod+Shift+r exec "systemctl --user stop sxhkd || i3-msg restart"
+bindsym $mod+Shift+r restart
 
 # reload clawe
 bindsym $mod+r exec --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/reload
@@ -302,7 +303,7 @@ bindsym $mod+p workspace next
 ###################################################################
 ## startup execs
 ###################################################################
-# exec_always run again when you i3-msg "restart"
+# exec_always runs whenever you i3-msg "restart"
 
 # Compositor (Animations, Shadows, Transparency)
 # exec_always --no-startup-id compton --inactive-dim 0.1 --active-opacity 0.9 -i 0.95
@@ -310,14 +311,11 @@ bindsym $mod+p workspace next
 exec_always --no-startup-id picom
 
 # exec_always --no-startup-id feh --bg-scale ~/Dropbox/wallpapers/cityscape-cartoon.jpg
-# exec_always --no-startup-id variety --resume
+exec_always --no-startup-id variety --resume
 
 exec_always --no-startup-id $HOME/.config/polybar/launch.sh
 exec --no-startup-id bluetoothctl -- power on
 exec --no-startup-id xautolock -time 5 -locker "i3lock -c 262626"
 
 exec_always --no-startup-id systemctl --user restart doctor-topbar
-
-exec_always --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.config/set-wm :wm i3
-# exec_always --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.rules/clean-up-workspaces
 exec_always --no-startup-id bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/reload
