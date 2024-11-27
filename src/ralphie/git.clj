@@ -190,6 +190,24 @@
       ($ git "fetch" --verbose)
       check :err slurp))
 
+(defn fetch-via-tmux [repo-path]
+  (notify (str "Fetching via tmux/fire " repo-path))
+  (let [repo-short-name
+        (-> repo-path re/->repo-id (string/split #"\/") last)]
+    (tmux/fire "git fetch --verbose" {:tmux.fire/session repo-short-name})))
+
+(comment
+  (fetch-via-tmux "~/russmatney/dotfiles")
+
+  (->
+    "~/russmatney/dotfiles"
+    (re/->repo-id)
+    (string/split #"\/")
+    last
+    )
+  )
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; update local repos
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
