@@ -8,7 +8,10 @@
    [git.core :as git]))
 
 (defn update-repo-status [repo]
-  (log/info "checking repo status" repo)
+  (log/info "fetching and checking repo status" repo)
+  ;; this likely won't finish before the next status check runs
+  ;; maybe we want to wait a tick?
+  (ralphie.git/fetch-via-tmux (:repo/directory repo))
   (let [{:git/keys [dirty? needs-pull? needs-push?]}
         (ralphie.git/status (:repo/directory repo))
         now    (dt/now)
@@ -20,7 +23,7 @@
                  (not needs-pull?) (assoc :repo/did-not-need-pull-at now)
                  needs-push?       (assoc :repo/needs-push-at now)
                  (not needs-push?) (assoc :repo/did-not-need-push-at now))]
-    (log/info "update" update)
+    (log/info "update" (:repo/directory repo))
     (db/transact (merge repo update) {:verbose? true}))
   :ok)
 
