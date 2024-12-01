@@ -116,11 +116,8 @@
 (defn pomodoro-state [conn]
   (let [current (some->>
                   (d/q '[:find (pull ?e [*])
-                         :where [?e :pomodoro/is-current true]] conn)
+                         :where [?e :pomodoro/started-at _]] conn)
                   (map first)
-                  ;; ((fn [xs]
-                  ;;    (println "current pomodoros" xs)
-                  ;;    xs))
                   (sort-by :pomodoro/started-at dt/sort-latest-first)
                   first)
         last    (some->>
@@ -129,7 +126,10 @@
                   (map first)
                   (sort-by :pomodoro/finished-at dt/sort-latest-first)
                   first)]
-    {:current current :last last}))
+    (if (dt/newer (:pomodoro/started-at current)
+                  (:pomodoro/finished-at last))
+      {:current current :last last}
+      {:last last})))
 
 (defn pomodoros [conn]
   (when conn

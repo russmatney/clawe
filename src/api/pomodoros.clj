@@ -13,7 +13,7 @@
 
 (defn get-state []
   (let [current (some->> (db/query '[:find (pull ?e [*])
-                                     :where [?e :pomodoro/is-current true]])
+                                     :where [?e :pomodoro/started-at _]])
                          (map first)
                          (sort-by :pomodoro/started-at dt/sort-latest-first)
                          first)
@@ -22,7 +22,10 @@
                          (map first)
                          (sort-by :pomodoro/finished-at dt/sort-latest-first)
                          first)]
-    {:current current :last last}))
+    (if (dt/newer (:pomodoro/started-at current)
+                  (:pomodoro/finished-at last))
+      {:current current :last last}
+      {:last last})))
 
 (defn start-if-break []
   (let [current (:current (get-state))]
@@ -46,6 +49,7 @@
   []
   (-> {:doctor/type         :type/pomodoro
        :pomodoro/started-at (dt/now)
+       ;; TODO drop this is-current usage
        :pomodoro/is-current true
        :pomodoro/id         (random-uuid)}
       (db/transact))
