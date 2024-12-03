@@ -1,6 +1,11 @@
 (ns components.todo
   (:require
+   [clojure.set :as set]
+   [clojure.string :as string]
    [tick.core :as t]
+   ;; TODO continue refactor
+   [uix.core :as uix :refer [$ defui]]
+
    [components.colors :as colors]
    [components.note :as note]
    [components.floating :as floating]
@@ -11,10 +16,7 @@
    [doctor.ui.hooks.use-selection :as hooks.use-selection]
    [doctor.ui.handlers :as handlers]
    [dates.tick :as dates.tick]
-   [uix.core.alpha :as uix]
-   [util :as util]
-   [clojure.set :as set]
-   [clojure.string :as string]))
+   [util :as util]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; preds
