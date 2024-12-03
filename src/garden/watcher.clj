@@ -29,7 +29,9 @@
   (log/info "Starting *garden-watcher*")
   (dirwatch/watch-dir
     (fn [event]
-      (log/debug (:action event) "event" event)
+      ;; TODO ignore .git
+      ;; (when-not (#{".git"} (some-> event :file str fs/extension))
+      ;;   (log/debug (:action event) "event" event))
       (when (and (not (#{:delete} (:action event)))
                  (should-sync-file? (:file event)))
         (log/debug "Syncing file" (str (fs/file-name (:file event))))

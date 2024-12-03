@@ -2,30 +2,34 @@
   (:require
    [dates.tick :as dates.tick]
    [tick.core :as t]
+   [uix.core :as uix :refer [defui $]]
+
    [components.table :as components.table]
    [components.floating :as floating]
    [components.debug :as components.debug]
-   [components.garden :as components.garden]
-   [components.wallpaper :as components.wallpaper]
-   [components.chess :as components.chess]
-   [components.screenshot :as components.screenshot]
-   [components.git :as components.git]
+
+   ;; [components.garden :as components.garden]
+   ;; [components.wallpaper :as components.wallpaper]
+   ;; [components.chess :as components.chess]
+   ;; [components.screenshot :as components.screenshot]
+   ;; [components.git :as components.git]
+
    [doctor.ui.db :as ui.db]
-   [doctor.ui.handlers :as handlers]
+   ;; [doctor.ui.handlers :as handlers]
    [components.actions :as components.actions]
    [util :as util]))
 
-(defn basic-text-popover [text]
-  [:div
-   {:class
-    ["text-city-blue-400"
-     "flex" "flex-col" "p-2"
-     "bg-yo-blue-500"]}
-   text])
+(defui basic-text-popover [text]
+  ($ :div
+     {:class
+      ["text-city-blue-400"
+       "flex" "flex-col" "p-2"
+       "bg-yo-blue-500"]}
+     text))
 
-(defn actions-cell [item]
-  [components.actions/actions-popup
-   {:actions (handlers/->actions item)}])
+(defui actions-cell [item]
+  ($ components.actions/actions-popup
+     {:actions (handlers/->actions item)}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; garden tables
@@ -42,14 +46,14 @@
                 (sort-by (comp count second))
                 reverse
                 (map (fn [[tags group]]
-                       [[:span
-                         (if (seq tags) (str tags) "(no tag)")]
-                        [:span
-                         {:class ["font-nes"]}
-                         (count group)]
-                        [components.debug/raw-metadata
-                         {:label (-> group first :org/name)}
-                         (first group)]])))}) )
+                       [($ :span
+                           (if (seq tags) (str tags) "(no tag)"))
+                        ($ :span
+                           {:class ["font-nes"]}
+                           (count group))
+                        ($ components.debug/raw-metadata
+                           {:label (-> group first :org/name)}
+                           (first group))])))}) )
 
 (defn garden-note-table-def [entities]
   (let [notes (->> entities (filter (comp #{:type/note :type/todo} :doctor/type)))]
@@ -62,25 +66,25 @@
        reverse
        (map (fn [note]
               [(:org/short-path note)
-               [components.garden/text-with-links (:org/name note)]
-               [components.garden/text-with-links (:org/parent-name note)]
-               [floating/popover
-                {:hover true :click true
-                 :anchor-comp
-                 [:span
-                  {:class [(when (seq (:org/body-string note))
-                             "text-city-pink-400")]}
-                  (:org/word-count note)]
-                 :popover-comp
-                 [:div
-                  {:class
-                   ["text-city-blue-400"
-                    "flex" "flex-col" "p-2"
-                    "bg-yo-blue-500"]}
-                  [components.garden/text-with-links (:org/name note)]
-                  [components.garden/org-body note]]}]
-               [components.debug/raw-metadata {:label "raw"} note]
-               [actions-cell note]])))}))
+               ($ components.garden/text-with-links (:org/name note))
+               ($ components.garden/text-with-links (:org/parent-name note))
+               ($ floating/popover
+                  {:hover true :click true
+                   :anchor-comp
+                   ($ :span
+                      {:class [(when (seq (:org/body-string note))
+                                 "text-city-pink-400")]}
+                      (:org/word-count note))
+                   :popover-comp
+                   ($ :div
+                      {:class
+                       ["text-city-blue-400"
+                        "flex" "flex-col" "p-2"
+                        "bg-yo-blue-500"]}
+                      ($ components.garden/text-with-links (:org/name note))
+                      ($ components.garden/org-body note))})
+               ($ components.debug/raw-metadata {:label "raw"} note)
+               ($ actions-cell note)])))}))
 
 (defn garden-file-table-def [entities]
   (let [notes (->> entities
@@ -93,13 +97,13 @@
        notes
        (sort-by :file/last-modified >)
        (map (fn [note]
-              [[floating/popover
-                {:hover        true :click true
-                 :anchor-comp  (:org/short-path note)
-                 :popover-comp [components.garden/full-note note]}]
+              [($ floating/popover
+                  {:hover        true :click true
+                   :anchor-comp  (:org/short-path note)
+                   :popover-comp [components.garden/full-note note]})
                (:org/name note)
-               [components.debug/raw-metadata {:label "raw"} note]
-               [actions-cell note]])))}))
+               ($ components.debug/raw-metadata {:label "raw"} note)
+               ($ actions-cell note)])))}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; wallpaper/screenshots
@@ -114,20 +118,20 @@
       :rows    (->> wps
                     (sort-by :wallpaper/last-time-set >)
                     (map (fn [wp]
-                           [[floating/popover
-                             {:hover true :click true
-                              :anchor-comp
-                              [:img {:src   (-> wp :file/web-asset-path)
-                                     :class ["max-h-24"]}]
-                              :popover-comp
-                              [components.wallpaper/wallpaper-comp wp]}]
-                            [components.actions/actions-list
-                             {:actions (handlers/->actions wp)}]
+                           [($ floating/popover
+                               {:hover true :click true
+                                :anchor-comp
+                                [:img {:src   (-> wp :file/web-asset-path)
+                                       :class ["max-h-24"]}]
+                                :popover-comp
+                                [components.wallpaper/wallpaper-comp wp]})
+                            ($ components.actions/actions-list
+                               {:actions (handlers/->actions wp)})
                             (-> wp :wallpaper/short-path)
                             (:wallpaper/used-count wp)
                             (some-> wp :wallpaper/last-time-set
                                     (t/new-duration :millis) t/instant)
-                            [components.debug/raw-metadata {:label "raw"} wp]])))})))
+                            ($ components.debug/raw-metadata {:label "raw"} wp)])))})))
 
 (defn screenshot-table-def [entities]
   (let [screenshots (->> entities (filter (comp #{:type/screenshot
@@ -138,11 +142,11 @@
                    (filter :event/timestamp)
                    (sort-by :event/timestamp dates.tick/sort-latest-first)
                    (map (fn [scr]
-                          [[components.screenshot/cluster-single nil scr]
+                          [($ components.screenshot/cluster-single nil scr)
                            (-> scr :name)
                            (-> scr :event/timestamp (t/new-duration :millis) t/instant)
-                           [components.debug/raw-metadata {:label "raw"} scr]
-                           [actions-cell scr]])))}))
+                           ($ components.debug/raw-metadata {:label "raw"} scr)
+                           ($ actions-cell scr)])))}))
 
 (comment
   (->>
@@ -163,11 +167,11 @@
                    (sort-by :lichess.game/created-at)
                    (reverse)
                    (map (fn [{:lichess.game/keys [] :as game}]
-                          [[components.chess/cluster-single nil game]
+                          [($ components.chess/cluster-single nil game)
                            (-> game :lichess.game/opening-name)
                            (some-> game :lichess.game/created-at (t/new-duration :millis) t/instant)
-                           [components.debug/raw-metadata {:label "raw"} game]
-                           [actions-cell game]])))}))
+                           ($ components.debug/raw-metadata {:label "raw"} game)
+                           ($ actions-cell game)])))}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; repos/commits
@@ -186,8 +190,8 @@
                            [(-> repo :repo/short-path)
                             (let [commits (ui.db/commits-for-repo conn repo)]
                               (count commits))
-                            [components.debug/raw-metadata {:label "raw"} repo]
-                            [actions-cell repo]])))})))
+                            ($ components.debug/raw-metadata {:label "raw"} repo)
+                            ($ actions-cell repo)])))})))
 
 (defn commit-table-def
   ([commits] (commit-table-def nil commits))
@@ -199,18 +203,18 @@
                     (sort-by (comp dates.tick/parse-time-string :commit/author-date) t/>)
                     (map (fn [commit]
                            (let [repo (ui.db/repo-for-commit conn commit)]
-                             [[components.git/short-hash-link commit repo]
+                             [($ components.git/short-hash-link commit repo)
                               (if (seq (:commit/body commit))
-                                [floating/popover
-                                 {:hover        true :click true
-                                  :anchor-comp  (:commit/subject commit)
-                                  :popover-comp [basic-text-popover (:commit/full-message commit)]}]
+                                ($ floating/popover
+                                   {:hover        true :click true
+                                    :anchor-comp  (:commit/subject commit)
+                                    :popover-comp [basic-text-popover (:commit/full-message commit)]})
                                 (:commit/subject commit))
-                              [components.git/added-removed commit]
+                              ($ components.git/added-removed commit)
                               (if repo (:repo/short-path repo)
                                   (:commit/directory commit))
-                              [components.debug/raw-metadata {:label "raw"} commit]
-                              [actions-cell commit]]))))})))
+                              ($ components.debug/raw-metadata {:label "raw"} commit)
+                              ($ actions-cell commit)]))))})))
 
 (defn summary-table-def [entities]
   (let [ents-by-doctor-type (->> entities (group-by :doctor/type))]
@@ -243,8 +247,8 @@
       :rows    (->> entities
                     (map (fn [ent]
                            (concat
-                             [[components.debug/raw-metadata {:label "raw"} ent]
-                              [actions-cell ent]]
+                             [($ components.debug/raw-metadata {:label "raw"} ent)
+                              ($ actions-cell ent)]
                              (->> headers
                                   (map (fn [h]
                                          (str (get ent h)))))))))})))
@@ -266,32 +270,29 @@
    (commit-table-def opts entities)])
 
 (defn table-def-for-doctor-type
-  ([type entities] (table-def-for-doctor-type nil type entities))
-  ([opts doctor-type entities]
+  ([{:keys [doctor-type entities] :as opts}]
    (cond
      ;; TODO table for :type/todo
 
-     (#{:type/note} doctor-type)
-     (garden-note-table-def entities)
+     ;; (#{:type/note} doctor-type)
+     ;; (garden-note-table-def entities)
 
-     (#{:type/wallpaper} doctor-type)
-     (wallpaper-table-def opts entities)
+     ;; (#{:type/wallpaper} doctor-type)
+     ;; (wallpaper-table-def opts entities)
 
-     (#{:type/screenshot :type/clip} doctor-type)
-     (screenshot-table-def entities)
+     ;; (#{:type/screenshot :type/clip} doctor-type)
+     ;; (screenshot-table-def entities)
 
-     (#{:type/lichess-game} doctor-type)
-     (lichess-game-table-def entities)
+     ;; (#{:type/lichess-game} doctor-type)
+     ;; (lichess-game-table-def entities)
 
-     (#{:type/repo} doctor-type)
-     (repo-table-def opts entities)
+     ;; (#{:type/repo} doctor-type)
+     ;; (repo-table-def opts entities)
 
-     (#{:type/commit} doctor-type)
-     (commit-table-def opts entities)
+     ;; (#{:type/commit} doctor-type)
+     ;; (commit-table-def opts entities)
 
      :else (fallback-table-def opts entities))))
 
-(defn table-for-doctor-type
-  ([type entities] (table-for-doctor-type nil type entities))
-  ([opts doctor-type entities]
-   [components.table/table (table-def-for-doctor-type opts doctor-type entities)]))
+(defui table-for-doctor-type [opts]
+  ($ components.table/table (table-def-for-doctor-type opts)))

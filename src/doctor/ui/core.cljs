@@ -35,7 +35,7 @@
    ;; [doctor.ui.views.commits :as views.commits]
    ;; [doctor.ui.views.focus :as views.focus]
    ;; [doctor.ui.views.todos :as views.todos]
-   ;; [doctor.ui.views.today :as views.today]
+   [doctor.ui.views.today :as views.today]
    [doctor.ui.views.pomodoro :as views.pomodoro]
    ;; [doctor.ui.views.git-status :as views.git-status]
    ;; [doctor.ui.views.topbar :as views.topbar]
@@ -72,6 +72,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; routes, home
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
 
 (def route-defs
   [

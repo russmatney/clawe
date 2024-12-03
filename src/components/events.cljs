@@ -2,7 +2,7 @@
   (:require
    [clojure.string :as string]
    [tick.core :as t]
-   [uix.core.alpha :as uix]
+   [uix.core :as uix :refer [$ defui]]
 
    [components.timeline :as components.timeline]
    [dates.tick :as dates.tick]
@@ -32,13 +32,13 @@
      :todo-count       (count-by :type/todo)
      :chess-game-count (count-by :type/lichess-game)}))
 
-(defn event-count-comp [{:keys [label count]}]
+(defui event-count-comp [{:keys [label count]}]
   (when (and count (> count 0))
-    [:span
-     {:class ["whitespace-nowrap"]}
-     (str count " " label)]))
+    ($ :span
+       {:class ["whitespace-nowrap"]}
+       (str count " " label))))
 
-(defn event-count-list [events]
+(defui event-count-list [events]
   (let
       [{:keys [screenshot-count
                clip-count
@@ -47,26 +47,26 @@
                todo-count
                chess-game-count]}
        (event-counts events)]
-    [:div
-     {:class ["flex" "flex-col"]}
-     [:span
-      {:class ["whitespace-nowrap"]}
-      [event-count-comp {:label "screenshots" :count screenshot-count}]]
-     [:span
-      {:class ["whitespace-nowrap"]}
-      [event-count-comp {:label "clips" :count clip-count}]]
-     [:span
-      {:class ["whitespace-nowrap"]}
-      [event-count-comp {:label "commits" :count commit-count}]]
-     [:span
-      {:class ["whitespace-nowrap"]}
-      [event-count-comp {:label "notes" :count org-note-count}]]
-     [:span
-      {:class ["whitespace-nowrap"]}
-      [event-count-comp {:label "todos" :count todo-count}]]
-     [:span
-      {:class ["whitespace-nowrap"]}
-      [event-count-comp {:label "chess games" :count chess-game-count}]]]))
+    ($ :div
+       {:class ["flex" "flex-col"]}
+       ($ :span
+          {:class ["whitespace-nowrap"]}
+          ($ event-count-comp {:label "screenshots" :count screenshot-count}))
+       ($ :span
+          {:class ["whitespace-nowrap"]}
+          ($ event-count-comp {:label "clips" :count clip-count}))
+       ($ :span
+          {:class ["whitespace-nowrap"]}
+          ($ event-count-comp {:label "commits" :count commit-count}))
+       ($ :span
+          {:class ["whitespace-nowrap"]}
+          ($ event-count-comp {:label "notes" :count org-note-count}))
+       ($ :span
+          {:class ["whitespace-nowrap"]}
+          ($ event-count-comp {:label "todos" :count todo-count}))
+       ($ :span
+          {:class ["whitespace-nowrap"]}
+          ($ event-count-comp {:label "chess games" :count chess-game-count})))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -176,7 +176,7 @@
 
   (cons 1 '(2 3)))
 
-(defn event-cluster
+(defui event-cluster
   ([events] (event-cluster nil events))
   ([opts events]
    (let [screenshots  (->> events (filter (comp #{:type/screenshot} :doctor/type)))
@@ -185,86 +185,95 @@
          chess-games  (->> events (filter (comp #{:type/lichess-game} :doctor/type)))
          garden-notes (->> events (filter (comp #{:type/note} :doctor/type)))
          todos        (->> events (filter (comp #{:type/todo} :doctor/type)))]
-     [:div
-      {:class ["flex" "flex-col"]}
+     ($ :div
+        {:class ["flex" "flex-col"]}
 
-      (when (seq chess-games)
-        [tables/table-for-doctor-type opts :type/lichess-game chess-games])
+        (when (seq chess-games)
+          ($ tables/table-for-doctor-type (assoc opts
+                                                 :doctor-type :type/lichess-game
+                                                 :entities chess-games)))
 
-      (when (seq commits)
-        [tables/table-for-doctor-type opts :type/commit commits])
+        (when (seq commits)
+          ($ tables/table-for-doctor-type (assoc opts
+                                                 :doctor-type :type/commit
+                                                 :entities commits)))
 
-      (when (seq (concat screenshots clips))
-        [tables/table-for-doctor-type opts :type/screenshot (concat screenshots clips)])
+        (when (seq (concat screenshots clips))
+          ($ tables/table-for-doctor-type (assoc opts
+                                                 :doctor-type :type/screenshot
+                                                 :entities (concat screenshots clips))))
 
-      (when (seq todos)
-        [tables/table-for-doctor-type opts :type/note todos])
+        (when (seq todos)
+          ($ tables/table-for-doctor-type (assoc opts
+                                                 :doctor-type :type/note
+                                                 :entities todos)))
 
-      ;; tags table
-      #_(when (seq garden-notes)
-          [components.table/table (tables/garden-by-tag-table-def garden-notes)])
+        ;; tags table
+        #_ (when (seq garden-notes)
+             ($ components.table/table (tables/garden-by-tag-table-def garden-notes)))
 
-      ;; per note
-      (when (seq garden-notes)
-        [tables/table-for-doctor-type opts :type/note garden-notes])])))
+        ;; per note
+        (when (seq garden-notes)
+          ($ tables/table-for-doctor-type (assoc opts
+                                                 :doctor-type :type/note
+                                                 :entities garden-notes)))))))
 
-(defn event-clusters
-  ([events] [event-clusters nil events])
-  ([opts events]
-   (let [{:keys [grouped-events]}
-         (grouped-event-data opts events)]
-     [:div
-      (for [[i [bucket evts]] (->> grouped-events (map-indexed vector))]
-        (let [{:keys [start end]} bucket
-              start               (dates.tick/add-tz start)
-              end                 (dates.tick/add-tz end)
-              show-end?           (cond
-                                    (t/= start end)                 false
-                                    (t/< (t/between start end)
-                                         (t/new-duration 1 :hours)) false
-                                    :else                           true)]
-          [:div
-           {:key   (str start)
-            :class [(when (odd? i) "bg-yo-blue-800") "p-4"
-                    "text-slate-200"]}
+(defui event-clusters
+  [{:keys [events] :as opts}]
+  (let [{:keys [grouped-events]}
+        (grouped-event-data opts events)]
+    ($ :div
+       (for [[i [bucket evts]] (->> grouped-events (map-indexed vector))]
+         (let [{:keys [start end]} bucket
+               start               (dates.tick/add-tz start)
+               end                 (dates.tick/add-tz end)
+               show-end?           (cond
+                                     (t/= start end)                 false
+                                     (t/< (t/between start end)
+                                          (t/new-duration 1 :hours)) false
+                                     :else                           true)]
+           ($ :div
+              {:key   (str start)
+               :class [(when (odd? i) "bg-yo-blue-800") "p-4"
+                       "text-slate-200"]}
 
-           [:span
-            {:class ["text-xl"]}
-            (str (t/format "EEEE MMMM d, ha" start)
-                 (when show-end?
-                   (str " - " (t/format "ha" end))))]
+              ($ :span
+                 {:class ["text-xl"]}
+                 (str (t/format "EEEE MMMM d, ha" start)
+                      (when show-end?
+                        (str " - " (t/format "ha" end)))))
 
-           [event-count-list evts]
+              ($ event-count-list evts)
 
-           [event-cluster opts evts]
+              ($ event-cluster opts evts)
 
-           #_[basic-event-list {} events]]))])))
+              #_ ($ basic-event-list {} events)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; event-timeline-popover
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn event-timeline-popover [{:keys [date events]}]
-  [:div
-   {:class ["mt-4"
-            "flex" "flex-col"
-            "bg-city-blue-800"
-            "p-2"
-            "pt-4"
-            "rounded-lg"
-            "shadow-lg"
-            "bg-opacity-80"
-            "border"
-            "border-city-green-300"
-            "text-city-black-100"]}
+(defui event-timeline-popover [{:keys [date events]}]
+  ($ :div
+     {:class ["mt-4"
+              "flex" "flex-col"
+              "bg-city-blue-800"
+              "p-2"
+              "pt-4"
+              "rounded-lg"
+              "shadow-lg"
+              "bg-opacity-80"
+              "border"
+              "border-city-green-300"
+              "text-city-black-100"]}
 
-   [:span
-    {:class ["text-center" "pb-2"]}
-    (t/format "MMM d" date)]
+     ($ :span
+        {:class ["text-center" "pb-2"]}
+        (t/format "MMM d" date))
 
-   [:div
-    {:class ["bg-city-red-900" "rounded-lg" "px-4" "p-2"]}
-    [event-count-list events]]])
+     ($ :div
+        {:class ["bg-city-red-900" "rounded-lg" "px-4" "p-2"]}
+        ($ event-count-list events))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -276,7 +285,7 @@
      disj
      conj) s val))
 
-(defn events-cluster [_opts items]
+(defui events-cluster [_opts items]
   (let [items          (->> items (filter :event/timestamp))
         all-item-dates (->> items
                             (map :event/timestamp)
@@ -284,46 +293,46 @@
                             (map t/date)
                             (into #{}))
 
-        selected-dates (uix/state #{})
+        [selected-dates set-selected-dates] (uix/use-state #{})
 
         events      (cond->> items
-                      (seq @selected-dates)
-                      (components.events/events-for-dates @selected-dates))
+                      (seq selected-dates)
+                      (components.events/events-for-dates selected-dates))
         event-count (count events)]
 
-    [:div
-     {:class ["flex" "flex-col" "flex-auto"
-              "overflow-hidden"
-              "text-white"
-              "py-6"]}
+    ($ :div
+       {:class ["flex" "flex-col" "flex-auto"
+                "overflow-hidden"
+                "text-white"
+                "py-6"]}
 
-     [:div
-      {:class ["pb-8" "px-6"]}
-      [components.timeline/day-picker
-       {:on-date-click       #(swap! selected-dates (fn [ds] (toggle ds %)))
-        :date-has-data?      all-item-dates
-        :selected-dates      @selected-dates
-        :popover-anchor-comp [:button {:class ["w-3" "h-3" "rounded" "bg-city-pink-400"]}]
-        :date->popover-comp  (fn [date]
-                               [event-timeline-popover
-                                {:date   date
-                                 :events (components.events/events-for-dates #{date} items)}])}
-       (->> items (map :event/timestamp) (remove nil?))]]
+       ($ :div
+          {:class ["pb-8" "px-6"]}
+          ($ components.timeline/day-picker
+             {:on-date-click       #(set-selected-dates (fn [ds] (toggle ds %)))
+              :date-has-data?      all-item-dates
+              :selected-dates      selected-dates
+              :popover-anchor-comp [:button {:class ["w-3" "h-3" "rounded" "bg-city-pink-400"]}]
+              :date->popover-comp  (fn [date]
+                                     [event-timeline-popover
+                                      {:date   date
+                                       :events (components.events/events-for-dates #{date} items)}])}
+             (->> items (map :event/timestamp) (remove nil?))))
 
-     [:div
-      [:h1 {:class ["px-4" "text-xl"]}
-       event-count " Events"
-       (if (seq @selected-dates)
-         (str " on "
-              (->> @selected-dates
-                   (map #(t/format "E MMM d" %))
-                   (string/join ", ")))
-         (str " in the last 14 days"))]
+       ($ :div
+          ($ :h1 {:class ["px-4" "text-xl"]}
+             event-count " Events"
+             (if (seq selected-dates)
+               (str " on "
+                    (->> selected-dates
+                         (map #(t/format "E MMM d" %))
+                         (string/join ", ")))
+               (str " in the last 14 days")))
 
-      [:div
-       {:class ["px-4"]}
-       [components.events/event-count-list events]]]
+          ($ :div
+             {:class ["px-4"]}
+             ($ components.events/event-count-list events)))
 
-     [:div
-      {:class ["pt-2"]}
-      [components.events/event-clusters {} events]]]))
+       ($ :div
+          {:class ["pt-2"]}
+          ($ components.events/event-clusters {} events)))))

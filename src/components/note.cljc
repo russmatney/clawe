@@ -1,9 +1,11 @@
 (ns components.note
   (:require
+   [clojure.set :as set]
    [taoensso.timbre :as log]
    [tick.core :as t]
+   [uix.core :as uix :refer [$ defui]]
+
    [dates.tick :as dates]
-   [clojure.set :as set]
    ))
 
 (defn item-has-any-tags
@@ -23,7 +25,7 @@
          blog.db/id->root-notes-linked-from
          (filter (comp blog.db/id->link-uri :org/id))))
 
-(defn tags-list
+(defui tags-list
   ([note] (tags-list note nil))
   ([note tags]
    (let [tags (or tags (:org/tags note))]
@@ -33,11 +35,11 @@
          (map #(str "#" %))
          (map-indexed
            (fn [_i tag]
-             [:a {:href  (str "/tags.html" tag)
-                  :class ["font-mono"]} tag]))
-         (into [:div
-                {:class ["space-x-1"
-                         "flex flex-row flex-wrap"]}]))))))
+             ($ :a {:href  (str "/tags.html" tag)
+                    :class ["font-mono"]} tag)))
+         (into ($ :div
+                  {:class ["space-x-1"
+                           "flex flex-row flex-wrap"]})))))))
 
 (defn note->flattened-items [note]
   (tree-seq (comp seq :org/items) :org/items note))
@@ -87,36 +89,36 @@
         #_    (org-crud/nested-item->flattened-items note)]
     (reduce + 0 (map :org/word-count items))))
 
-(defn metadata [item]
-  [:div
-   {:class ["flex flex-col"]}
+(defui metadata [item]
+  ($ :div
+     {:class ["flex flex-col"]}
 
-   ;; TODO show more metadata
-   (let [c (created-at item)]
-     (when c
-       [:span
+     ;; TODO show more metadata
+     (let [c (created-at item)]
+       (when c
+         ($ :span
+            {:class ["font-mono"]}
+            (str "Created: " c))))
+     (let [dp (date-published item)]
+       (when dp
+         ($ :span
+            {:class ["font-mono"]}
+            (str "Published: " dp))))
+     ($ :span
         {:class ["font-mono"]}
-        (str "Created: " c)]))
-   (let [dp (date-published item)]
-     (when dp
-       [:span
+        (str "Last modified: " (last-modified item)))
+     ($ :div
+        {:class []}
+        (if (seq (->all-tags item))
+          (tags-list item
+                     (->> (->all-tags item) sort))
+          ($ :span {:class ["font-mono"]} "No tags")))
+     ($ :span
         {:class ["font-mono"]}
-        (str "Published: " dp)]))
-   [:span
-    {:class ["font-mono"]}
-    (str "Last modified: " (last-modified item))]
-   [:div
-    {:class []}
-    (if (seq (->all-tags item))
-      (tags-list item
-                 (->> (->all-tags item) sort))
-      [:span {:class ["font-mono"]} "No tags"])]
-   [:span
-    {:class ["font-mono"]}
-    (str "Word count: " (word-count item))]
-   (let [backlinks (backlink-notes item)]
-     (when (seq backlinks)
-       [:span
-        {:class ["font-mono"]}
-        (str "Backlinks: " (count backlinks))]))
-   [:hr]])
+        (str "Word count: " (word-count item)))
+     (let [backlinks (backlink-notes item)]
+       (when (seq backlinks)
+         ($ :span
+            {:class ["font-mono"]}
+            (str "Backlinks: " (count backlinks)))))
+     ($ :hr)))
