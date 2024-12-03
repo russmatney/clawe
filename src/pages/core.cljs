@@ -18,7 +18,7 @@
   (when (seq route-defs)
     ($ :div
        {:class ["flex" "flex-col" "p-3"]}
-       (for [[i {:keys [route] :as route-def}]
+       (for [[i {:keys [page-name] :as route-def}]
              (->> route-defs
                   (remove :comp-only)
                   (map-indexed vector))]
@@ -32,10 +32,10 @@
                           "text-xl"
                           "font-nes"
                           "hover:text-city-pink-500"]
-                         (cond (#{(:route opts)} route)
+                         (cond (#{(:route opts)} page-name)
                                ["text-city-pink-400" "text-bold"
                                 "whitespace-nowrap"]))
-                :href  (rfe/href route)
+                :href  (rfe/href page-name)
                 }
             ($ route-def->icon route-def)
 
@@ -67,7 +67,7 @@
                           (js/clearTimeout expand-timer)
                           (set-expanded false))}
        ($ :div {:class ["fixed"]}
-          ($ menu {:route-defs (:route-defs opts) :expanded? expanded?})))))
+          ($ menu (assoc opts :expanded? expanded?))))))
 
 (def page-error-boundary
   (uix.core/create-class
@@ -95,7 +95,7 @@
 
 (defui page
   "Accepts a main component and wraps it in page helpers with a menu."
-  [{:keys [main hide-header route-defs route] :as page-opts}]
+  [{:keys [main hide-header route] :as page-opts}]
   ($ page-error-boundary
      ($ :div {:class ["min-h-screen"
                       "flex" "flex-row"
@@ -115,4 +115,4 @@
 
            (when main ($ main page-opts)))
 
-        ($ expanding-menu {:route-defs route-defs}))))
+        ($ expanding-menu page-opts))))
