@@ -26,20 +26,20 @@
          (filter (comp blog.db/id->link-uri :org/id))))
 
 (defui tags-list
-  ([note] (tags-list note nil))
-  ([note tags]
-   (let [tags (or tags (:org/tags note))]
-     (when (seq tags)
-       (->>
-         tags
-         (map #(str "#" %))
-         (map-indexed
-           (fn [_i tag]
-             ($ :a {:href  (str "/tags.html" tag)
-                    :class ["font-mono"]} tag)))
-         (into ($ :div
-                  {:class ["space-x-1"
-                           "flex flex-row flex-wrap"]})))))))
+  [{:keys [tags] :as note}]
+  (let [tags (or tags (:org/tags note))]
+    (when (seq tags)
+      (->>
+        tags
+        (map #(str "#" %))
+        (map-indexed
+          (fn [i tag]
+            ($ :a {:key   i
+                   :href  (str "/tags.html" tag)
+                   :class ["font-mono"]} tag)))
+        (into ($ :div
+                 {:class ["space-x-1"
+                          "flex flex-row flex-wrap"]}))))))
 
 (defn note->flattened-items [note]
   (tree-seq (comp seq :org/items) :org/items note))
@@ -110,8 +110,8 @@
      ($ :div
         {:class []}
         (if (seq (->all-tags item))
-          (tags-list item
-                     (->> (->all-tags item) sort))
+          (tags-list (assoc item
+                            :tags (->> (->all-tags item) sort)))
           ($ :span {:class ["font-mono"]} "No tags")))
      ($ :span
         {:class ["font-mono"]}

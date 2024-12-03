@@ -13,7 +13,7 @@
         (fn []
           (js/document.removeEventListener
             "selectionchange" on-selection-change)))
-      [val])
+      [on-selection-change val])
     val))
 
 (defn last-n-selections
@@ -34,5 +34,5 @@
          (fn []
            (js/document.removeEventListener
              "selectionchange" on-selection-change)))
-       [vals])
+       [vals on-selection-change])
      vals)))

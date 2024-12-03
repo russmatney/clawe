@@ -176,47 +176,45 @@
 
   (cons 1 '(2 3)))
 
-(defui event-cluster
-  ([events] (event-cluster nil events))
-  ([opts events]
-   (let [screenshots  (->> events (filter (comp #{:type/screenshot} :doctor/type)))
-         clips        (->> events (filter (comp #{:type/clip} :doctor/type)))
-         commits      (->> events (filter (comp #{:type/commit} :doctor/type)))
-         chess-games  (->> events (filter (comp #{:type/lichess-game} :doctor/type)))
-         garden-notes (->> events (filter (comp #{:type/note} :doctor/type)))
-         todos        (->> events (filter (comp #{:type/todo} :doctor/type)))]
-     ($ :div
-        {:class ["flex" "flex-col"]}
+(defui event-cluster [{:keys [events] :as opts}]
+  (let [screenshots  (->> events (filter (comp #{:type/screenshot} :doctor/type)))
+        clips        (->> events (filter (comp #{:type/clip} :doctor/type)))
+        commits      (->> events (filter (comp #{:type/commit} :doctor/type)))
+        chess-games  (->> events (filter (comp #{:type/lichess-game} :doctor/type)))
+        garden-notes (->> events (filter (comp #{:type/note} :doctor/type)))
+        todos        (->> events (filter (comp #{:type/todo} :doctor/type)))]
+    ($ :div
+       {:class ["flex" "flex-col"]}
 
-        (when (seq chess-games)
-          ($ tables/table-for-doctor-type (assoc opts
-                                                 :doctor-type :type/lichess-game
-                                                 :entities chess-games)))
+       (when (seq chess-games)
+         ($ tables/table-for-doctor-type (assoc opts
+                                                :doctor-type :type/lichess-game
+                                                :entities chess-games)))
 
-        (when (seq commits)
-          ($ tables/table-for-doctor-type (assoc opts
-                                                 :doctor-type :type/commit
-                                                 :entities commits)))
+       (when (seq commits)
+         ($ tables/table-for-doctor-type (assoc opts
+                                                :doctor-type :type/commit
+                                                :entities commits)))
 
-        (when (seq (concat screenshots clips))
-          ($ tables/table-for-doctor-type (assoc opts
-                                                 :doctor-type :type/screenshot
-                                                 :entities (concat screenshots clips))))
+       (when (seq (concat screenshots clips))
+         ($ tables/table-for-doctor-type (assoc opts
+                                                :doctor-type :type/screenshot
+                                                :entities (concat screenshots clips))))
 
-        (when (seq todos)
-          ($ tables/table-for-doctor-type (assoc opts
-                                                 :doctor-type :type/note
-                                                 :entities todos)))
+       (when (seq todos)
+         ($ tables/table-for-doctor-type (assoc opts
+                                                :doctor-type :type/note
+                                                :entities todos)))
 
-        ;; tags table
-        #_ (when (seq garden-notes)
-             ($ components.table/table (tables/garden-by-tag-table-def garden-notes)))
+       ;; tags table
+       #_ (when (seq garden-notes)
+            ($ components.table/table (tables/garden-by-tag-table-def garden-notes)))
 
-        ;; per note
-        (when (seq garden-notes)
-          ($ tables/table-for-doctor-type (assoc opts
-                                                 :doctor-type :type/note
-                                                 :entities garden-notes)))))))
+       ;; per note
+       (when (seq garden-notes)
+         ($ tables/table-for-doctor-type (assoc opts
+                                                :doctor-type :type/note
+                                                :entities garden-notes))))))
 
 (defui event-clusters
   [{:keys [events] :as opts}]
@@ -245,7 +243,7 @@
 
               ($ event-count-list evts)
 
-              ($ event-cluster opts evts)
+              ($ event-cluster (assoc opts :events evts))
 
               #_ ($ basic-event-list {} events)))))))
 
@@ -285,7 +283,7 @@
      disj
      conj) s val))
 
-(defui events-cluster [_opts items]
+(defui events-cluster [items]
   (let [items          (->> items (filter :event/timestamp))
         all-item-dates (->> items
                             (map :event/timestamp)
@@ -297,7 +295,7 @@
 
         events      (cond->> items
                       (seq selected-dates)
-                      (components.events/events-for-dates selected-dates))
+                      (events-for-dates selected-dates))
         event-count (count events)]
 
     ($ :div
@@ -316,8 +314,8 @@
               :date->popover-comp  (fn [date]
                                      [event-timeline-popover
                                       {:date   date
-                                       :events (components.events/events-for-dates #{date} items)}])}
-             (->> items (map :event/timestamp) (remove nil?))))
+                                       :events (events-for-dates #{date} items)}])
+              :timestamps          (->> items (map :event/timestamp) (remove nil?))}))
 
        ($ :div
           ($ :h1 {:class ["px-4" "text-xl"]}
@@ -331,8 +329,8 @@
 
           ($ :div
              {:class ["px-4"]}
-             ($ components.events/event-count-list events)))
+             ($ event-count-list events)))
 
        ($ :div
           {:class ["pt-2"]}
-          ($ components.events/event-clusters {} events)))))
+          ($ event-clusters {:events events})))))

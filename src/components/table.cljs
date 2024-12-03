@@ -1,6 +1,7 @@
 (ns components.table
-  (:require [uix.core :as uix :refer [$ defui]]
-            [components.actions :as components.actions]))
+  (:require
+   [uix.core :as uix :refer [$ defui]]
+   [components.actions :as components.actions]))
 
 
 (defui table
@@ -13,8 +14,8 @@
   before being passed in."
   [{:keys [headers rows n]}]
 
-  (let [page-size (uix/state (or n 10))
-        step      5]
+  (let [[page-size set-page-size] (uix/use-state (or n 10))
+        step                      5]
     ($ :div
        {:class ["border border-slate-600 bg-slate-800/50 rounded-xl overflow-auto"
                 "w-full" "my-4" "py-4"]}
@@ -36,7 +37,7 @@
 
           ($ :div {:class ["table-row-group" "bg-slate-800"]}
              (for [[i cells] (->> rows
-                                  (take @page-size)
+                                  (take page-size)
                                   (map-indexed vector))]
 
                ($ :div {:class ["table-row" "py-2" "border" "border-b-2" "text-sm"]
@@ -53,15 +54,15 @@
           ($ :div {:class ["table-footer-group"]}
              (let [axs
                    (->>
-                     [(when (> @page-size step)
+                     [(when (> page-size step)
                         {:action/label    "show less"
-                         :action/on-click (fn [_] (swap! page-size #(- % step)))})
-                      (when (< @page-size (count rows))
+                         :action/on-click (fn [_] (set-page-size #(- % step)))})
+                      (when (< page-size (count rows))
                         {:action/label    "show more"
-                         :action/on-click (fn [_] (swap! page-size #(+ % step)))})
-                      (when (< @page-size (count rows))
+                         :action/on-click (fn [_] (set-page-size #(+ % step)))})
+                      (when (< page-size (count rows))
                         {:action/label    (str "show all (" (count rows) ")")
-                         :action/on-click (fn [_] (reset! page-size (count rows)))})]
+                         :action/on-click (fn [_] (set-page-size (count rows)))})]
                      (remove nil?))]
                (when (seq axs)
                  ($ :div {:class ["table-row" "w-full"]}

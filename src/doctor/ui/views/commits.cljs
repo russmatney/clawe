@@ -1,8 +1,10 @@
 (ns doctor.ui.views.commits
   (:require
+   [hiccup-icons.octicons :as octicons]
+   [uix.core :as uix :refer [$ defui]]
+
    [components.events :as components.events]
-   [doctor.ui.db :as ui.db]
-   [hiccup-icons.octicons :as octicons]))
+   [doctor.ui.db :as ui.db]))
 
 (def icon octicons/commit)
 
@@ -10,16 +12,16 @@
 ;; event page
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn widget [{:keys [conn]}]
+(defui widget [{:keys [conn]}]
   (let [events (ui.db/events conn {:event-types #{:type/commit}})]
 
-    [:div
-     {:class ["flex" "flex-col" "flex-auto"
-              "min-h-screen"
-              "overflow-hidden"
-              "bg-yo-blue-700"
-              "text-white"]}
+    ($ :div
+       {:class ["flex" "flex-col" "flex-auto"
+                "min-h-screen"
+                "overflow-hidden"
+                "bg-yo-blue-700"
+                "text-white"]}
 
-     (if (seq events)
-       [components.events/events-cluster nil events]
-       [:div "No commits found!"])]))
+       (if (seq events)
+         ($ components.events/events-cluster events)
+         ($ :div "No commits found!")))))

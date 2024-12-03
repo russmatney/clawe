@@ -73,8 +73,6 @@
 ;; routes, home
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
-
 (def route-defs
   [
    ;; {:route "/" :page-name :page/home :label "Home" :comp views.dashboard/widget
@@ -87,8 +85,8 @@
    ;;  :icon  octicons/checklist16}
    ;; {:route "/blog" :page-name :page/blog :label "Blog" :comp views.blog/widget :hide-header true
    ;;  :icon  views.blog/icon}
-   ;; {:route "/today" :page-name :page/today :label "Today" :comp views.today/widget
-   ;;  :icon  views.today/icon}
+   {:route "/today" :page-name :page/today :label "Today" :comp views.today/widget
+    :icon  views.today/icon}
    ;; {:route "/wallpapers" :page-name :page/wallpapers :label "Wallpapers" :comp pages.wallpapers/page
    ;;  :icon  octicons/image16}
    ;; {:route "/events" :page-name :page/events :label "Events" :comp pages.events/page
