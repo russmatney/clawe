@@ -15,7 +15,7 @@
    [reitit.frontend.easy :as rfe]
 
    [datascript.transit :as dt]
-   ;; [hiccup-icons.octicons :as octicons]
+   [hiccup-icons.octicons :as octicons]
    [clojure.string :as string]
    [taoensso.encore :as enc]
 
@@ -36,7 +36,7 @@
    ;; [doctor.ui.views.focus :as views.focus]
    ;; [doctor.ui.views.todos :as views.todos]
    ;; [doctor.ui.views.today :as views.today]
-   ;; [doctor.ui.views.pomodoro :as views.pomodoro]
+   [doctor.ui.views.pomodoro :as views.pomodoro]
    ;; [doctor.ui.views.git-status :as views.git-status]
    ;; [doctor.ui.views.topbar :as views.topbar]
    ;; [doctor.ui.views.chess-games :as views.chess-games]
@@ -91,8 +91,8 @@
    ;;  :icon  octicons/image16}
    ;; {:route "/events" :page-name :page/events :label "Events" :comp pages.events/page
    ;;  :icon  octicons/calendar16}
-   ;; {:route "/pomodoros" :page-name :page/pomodoros :label "Pomodoros" :comp views.pomodoro/widget
-   ;;  :icon  octicons/clock16}
+   {:route "/" #_ "/pomodoros" :page-name :page/pomodoros :label "Pomodoros" :comp views.pomodoro/widget
+    :icon  ($ octicons/clock16)}
    ;; {:route "/git-status" :page-name :page/git-status :label "Git-Status" :comp views.git-status/widget
    ;;  :icon  octicons/clock16}
    ;; {:route "/commits" :page-name :page/commits :label "Commits" :comp views.commits/widget
@@ -117,23 +117,30 @@
    ]
   )
 
+
 (def routes
   (->> route-defs
        (map (fn [{:keys [route page-name]}] [route {:name page-name}]))
        (into [])))
 
-(defn view [opts]
+(defui view [opts]
+  (println "opts" opts)
   (let [route-data     (some->> route-defs
-                                (filter (comp #{(:route opts)} :route)) first)
+                                (filter (comp #{(-> opts :route :data :name)} :page-name)) first)
         {:keys [comp]} route-data
 
         ;; create fe db and pass it to every page
         {:keys [conn]} (hooks.db/use-db)
-        opts           (-> opts (assoc :conn conn
-                                       :route-defs route-defs)
+        opts           (-> opts
+                           js->clj
+                           (assoc :conn conn
+                                  :route-defs route-defs)
                            (merge route-data))]
+    (println "found page?" comp)
     (if comp
-      (if (:comp-only route-data) [comp opts] ($ pages/page comp opts))
+      (if (:comp-only route-data)
+        ($ comp opts)
+        ($ pages/page (assoc opts :main comp)))
       ($ :div "no page"))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -171,6 +178,7 @@
                                    (if (.. this -state -error)
                                      ($ :div "error")
                                      (.. this -props -children))))}))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; plasma details
@@ -216,9 +224,7 @@
 (defn mount-root []
   (time-literals.read-write/print-time-literals-cljs!)
   (start-router)
-  (uix.dom/render-root
-    ($ app root-el)
-    (.getElementById js/document "app")))
+  (uix.dom/render-root ($ app) root-el))
 
 #_{:clj-kondo/ignore [:clojure-lsp/unused-public-var]}
 (defn init

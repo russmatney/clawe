@@ -1,10 +1,14 @@
 (ns doctor.ui.views.dashboard
   (:require
+   [hiccup-icons.octicons :as octicons]
+
    [doctor.ui.db :as ui.db]
    [components.events :as components.events]
    [doctor.ui.views.ingest :as ingest]
    [components.filter :as components.filter]
-   [uix.core.alpha :as uix]
+
+   [uix.core :as uix :refer [$ defui]]
+
    [components.actions :as components.actions]
    [components.filter-defs :as filter-defs]
    [components.icons :as components.icons]
@@ -21,7 +25,6 @@
    [doctor.ui.views.chess-games :as chess-games]
    [doctor.ui.views.workspaces :as workspaces]
    [hooks.workspaces :as hooks.workspaces]
-   [hiccup-icons.octicons :as octicons]
    [doctor.ui.handlers :as handlers]
    [doctor.ui.localstorage :as localstorage]))
 

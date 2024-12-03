@@ -1,9 +1,10 @@
 (ns components.actions
   (:require
+   [hiccup-icons.fa :as fa]
+   [uix.core :as uix :refer [defui $]]
+
    [components.floating :as floating]
    [components.colors :as colors]
-   [uix.core.alpha :as uix]
-   [hiccup-icons.fa :as fa]
 
    [doctor.ui.hooks.use-selection :as hooks.use-selection]
    ))
@@ -23,7 +24,7 @@
   (is-text-color-class? "text-xl")
   (is-border-color-class? "border-city-blue-700"))
 
-(defn action-icon-button
+(defui action-icon-button
   ([action] (action-icon-button nil action))
   ([{:keys [class]}
     {:action/keys [label icon comp on-click tooltip disabled]
@@ -41,46 +42,46 @@
          ax-class           (->> ax-class
                                  (remove is-text-color-class?)
                                  (remove is-border-color-class?))]
-     [:div
-      {:class
-       (concat
-         ["px-2" "py-1"
-          "rounded" "border"
-          "flex"
-          "justify-center"
-          "items-center"
-          "tooltip"
-          "relative"]
-         (when icon ["w-9" "h-9"])
-         ax-class
-         class
-         (if disabled
-           ["border-slate-600" "text-slate-600"]
-           ["cursor-pointer"
-            text-color-class
-            border-color-class
-            "hover:text-city-blue-300"
-            "hover:border-city-blue-300"]))
-       :on-click (fn [_] (when (and on-click (not disabled)) (on-click)))}
-      [:div (or comp icon
-                [:span {:class ["font-mono" "whitespace-nowrap"]}
-                 label])]
-      [:div
-       {:class ["tooltip"
-                "tooltip-text"
-                "bottom-10"
-                ;; TODO get wise about where to put this tooltip
-                ;; this prevents width overflow if the actions list is near the right edge
-                ;; but otherwise it looks weird
-                "-left-20"
-                "whitespace-nowrap"]}
-       (or tooltip label)]])))
+     ($ :div
+        {:class
+         (concat
+           ["px-2" "py-1"
+            "rounded" "border"
+            "flex"
+            "justify-center"
+            "items-center"
+            "tooltip"
+            "relative"]
+           (when icon ["w-9" "h-9"])
+           ax-class
+           class
+           (if disabled
+             ["border-slate-600" "text-slate-600"]
+             ["cursor-pointer"
+              text-color-class
+              border-color-class
+              "hover:text-city-blue-300"
+              "hover:border-city-blue-300"]))
+         :on-click (fn [_] (when (and on-click (not disabled)) (on-click)))}
+        ($ :div (or comp icon
+                    [:span {:class ["font-mono" "whitespace-nowrap"]}
+                     label]))
+        ($ :div
+           {:class ["tooltip"
+                    "tooltip-text"
+                    "bottom-10"
+                    ;; TODO get wise about where to put this tooltip
+                    ;; this prevents width overflow if the actions list is near the right edge
+                    ;; but otherwise it looks weird
+                    "-left-20"
+                    "whitespace-nowrap"]}
+           (or tooltip label))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; action list
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn actions-list [opts-or-axs]
+(defui actions-list [opts-or-axs]
   ;; invoke so we have selections stored for misc actions
   (let [_selections (hooks.use-selection/last-n-selections)
         actions     (:actions opts-or-axs opts-or-axs)]
@@ -123,40 +124,39 @@
                                              :action/icon     fa/chevron-left-solid}
 
                                             :else nil)))))]
-        [:div
-         {:class ["inline-flex"
-                  (when (and (not (:nowrap opts-or-axs)) @showing-all)
-                    "flex-wrap")]}
-         (for [[i ax] (->> actions
-                           (remove nil?)
-                           (map-indexed vector))]
-           ^{:key i}
-           (let [popup-comp (:action/popup-comp ax)
-                 action-button
+        ($ :div
+           {:class ["inline-flex"
+                    (when (and (not (:nowrap opts-or-axs)) @showing-all)
+                      "flex-wrap")]}
+           (for [[i ax] (->> actions
+                             (remove nil?)
+                             (map-indexed vector))]
+             ^{:key i}
+             (let [popup-comp (:action/popup-comp ax)
+                   action-button
+                   ^{:key i}
+                   ($ action-icon-button
+                      {:class (colors/color-wheel-classes {:i i :type :line})}
+                      ax)]
+               (if popup-comp
                  ^{:key i}
-                 [action-icon-button
-                  {:class (colors/color-wheel-classes {:i i :type :line})}
-                  ax]]
-             (if popup-comp
-               ^{:key i}
-               [floating/popover
-                {:click        true
-                 :anchor-comp  action-button
-                 :popover-comp popup-comp}]
-               action-button)))]))))
+                 ($ floating/popover
+                    {:click        true
+                     :anchor-comp  action-button
+                     :popover-comp popup-comp})
+                 action-button))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; popover
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn actions-popup [opts]
-  [floating/popover
-   {:hover  true :click true
-    :offset 0
-    :anchor-comp
-    (:comp opts
-           [:div (:label opts "Actions")])
-    :popover-comp
-    [:div
-     {:class ["bg-slate-800"]}
-     [actions-list opts]]}])
+(defui actions-popup [opts]
+  ($ floating/popover
+     {:hover  true :click true
+      :offset 0
+      :anchor-comp
+      (:comp opts ($ :div (:label opts "Actions")))
+      :popover-comp
+      ($ :div
+         {:class ["bg-slate-800"]}
+         [actions-list opts])}))
