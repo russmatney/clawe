@@ -92,7 +92,7 @@
    ;; {:route "/events" :page-name :page/events :label "Events" :comp pages.events/page
    ;;  :icon  octicons/calendar16}
    {:route "/" #_ "/pomodoros" :page-name :page/pomodoros :label "Pomodoros" :comp views.pomodoro/widget
-    :icon  ($ octicons/clock16)}
+    :icon  octicons/clock16}
    ;; {:route "/git-status" :page-name :page/git-status :label "Git-Status" :comp views.git-status/widget
    ;;  :icon  octicons/clock16}
    ;; {:route "/commits" :page-name :page/commits :label "Commits" :comp views.commits/widget
@@ -124,7 +124,6 @@
        (into [])))
 
 (defui view [opts]
-  (println "opts" opts)
   (let [route-data     (some->> route-defs
                                 (filter (comp #{(-> opts :route :data :name)} :page-name)) first)
         {:keys [comp]} route-data
@@ -134,9 +133,8 @@
         opts           (-> opts
                            js->clj
                            (assoc :conn conn
-                                  :route-defs route-defs)
-                           (merge route-data))]
-    (println "found page?" comp)
+                                  :route-defs route-defs
+                                  :route-data route-data))]
     (if comp
       (if (:comp-only route-data)
         ($ comp opts)
@@ -207,7 +205,6 @@
        :transit-read-handlers
        (merge ttl/read-handlers dt/read-handlers)})))
 
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Bootstrap
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -222,7 +219,6 @@
     (js/document.getElementById "app")))
 
 (defn mount-root []
-  (time-literals.read-write/print-time-literals-cljs!)
   (start-router)
   (uix.dom/render-root ($ app) root-el))
 

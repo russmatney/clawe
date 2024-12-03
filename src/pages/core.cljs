@@ -14,7 +14,7 @@
        (cond icon  (assoc icon-opts :icon icon)
              :else (assoc icon-opts :icon ($ octicons/alert))))))
 
-(defui menu [{:keys [expanded? route-defs] :as opts}]
+(defui menu [{:keys [expanded? route-defs route-data] :as opts}]
   (when (seq route-defs)
     ($ :div
        {:class ["flex" "flex-col" "p-3"]}
@@ -22,7 +22,6 @@
              (->> route-defs
                   (remove :comp-only)
                   (map-indexed vector))]
-
          ($ :a {:key   i
                 :class (concat
                          ["flex" "flex-row"
@@ -32,11 +31,10 @@
                           "text-xl"
                           "font-nes"
                           "hover:text-city-pink-500"]
-                         (cond (#{(:route opts)} page-name)
+                         (cond (#{(-> route-data :page-name)} page-name)
                                ["text-city-pink-400" "text-bold"
                                 "whitespace-nowrap"]))
-                :href  (rfe/href page-name)
-                }
+                :href  (rfe/href (:page-name route-def))}
             ($ route-def->icon route-def)
 
             (when expanded?
@@ -95,7 +93,7 @@
 
 (defui page
   "Accepts a main component and wraps it in page helpers with a menu."
-  [{:keys [main hide-header route] :as page-opts}]
+  [{:keys [main hide-header route-data] :as page-opts}]
   ($ page-error-boundary
      ($ :div {:class ["min-h-screen"
                       "flex" "flex-row"
@@ -111,7 +109,7 @@
                          "text-city-pink-200"
                          "capitalize"
                          "flex flex-row" "items-center"]}
-                (or (:label page-opts) route)))
+                (:label route-data)))
 
            (when main ($ main page-opts)))
 
