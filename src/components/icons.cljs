@@ -5,6 +5,8 @@
    ;; [hiccup-icons.fa :as fa]
    ;; [hiccup-icons.fa4 :as fa4]
    [hiccup-icons.mdi :as mdi]
+   [uix.core :as uix :refer [$ defui]]
+
    [clawe.client :as client]))
 
 (defn client->icon [client workspace]
@@ -190,8 +192,8 @@
         (println "missing icon for client" (client/strip client))
         {:icon octicons/question16}))))
 
-(defn icon-comp [{:keys [class src icon text]}]
+(defui icon-comp [{:keys [class src icon text]}]
   (cond
-    src   [:img {:class class :src src}]
-    icon  [:div {:class class} icon]
-    :else text))
+    src   ($ :img {:class class :src src})
+    icon  ($ :div {:class class} text #_(some-> icon js->clj (get "type") first str))
+    :else ($ :span {:class class} text)))

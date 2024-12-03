@@ -1,22 +1,22 @@
 (ns components.floating
   (:require
-   [uix.core.alpha :as uix]
+   [uix.core :as uix :refer [defui $]]
    ["@floating-ui/react-dom-interactions" :as FUI]))
 
-(defn popover [opts]
+(defui popover [opts]
   (let [{:keys [click hover offset
                 anchor-comp
                 anchor-comp-props
                 popover-comp
                 popover-comp-props
-                ]} opts
-        offset     (or offset 30)
-        open       (uix/state false)
+                ]}      opts
+        offset          (or offset 30)
+        [open set-open] (uix/use-state false)
 
         floating-state
         (FUI/useFloating
           (clj->js
-            {:open @open :onOpenChange #(reset! open %)
+            {:open open :onOpenChange set-open
              :middleware
              [(FUI/offset offset)
               (FUI/autoPlacement)
@@ -52,28 +52,28 @@
                          (remove nil?)
                          (into []))))]
 
-    [:<>
-     [:div
-      (merge
-        (js->clj (.getReferenceProps ixs (clj->js {:ref (.-reference floating-state)})))
-        {:class (concat [;; seems like a reasonable class...
-                         ;; can't be overwritten at the moment
-                         "max-w-max"] (:class anchor-comp-props))}
-        (dissoc anchor-comp-props :class))
-      anchor-comp]
-
-     [:> FUI/FloatingPortal
-      (when @open
-        [:> FUI/FloatingFocusManager {:context context}
-         [:div
+    ($ :<>
+       ($ :div
           (merge
-            (js->clj (.getFloatingProps
-                       ixs (clj->js {:ref   (.-floating floating-state)
-                                     :style {:position (.-strategy floating-state)
-                                             :top      (or (.-y floating-state) "")
-                                             :left     (or (.-x floating-state) "")
-                                             :maxWidth "calc(100vw - 10px)"
-                                             :overflow "scroll"
-                                             :zIndex   "50"}})))
-            popover-comp-props)
-          popover-comp]])]]))
+            (js->clj (.getReferenceProps ixs (clj->js {:ref (.-reference floating-state)})))
+            {:class (concat [ ;; seems like a reasonable class...
+                             ;; can't be overwritten at the moment
+                             "max-w-max"] (:class anchor-comp-props))}
+            (dissoc anchor-comp-props :class))
+          anchor-comp)
+
+       ($ FUI/FloatingPortal
+          (when open
+            ($ FUI/FloatingFocusManager {:context context}
+               ($ :div
+                  (merge
+                    (js->clj (.getFloatingProps
+                               ixs (clj->js {:ref   (.-floating floating-state)
+                                             :style {:position (.-strategy floating-state)
+                                                     :top      (or (.-y floating-state) "")
+                                                     :left     (or (.-x floating-state) "")
+                                                     :maxWidth "calc(100vw - 10px)"
+                                                     :overflow "scroll"
+                                                     :zIndex   "50"}})))
+                    popover-comp-props)
+                  popover-comp)))))))
