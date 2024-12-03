@@ -268,21 +268,21 @@
                 (let [meta {:group-by-key    group-by-key
                             :sort-groups-key sort-groups-key
                             :active-filters  active-filters}]
-                  [debug/raw-metadata {:label "Metadata"}
-                   meta]))
+                  ($ debug/raw-metadata {:label "Metadata"}
+                     meta)))
 
              ($ :div
                 {:class ["pl-4"]}
-                [:button {:on-click #(set-open not)
-                          :class    ["whitespace-nowrap"
-                                     "text-sm"
-                                     "hover:text-city-pink-400"]}
-                 (str (if filter-detail-open? "Hide" "Show") " filter detail")])
+                ($ :button {:on-click #(set-open not)
+                            :class    ["whitespace-nowrap"
+                                       "text-sm"
+                                       "hover:text-city-pink-400"]}
+                   (str (if filter-detail-open? "Hide" "Show") " filter detail")))
 
              ($ :div
                 {:class ["ml-auto"]}
                 (when (seq extra-preset-pills)
-                  [pill/cluster extra-preset-pills])))
+                  ($ pill/cluster extra-preset-pills))))
 
           (when (and (seq presets) (> (count presets) 1))
             ($ pill/cluster
@@ -469,23 +469,22 @@
 
     {:filter-grouper
      ($ filter-grouper
-        (-> config
-            (merge
-              {:filtered-items         filtered-items
-               :current-preset-key     current-preset-key
-               :active-filters         active-filters
-               :group-by-key           group-by-key
-               :sort-groups-key        sort-groups-key
-               :set-current-preset-key (fn [k]
-                                         (localstorage/set-item! ls-key k)
-                                         (set-current-preset-key k))
-               :set-group-by-key       set-group-by-key
-               :set-sort-groups-key    set-sort-groups-key
-               :set-filters            set-active-filters
-               :toggle-filter-by
-               (fn [f-by]
-                 ;; TODO filters that use funcs won't match/exclude here
-                 (set-active-filters #(if (% f-by) (disj % f-by) (conj % f-by))))})))
+        (merge config
+               {:filtered-items         filtered-items
+                :current-preset-key     current-preset-key
+                :active-filters         active-filters
+                :group-by-key           group-by-key
+                :sort-groups-key        sort-groups-key
+                :set-current-preset-key (fn [k]
+                                          (localstorage/set-item! ls-key k)
+                                          (set-current-preset-key k))
+                :set-group-by-key       set-group-by-key
+                :set-sort-groups-key    set-sort-groups-key
+                :set-filters            set-active-filters
+                :toggle-filter-by
+                (fn [f-by]
+                  ;; TODO filters that use funcs won't match/exclude here
+                  (set-active-filters #(if (% f-by) (disj % f-by) (conj % f-by))))}))
      :all-filter-defs      all-filter-defs
      :filtered-items       filtered-items
      :filtered-item-groups filtered-item-groups

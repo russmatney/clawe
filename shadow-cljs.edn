@@ -21,12 +21,8 @@
    :compiler-options {:output-feature-set :es-next
                       :infer-externs      true}
 
-   :build-hooks
-   [(plasma.uix.hot-reload/compile-prepare!)
-    (plasma.uix.hot-reload/compile-finish!)]
-
    :dev
-   {:closure-defines {:plasma.uix.hot-reload? true}
+   {:closure-defines {}
     :build-hooks     [(teknql.tailwind/start-watch!)
                       (doctor.build-hooks/notify-complete)]}
 
