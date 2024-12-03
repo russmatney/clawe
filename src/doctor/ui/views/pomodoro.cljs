@@ -3,6 +3,8 @@
    [uix.core :as uix :refer [$ defui]]
    [tick.core :as t]
    [dates.tick :as dates]
+
+   [doctor.ui.hooks.use-timer :refer [use-interval]]
    [doctor.ui.db :as ui.db]
    ;; [doctor.ui.handlers :as handlers]
    [components.debug :as debug]
@@ -27,14 +29,9 @@
     :too-long? true}])
 
 (defui bar [{:keys [conn]}]
-  (let [{:keys [current last]}  (ui.db/pomodoro-state conn)
-        [time set-time]         (uix/use-state (t/zoned-date-time))
-        [interval set-interval] (uix/use-state nil)]
-    (uix/use-effect
-      (fn []
-        (set-interval (js/setInterval #(set-time (t/zoned-date-time)) 500))
-        (fn [] (js/clearInterval interval)))
-      [interval])
+  (let [{:keys [current last]} (ui.db/pomodoro-state conn)
+        _time                  (use-interval {:->value  t/zoned-date-time
+                                              :interval 500})]
     ($ :div
        {:class ["flex flex-row" "items-center" "justify-between" "whitespace-nowrap"]}
        ($ :div
@@ -78,15 +75,12 @@
                ")"))))))
 
 (defui widget [{:keys [conn] :as _opts}]
-  (let [[time set-time]                    (uix/use-state (t/zoned-date-time))
-        [interval set-interval]            (uix/use-state nil)
+  (let [_time
+        (use-interval {:->value  t/zoned-date-time
+                       :interval 1500})
         {:keys [current last] :as p-state} (ui.db/pomodoro-state conn)
         pomodoros                          (ui.db/pomodoros conn)]
-    (uix/use-effect
-      (fn []
-        (set-interval (js/setInterval #(set-time (t/zoned-date-time)) 500))
-        (fn [] (js/clearInterval interval)))
-      [interval])
+    ;; (println "time" time)
 
     ($ :div
        {:class ["flex flex-col"]}
