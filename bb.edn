@@ -1,8 +1,8 @@
 {:paths ["src" "test" "resources"]
  :deps  {
-         org.babashka/cli                   {:mvn/version "0.7.53"}
-         babashka/fs                        {:mvn/version "0.4.19"}
-         metosin/malli                      {:mvn/version "0.13.0"}
+         org.babashka/cli                   {:mvn/version "0.8.61"}
+         babashka/fs                        {:mvn/version "0.5.22"}
+         metosin/malli                      {:mvn/version "0.16.4"}
          com.lambdaisland/specmonstah-malli {:mvn/version "0.0.7"}
          aero/aero                          {:mvn/version "1.1.6"}
 
@@ -19,7 +19,7 @@
          russmatney/org-crud {:git/url "https://github.com/russmatney/org-crud"
                               :git/sha "08279ca901ab6ec243faee1fb09442613999bd54"}
 
-         zprint/zprint {:mvn/version "1.2.7"}}
+         zprint/zprint {:mvn/version "1.2.9"}}
  :tasks
  {:requires ([clojure.string :as string]
              [clojure.pprint :as pprint]
