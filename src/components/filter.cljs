@@ -142,9 +142,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defui filter-def-anchor
-  [[filter-key filter-def]
-   {:keys
-    [set-group-by-key group-by-key set-current-preset-key set-sort-groups-key]}]
+  [{:keys
+    [set-group-by-key group-by-key set-current-preset-key set-sort-groups-key
+     filter-key filter-def]}]
   (let [group-by-enabled? (= group-by-key filter-key)]
     ($ :div.text-xl.font-nes
        {:class    ["cursor-pointer"
@@ -161,8 +161,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defui filter-def-popover
-  [[filter-key filter-def]
-   {:keys [items _filtered-items active-filters toggle-filter-by set-current-preset-key]}]
+  [{:keys [items _filtered-items active-filters toggle-filter-by set-current-preset-key
+           filter-key filter-def]}]
   (let [grouped-by-val-and-counts
         ;; TODO items vs filtered-items here needs to be toggleable
         ;; are we narrowing or widening?
@@ -322,7 +322,7 @@
                             "hover:border-city-orange-500"
                             "cursor-pointer"]}
                    ($ :div
-                      [filter-def-anchor [filter-key filter-def] config])
+                      ($ filter-def-anchor (assoc config :filter-key filter-key :filter-def filter-def)))
 
                    ;; active filters
                    (for [[i f] (->> active-filters
@@ -340,13 +340,13 @@
                    ;; fill to hold bottom in 'middle'
                    ($ :div {:class ["grow"]})
                    ($ :div {:class ["grow"]}
-                      ($ filter-def-popover [filter-key filter-def] config)))
+                      ($ filter-def-popover (assoc config :filter-key filter-key :filter-def filter-def))))
 
                 ($ floating/popover
                    {:hover        true :click true
                     :key          i
-                    :anchor-comp  [filter-def-anchor [filter-key filter-def] config]
-                    :popover-comp [filter-def-popover [filter-key filter-def] config]}))))))))
+                    :anchor-comp  ($ filter-def-anchor (assoc config :filter-key filter-key :filter-def filter-def))
+                    :popover-comp ($ filter-def-popover (assoc config :filter-key filter-key :filter-def filter-def))}))))))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

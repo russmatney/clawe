@@ -50,8 +50,10 @@
 ;; day picker component
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defui day-picker [opts timestamps]
-  (let [{:keys [on-date-click
+(defui day-picker
+  [opts]
+  (let [{:keys [timestamps
+                on-date-click
                 date-has-data?
                 selected-dates
                 popover-anchor-comp
