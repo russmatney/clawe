@@ -3,7 +3,7 @@
          "bench"
          "resources"]
  :deps
- {teknql/systemic                    {:git/sha "2c0be3a90884f998a61f2a8174cff3c5a15a30bf"
+ {teknql/systemic                    {:git/sha "db3facbabdbb949ee0c1bf54a7e24bf82b44465a"
                                       :git/url "https://github.com/teknql/systemic"}
   wing/wing                          {:git/sha "08288f4ae6837b5fe386a321361b7b910bc00660"
                                       :git/url "https://github.com/teknql/wing"}
@@ -79,9 +79,7 @@
     com.cognitect/transit-clj {:mvn/version "1.0.333"}
 
     teknql/plasma
-    ;; {:local/root "../../teknql/plasma"}
-    {:git/sha "87b3e48f6001bc6b20e98654a8deff4123c2e27d"
-     :git/url "https://github.com/teknql/plasma"}
+    {:local/root "../../teknql/plasma"}
 
     ;; ui dev env
     thheller/shadow-cljs {:mvn/version "2.28.20"}
@@ -90,15 +88,9 @@
     com.teknql/shadow-cljs-tailwind-jit {:mvn/version "1.0.0"}
 
     ;; ui core
-    uix/uix.core {:git/url   "https://github.com/rschmukler/uix.git"
-                  :deps/root "core"
-                  :sha       "5f9953e4482b1bc8e198026a2fd9f6e7ffa0e23e"}
-    uix/uix.dom  {:git/url   "https://github.com/roman01la/uix.git"
-                  :deps/root "dom"
-                  :sha       "fc98f57a01d16228e709fb1ad4c2a504c65964d3"}
-    uix/uix.rn   {:git/url   "https://github.com/roman01la/uix.git"
-                  :deps/root "rn"
-                  :sha       "fc98f57a01d16228e709fb1ad4c2a504c65964d3"}
+    com.pitch/uix.core {:mvn/version "1.2.0"}
+    com.pitch/uix.dom  {:mvn/version "1.2.0"}
+    reagent/reagent    {:mvn/version "1.2.0"}
 
     ;; keybindings
     keybind/keybind {:mvn/version "2.2.0"}
