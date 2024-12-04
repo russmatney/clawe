@@ -147,8 +147,8 @@
          (not-started? it) "[ ]"))))
 
 (defui status [it]
-  (when (:org/status it)
-    (let [[hovering? set-hovering] (uix/use-state nil)]
+  (let [[hovering? set-hovering] (uix/use-state nil)]
+    (when (:org/status it)
       ($ :span
          {:class          ["ml-2" "whitespace-nowrap" "font-nes"
                            "cursor-pointer"

@@ -148,14 +148,13 @@
                                                   opts)])))))))))) ;; component here
              ) [text])
          (remove empty?)
-         (map (fn [comp-or-str]
-                (if (string? comp-or-str)
-                  ;; wrap strings in :spans (better spacing control)
-                  ($ :span
-                     {:class ["inline-flex"]
-                      :key   comp-or-str}
-                     comp-or-str)
-                  ($ comp-or-str))))
+         (map-indexed (fn [i comp-or-str]
+                        (if (string? comp-or-str)
+                          ;; wrap strings in :spans (better spacing control)
+                          ($ :span
+                             {:class ["inline-flex"] :key i}
+                             comp-or-str)
+                          ($ comp-or-str {:key i}))))
          (into []))))
 
 (comment

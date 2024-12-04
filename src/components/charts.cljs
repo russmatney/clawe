@@ -20,7 +20,7 @@
       (fn []
         (let [c (show-chart)]
           (set-chart c)))
-      [])
+      [show-chart])
 
     (uix/use-effect
       (fn []
@@ -28,7 +28,7 @@
           (when-let [^js/Chart c chart]
             (aset c "data" "datasets" 0 "data"  (clj->js data))
             (.update c))))
-      [chart-data])
+      [chart chart-data])
 
     ($ :canvas {:id canvas-id})))
 
