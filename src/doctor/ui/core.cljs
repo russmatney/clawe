@@ -2,6 +2,7 @@
   (:require
    [dates.transit-time-literals :as ttl]
    [plasma.client]
+   [taoensso.telemere :as t]
    [taoensso.timbre :as log]
    [time-literals.read-write]
    [tick.timezone]
@@ -91,7 +92,7 @@
    ;;  :icon  octicons/image16}
    ;; {:route "/events" :page-name :page/events :label "Events" :comp pages.events/page
    ;;  :icon  octicons/calendar16}
-   {:route "/" #_ "/pomodoros" :page-name :page/pomodoros :label "Pomodoros" :comp views.pomodoro/widget
+   {:route "/pomodoros" :page-name :page/pomodoros :label "Pomodoros" :comp views.pomodoro/widget
     :icon  octicons/clock16}
    ;; {:route "/git-status" :page-name :page/git-status :label "Git-Status" :comp views.git-status/widget
    ;;  :icon  octicons/clock16}
@@ -112,8 +113,8 @@
    ;;  :icon  octicons/book16}
    ;; {:route "/chess-games" :page-name :page/chess :label "Chess Games" :comp views.chess-games/widget
    ;;  :icon  octicons/moon16}
-   ;; {:route "/topbar" :page-name :page/topbar :label "Top Bar" :comp views.topbar/widget :comp-only true}
-   ;; {:route "/topbar-bg" :page-name :page/topbar-bg :label "Top Bar BG" :comp views.topbar/widget}
+   {:route "/topbar" :page-name :page/topbar :label "Top Bar" :comp views.topbar/widget :comp-only true}
+   {:route "/topbar-bg" :page-name :page/topbar-bg :label "Top Bar BG" :comp views.topbar/widget}
    ]
   )
 
@@ -149,11 +150,11 @@
 (defonce current-route (r/atom nil))
 
 (defn start-router []
-  (println :info "starting router")
+  (t/log! :info "starting router")
   (rfe/start!
     router
     (fn [match _history]
-      (println :info (str "on-nav " (:data match)))
+      (t/log! :info (str "on-nav " (:data match)))
       (reset! current-route match))
     {:use-fragment true}))
 
@@ -187,10 +188,10 @@
 
 (def plasma-ws-url (str "ws://" SERVER_HOST ":" SERVER_PORT "/plasma-ws"))
 
-(defn on-close [] (log/info "Connection with server closed"))
-(defn on-error [] (log/info "Connection with server error"))
-(defn on-open [] (log/info "Connection with server open"))
-(defn on-reconnect [] (log/info "Reconnected to server"))
+(defn on-close [] (t/log! :info "Connection with server closed"))
+(defn on-error [] (t/log! :info "Connection with server error"))
+(defn on-open [] (t/log! :info "Connection with server open"))
+(defn on-reconnect [] (t/log! :info "Reconnected to server"))
 
 (defn start-plasma []
   (plasma.client/use-transport!
