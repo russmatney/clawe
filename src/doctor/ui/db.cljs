@@ -39,7 +39,7 @@
                        [?e :event/timestamp ?ts]
                        [?e :doctor/type ?type]
                        [(contains? ?event-types ?type)]]
-                     conn event-types)
+                     @conn event-types)
          true      (map first)
          filter-by (filter filter-by)
          true      (sort-by :event/timestamp dt/sort-latest-first)
@@ -52,7 +52,7 @@
                   :where
                   ;; TODO consider lower bound/min time here
                   [?e :doctor/type :type/lichess-game]]
-                conn)
+                @conn)
            (map first)
            (sort-by :event/timestamp dt/sort-latest-first)
            (take-and-log {:n n :label "chess games"})))))
@@ -68,7 +68,7 @@
            :where
            [?e :doctor/type :type/commit]
            [?e :commit/directory ?dir]]
-         conn
+         @conn
          (:repo/directory repo))))
 
 (defn repo-for-commit [conn commit]
@@ -79,7 +79,7 @@
              :where
              [?e :doctor/type :type/repo]
              [?e :repo/directory ?dir]]
-           conn
+           @conn
            (:commit/directory commit))
       first)))
 
@@ -89,7 +89,7 @@
       (d/q '[:find (pull ?e [*])
              :where
              [?e :doctor/type :type/repo]]
-           conn)
+           @conn)
       (map first))))
 
 (def watched-usernames
@@ -105,7 +105,7 @@
              [?e :doctor/type :type/repo]
              [?e :repo/user-name ?username]
              [(contains? ?watched-usernames ?username)]]
-           conn
+           @conn
            watched-usernames)
       (map first))))
 
@@ -116,13 +116,13 @@
 (defn pomodoro-state [conn]
   (let [current (some->>
                   (d/q '[:find (pull ?e [*])
-                         :where [?e :pomodoro/started-at _]] conn)
+                         :where [?e :pomodoro/started-at _]] @conn)
                   (map first)
                   (sort-by :pomodoro/started-at dt/sort-latest-first)
                   first)
         last    (some->>
                   (d/q '[:find (pull ?e [*])
-                         :where [?e :pomodoro/finished-at _]] conn)
+                         :where [?e :pomodoro/finished-at _]] @conn)
                   (map first)
                   (sort-by :pomodoro/finished-at dt/sort-latest-first)
                   first)]
@@ -137,7 +137,7 @@
       (d/q '[:find (pull ?e [*])
              :where
              [?e :doctor/type :type/pomodoro]]
-           conn)
+           @conn)
       (map first)
       (filter :pomodoro/started-at)
       (sort-by :pomodoro/started-at dt/sort-latest-first))))
@@ -155,7 +155,7 @@
          (d/q '[:find (pull ?e [*])
                 :where
                 [?e :doctor/type :type/wallpaper]]
-              conn)
+              @conn)
          (map first)
          (sort-by :wallpaper/last-time-set >)
          (take-and-log {:n n :label "wallpapers"}))))))
@@ -173,7 +173,7 @@
                       (d/q '[:find (pull ?c [*])
                              :in $ ?db-id
                              :where [?c :org/parents ?db-id]]
-                           conn
+                           @conn
                            (:db/id item))
                       (map first))]
                 (assoc item :org/items children))))))
@@ -186,7 +186,7 @@
        (d/q '[:find (pull ?e [*])
               :where
               [?e :doctor/type :type/note]]
-            conn)
+            @conn)
        (map first)
        (sort-by :file/last-modified dt/sort-latest-first)
        (take-and-log {:n n :label "garden notes"})))))
@@ -200,7 +200,7 @@
                 :where
                 [?e :doctor/type :type/note]
                 [?e :org/level :level/root]]
-              conn)
+              @conn)
        true           (map first)
        true           (sort-by :file/last-modified dt/sort-latest-first)
        n              (take-and-log {:n n :label "garden notes"})
@@ -216,7 +216,7 @@
               :where
               [?e :doctor/type :type/note]
               [?e :org/source-file ?source-file]]
-            conn)
+            @conn)
        (map first)
        (w/distinct-by :org/source-file)
        (sort-by :file/last-modified dt/sort-latest-first)
@@ -243,7 +243,7 @@
                       [?p :org/status _])]
                '[:find (pull ?e [*])
                  :where [?e :doctor/type :type/todo]])
-             conn)
+             @conn)
          true           (map first)
          filter-pred    (filter filter-pred)
          n              (take-and-log {:n n :label "todos"})
@@ -265,7 +265,7 @@
              [(contains? #{:status/done
                            :status/skipped
                            :status/cancelled} ?status)])]
-         conn)
+         @conn)
     (map first)
     (join-children conn)))
 
@@ -276,6 +276,6 @@
    (->>
      (d/q '[:find ?tag
             :where [_ :org/tags ?tag]]
-          conn)
+          @conn)
      (map first)
      (into #{}))))
