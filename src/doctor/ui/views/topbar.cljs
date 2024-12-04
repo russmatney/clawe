@@ -39,8 +39,8 @@
   ($ :div
      {:class (concat [color] classes)}
      (cond
-       src   [:img {:class ["w-10"] :src src}]
-       icon  [:div {:class ["text-3xl"]} fallback-text #_icon]
+       src   ($ :img {:class ["w-10"] :src src})
+       icon  ($ :div {:class ["text-3xl"]} fallback-text #_icon)
        :else fallback-text)))
 
 (defui client-icon-list
@@ -194,14 +194,16 @@
                           (colors/color-wheel-classes {:type :line :i 5}))}
           (for [[k v] pcts]
             ($ :div
-               {:class ["w-10"] :key k}
-               ($ charts/pie-chart
-                  {:label (str k)
-                   :value v
-                   :color (case k
-                            :spotify/volume "rgb(255, 205, 86)"
-                            :audio/volume   "rgb(54, 162, 235)",
-                            "rgb(255, 99, 132)")})))))
+               {:class ["w-10"] :key (str k)}
+               v
+               ;; ($ charts/pie-chart
+               ;;    {:label (str k)
+               ;;     :value v
+               ;;     :color (case k
+               ;;              :spotify/volume "rgb(255, 205, 86)"
+               ;;              :audio/volume   "rgb(54, 162, 235)",
+               ;;              "rgb(255, 99, 132)")})
+               ))))
 
      ($ sep)
      ($ :div.font-nes {:class ["flex" "flex-row" "space-x-2"]}
