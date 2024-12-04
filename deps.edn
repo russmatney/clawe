@@ -22,13 +22,11 @@
   backtick/backtick                  {:mvn/version "0.3.5"}
   aysylu/loom                        {:mvn/version "1.0.2"}
 
-
   russmatney/org-crud {:git/url "https://github.com/russmatney/org-crud"
                        :git/sha "08279ca901ab6ec243faee1fb09442613999bd54"}
   zprint/zprint       {:mvn/version "1.2.9"}
 
-  clj-kondo/clj-kondo {:mvn/version "2024.11.14"}
-  }
+  clj-kondo/clj-kondo {:mvn/version "2024.11.14"}}
  :aliases
  {:dev      {:jvm-opts ["-XX:-OmitStackTraceInFastThrow"]}
   :outdated {:extra-deps {com.github.liquidz/antq {:mvn/version "2.11.1250"}}
