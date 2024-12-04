@@ -1,5 +1,7 @@
 (ns pages.db
   (:require
+   [uix.core :as uix :refer [defui $]]
+
    [datascript.core :as d]
    [components.table :as components.table]
    [pages.db.tables :as tables]
@@ -27,20 +29,19 @@
 ;; event page
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn page [{:keys [conn] :as opts}]
+(defui page [{:keys [conn] :as opts}]
   (let [ents       (ents-with-doctor-type conn)
         table-defs (tables/all-table-defs opts ents)]
-    [:div
-     {:class ["grid"
-              "min-h-screen"
-              "overflow-hidden"
-              "bg-yo-blue-700"]}
+    ($ :div
+       {:class ["grid"
+                "min-h-screen"
+                "overflow-hidden"
+                "bg-yo-blue-700"]}
 
-     [ingest/ingest-buttons]
-     [ingest/commit-ingest-buttons (:conn opts)]
+       ($ ingest/ingest-buttons)
+       ($ ingest/commit-ingest-buttons opts)
 
-     (for [[i table-def] (->> table-defs (map-indexed vector))]
-       ^{:key i}
-       [:div
-        {:class ["p-2"]}
-        [components.table/table table-def]])]))
+       (for [[i table-def] (->> table-defs (map-indexed vector))]
+         ($ :div
+            {:class ["p-2"] :key i }
+            ($ components.table/table table-def))))))
