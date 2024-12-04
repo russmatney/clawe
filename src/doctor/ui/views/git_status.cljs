@@ -1,11 +1,13 @@
 (ns doctor.ui.views.git-status
   (:require
-   [doctor.ui.db :as ui.db]
+   [uix.core :as uix :refer [$ defui]]
+
    [components.actions :as components.actions]
    [components.git :as components.git]
    [components.table :as components.table]
    [components.debug :as components.debug]
    [dates.tick :as dates]
+   [doctor.ui.db :as ui.db]
    [doctor.ui.handlers :as handlers]))
 
 (defn needs-push? [{:repo/keys [needs-push-at did-not-need-push-at]}]
@@ -27,7 +29,7 @@
        (when (needs-pull? repo) "#needs-pull")
        (when (needs-push? repo) "#needs-push")))
 
-(defn bar [{:keys [conn]}]
+(defui bar [{:keys [conn]}]
   (let [repos (->> (ui.db/repos conn)
                    (sort dirty?)
                    (sort needs-pull?)
@@ -39,7 +41,7 @@
                            ;; TODO disable/de-proritize if recently checked
                            :action/disabled false})))]
 
-    [components.actions/actions-list axs]))
+    ($ components.actions/actions-list axs)))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -49,36 +51,36 @@
 (defn repo-status-table-def []
   {:headers ["Repo" ":dirty?" ":needs-push?" ":needs-pull?" "Actions"]
    :->row   (fn [repo]
-              [[components.debug/raw-metadata
-                {:label (components.git/short-repo repo)}
-                repo]
+              [($ components.debug/raw-metadata
+                  {:label (components.git/short-repo repo)
+                   :data  repo})
 
                (when (dirty? repo) "DIRTY!?")
                (when (needs-push? repo) "Needs Push!?")
                (when (needs-pull? repo) "Needs Pull!?")
 
-               [components.actions/actions-list
-                {:actions (handlers/->actions repo)}]])})
+               ($ components.actions/actions-list
+                  {:actions (handlers/->actions repo)})])})
 
-(defn repo-table [repos]
+(defui repo-table [{:keys [repos]}]
   (let [{:keys [->row] :as table-def} (repo-status-table-def)]
-    [components.table/table
-     (-> table-def
-         (assoc :rows (->> repos (map ->row))))]))
+    ($ components.table/table
+       (-> table-def
+           (assoc :rows (->> repos (map ->row)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; widget
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn widget [{:keys [conn] :as _opts}]
+(defui widget [{:keys [conn] :as _opts}]
   (let [repos (->> (ui.db/watched-repos conn)
                    (sort dirty?)
                    (sort needs-pull?)
                    (sort needs-push?))]
-    [:div
-     {:class ["text-center" "my-36" "text-slate-200"]}
+    ($ :div
+       {:class ["text-center" "my-36" "text-slate-200"]}
 
-     (when (empty? repos)
-       [:div {:class ["font-nes"]} "No repos found!"])
+       (when (empty? repos)
+         ($ :div {:class ["font-nes"]} "No repos found!"))
 
-     [repo-table repos]]))
+       ($ repo-table {:repos repos}))))

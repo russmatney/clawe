@@ -22,9 +22,9 @@
 
    [pages.core :as pages]
    ;; [pages.db :as pages.db]
-   ;; [pages.events :as pages.events]
+   [pages.events :as pages.events]
    ;; [pages.screenshots :as pages.screenshots]
-   ;; [pages.wallpapers :as pages.wallpapers]
+   [pages.wallpapers :as pages.wallpapers]
    ;; [pages.garden :as pages.garden]
    ;; [pages.posts :as pages.posts]
    ;; [pages.journal :as pages.journal]
@@ -33,12 +33,12 @@
    [doctor.ui.hooks.use-reaction :refer [use-reaction]]
 
    ;; [doctor.ui.views.blog :as views.blog]
-   ;; [doctor.ui.views.commits :as views.commits]
+   [doctor.ui.views.commits :as views.commits]
    ;; [doctor.ui.views.focus :as views.focus]
    ;; [doctor.ui.views.todos :as views.todos]
    [doctor.ui.views.today :as views.today]
    [doctor.ui.views.pomodoro :as views.pomodoro]
-   ;; [doctor.ui.views.git-status :as views.git-status]
+   [doctor.ui.views.git-status :as views.git-status]
    [doctor.ui.views.topbar :as views.topbar]
    ;; [doctor.ui.views.chess-games :as views.chess-games]
    ;; [doctor.ui.views.dashboard :as views.dashboard]
@@ -76,8 +76,10 @@
 
 (def route-defs
   [
-   ;; {:route "/" :page-name :page/home :label "Home" :comp views.dashboard/widget
-   ;;  :icon  octicons/beaker16}
+   {:route "/" :page-name :page/home :label "Home" :comp
+    views.pomodoro/widget
+    ;; views.dashboard/widget
+    :icon  octicons/beaker16}
    ;; {:route "/dashboard" :page-name :page/dashboard :label "Dashboard" :comp views.dashboard/widget
    ;;  :icon  octicons/beaker16}
    ;; {:route "/focus" :page-name :page/focus :label "Focus" :comp views.focus/widget :hide-header true
@@ -88,16 +90,16 @@
    ;;  :icon  views.blog/icon}
    {:route "/today" :page-name :page/today :label "Today" :comp views.today/widget
     :icon  views.today/icon}
-   ;; {:route "/wallpapers" :page-name :page/wallpapers :label "Wallpapers" :comp pages.wallpapers/page
-   ;;  :icon  octicons/image16}
-   ;; {:route "/events" :page-name :page/events :label "Events" :comp pages.events/page
-   ;;  :icon  octicons/calendar16}
+   {:route "/wallpapers" :page-name :page/wallpapers :label "Wallpapers" :comp pages.wallpapers/page
+    :icon  octicons/image16}
+   {:route "/events" :page-name :page/events :label "Events" :comp pages.events/page
+    :icon  octicons/calendar16}
    {:route "/pomodoros" :page-name :page/pomodoros :label "Pomodoros" :comp views.pomodoro/widget
     :icon  octicons/clock16}
-   ;; {:route "/git-status" :page-name :page/git-status :label "Git-Status" :comp views.git-status/widget
-   ;;  :icon  octicons/clock16}
-   ;; {:route "/commits" :page-name :page/commits :label "Commits" :comp views.commits/widget
-   ;;  :icon  views.commits/icon}
+   {:route "/git-status" :page-name :page/git-status :label "Git-Status" :comp views.git-status/widget
+    :icon  octicons/clock16}
+   {:route "/commits" :page-name :page/commits :label "Commits" :comp views.commits/widget
+    :icon  views.commits/icon}
    ;; {:route "/db" :page-name :page/db :label "DB" :comp pages.db/page
    ;;  :icon  octicons/archive16}
    ;; {:route "/screenshots" :page-name :page/screenshots :label "Screenshots" :comp pages.screenshots/page
