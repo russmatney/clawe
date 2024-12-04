@@ -359,8 +359,10 @@
 
 (defui cluster [{:keys [games] :as opts}]
   (when (seq games)
-    [:div
-     {:class ["flex" "flex-col"]}
-     (for [game games]
-       ^{:key (:lichess.game/id game)}
-       [cluster-single (assoc opts :game game)])]))
+    ($ :div
+       {:class ["flex" "flex-col"]}
+       (for [game games]
+         [cluster-single
+          (assoc opts
+                 :game game
+                 :key (:lichess.game/id game))]))))

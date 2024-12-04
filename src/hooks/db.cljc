@@ -46,7 +46,8 @@
            handle-resp
            (fn [items]
              (if conn
-               (d/transact! conn items)
+               (set-conn
+                 (d/transact! conn items))
                (-> (d/empty-db schema)
                    (d/db-with items)
                    set-conn))
