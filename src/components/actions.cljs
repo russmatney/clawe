@@ -62,9 +62,10 @@
              "hover:text-city-blue-300"
              "hover:border-city-blue-300"]))
         :on-click (fn [_] (when (and on-click (not disabled)) (on-click)))}
-       ($ :div (or comp icon
-                   [:span {:class ["font-mono" "whitespace-nowrap"]}
-                    label]))
+       ($ :div (or
+                 ;; comp icon
+                 ($ :span {:class ["font-mono" "whitespace-nowrap"]}
+                    label)))
        ($ :div
           {:class ["tooltip"
                    "tooltip-text"
