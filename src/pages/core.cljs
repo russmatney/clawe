@@ -1,6 +1,6 @@
 (ns pages.core
   (:require
-   [hiccup-icons.octicons :as octicons]
+   ;; [hiccup-icons.octicons :as octicons]
    [reitit.frontend.easy :as rfe]
    [uix.core :as uix :refer [defui $]]
 
@@ -12,9 +12,9 @@
                    :text  label}]
     ($ components.icons/icon-comp
        (cond icon  (assoc icon-opts :icon icon)
-             :else (assoc icon-opts :icon ($ octicons/alert))))))
+             :else (assoc icon-opts :icon label #_octicons/alert)))))
 
-(defui menu [{:keys [expanded? route-defs route-data] :as opts}]
+(defui menu [{:keys [expanded? route-defs route-data] :as _opts}]
   (when (seq route-defs)
     ($ :div
        {:class ["flex" "flex-col" "p-3"]}
