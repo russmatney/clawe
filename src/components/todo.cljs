@@ -519,8 +519,8 @@
          (filter
            (fn [tag]
              (or
-               (string/includes? name-string tag)
-               (string/includes? parent-name tag)))))))
+               (and name-string (string/includes? name-string tag))
+               (and parent-name (string/includes? parent-name tag))))))))
 
 (defn todo->inferred-actions
   ([todo] (todo->inferred-actions todo nil))
