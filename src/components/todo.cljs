@@ -460,12 +460,12 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defui add-tags-list
-  [it tags]
+  [{:keys [item tags]}]
   (let [selections (hooks.use-selection/last-n-selections)
         sels       (->> selections (map #(-> % string/trim (string/replace " " ""))) (remove #{"" nil}))
         tags       (-> tags
                        (set/difference
-                         (-> it note/->all-tags (into #{})))
+                         (-> item note/->all-tags (into #{})))
                        (set/union (into #{} sels)))]
     (when (seq tags)
       ($ :div
@@ -485,7 +485,7 @@
                           (colors/color-wheel-classes
                             {:type :both :i i :hover? true}))
                   :on-click (fn [_] (handlers/add-tag
-                                      (dissoc it :actions/inferred)
+                                      (dissoc item :actions/inferred)
                                       tag))}
                  tag)
               ":"))))))
@@ -507,7 +507,7 @@
       :action/popup-comp
       ($ :div
          {:key (:db/id todo)}
-         [add-tags-list todo tags])}]))
+         [add-tags-list {:item todo :tags tags}])}]))
 
 (defn item->suggested-tags [{:as   _item
                              :keys [:org/name-string
