@@ -1,6 +1,7 @@
 (ns doctor.server
   (:require
    [clojure.string :as string]
+   [taoensso.telemere :as t]
    [taoensso.timbre :as log]
    [taoensso.encore :as enc]
    [systemic.core :as sys :refer [defsys]]

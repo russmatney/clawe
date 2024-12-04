@@ -1,6 +1,5 @@
 (ns api.workspaces
   (:require
-   ;; [taoensso.timbre :as log]
    [systemic.core :refer [defsys] :as sys]
    [manifold.stream :as s]
    [clawe.wm :as wm]
@@ -16,7 +15,8 @@
     (map util/drop-complex-types)))
 
 (comment
-  (active-workspaces))
+  (active-workspaces)
+  (->> (active-workspaces) (filter :workspace/focused)))
 
 (defsys ^:dynamic *workspaces-stream*
   :start (s/stream)

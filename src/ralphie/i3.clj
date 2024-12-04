@@ -59,10 +59,19 @@
 
 (comment
   (->all-nodes)
+  (content-node)
   (workspaces)
 
   (->> (->all-nodes)
-       (filter :i3/focused)))
+       (filter :i3/focused))
+  (->>
+    (workspaces)
+    (filter :i3/focused))
+
+  (->>
+    (workspaces-fast)
+    (filter :i3/focused))
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; workspaces
@@ -71,9 +80,19 @@
 (defn workspaces-fast []
   (i3-msg! "-t get_workspaces"))
 
+(defn workspaces-fast-by-id []
+  (->>
+    (workspaces-fast)
+    (map (fn [{:keys [i3/id] :as wsp}] [id wsp]))
+    (into {})))
+
 (defn workspaces
   ([] (workspaces (tree)))
-  ([t] (->> (content-node t) :i3/nodes)))
+  ([t]
+   ;; at some point get_tree's workspace containers weren't marked 'focused' anymore?
+   (let [wsps-by-id (workspaces-fast-by-id)]
+     (->> (content-node t) :i3/nodes
+          (map (fn [wsp] (merge wsp (get wsps-by-id (:i3/id wsp)))))))))
 
 (defn workspace-for-name
   "Returns a workspace from tree for the passed workspace name."
