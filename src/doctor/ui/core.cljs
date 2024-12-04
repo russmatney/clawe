@@ -21,13 +21,13 @@
    [taoensso.encore :as enc]
 
    [pages.core :as pages]
-   ;; [pages.db :as pages.db]
+   [pages.db :as pages.db]
    [pages.events :as pages.events]
-   ;; [pages.screenshots :as pages.screenshots]
+   [pages.screenshots :as pages.screenshots]
    [pages.wallpapers :as pages.wallpapers]
-   ;; [pages.garden :as pages.garden]
-   ;; [pages.posts :as pages.posts]
-   ;; [pages.journal :as pages.journal]
+   [pages.garden :as pages.garden]
+   [pages.posts :as pages.posts]
+   [pages.journal :as pages.journal]
 
    [hooks.db :as hooks.db]
    [doctor.ui.hooks.use-reaction :refer [use-reaction]]
@@ -100,19 +100,19 @@
     :icon  octicons/clock16}
    {:route "/commits" :page-name :page/commits :label "Commits" :comp views.commits/widget
     :icon  views.commits/icon}
-   ;; {:route "/db" :page-name :page/db :label "DB" :comp pages.db/page
-   ;;  :icon  octicons/archive16}
-   ;; {:route "/screenshots" :page-name :page/screenshots :label "Screenshots" :comp pages.screenshots/page
-   ;;  :icon  octicons/screen-full16}
+   {:route "/db" :page-name :page/db :label "DB" :comp pages.db/page
+    :icon  octicons/archive16}
+   {:route "/screenshots" :page-name :page/screenshots :label "Screenshots" :comp pages.screenshots/page
+    :icon  octicons/screen-full16}
    ;; ;; {:route "/counter" :page-name :page/counter :label "Counter" :comp pages.counter/page}
-   ;; {:route "/garden" :page-name :page/garden :label "Garden" :comp pages.garden/page
-   ;;  :icon  octicons/workflow16}
-   ;; {:route "/posts" :page-name :page/posts :label "Posts" :comp pages.posts/page
-   ;;  :icon  octicons/comment16}
+   {:route "/garden" :page-name :page/garden :label "Garden" :comp pages.garden/page
+    :icon  octicons/workflow16}
+   {:route "/posts" :page-name :page/posts :label "Posts" :comp pages.posts/page
+    :icon  octicons/comment16}
    ;; {:route "/workspaces" :page-name :page/workspaces :label "Workspaces" :comp views.workspaces/widget
    ;;  :icon  octicons/clippy16}
-   ;; {:route "/journal" :page-name :page/journal :label "Journal" :comp pages.journal/page
-   ;;  :icon  octicons/book16}
+   {:route "/journal" :page-name :page/journal :label "Journal" :comp pages.journal/page
+    :icon  octicons/book16}
    ;; {:route "/chess-games" :page-name :page/chess :label "Chess Games" :comp views.chess-games/widget
    ;;  :icon  octicons/moon16}
    {:route "/topbar" :page-name :page/topbar :label "Top Bar" :comp views.topbar/widget :comp-only true}

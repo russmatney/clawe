@@ -31,7 +31,7 @@
     (mapcat :org/urls)
     (into #{})))
 
-(defui urls-list [urls]
+(defui urls-list [{:keys [urls]}]
   (when (seq urls)
     ($ :div
        {:class ["grid"]}
@@ -59,11 +59,11 @@
     ($ :div
        {:class ["flex flex-row flex-wrap" "justify-center"]}
        (for [[i t] (->> tags (map-indexed vector))]
-         [:span {:key t
-                 :class
-                 (concat ["font-mono"]
-                         (colors/color-wheel-classes {:type :line :i i}))}
-          (str ":" t)]))))
+         ($ :span {:key t
+                   :class
+                   (concat ["font-mono"]
+                           (colors/color-wheel-classes {:type :line :i i}))}
+            (str ":" t))))))
 
 (defui tags-comp [item]
   ($ tags-list (-> item :org/tags)))
@@ -371,7 +371,7 @@
           ($ :div
              {:class ["w-1/3"]}
              ($ all-nested-tags-comp item))
-          ($ urls-list all-urls))
+          ($ urls-list {:urls all-urls}))
 
        ;; file content
        ($ org-body (assoc opts :show-raw show-raw :item item)))))
