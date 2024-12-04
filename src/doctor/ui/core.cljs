@@ -38,7 +38,7 @@
    [doctor.ui.views.today :as views.today]
    [doctor.ui.views.pomodoro :as views.pomodoro]
    ;; [doctor.ui.views.git-status :as views.git-status]
-   ;; [doctor.ui.views.topbar :as views.topbar]
+   [doctor.ui.views.topbar :as views.topbar]
    ;; [doctor.ui.views.chess-games :as views.chess-games]
    ;; [doctor.ui.views.dashboard :as views.dashboard]
    ;; [doctor.ui.views.workspaces :as views.workspaces]

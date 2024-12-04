@@ -1,7 +1,7 @@
 (ns pages.posts
   (:require
    [wing.uix.router :as router]
-   [uix.core.alpha :as uix]
+   [uix.core :as uix :refer [$ defui]]
    [clojure.string :as string]
 
    [components.garden :as components.garden]
@@ -90,6 +90,6 @@
                           ;; (sort-by :file/last-modified)
 
                           (map-indexed vector))]
-           ^{:key (or (:org/source-file p) i)}
-           [:div
-            (components.garden/org-file p)])])]]))
+           ($ :div
+              {:key (or (:org/source-file p) i)}
+              ($ components.garden/org-file {:item p})))])]]))

@@ -3,7 +3,7 @@
    [clojure.string :as string]
    [tick.core :as t]
    [dates.tick :as dates.tick]
-   ;; [components.todo :as todo]
+   [components.todo :as todo]
    [components.note :as note]
    ))
 
@@ -61,12 +61,11 @@
                                           (sort-by (comp count :item-group) > item-groups))}
    :filters/status     {:label    "Status"
                         :group-by :org/status}
-   :filters/priority   {:label          "Priority"
-                        :group-by       :org/priority
-                        :group-by-label (fn [label]
-                                          (or label "Unprioritized"))
-                        ;; :group-by-label-comp todo/priority-label
-                        }
+   :filters/priority   {:label               "Priority"
+                        :group-by            :org/priority
+                        :group-by-label      (fn [label]
+                                               (or label "Unprioritized"))
+                        :group-by-label-comp todo/priority-label}
    :filters/scheduled  {:label        "Scheduled"
                         :group-by     :org/scheduled
                         :format-label (fn [d] (if d
