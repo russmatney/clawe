@@ -221,7 +221,8 @@
 (defui widget [opts]
   (let [metadata                         (hooks.topbar/use-topbar-metadata)
         {:keys [topbar/background-mode]} metadata
-        {:keys [active-workspaces]}      (hooks.workspaces/use-workspaces)
+        {:keys [active-workspaces
+                selected-workspaces]}    (hooks.workspaces/use-workspaces)
         topbar-state                     (use-topbar/use-topbar-state)]
     ($ :div
        {:class ["h-screen" "overflow-hidden" "text-city-pink-200"
@@ -235,8 +236,7 @@
 
           ;; workspace title
           (let [current-workspace
-                (some->> active-workspaces
-                         (filter :workspace/focused) first)]
+                (some->> selected-workspaces first)]
             (when current-workspace
               ($ :span
                  {:class ["font-nes" "text-city-blue-500" "whitespace-nowrap"
