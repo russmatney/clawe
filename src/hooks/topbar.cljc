@@ -3,7 +3,8 @@
    [plasma.core :refer [defhandler defstream]]
    #?@(:clj [[api.topbar]
              [ralphie.awesome :as awm]]
-       :cljs [[uix.core :as uix]])))
+       :cljs [[uix.core :as uix]
+              [doctor.ui.hooks.plasma :refer [with-stream with-rpc]]])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Topbar metadata
@@ -14,11 +15,10 @@
 
 #?(:cljs
    (defn use-topbar-metadata []
-     (let [[topbar-metadata set-metadata] (uix/use-state [])
-           handle-resp                    #(set-metadata %)]
+     (let [[topbar-metadata set-metadata] (uix/use-state [])]
 
-       ;; (with-rpc [] (get-topbar-metadata) handle-resp)
-       ;; (with-stream [] (topbar-metadata-stream) handle-resp)
+       (with-rpc [] (get-topbar-metadata) set-metadata)
+       (with-stream [] (topbar-metadata-stream) set-metadata)
 
        topbar-metadata)))
 

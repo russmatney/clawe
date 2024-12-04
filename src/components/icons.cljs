@@ -105,7 +105,8 @@
        :src   "/assets/candy-icons/firefox.svg"}
 
       (#{"firefoxdeveloperedition"
-         "firefox developer edition"} app-name)
+         "firefox developer edition"
+         "firefox-developer-edition"} app-name)
       {:color "text-city-green-600"
        :src   "/assets/candy-icons/firefox-nightly.svg"}
 

@@ -8,7 +8,7 @@
              [taoensso.timbre :as log]]
        :cljs [[wing.core :as w]
               [uix.core :as uix]
-              ])))
+              [doctor.ui.hooks.plasma :refer [with-stream with-rpc]]])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Actions
@@ -52,8 +52,8 @@
                                                   (w/distinct-by :workspace/title)
                                                   (sort-by :workspace/index)))))]
 
-       ;; (with-rpc [] (get-active-workspaces) handle-resp)
-       ;; (with-stream [] (workspaces-stream) handle-resp)
+       (with-rpc [] (get-active-workspaces) handle-resp)
+       (with-stream [] (workspaces-stream) handle-resp)
 
        {:active-clients      (->> workspaces
                                   (filter :workspace/focused)

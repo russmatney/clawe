@@ -12,6 +12,7 @@
       (when js/Chart
         (js/Chart. ctx (clj->js chart-data))))))
 
+;; TODO refactor to destroy chart before reusing the canvas
 (defui chart-component [chart-data]
   (let [canvas-id         (str (gensym))
         show-chart        (show-chart-fn canvas-id chart-data)

@@ -7,7 +7,8 @@
              [babashka.fs :as fs]
              [util]]
        :cljs [[wing.core :as w]
-              [plasma.uix :refer [with-rpc with-stream]]])))
+              [uix.core :as uix]
+              [doctor.ui.hooks.plasma :refer [with-stream with-rpc]]])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; org helpers
@@ -71,19 +72,19 @@
 
 #?(:cljs
    (defn use-counts []
-     (let [counts      (plasma.uix/state [])
-           handle-resp (fn [items]
-                         (swap! counts
-                                (fn [_cts]
-                                  (->>
-                                    ;; (concat (or cts []) items)
-                                    items
-                                    (w/distinct-by :count/id)
-                                    (sort-by :count/sort)
-                                    (sort-by (comp nil? :count/sort))))))]
+     (let [[counts set-counts] (uix/use-state [])
+           handle-resp         (fn [items]
+                                 (set-counts
+                                   (fn [_cts]
+                                     (->>
+                                       ;; (concat (or cts []) items)
+                                       items
+                                       (w/distinct-by :count/id)
+                                       (sort-by :count/sort)
+                                       (sort-by (comp nil? :count/sort))))))]
 
        (with-rpc [] (get-counts-handler) handle-resp)
        (with-stream [] (counts-stream) handle-resp)
 
-       {:items @counts
-        :count (count @counts)})))
+       {:items counts
+        :count (count counts)})))
