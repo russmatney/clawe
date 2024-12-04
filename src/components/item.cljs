@@ -56,7 +56,8 @@
            ($ :span {:class
                      (concat
                        (colors/color-wheel-classes {:type :line :i i})
-                       ["flex-grow"])}
+                       ["flex-grow"])
+                     :key i}
               " " nm)))
        (interpose ($ :span
                      {:class ["text-city-blue-dark-200" "px-4"]}

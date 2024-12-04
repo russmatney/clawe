@@ -15,13 +15,13 @@
 
 (defui current-task [{:keys [conn]}]
   (let [current-todos (ui.db/current-todos conn)
-        current-todos (todo/infer-actions {:no-popup true} current-todos)]
+        current-todos (todo/infer-actions {:no-popup true} current-todos)
+        [n set-n]     (uix/use-state 0)]
     (if-not (seq current-todos)
       ($ :span "--")
-      (let [todos     (todo/sort-todos current-todos)
-            [n set-n] (uix/use-state 0)
-            current   (get (into [] todos) n)
-            ct        (count todos)]
+      (let [todos   (todo/sort-todos current-todos)
+            current (get (into [] todos) n)
+            ct      (count todos)]
         ($ :div
            {:class ["flex" "flex-row" "place-self-center"
                     "items-center" "space-x-4" "px-3"

@@ -8,7 +8,7 @@
 
          teknql/systemic {:git/sha "2c0be3a90884f998a61f2a8174cff3c5a15a30bf"
                           :git/url "https://github.com/teknql/systemic"}
-         wing/wing       {:git/sha "08288f4ae6837b5fe386a321361b7b910bc00660"
+         wing/wing       {:git/sha "dce19ab8897dc4fbd98ac8ec3b0995a54a2f17bb"
                           :git/url "https://github.com/teknql/wing"}
 
          ;; found these in specmonstah's bb.edn: https://github.com/reifyhealth/specmonstah/blob/develop/bb.edn
@@ -176,20 +176,20 @@
   doctor-stop-be {:depends [stop-doctor-be]}
 
   ;; TODO osx: pull from proper server/fe logs
-  log-doctor         {:task (shell "journalctl --user -n 100 -f -u doctor-be -u doctor-fe -u doctor-topbar")
+  log-doctor         {:task (shell "journalctl --user -n 100 -f -u doctor-be -u doctor-fe -u doctor-topbar --all --no-hostname")
                       :doc  "Tail the doctor logs. FE, BE, and topbar via journalctl"}
   tail-doctor        (run 'log-doctor)
   doctor-log         (run 'log-doctor)
   doctor-tail        (run 'log-doctor)
-  log-doctor-fe      {:task (shell "journalctl --user -n 100 -f -u doctor-fe")}
+  log-doctor-fe      {:task (shell "journalctl --user -n 100 -f -u doctor-fe --all --no-hostname")}
   tail-doctor-fe     (run 'log-doctor-fe)
   doctor-log-fe      (run 'log-doctor-fe)
   doctor-tail-fe     (run 'log-doctor-fe)
-  log-doctor-be      {:task (shell "journalctl --user -n 100 -f -u doctor-be")}
+  log-doctor-be      {:task (shell "journalctl --user -n 100 -f -u doctor-be --all --no-hostname")}
   tail-doctor-be     (run 'log-doctor-be)
   doctor-log-be      (run 'log-doctor-be)
   doctor-tail-be     (run 'log-doctor-be)
-  log-doctor-topbar  {:task (shell "journalctl --user -n 100 -f -u doctor-topbar")}
+  log-doctor-topbar  {:task (shell "journalctl --user -n 100 -f -u doctor-topbar --all --no-hostname")}
   tail-doctor-topbar (run 'log-doctor-topbar)
   doctor-log-topbar  (run 'log-doctor-topbar)
   doctor-tail-topbar (run 'log-doctor-topbar)
