@@ -1,6 +1,7 @@
 (ns pages.wallpapers
   (:require
    [uix.core :as uix :refer [defui $]]
+
    [doctor.ui.db :as ui.db]
    [pages.db.tables :as db.tables]
    [doctor.ui.handlers :as handlers]))

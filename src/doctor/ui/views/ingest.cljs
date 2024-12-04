@@ -1,5 +1,7 @@
 (ns doctor.ui.views.ingest
   (:require
+   [uix.core :as uix :refer [$ defui]]
+
    [doctor.ui.handlers :as handlers]
    [doctor.ui.db :as ui.db]
    [components.actions :as components.actions]))
@@ -43,30 +45,29 @@
                            (dissoc repo :actions/inferred)))}))
          (sort-by :action/label))))
 
-(defn commit-ingest-buttons [conn]
-  [:div
-   [components.actions/actions-list {:actions
-                                     (commit-ingest-actions conn)}]])
+(defui commit-ingest-buttons [{:keys [conn]}]
+  ($ :div
+     ($ components.actions/actions-list {:actions
+                                         (commit-ingest-actions conn)})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ingest buttons
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn ingest-buttons
-  ([] [ingest-buttons nil])
-  ([_opts]
-   [:div
-    {:class ["grid" "grid-cols-6"
-             "space-x-2"
-             "p-2"]}
-    (for [{:action/keys [label on-click]} (ingest-actions)]
-      ^{:key label}
-      [:button {:class    ["bg-slate-800"
-                           "p-4"
-                           "border"
-                           "border-slate-600"
-                           "rounded-xl"
-                           "font-mono"
-                           "text-white"]
-                :on-click on-click}
-       label])]))
+(defui ingest-buttons
+  [_opts]
+  ($ :div
+     {:class ["grid" "grid-cols-6"
+              "space-x-2"
+              "p-2"]}
+     (for [{:action/keys [label on-click]} (ingest-actions)]
+       ($ :button {:key      label
+                   :class    ["bg-slate-800"
+                              "p-4"
+                              "border"
+                              "border-slate-600"
+                              "rounded-xl"
+                              "font-mono"
+                              "text-white"]
+                   :on-click on-click}
+          label))))

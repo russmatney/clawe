@@ -18,6 +18,6 @@
                 "overflow-hidden"
                 "bg-yo-blue-700"]}
        ($ ingest/ingest-buttons)
-       ($ ingest/commit-ingest-buttons conn)
+       ($ ingest/commit-ingest-buttons {:conn conn})
 
        ($ components.events/events-cluster events))))
