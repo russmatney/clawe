@@ -89,7 +89,7 @@
         #_    (org-crud/nested-item->flattened-items note)]
     (reduce + 0 (map :org/word-count items))))
 
-(defui metadata [item]
+(defui metadata [{:keys [item]}]
   ($ :div
      {:class ["flex flex-col"]}
 

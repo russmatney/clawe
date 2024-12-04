@@ -120,15 +120,15 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; level
 
-(defui level [it]
-  (let [level (:org/level it 0)
+(defui level [{:keys [item]}]
+  (let [level (:org/level item 0)
         level (if (#{:level/root} level) 0 level)]
     ($ components.debug/raw-metadata
        {:label
         ($ :div
            {:class ["whitespace-nowrap" "font-nes"]}
            (->> (repeat level "*") (apply str)))}
-       it)))
+       item)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; status
@@ -240,12 +240,12 @@
      ($ :div
         {:class ["flex" "flex-row" "w-full" "items-center"]}
 
-        ($ level item)
-        ($ status item)
-        ($ item/db-id item)
-        ($ item/id-hash item)
+        ($ level {:item item})
+        ($ status {:item item})
+        ($ item/db-id {:item item})
+        ($ item/id-hash {:item item})
         ($ :div {:class ["ml-auto"]}
-           ($ priority-label item)))
+           ($ priority-label {:item item})))
 
      ;; middle content
      ($ :div
@@ -386,7 +386,7 @@
 
      ($ :div
         {:class ["justify-self-end"]}
-        ($ components.garden/tags-comp todo))
+        ($ components.garden/tags-comp {:item todo}))
 
      ($ :div
         {:class ["justify-self-end"]}

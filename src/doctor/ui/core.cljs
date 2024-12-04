@@ -32,17 +32,17 @@
    [hooks.db :as hooks.db]
    [doctor.ui.hooks.use-reaction :refer [use-reaction]]
 
-   ;; [doctor.ui.views.blog :as views.blog]
+   [doctor.ui.views.blog :as views.blog]
    [doctor.ui.views.commits :as views.commits]
-   ;; [doctor.ui.views.focus :as views.focus]
-   ;; [doctor.ui.views.todos :as views.todos]
+   [doctor.ui.views.focus :as views.focus]
+   [doctor.ui.views.todos :as views.todos]
    [doctor.ui.views.today :as views.today]
    [doctor.ui.views.pomodoro :as views.pomodoro]
    [doctor.ui.views.git-status :as views.git-status]
    [doctor.ui.views.topbar :as views.topbar]
-   ;; [doctor.ui.views.chess-games :as views.chess-games]
-   ;; [doctor.ui.views.dashboard :as views.dashboard]
-   ;; [doctor.ui.views.workspaces :as views.workspaces]
+   [doctor.ui.views.chess-games :as views.chess-games]
+   [doctor.ui.views.dashboard :as views.dashboard]
+   [doctor.ui.views.workspaces :as views.workspaces]
    ))
 
 (defn output-fn
@@ -76,18 +76,15 @@
 
 (def route-defs
   [
-   {:route "/" :page-name :page/home :label "Home" :comp
-    views.pomodoro/widget
-    ;; views.dashboard/widget
+   {:route "/" :page-name :page/home :label "Home" :comp views.dashboard/widget :icon octicons/beaker16}
+   {:route "/dashboard" :page-name :page/dashboard :label "Dashboard" :comp views.dashboard/widget
     :icon  octicons/beaker16}
-   ;; {:route "/dashboard" :page-name :page/dashboard :label "Dashboard" :comp views.dashboard/widget
-   ;;  :icon  octicons/beaker16}
-   ;; {:route "/focus" :page-name :page/focus :label "Focus" :comp views.focus/widget :hide-header true
-   ;;  :icon  octicons/light-bulb16}
-   ;; {:route "/todos" :page-name :page/todos :label "Todos" :comp views.todos/widget
-   ;;  :icon  octicons/checklist16}
-   ;; {:route "/blog" :page-name :page/blog :label "Blog" :comp views.blog/widget :hide-header true
-   ;;  :icon  views.blog/icon}
+   {:route "/focus" :page-name :page/focus :label "Focus" :comp views.focus/widget :hide-header true
+    :icon  octicons/light-bulb16}
+   {:route "/todos" :page-name :page/todos :label "Todos" :comp views.todos/widget
+    :icon  octicons/checklist16}
+   {:route "/blog" :page-name :page/blog :label "Blog" :comp views.blog/widget :hide-header true
+    :icon  views.blog/icon}
    {:route "/today" :page-name :page/today :label "Today" :comp views.today/widget
     :icon  views.today/icon}
    {:route "/wallpapers" :page-name :page/wallpapers :label "Wallpapers" :comp pages.wallpapers/page
@@ -104,17 +101,16 @@
     :icon  octicons/archive16}
    {:route "/screenshots" :page-name :page/screenshots :label "Screenshots" :comp pages.screenshots/page
     :icon  octicons/screen-full16}
-   ;; ;; {:route "/counter" :page-name :page/counter :label "Counter" :comp pages.counter/page}
    {:route "/garden" :page-name :page/garden :label "Garden" :comp pages.garden/page
     :icon  octicons/workflow16}
    {:route "/posts" :page-name :page/posts :label "Posts" :comp pages.posts/page
     :icon  octicons/comment16}
-   ;; {:route "/workspaces" :page-name :page/workspaces :label "Workspaces" :comp views.workspaces/widget
-   ;;  :icon  octicons/clippy16}
+   {:route "/workspaces" :page-name :page/workspaces :label "Workspaces" :comp views.workspaces/widget
+    :icon  octicons/clippy16}
    {:route "/journal" :page-name :page/journal :label "Journal" :comp pages.journal/page
     :icon  octicons/book16}
-   ;; {:route "/chess-games" :page-name :page/chess :label "Chess Games" :comp views.chess-games/widget
-   ;;  :icon  octicons/moon16}
+   {:route "/chess-games" :page-name :page/chess :label "Chess Games" :comp views.chess-games/widget
+    :icon  octicons/moon16}
    {:route "/topbar" :page-name :page/topbar :label "Top Bar" :comp views.topbar/widget :comp-only true}
    {:route "/topbar-bg" :page-name :page/topbar-bg :label "Top Bar BG" :comp views.topbar/widget}
    ]

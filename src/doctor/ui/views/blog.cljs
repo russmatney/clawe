@@ -1,19 +1,20 @@
 (ns doctor.ui.views.blog
   (:require
-   [components.floating :as floating]
-   [doctor.ui.hooks.use-blog :as use-blog]
-   [uix.core.alpha :as uix]
-   [components.filter :as components.filter]
-   [components.debug :as components.debug]
-   [components.filter-defs :as filter-defs]
+   [hiccup-icons.octicons :as octicons]
+   [tick.core :as t]
+   [uix.core :as uix :refer [$ defui]]
+
    [components.actions :as components.actions]
+   [components.colors :as colors]
+   [components.debug :as components.debug]
+   [components.floating :as floating]
+   [components.filter :as components.filter]
+   [components.filter-defs :as filter-defs]
    [components.garden :as components.garden]
    [components.note :as components.note]
-   [doctor.ui.handlers :as handlers]
-   [tick.core :as t]
    [dates.tick :as dates.tick]
-   [components.colors :as colors]
-   [hiccup-icons.octicons :as octicons]))
+   [doctor.ui.hooks.use-blog :as use-blog]
+   [doctor.ui.handlers :as handlers]))
 
 (def icon
   octicons/comment-discussion16)
@@ -34,91 +35,86 @@
    {:action/label    "Ingest Garden Full"
     :action/on-click (fn [_] (handlers/ingest-garden-full))}])
 
-(defn bar []
-  [:div
-   {:class ["bg-yo-blue-800" "w-full"
-            "flex" "flex-row"]}
-   [:div
-    {:class ["flex" "flex-col" "items-center" "justify-center"
-             "p-3"]}
-    [:span {:class ["font-nes" "text-city-blue-600"]}
-     ":clawe/blog"]]
+(defui bar []
+  ($ :div
+     {:class ["bg-yo-blue-800" "w-full"
+              "flex" "flex-row"]}
+     ($ :div
+        {:class ["flex" "flex-col" "items-center" "justify-center"
+                 "p-3"]}
+        ($ :span {:class ["font-nes" "text-city-blue-600"]}
+           ":clawe/blog"))
 
-   [:div
-    {:class ["ml-auto" "p-2"]}
-    [components.actions/actions-list
-     {:actions (blog-actions)}]]])
+     ($ :div
+        {:class ["ml-auto" "p-2"]}
+        ($ components.actions/actions-list
+           {:actions (blog-actions)}))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; note-comp
 
-(defn note-stats [opts note]
-  [:div
-   {:class
-    (concat
-      ["border-8" "p-4" "m-2"
-       "cursor-pointer"
-       "flex flex-col"]
-      (let [i (+ 3 (:i opts (int (rand 5))))]
-        (concat
-          (colors/color-wheel-classes
-            {:i i :n (:page-size opts 5) :type :both})
-          (colors/color-wheel-classes
-            {:i (+ 2 i) :n (:page-size opts 5) :type :both :hover? true}))))}
-   [:div
-    {:class ["flex flex-row justify-between"]}
+(defui note-stats [{:keys [note] :as opts}]
+  ($ :div
+     {:class
+      (concat
+        ["border-8" "p-4" "m-2"
+         "cursor-pointer"
+         "flex flex-col"]
+        (let [i (+ 3 (:i opts (int (rand 5))))]
+          (concat
+            (colors/color-wheel-classes
+              {:i i :n (:page-size opts 5) :type :both})
+            (colors/color-wheel-classes
+              {:i (+ 2 i) :n (:page-size opts 5) :type :both :hover? true}))))}
+     ($ :div
+        {:class ["flex flex-row justify-between"]}
 
-    [:span
-     {:class ["font-nes"]}
-     (:org/name-string note)]
+        ($ :span
+           {:class ["font-nes"]}
+           (:org/name-string note))
 
-    [:span
-     {:class ["font-nes" "ml-auto"]}
-     (str "(" (inc (:i opts)) "/" (count (:item-group opts)) ")")]]
+        ($ :span
+           {:class ["font-nes" "ml-auto"]}
+           (str "(" (inc (:i opts)) "/" (count (:item-group opts)) ")")))
 
-   [components.note/metadata note]
+     ($ components.note/metadata {:item note})
 
-   [:div
-    {:class ["font-nes"]}
-    (str "Links: " (-> note components.note/->all-links count))]
+     ($ :div
+        {:class ["font-nes"]}
+        (str "Links: " (-> note components.note/->all-links count)))
 
+     ;; TODO once we get the frontend db story set
+     ;; ($ :div
+     ;;  {:class ["font-nes"]}
+     ;;  (str "Backlinks: " (-> note components.note/->all-links count)))
 
-   ;; TODO once we get the frontend db story set
-   ;; [:div
-   ;;  {:class ["font-nes"]}
-   ;;  (str "Backlinks: " (-> note components.note/->all-links count))]
+     (when (is-daily? note)
+       ($ :div
+          {:class ["font-nes"]}
+          (str "Daily items: " (-> note components.note/->items-with-tags count)
+               "/" (-> note :org/items count))))
 
-   (when (is-daily? note)
-     [:div
-      {:class ["font-nes"]}
-      (str "Daily items: " (-> note components.note/->items-with-tags count)
-           "/" (-> note :org/items count))])
+     (when (seq (components.note/->all-images note))
+       ($ :div
+          {:class ["font-nes"]}
+          (str "Images: " (count (components.note/->all-images note)))))
 
-   (when (seq (components.note/->all-images note))
-     [:div
-      {:class ["font-nes"]}
-      (str "Images: " (count (components.note/->all-images note)))])
+     ($ :hr)
 
-   [:hr]
+     ($ :div
+        {:class ["flex flex-col justify-between ml-auto"]}
+        ($ floating/popover
+           {:hover        true :click true
+            :anchor-comp  ($ :span "content")
+            :popover-comp ($ components.garden/full-note {:item note})})
 
-   [:div
-    {:class ["flex flex-col justify-between ml-auto"]}
-    [floating/popover
-     {:hover        true :click true
-      :anchor-comp  [:span "content"]
-      :popover-comp [components.garden/full-note note]}]
+        ;; raw note on hover
+        ($ components.debug/raw-metadata {:label "raw" :data note}))))
 
-    ;; raw note on hover
-    [components.debug/raw-metadata {:label "raw"} note]]])
-
-(defn note-comp
-  ([note] [note-comp nil note])
-  ([{:keys [] :as opts}
-    {:keys [] :as note}]
-   [:div
-    {:class ["flex flex-col" "p-4" "grow"]}
-
-    [note-stats opts note]]))
+(defui note-comp [opts]
+  ($ :div
+     {:class ["flex flex-col" "p-4" "grow"]}
+     ($ note-stats opts)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; notes table def
@@ -141,40 +137,39 @@
                     items-with-tags (->> items (filter components.note/item-has-any-tags))
                     todos-with-tags (->> todos (filter components.note/item-has-any-tags))
                     total-wc        (components.note/word-count note)]
-                [[:span.font-mono
-                  (if (:blog/published note) "Published"
-                      [components.actions/actions-list
-                       {:actions (handlers/->actions note) :n 1}])]
-                 [components.garden/all-nested-tags-comp note]
-                 [components.debug/raw-metadata
-                  {:label
-                   (str (:org/name-string note))}
-                  note]
-                 [:span.font-nes
-                  {:class [(color-for-count (/ total-wc 8))]}
-                  total-wc]
+                [($ :span.font-mono
+                    (if (:blog/published note) "Published"
+                        [components.actions/actions-list
+                         {:actions (handlers/->actions note) :n 1}]))
+                 ($ components.garden/all-nested-tags-comp {:item note})
+                 ($ components.debug/raw-metadata
+                    {:label (str (:org/name-string note))
+                     :data  note})
+                 ($ :span.font-nes
+                    {:class [(color-for-count (/ total-wc 8))]}
+                    total-wc)
                  (if (is-daily? note)
-                   [:span.font-nes
-                    {:class [(color-for-count (count items-with-tags))]}
-                    (str (count items-with-tags) "/" (count items))]
-                   [:span.font-nes
-                    {:class [(color-for-count (count items))]}
-                    (str (count items))])
+                   ($ :span.font-nes
+                      {:class [(color-for-count (count items-with-tags))]}
+                      (str (count items-with-tags) "/" (count items)))
+                   ($ :span.font-nes
+                      {:class [(color-for-count (count items))]}
+                      (str (count items))))
                  (if (is-daily? note)
-                   [:span.font-nes
-                    {:class [(color-for-count (count todos-with-tags))]}
-                    (str (count todos-with-tags) "/" (count todos))]
-                   [:span.font-nes
-                    {:class [(color-for-count (count todos))]}
-                    (str (count todos))])
-                 [:span.font-nes
-                  {:class [(color-for-count (:links/published-count note))]}
-                  (str (:links/published-count note) "/" (:links/count note))]
-                 [:span.font-nes
-                  {:class [(color-for-count (:backlinks/published-count note))]}
-                  (str (:backlinks/published-count note) "/" (:backlinks/count note))]
-                 [components.actions/actions-list
-                  {:actions (handlers/->actions note) :n 5}]]))})
+                   ($ :span.font-nes
+                      {:class [(color-for-count (count todos-with-tags))]}
+                      (str (count todos-with-tags) "/" (count todos)))
+                   ($ :span.font-nes
+                      {:class [(color-for-count (count todos))]}
+                      (str (count todos))))
+                 ($ :span.font-nes
+                    {:class [(color-for-count (:links/published-count note))]}
+                    (str (:links/published-count note) "/" (:links/count note)))
+                 ($ :span.font-nes
+                    {:class [(color-for-count (:backlinks/published-count note))]}
+                    (str (:backlinks/published-count note) "/" (:backlinks/count note)))
+                 ($ components.actions/actions-list
+                    {:actions (handlers/->actions note) :n 5})]))})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; presets
@@ -288,47 +283,46 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; main widget
 
-(defn widget [opts]
-  (let [
-        blog-data            (use-blog/use-blog-data)
-        {:keys [root-notes]} @blog-data
+(defui widget [opts]
+  (let [blog-data            (use-blog/use-blog-data)
+        {:keys [root-notes]} blog-data
 
         ;; TODO merge/use db notes here, drop use-blog-data
         ;; root-notes (ui.db/root-notes (:conn opts) {:join-children true})
 
-        sort-published-first (uix/state nil)
-        sort-published-last  (uix/state nil)
-        only-notes           (uix/state nil)
-        only-dailies         (uix/state nil)
-        hide-dailies         (uix/state nil)
-        hide-all-tables      (uix/state nil)
-        hide-all-groups      (uix/state nil)
+        [sort-published-first set-sort-published-first] (uix/use-state nil)
+        [sort-published-last set-sort-published-last]   (uix/use-state nil)
+        [only-notes set-only-notes]                     (uix/use-state nil)
+        [only-dailies set-only-dailies]                 (uix/use-state nil)
+        [hide-dailies set-hide-dailies]                 (uix/use-state nil)
+        [hide-all-tables set-hide-all-tables]           (uix/use-state nil)
+        [hide-all-groups set-hide-all-groups]           (uix/use-state nil)
 
         pills [{:on-click (fn [_]
-                            (swap! sort-published-first not)
-                            (reset! sort-published-last nil))
+                            (set-sort-published-first not)
+                            (set-sort-published-last nil))
                 :label    "sort-published-first"
-                :active   @sort-published-first}
+                :active   sort-published-first}
                {:on-click (fn [_]
-                            (swap! sort-published-last not)
-                            (reset! sort-published-first nil))
+                            (set-sort-published-last not)
+                            (set-sort-published-first nil))
                 :label    "sort-published-last"
-                :active   @sort-published-last}
-               {:on-click #(swap! only-notes not)
+                :active   sort-published-last}
+               {:on-click #(set-only-notes not)
                 :label    "only-garden-notes"
-                :active   @only-notes}
-               {:on-click #(swap! only-dailies not)
+                :active   only-notes}
+               {:on-click #(set-only-dailies not)
                 :label    "only-dailies"
-                :active   @only-dailies}
-               {:on-click #(swap! hide-dailies not)
+                :active   only-dailies}
+               {:on-click #(set-hide-dailies not)
                 :label    "hide-dailies"
-                :active   @hide-dailies}
-               {:on-click #(swap! hide-all-tables not)
+                :active   hide-dailies}
+               {:on-click #(set-hide-all-tables not)
                 :label    "hide-all-tables"
-                :active   @hide-all-tables}
-               {:on-click #(swap! hide-all-groups not)
+                :active   hide-all-tables}
+               {:on-click #(set-hide-all-groups not)
                 :label    "hide-all-groups"
-                :active   @hide-all-groups}]
+                :active   hide-all-groups}]
 
         filter-data
         (components.filter/use-filter
@@ -341,52 +335,52 @@
                 :filter-items
                 (fn [items]
                   (cond->> items
-                    @only-notes   (filter is-garden-note?)
-                    @hide-dailies (remove is-daily?)
-                    @only-dailies (filter is-daily?))))
+                    only-notes   (filter is-garden-note?)
+                    hide-dailies (remove is-daily?)
+                    only-dailies (filter is-daily?))))
               (update :presets merge (presets))))]
 
-    [:div
-     {:class ["bg-city-blue-800"
-              "bg-opacity-90"
-              "min-h-screen"
-              "flex" "flex-col"
-              "pb-16"]}
+    ($ :div
+       {:class ["bg-city-blue-800"
+                "bg-opacity-90"
+                "min-h-screen"
+                "flex" "flex-col"
+                "pb-16"]}
 
-     [bar]
+       ($ bar)
 
-     [:hr {:class ["mb-6" "border-city-blue-900"]}]
-     [:div
-      {:class ["px-6"
-               "text-city-blue-400"]}
+       ($ :hr {:class ["mb-6" "border-city-blue-900"]})
+       ($ :div
+          {:class ["px-6"
+                   "text-city-blue-400"]}
 
-      (:filter-grouper filter-data)]
+          (:filter-grouper filter-data))
 
-     [:div
-      {:class ["px-6"
-               "text-city-blue-400"]}
-      (str (count (:filtered-items filter-data)) " notes")]
+       ($ :div
+          {:class ["px-6"
+                   "text-city-blue-400"]}
+          (str (count (:filtered-items filter-data)) " notes"))
 
-     (when (seq (:filtered-items filter-data))
-       [:div {:class ["pt-6"]}
-        [components.filter/items-by-group
-         (assoc filter-data
-                :table-def (notes-table-def)
-                :item->comp note-comp
-                :hide-all-tables @hide-all-tables
-                :hide-all-groups @hide-all-groups
-                :sort-items (cond
-                              @sort-published-first
-                              (fn [items] (->> items (sort-by :blog/published >)))
-                              @sort-published-last
-                              (fn [items] (->> items (sort-by :blog/published <)))))]])
+       (when (seq (:filtered-items filter-data))
+         ($ :div {:class ["pt-6"]}
+            ($ components.filter/items-by-group
+               (assoc filter-data
+                      :table-def (notes-table-def)
+                      :item->comp #(note-comp {:note %})
+                      :hide-all-tables hide-all-tables
+                      :hide-all-groups hide-all-groups
+                      :sort-items (cond
+                                    sort-published-first
+                                    (fn [items] (->> items (sort-by :blog/published >)))
+                                    sort-published-last
+                                    (fn [items] (->> items (sort-by :blog/published <))))))))
 
-     (when (not (seq root-notes))
-       [:div
-        {:class ["text-bold" "text-city-pink-300" "p-4"]}
-        [:h1
-         {:class ["text-4xl" "font-nes"]}
-         "no notes found!"]
-        [:p
-         {:class ["text-2xl" "pt-4"]}
-         ""]])]))
+       (when (not (seq root-notes))
+         ($ :div
+            {:class ["text-bold" "text-city-pink-300" "p-4"]}
+            ($ :h1
+               {:class ["text-4xl" "font-nes"]}
+               "no notes found!")
+            ($ :p
+               {:class ["text-2xl" "pt-4"]}
+               ""))))))

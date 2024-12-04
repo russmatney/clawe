@@ -81,11 +81,10 @@
 ;; action list
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defui actions-list [opts-or-axs]
+(defui actions-list [{:keys [actions] :as opts}]
   ;; invoke so we have selections stored for misc actions
   (let [_selections                   (hooks.use-selection/last-n-selections)
-        actions                       (:actions opts-or-axs opts-or-axs)
-        fallback-page-size            (:n opts-or-axs 3)
+        fallback-page-size            (:n opts 3)
         [page-size set-page-size]     (uix/use-state fallback-page-size)
         [showing-all set-showing-all] (uix/use-state false)]
     (when actions
@@ -97,7 +96,7 @@
                        (set-showing-all false))
             actions  (->>
                        (cond->> actions
-                         (:hide-disabled opts-or-axs)
+                         (:hide-disabled opts)
                          (remove :action/disabled))
                        (sort-by
                          (fn [x]
@@ -126,7 +125,7 @@
                                   :else nil)))))]
         ($ :div
            {:class ["inline-flex"
-                    (when (and (not (:nowrap opts-or-axs)) showing-all)
+                    (when (and (not (:nowrap opts)) showing-all)
                       "flex-wrap")]}
            (for [[i ax] (->> actions
                              (remove nil?)

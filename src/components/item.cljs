@@ -10,26 +10,28 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; item-id-hash
 
-(defui id-hash [it]
+(defui id-hash
+  [{:keys [item]}]
   ($ :div
      {:class
       (concat
         ["flex" "text-sm" "font-nes"
          "text-city-red-300" "ml-2"
          "hover:opacity-100"]
-        (when-not (:org/id it)
+        (when-not (:org/id item)
           ["opacity-50" "cursor-pointer" "tooltip"]))
-      :on-click (fn [_] (when-not (:org/id it)
-                          (handlers/ensure-uuid (dissoc it :actions/inferred))))}
-     (if (:org/id it)
-       (->> it :org/id str (take 4) (apply str))
+      :on-click (fn [_] (when-not (:org/id item)
+                          (handlers/ensure-uuid (dissoc item :actions/inferred))))}
+     (if (:org/id item)
+       (->> item :org/id str (take 4) (apply str))
        ($ :span
           ($ :span {:class ["tooltip-text" "-mt-12" "-ml-12"]}
              "ensure-uuid")
           "####"))))
 
-(defui db-id [it]
-  (when (:db/id it)
+(defui db-id
+  [{:keys [item]}]
+  (when (:db/id item)
     ($ :div
        {:class
         ["flex" "text-sm" "font-nes" "ml-2"
@@ -37,19 +39,19 @@
          "hover:text-slate-400"
          "hover:line-through"
          "cursor-pointer" "tooltip"]
-        :on-click #(handlers/delete-from-db (dissoc it :actions/inferred))}
+        :on-click #(handlers/delete-from-db (dissoc item :actions/inferred))}
        ($ :span {:class ["tooltip-text" "-mt-12" "-ml-12"]}
           "delete-from-db")
-       (->> it :db/id str (apply str)))))
+       (->> item :db/id str (apply str)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; parent-names
 
-(defui breadcrumbs [bcrumbs]
+(defui breadcrumbs [{:keys [breadcrumbs]}]
   ($ :span
      {:class ["flex" "flex-row" "flex-wrap"]}
      (->>
-       bcrumbs
+       breadcrumbs
        reverse
        (map-indexed
          (fn [i nm]
@@ -74,7 +76,7 @@
         p-name       (-> p-names first)
         rest-p-names (-> p-names rest)]
     (if-not header?
-      [breadcrumbs p-names]
+      ($ breadcrumbs {:breadcrumbs p-names})
       ($ :div
          {:class ["flex" "flex-row" "flex-wrap" "items-center"]}
          ($ breadcrumbs rest-p-names)
