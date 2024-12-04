@@ -24,7 +24,7 @@
           {:class ["px-2" "font-mono"]}
           (components.format/s-shortener {:length 18} title))
 
-       ($ components.garden/tags-comp item)
+       ($ components.garden/tags-comp {:item item})
 
        (when last-modified
          ($ :div

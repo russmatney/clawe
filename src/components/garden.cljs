@@ -54,7 +54,7 @@
     (mapcat :org/tags)
     (into #{})))
 
-(defui tags-list [tags]
+(defui tags-list [{:keys [tags]}]
   (when (seq tags)
     ($ :div
        {:class ["flex flex-row flex-wrap" "justify-center"]}
@@ -65,10 +65,10 @@
                            (colors/color-wheel-classes {:type :line :i i}))}
             (str ":" t))))))
 
-(defui tags-comp [item]
-  ($ tags-list (-> item :org/tags)))
+(defui tags-comp [{:keys [item]}]
+  ($ tags-list {:tags (-> item :org/tags)}))
 
-(defui all-nested-tags-comp [item]
+(defui all-nested-tags-comp [{:keys [item]}]
   (let [all-tags (all-nested-tags item)]
     ($ tags-list all-tags)))
 
@@ -93,7 +93,7 @@
     {:note item}))
 
 (declare org-file)
-(defui full-note [item]
+(defui full-note [{:keys [item]}]
   (let [{:keys [note]} (use-full-garden-note item)]
     ($ :div
        {:class ["bg-city-blue-900" "p-4"]}
@@ -111,7 +111,7 @@
                                     "cursor-pointer"]
                                    text-classes)}
                           link-text))
-      :popover-comp ($ full-note {:org/id link-id})}))
+      :popover-comp ($ full-note {:item {:org/id link-id}})}))
 
 (def id-regex
   "The second group is anything except a closing \\]."
@@ -370,7 +370,7 @@
           {:class ["flex flex-row" "justify-around" "items-center"]}
           ($ :div
              {:class ["w-1/3"]}
-             ($ all-nested-tags-comp item))
+             ($ all-nested-tags-comp {:item item}))
           ($ urls-list {:urls all-urls}))
 
        ;; file content

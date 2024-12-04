@@ -282,22 +282,23 @@
              ($ :div
                 {:class ["ml-auto"]}
                 (when (seq extra-preset-pills)
-                  ($ pill/cluster extra-preset-pills))))
+                  ($ pill/cluster {:pills extra-preset-pills}))))
 
           (when (and (seq presets) (> (count presets) 1))
             ($ pill/cluster
-               (->> presets
-                    (sort-by first)
-                    (map
-                      (fn [[k {:keys [filters group-by sort-groups label]}]]
-                        {:label  (or label k)
-                         :active (#{current-preset-key} k)
-                         :on-click
-                         (fn [_]
-                           (set-current-preset-key k)
-                           (set-filters filters)
-                           (set-group-by-key group-by)
-                           (set-sort-groups-key sort-groups))}))))))
+               {:pills
+                (->> presets
+                     (sort-by first)
+                     (map
+                       (fn [[k {:keys [filters group-by sort-groups label]}]]
+                         {:label  (or label k)
+                          :active (#{current-preset-key} k)
+                          :on-click
+                          (fn [_]
+                            (set-current-preset-key k)
+                            (set-filters filters)
+                            (set-group-by-key group-by)
+                            (set-sort-groups-key sort-groups))})))})))
 
        (when filter-detail-open?
          ;; edit filters

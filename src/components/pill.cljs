@@ -24,15 +24,15 @@
        "hover:text-city-pink-500"
        "hover:bg-opacity-100"]
       :on-click on-click}
-     ($ :span label)))
+     ($ :span (str label))))
 
 
-(defui cluster [xs]
+(defui cluster [{:keys [pills]}]
   ($ :div
      {:class ["w-full"
               "max-w-xl"
               "mx-auto"
               "flex" "flex-row" "flex-wrap"
               "justify-center"]}
-     (for [x xs]
-       [pill (assoc x :key (str x))])))
+     (for [x pills]
+       ($ pill (assoc x :key (str x))))))

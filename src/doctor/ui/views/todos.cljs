@@ -1,6 +1,6 @@
 (ns doctor.ui.views.todos
   (:require
-   [uix.core.alpha :as uix]
+   [uix.core :as uix :refer [$ defui]]
    [doctor.ui.db :as ui.db]
    [doctor.ui.handlers :as handlers]
 
@@ -15,23 +15,22 @@
 (defn todos-table-def []
   {:headers ["" "Name" "Tags" "Parents" "Actions"]
    :->row   (fn [todo]
-              [[:span.flex.flex-row.items-center.space-x-2
-                [todo/level todo]
-                [todo/status todo]
-                [todo/priority-label todo]
-                [item/db-id todo]
-                [item/id-hash todo]]
+              [($ :span.flex.flex-row.items-center.space-x-2
+                  ($ todo/level {:item todo})
+                  ($ todo/status {:item todo})
+                  ($ todo/priority-label {:item todo})
+                  ($ item/db-id {:item todo})
+                  ($ item/id-hash {:item todo}))
 
-               [:span
-                {:class ["flex-grow" "font-mono"]}
-                (:org/name-string todo)]
+               ($ :span
+                  {:class ["flex-grow" "font-mono"]}
+                  (:org/name-string todo))
 
-
-               [components.garden/all-nested-tags-comp todo]
-               [item/parent-names todo]
-               [components.actions/actions-list
-                {:actions (handlers/->actions todo)
-                 :n       7}]])})
+               ($ components.garden/all-nested-tags-comp {:item todo})
+               ($ item/parent-names {:item todo})
+               ($ components.actions/actions-list
+                  {:actions (handlers/->actions todo)
+                   :n       7})])})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; filter-grouper presets
@@ -162,20 +161,20 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; main widget
 
-(defn widget [opts]
-  (let [todos            (ui.db/list-todos
-                           (:conn opts)
-                           {:join-children? true
-                            :skip-subtasks? true})
-        only-incomplete  (uix/state (:only-incomplete opts))
-        hide-in-progress (uix/state (:hide-in-progress opts))
+(defui widget [opts]
+  (let [todos                                   (ui.db/list-todos
+                                                  (:conn opts)
+                                                  {:join-children? true
+                                                   :skip-subtasks? true})
+        [only-incomplete set-only-incomplete]   (uix/use-state (:only-incomplete opts))
+        [hide-in-progress set-hide-in-progress] (uix/use-state (:hide-in-progress opts))
         pills
-        [{:on-click #(swap! hide-in-progress not)
-          :label    (if @hide-in-progress "Show in-progress" "Hide in-progress")
-          :active   @hide-in-progress}
-         {:on-click #(swap! only-incomplete not)
-          :label    (if @only-incomplete "All" "Only Incomplete")
-          :active   @only-incomplete}]
+        [{:on-click #(set-hide-in-progress not)
+          :label    (if hide-in-progress "Show in-progress" "Hide in-progress")
+          :active   hide-in-progress}
+         {:on-click #(set-only-incomplete not)
+          :label    (if only-incomplete "All" "Only Incomplete")
+          :active   only-incomplete}]
 
         filter-data
         (components.filter/use-filter
@@ -188,38 +187,38 @@
                 :extra-preset-pills pills
                 :filter-items (fn [items]
                                 (cond->> items
-                                  @only-incomplete
+                                  only-incomplete
                                   (filter #(or (todo/not-started? %)
                                                (todo/in-progress? %)))
-                                  @hide-in-progress
+                                  hide-in-progress
                                   (filter #(not (todo/in-progress? %)))))
                 :sort-items todo/sort-todos)
               (update :presets merge (presets))))]
-    [:div
-     {:class ["bg-city-blue-800" "bg-opacity-90"
-              "flex" "flex-col" "mb-8"]}
+    ($ :div
+       {:class ["bg-city-blue-800" "bg-opacity-90"
+                "flex" "flex-col" "mb-8"]}
 
-     [:hr {:class ["mb-6" "border-city-blue-900"]}]
-     [:div
-      {:class ["px-6"
-               "text-city-blue-400"]}
+       ($ :hr {:class ["mb-6" "border-city-blue-900"]})
+       ($ :div
+          {:class ["px-6"
+                   "text-city-blue-400"]}
 
-      (:filter-grouper filter-data)]
+          (:filter-grouper filter-data))
 
-     (when (seq (:filtered-items filter-data))
-       [:div {:class ["pt-6"]}
-        [components.filter/items-by-group
-         (assoc filter-data
-                :xs->xs todo/infer-actions
-                :table-def (todos-table-def)
-                :item->comp #(todo/card-or-card-group {:item %}))]])
+       (when (seq (:filtered-items filter-data))
+         ($ :div {:class ["pt-6"]}
+            ($ components.filter/items-by-group
+               (assoc filter-data
+                      :xs->xs todo/infer-actions
+                      :table-def (todos-table-def)
+                      :item->comp #(todo/card-or-card-group {:item %})))))
 
-     (when (not (seq todos))
-       [:div
-        {:class ["text-bold" "text-city-pink-300" "p-4"]}
-        [:h1
-         {:class ["text-4xl" "font-nes"]}
-         "no todos found!"]
-        [:p
-         {:class ["text-2xl" "pt-4"]}
-         ""]])]))
+       (when (not (seq todos))
+         ($ :div
+            {:class ["text-bold" "text-city-pink-300" "p-4"]}
+            ($ :h1
+               {:class ["text-4xl" "font-nes"]}
+               "no todos found!")
+            ($ :p
+               {:class ["text-2xl" "pt-4"]}
+               ""))))))
