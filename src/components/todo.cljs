@@ -64,10 +64,10 @@
 (defn queued [todo]
   (let [queued-at (:todo/queued-at todo)]
     (when queued-at
-      [:div
-       {:class ["text-slate-400" "font-mono"]}
-       (str "queued: "
-            (t/format "E h:mma" (dates.tick/add-tz (t/instant queued-at))))])))
+      ($ :div
+         {:class ["text-slate-400" "font-mono"]}
+         (str "queued: "
+              (t/format "E h:mma" (dates.tick/add-tz (t/instant queued-at))))))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
