@@ -15,6 +15,7 @@
    [reitit.frontend :as rf]
    [reitit.frontend.easy :as rfe]
 
+   [datascript.core :as d]
    [datascript.transit :as dt]
    [hiccup-icons.octicons :as octicons]
    [clojure.string :as string]
@@ -29,6 +30,7 @@
    [pages.posts :as pages.posts]
    [pages.journal :as pages.journal]
 
+   [db.schema :refer [schema]]
    [hooks.db :as hooks.db]
    [doctor.ui.hooks.use-reaction :refer [use-reaction]]
 
@@ -116,32 +118,13 @@
    ]
   )
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; routes
 
 (def routes
   (->> route-defs
        (map (fn [{:keys [route page-name]}] [route {:name page-name}]))
        (into [])))
-
-(defui view [opts]
-  (let [route-data     (some->> route-defs
-                                (filter (comp #{(-> opts :route :data :name)} :page-name)) first)
-        {:keys [comp]} route-data
-
-        ;; create fe db and pass it to every page
-        {:keys [conn]} (hooks.db/use-db)
-        opts           (-> opts
-                           js->clj
-                           (assoc :conn conn
-                                  :route-defs route-defs
-                                  :route-data route-data))]
-    (if comp
-      (if (:comp-only route-data)
-        ($ comp opts)
-        ($ pages/page (assoc opts :main comp)))
-      ($ :div "no page"))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; routes
 
 (def router (rf/router routes {}))
 
@@ -204,14 +187,41 @@
        :transit-read-handlers
        (merge ttl/read-handlers dt/read-handlers)})))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; db
+
+(defonce conn-ratom (r/atom (d/create-conn schema)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; root view
+
+(defui view [{:keys [conn] :as opts}]
+  (let [route-data     (some->> route-defs
+                                (filter (comp #{(-> opts :route :data :name)} :page-name)) first)
+        {:keys [comp]} route-data
+
+        opts (assoc opts
+                    :conn conn
+                    :route-defs route-defs
+                    :route-data route-data)]
+    (if comp
+      (if (:comp-only route-data)
+        ($ comp opts)
+        ($ pages/page (assoc opts :main comp)))
+      ($ :div "no page"))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Bootstrap
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defui app []
   ($ error-boundary {:on-error js/console.error}
-     (let [route (use-reaction current-route)]
-       ($ view {:route route}))))
+     (let [route (use-reaction current-route)
+
+           ;; not 100% about this datascript bootstrapping...
+           conn     (use-reaction conn-ratom)
+           _whateva (hooks.db/use-db {:conn conn})]
+       ($ view {:route route :conn conn}))))
 
 (defonce root-el
   (uix.dom/create-root

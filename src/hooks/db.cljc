@@ -41,26 +41,20 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 #?(:cljs
-   (defn use-db []
-     (let [[conn set-conn] (uix/use-state nil)
-           handle-resp
+   (defn use-db [{:keys [conn]}]
+     (let [handle-resp
            (fn [items]
-             (if conn
-               (set-conn
-                 (d/transact! conn items))
-               (-> (d/empty-db schema)
-                   (d/db-with items)
-                   set-conn))
+             (when conn
+               (d/transact! conn items))
 
              (when conn
                (->> items
                     (map :e)
                     distinct
-                    (map #(d/entity conn %))
+                    (map #(d/entity @conn %))
                     (map :doctor/type)
                     frequencies
-                    (str "received data: "
-                         "datoms: " (count items) " ")
+                    (str "received data: " "datoms: " (count items) " ")
                     (t/log! :info)))
 
              (->> items (take 2)
@@ -84,10 +78,11 @@
                               x
                               (take 3)
                               (into {})))))
-                   doall)))]
+                   doall))
+             )]
 
        (with-stream [] (db-stream) handle-resp)
        (with-rpc [] (get-db) handle-resp)
 
-       {:conn conn})
+       {:db @conn})
      ))
