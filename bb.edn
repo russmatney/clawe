@@ -57,7 +57,7 @@
     (defn run-doctor-tauri-app
       ([name] (run-doctor-tauri-app nil name))
       ([opts name]
-       (let [url   (:url opts (str doctor-fe-url "/" name))
+       (let [url   (:url opts (str doctor-fe-url "/#/" name))
              title (str "tauri-doctor-" name)
              label name
              cmd   (str clove-exec " create-window"
