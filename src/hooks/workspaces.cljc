@@ -1,11 +1,11 @@
 (ns hooks.workspaces
   (:require
    [plasma.core :refer [defhandler defstream]]
+   [taoensso.telemere :as t]
    #?@(:clj [[api.workspaces :as api.workspaces]
              [api.topbar :as api.topbar]
              [clawe.wm :as wm]
-             [clawe.rules :as clawe.rules]
-             [taoensso.timbre :as log]]
+             [clawe.rules :as clawe.rules]]
        :cljs [[wing.core :as w]
               [uix.core :as uix]
               [doctor.ui.hooks.plasma :refer [with-stream with-rpc]]])))
@@ -15,7 +15,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defhandler clean-up-workspaces []
-  (log/info "Cleaning up workspaces")
+  (t/log! :info "Cleaning up workspaces")
   (clawe.rules/clean-up-workspaces)
   (api.workspaces/push-updated-workspaces)
   (api.topbar/push-topbar-metadata))
@@ -26,17 +26,17 @@
        :action/on-click #(clean-up-workspaces)}]))
 
 (defhandler close-workspaces [w]
-  (log/info "Closing workspace" (:workspace/title w))
+  (t/log! :info (str "Closing workspace" (:workspace/title w)))
   (wm/delete-workspace w)
   (api.workspaces/push-updated-workspaces)
   (api.topbar/push-topbar-metadata))
 
 (defhandler focus-workspace [wsp]
-  (log/info "Focusing wsp" (:workspace/title wsp))
+  (t/log! :info (str "Focusing wsp" (:workspace/title wsp)))
   (wm/focus-workspace wsp))
 
 (defhandler focus-client [c]
-  (log/info "Focusing client" (:client/window-title c))
+  (t/log! :info (str "Focusing client" (:client/window-title c)))
   (wm/focus-client c))
 
 (defhandler get-active-workspaces [] (api.workspaces/active-workspaces))
@@ -46,13 +46,14 @@
    (defn use-workspaces []
      (let [[workspaces set-workspaces] (uix/use-state [])
            handle-resp                 (fn [active-wsps]
+                                         (t/log! :info "new wspc data")
                                          (set-workspaces
                                            (->> active-wsps
                                                 (w/distinct-by :workspace/title)
                                                 (sort-by :workspace/index))))]
 
-       (with-rpc [] (get-active-workspaces) handle-resp)
        (with-stream [] (workspaces-stream) handle-resp)
+       (with-rpc [] (get-active-workspaces) handle-resp)
 
        {:active-clients      (->> workspaces
                                   (filter :workspace/focused)
