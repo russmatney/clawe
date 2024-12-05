@@ -94,8 +94,5 @@
     ;; keybindings
     keybind/keybind {:mvn/version "2.2.0"}
 
-    ;; ui icons
-    hiccup-icons/hiccup-icons {:mvn/version "0.4.4"}
-
     ;; benchmarking
     criterium/criterium {:mvn/version "0.4.6"}}}}}

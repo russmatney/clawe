@@ -1,6 +1,6 @@
 (ns components.actions
   (:require
-   [hiccup-icons.fa :as fa]
+   ["react-icons/fa6" :as FA]
    [uix.core :as uix :refer [defui $]]
 
    [components.floating :as floating]
@@ -62,8 +62,12 @@
              "hover:text-city-blue-300"
              "hover:border-city-blue-300"]))
         :on-click (fn [_] (when (and on-click (not disabled)) (on-click)))}
-       ($ :div (or
-                 ;; comp icon
+       ($ :div (cond
+                 comp comp
+                 icon (do
+                        (println "actions rendering icon" icon)
+                        ($ icon))
+                 :else
                  ($ :span {:class ["font-mono" "whitespace-nowrap"]}
                     label)))
        ($ :div
@@ -113,14 +117,14 @@
                                        (not showing-all))
                                   {:action/label    "show all"
                                    :action/on-click show-all
-                                   :action/icon     fa/chevron-right-solid}
+                                   :action/icon     FA/FaChevronRight}
 
                                   (and
                                     (= page-size (count actions))
                                     showing-all)
                                   {:action/label    "show less"
                                    :action/on-click collapse
-                                   :action/icon     fa/chevron-left-solid}
+                                   :action/icon     FA/FaChevronLeft}
 
                                   :else nil)))))]
         ($ :div

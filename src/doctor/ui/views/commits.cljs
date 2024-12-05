@@ -1,12 +1,11 @@
 (ns doctor.ui.views.commits
   (:require
-   [hiccup-icons.octicons :as octicons]
    [uix.core :as uix :refer [$ defui]]
 
    [components.events :as components.events]
    [doctor.ui.db :as ui.db]))
 
-(def icon octicons/commit)
+(def icon nil)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; event page

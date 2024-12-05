@@ -1,6 +1,6 @@
 (ns doctor.ui.views.focus
   (:require
-   [hiccup-icons.fa :as fa]
+   ["react-icons/fa6" :as FA]
    [uix.core :as uix :refer [$ defui]]
 
    [doctor.ui.handlers :as handlers]
@@ -53,12 +53,12 @@
                (concat
                  (when (> ct 0)
                    [{:action/label    "next"
-                     :action/icon     fa/chevron-up-solid
+                     :action/icon     FA/FaChevronUp
                      :action/disabled (>= n (dec ct))
                      :action/on-click (fn [_] (set-n inc))
                      :action/priority 5}
                     {:action/label    "prev"
-                     :action/icon     fa/chevron-down-solid
+                     :action/icon     FA/FaChevronDown
                      :action/disabled (zero? n)
                      :action/on-click (fn [_] (set-n dec))
                      :action/priority 5}])

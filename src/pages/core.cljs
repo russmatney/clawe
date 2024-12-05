@@ -1,7 +1,7 @@
 (ns pages.core
   (:require
-   ;; [hiccup-icons.octicons :as octicons]
    [reitit.frontend.easy :as rfe]
+   ["react-icons/fa6" :as FA]
    [uix.core :as uix :refer [defui $]]
 
    [components.icons :as components.icons]
@@ -12,7 +12,7 @@
                    :text  label}]
     ($ components.icons/icon-comp
        (cond icon  (assoc icon-opts :icon icon)
-             :else (assoc icon-opts :icon label #_octicons/alert)))))
+             :else (assoc icon-opts :icon FA/FaTriangleExclamation)))))
 
 (defui menu [{:keys [expanded? route-defs route-data] :as _opts}]
   (when (seq route-defs)

@@ -17,7 +17,6 @@
 
    [datascript.core :as d]
    [datascript.transit :as dt]
-   [hiccup-icons.octicons :as octicons]
    [clojure.string :as string]
    [taoensso.encore :as enc]
 
@@ -78,41 +77,24 @@
 
 (def route-defs
   [
-   {:route "/" :page-name :page/home :label "Home" :comp views.dashboard/widget :icon octicons/beaker16}
-   {:route "/dashboard" :page-name :page/dashboard :label "Dashboard" :comp views.dashboard/widget
-    :icon  octicons/beaker16}
-   {:route "/focus" :page-name :page/focus :label "Focus" :comp views.focus/widget :hide-header true
-    :icon  octicons/light-bulb16}
-   {:route "/todos" :page-name :page/todos :label "Todos" :comp views.todos/widget
-    :icon  octicons/checklist16}
-   {:route "/blog" :page-name :page/blog :label "Blog" :comp views.blog/widget :hide-header true
-    :icon  views.blog/icon}
-   {:route "/today" :page-name :page/today :label "Today" :comp views.today/widget
-    :icon  views.today/icon}
-   {:route "/wallpapers" :page-name :page/wallpapers :label "Wallpapers" :comp pages.wallpapers/page
-    :icon  octicons/image16}
-   {:route "/events" :page-name :page/events :label "Events" :comp pages.events/page
-    :icon  octicons/calendar16}
-   {:route "/pomodoros" :page-name :page/pomodoros :label "Pomodoros" :comp views.pomodoro/widget
-    :icon  octicons/clock16}
-   {:route "/git-status" :page-name :page/git-status :label "Git-Status" :comp views.git-status/widget
-    :icon  octicons/clock16}
-   {:route "/commits" :page-name :page/commits :label "Commits" :comp views.commits/widget
-    :icon  views.commits/icon}
-   {:route "/db" :page-name :page/db :label "DB" :comp pages.db/page
-    :icon  octicons/archive16}
-   {:route "/screenshots" :page-name :page/screenshots :label "Screenshots" :comp pages.screenshots/page
-    :icon  octicons/screen-full16}
-   {:route "/garden" :page-name :page/garden :label "Garden" :comp pages.garden/page
-    :icon  octicons/workflow16}
-   {:route "/posts" :page-name :page/posts :label "Posts" :comp pages.posts/page
-    :icon  octicons/comment16}
-   {:route "/workspaces" :page-name :page/workspaces :label "Workspaces" :comp views.workspaces/widget
-    :icon  octicons/clippy16}
-   {:route "/journal" :page-name :page/journal :label "Journal" :comp pages.journal/page
-    :icon  octicons/book16}
-   {:route "/chess-games" :page-name :page/chess :label "Chess Games" :comp views.chess-games/widget
-    :icon  octicons/moon16}
+   {:route "/" :page-name :page/home :label "Home" :comp views.dashboard/widget}
+   {:route "/dashboard" :page-name :page/dashboard :label "Dashboard" :comp views.dashboard/widget}
+   {:route "/focus" :page-name :page/focus :label "Focus" :comp views.focus/widget :hide-header true}
+   {:route "/todos" :page-name :page/todos :label "Todos" :comp views.todos/widget}
+   {:route "/blog" :page-name :page/blog :label "Blog" :comp views.blog/widget :hide-header true}
+   {:route "/today" :page-name :page/today :label "Today" :comp views.today/widget}
+   {:route "/wallpapers" :page-name :page/wallpapers :label "Wallpapers" :comp pages.wallpapers/page}
+   {:route "/events" :page-name :page/events :label "Events" :comp pages.events/page}
+   {:route "/pomodoros" :page-name :page/pomodoros :label "Pomodoros" :comp views.pomodoro/widget}
+   {:route "/git-status" :page-name :page/git-status :label "Git-Status" :comp views.git-status/widget}
+   {:route "/commits" :page-name :page/commits :label "Commits" :comp views.commits/widget}
+   {:route "/db" :page-name :page/db :label "DB" :comp pages.db/page}
+   {:route "/screenshots" :page-name :page/screenshots :label "Screenshots" :comp pages.screenshots/page}
+   {:route "/garden" :page-name :page/garden :label "Garden" :comp pages.garden/page}
+   {:route "/posts" :page-name :page/posts :label "Posts" :comp pages.posts/page}
+   {:route "/workspaces" :page-name :page/workspaces :label "Workspaces" :comp views.workspaces/widget}
+   {:route "/journal" :page-name :page/journal :label "Journal" :comp pages.journal/page}
+   {:route "/chess-games" :page-name :page/chess :label "Chess Games" :comp views.chess-games/widget}
    {:route "/topbar" :page-name :page/topbar :label "Top Bar" :comp views.topbar/widget :comp-only true}
    {:route "/topbar-bg" :page-name :page/topbar-bg :label "Top Bar BG" :comp views.topbar/widget}
    ]

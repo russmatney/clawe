@@ -1,7 +1,7 @@
 (ns components.filter
   (:require
    [clojure.string :as string]
-   [hiccup-icons.octicons :as octicons]
+   ["react-icons/fa6" :as FA]
    [uix.core :as uix :refer [$ defui]]
 
    [components.floating :as floating]
@@ -87,7 +87,9 @@
                     :actions
                     (concat
                       [{:action/on-click (fn [_] (set-show-group not))
-                        :action/icon     (if show-group octicons/chevron-up16 octicons/chevron-down16)
+                        :action/icon     (if show-group
+                                           FA/FaChevronUp
+                                           FA/FaChevronDown)
                         :action/label    (if show-group "Hide" "Show")}]
 
                       (when-not (and hide-all-tables hide-all-groups)
