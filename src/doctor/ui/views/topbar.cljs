@@ -138,23 +138,25 @@
         [{:action/on-click (fn [_]
                              ;; TODO toggle mute
                              )
-          :action/icon     (if (:microphone/muted metadata)
-                             nil
-                             ;; fa/microphone-slash-solid fa/microphone-solid
-                             )}
+          ;; :action/icon     (if (:microphone/muted metadata)
+          ;;                    nil
+          ;;                    ;; fa/microphone-slash-solid fa/microphone-solid
+          ;;                    )
+          }
 
          {:action/on-click (toggle-background-mode metadata)
           :action/label    "toggle"
-          :action/icon
-
-          (if (#{:bg/dark} (:topbar/background-mode metadata))
-            ($ HIMini/SunIcon {:class ["w-6" "h-6"]})
-            ($ HIMini/MoonIcon {:class ["w-6" "h-6"]}))}
+          ;; :action/icon
+          ;; (if (#{:bg/dark} (:topbar/background-mode metadata))
+          ;;   ($ HIMini/SunIcon {:class ["w-6" "h-6"]})
+          ;;   ($ HIMini/MoonIcon {:class ["w-6" "h-6"]}))
+          }
          ;; reload
 
          {:action/on-click (fn [_] (js/location.reload))
           :action/label    "reload"
-          :action/icon     ($ HIMini/ArrowPathIcon {:class ["w-6" "h-6"]})}])}))
+          ;; :action/icon     ($ HIMini/ArrowPathIcon {:class ["w-6" "h-6"]})
+          }])}))
 
 (defui clock-host-metadata [{:keys [time metadata] :as opts}]
   ($ :div
