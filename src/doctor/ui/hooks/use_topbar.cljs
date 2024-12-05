@@ -19,8 +19,9 @@
         toggle-above-below                                  (fn []
                                                               (-> (hooks.topbar/toggle-topbar-above (not topbar-above))
                                                                   (.then (fn [v] (set-topbar-above v)))))
-        time                                                (use-interval {:->value  t/zoned-date-time
-                                                                           :interval 1000})]
+        ;; time                                                (use-interval {:->value  t/zoned-date-time
+        ;;                                                                    :interval 1000})
+        ]
 
     {:hovered-client         hovered-client
      :hovered-workspace      hovered-workspace
@@ -40,4 +41,5 @@
      :on-unhover-client      (fn [_] (set-hovered-client nil))
      :topbar-above           topbar-above
      :toggle-above-below     toggle-above-below
-     :time                   time}))
+     ;; :time                   time
+     }))
