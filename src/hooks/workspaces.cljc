@@ -46,8 +46,6 @@
    (defn use-workspaces []
      (let [[workspaces set-workspaces] (uix/use-state [])
            handle-resp                 (fn [active-wsps]
-                                         (println "focused"
-                                                  (->> workspaces (filter :workspace/focused)))
                                          (set-workspaces
                                            (->> active-wsps
                                                 (w/distinct-by :workspace/title)

@@ -39,7 +39,7 @@
      {:class (concat [color] classes)}
      (cond
        src   ($ :img {:class ["w-10"] :src src})
-       icon  ($ :div {:class ["text-3xl"]} fallback-text #_icon)
+       icon  ($ :div {:class ["text-3xl"]} ($ icon))
        :else fallback-text)))
 
 (defui client-icon-list
@@ -48,11 +48,9 @@
     ($ :div
        {:class ["grid" "grid-flow-col"]}
        (for [[i c] (->> clients (remove skip-bar-app?) (map-indexed vector))]
-         (let [c-name
-               (some->> c :client/window-title (take 15) (apply str))
-               {:client/keys [focused]} c
-               {:keys [color] :as icon-def}
-               (icons/client->icon c workspace)]
+         (let [c-name                       (some->> c :client/window-title (take 15) (apply str))
+               {:client/keys [focused]}     c
+               {:keys [color] :as icon-def} (icons/client->icon c workspace)]
            ($ :div
               {:class ["w-8"] :key i}
               ($ bar-icon (-> icon-def
