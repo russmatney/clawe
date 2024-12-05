@@ -50,4 +50,4 @@
                                                     :status/done})))))))})
 
           ($ components.filter/items-by-group
-             (assoc filter-data :item->comp components.todo/todo-row))))))
+             (assoc filter-data :item->comp #($ components.todo/todo-row %)))))))

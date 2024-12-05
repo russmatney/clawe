@@ -53,7 +53,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; note-comp
 
-(defui note-stats [{:keys [note] :as opts}]
+(defui note-stats [{:keys [item] :as opts}]
   ($ :div
      {:class
       (concat
@@ -71,33 +71,33 @@
 
         ($ :span
            {:class ["font-nes"]}
-           (:org/name-string note))
+           (:org/name-string item))
 
         ($ :span
            {:class ["font-nes" "ml-auto"]}
            (str "(" (inc (:i opts)) "/" (count (:item-group opts)) ")")))
 
-     ($ components.note/metadata {:item note})
+     ($ components.note/metadata {:item item})
 
      ($ :div
         {:class ["font-nes"]}
-        (str "Links: " (-> note components.note/->all-links count)))
+        (str "Links: " (-> item components.note/->all-links count)))
 
      ;; TODO once we get the frontend db story set
      ;; ($ :div
      ;;  {:class ["font-nes"]}
-     ;;  (str "Backlinks: " (-> note components.note/->all-links count)))
+     ;;  (str "Backlinks: " (-> item components.note/->all-links count)))
 
-     (when (is-daily? note)
+     (when (is-daily? item)
        ($ :div
           {:class ["font-nes"]}
-          (str "Daily items: " (-> note components.note/->items-with-tags count)
-               "/" (-> note :org/items count))))
+          (str "Daily items: " (-> item components.note/->items-with-tags count)
+               "/" (-> item :org/items count))))
 
-     (when (seq (components.note/->all-images note))
+     (when (seq (components.note/->all-images item))
        ($ :div
           {:class ["font-nes"]}
-          (str "Images: " (count (components.note/->all-images note)))))
+          (str "Images: " (count (components.note/->all-images item)))))
 
      ($ :hr)
 
@@ -106,10 +106,10 @@
         ($ floating/popover
            {:hover        true :click true
             :anchor-comp  ($ :span "content")
-            :popover-comp ($ components.garden/full-note {:item note})})
+            :popover-comp ($ components.garden/full-note {:item item})})
 
         ;; raw note on hover
-        ($ components.debug/raw-metadata {:label "raw" :data note}))))
+        ($ components.debug/raw-metadata {:label "raw" :data item}))))
 
 (defui note-comp [opts]
   ($ :div
@@ -139,8 +139,8 @@
                     total-wc        (components.note/word-count note)]
                 [($ :span.font-mono
                     (if (:blog/published note) "Published"
-                        [components.actions/actions-list
-                         {:actions (handlers/->actions note) :n 1}]))
+                        ($ components.actions/actions-list
+                           {:actions (handlers/->actions note) :n 1})))
                  ($ components.garden/all-nested-tags-comp {:item note})
                  ($ components.debug/raw-metadata
                     {:label (str (:org/name-string note))
@@ -366,7 +366,7 @@
             ($ components.filter/items-by-group
                (assoc filter-data
                       :table-def (notes-table-def)
-                      :item->comp #(note-comp {:note %})
+                      :item->comp #($ note-comp %)
                       :hide-all-tables hide-all-tables
                       :hide-all-groups hide-all-groups
                       :sort-items (cond
