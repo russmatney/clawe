@@ -64,9 +64,7 @@
         :on-click (fn [_] (when (and on-click (not disabled)) (on-click)))}
        ($ :div (cond
                  comp comp
-                 icon (do
-                        (println "actions rendering icon" icon)
-                        ($ icon))
+                 icon ($ icon)
                  :else
                  ($ :span {:class ["font-mono" "whitespace-nowrap"]}
                     label)))

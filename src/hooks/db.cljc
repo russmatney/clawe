@@ -57,28 +57,28 @@
                     (str "received data: " "datoms: " (count items) " ")
                     (t/log! :info)))
 
-             (->> items (take 2)
-                  (map (fn [dt] [(:a dt) (:v dt)]))
-                  (t/log! :info))
+             ;; (->> items (take 2)
+             ;;      (map (fn [dt] [(:a dt) (:v dt)]))
+             ;;      (t/log! :info))
 
-             (-> (d/empty-db schema)
-                 (d/db-with items)
-                 ((fn [db]
-                    (->>
-                      (d/datoms db :eavt)
-                      (map :e)
-                      (distinct)
-                      (take 1)
-                      (d/pull-many db '[*]))))
-                 (->>
-                   (map (fn [x]
-                          (t/log!
-                            :info
-                            (->>
-                              x
-                              (take 3)
-                              (into {})))))
-                   doall))
+             ;; (-> (d/empty-db schema)
+             ;;     (d/db-with items)
+             ;;     ((fn [db]
+             ;;        (->>
+             ;;          (d/datoms db :eavt)
+             ;;          (map :e)
+             ;;          (distinct)
+             ;;          (take 1)
+             ;;          (d/pull-many db '[*]))))
+             ;;     (->>
+             ;;       (map (fn [x]
+             ;;              (t/log!
+             ;;                :info
+             ;;                (->>
+             ;;                  x
+             ;;                  (take 3)
+             ;;                  (into {})))))
+             ;;       doall))
              )]
 
        (with-stream [] (db-stream) handle-resp)

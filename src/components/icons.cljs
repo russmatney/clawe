@@ -193,7 +193,5 @@
 (defui icon-comp [{:keys [class src icon text]}]
   (cond
     src   ($ :img {:class class :src src})
-    icon  ($ :div {:class class}
-             (println "rendering icon" icon)
-             ($ icon))
+    icon  ($ :div {:class class} ($ icon))
     :else ($ :span {:class class} text)))

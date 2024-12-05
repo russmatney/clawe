@@ -113,12 +113,9 @@
 (defonce current-route (r/atom nil))
 
 (defn start-router []
-  (t/log! :info "starting router")
   (rfe/start!
     router
-    (fn [match _history]
-      (t/log! :info (str "on-nav " (:data match)))
-      (reset! current-route match))
+    (fn [match _history] (reset! current-route match))
     {:use-fragment true}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
