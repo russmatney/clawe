@@ -45,4 +45,4 @@
           (:filter-grouper filter-data)
 
           ($ components.filter/items-by-group
-             (assoc filter-data :group->comp components.events/event-cluster))))))
+             (assoc filter-data :group->comp #($ components.events/event-clusters {:events (:group %)})))))))

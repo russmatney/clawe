@@ -111,11 +111,12 @@
 
             (when item->comp
               (for [[i it] (->> items (take page-size) (map-indexed vector))]
-                ($ item->comp (assoc opts
-                                     :key (str (:org/name it) i)
-                                     :i i :page-size page-size
-                                     :filter-by active-filters-fn
-                                     :filter-fn filter-items) it)))))
+                (item->comp (assoc opts
+                                   :key (str (:org/name it) i)
+                                   :i i :page-size page-size
+                                   :filter-by active-filters-fn
+                                   :filter-fn filter-items
+                                   :item it))))))
 
        (when (and show-group table-open? (not hide-all-tables))
          ($ :div
@@ -127,7 +128,7 @@
                      (assoc :rows (->> items (map (:->row table-def)))))))))
 
        (when (and show-group group-comp-open? (:group->comp opts))
-         ($ (:group->comp opts) (->> items (take page-size)))))))
+         ((:group->comp opts) {:group (->> items (take page-size))})))))
 
 (defui items-by-group [filter-data]
   ($ :div

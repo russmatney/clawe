@@ -182,7 +182,7 @@
                                     (:filter-grouper filter-data)
 
                                     ($ components.filter/items-by-group
-                                       (assoc filter-data :group->comp components.events/event-clusters))))))
+                                       (assoc filter-data :group->comp #($ components.events/event-clusters {:events (:group %)})))))))
                           :actions [{:action/label "Today's events"}
                                     {:action/label "This week's events"}
                                     {:action/label "Today's screenshots"}]})))))
