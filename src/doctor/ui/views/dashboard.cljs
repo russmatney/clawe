@@ -1,14 +1,13 @@
 (ns doctor.ui.views.dashboard
   (:require
-   [hiccup-icons.octicons :as octicons]
-
-   [doctor.ui.db :as ui.db]
-   [components.events :as components.events]
-   [doctor.ui.views.ingest :as ingest]
-   [components.filter :as components.filter]
-
+   ["react-icons/fa6" :as FA]
    [uix.core :as uix :refer [$ defui]]
 
+   [doctor.ui.db :as ui.db]
+   [doctor.ui.views.ingest :as ingest]
+
+   [components.events :as components.events]
+   [components.filter :as components.filter]
    [components.actions :as components.actions]
    [components.filter-defs :as filter-defs]
    [components.icons :as components.icons]
@@ -48,7 +47,7 @@
 
           ($ components.icons/icon-comp
              (cond icon  (assoc icon-opts :icon icon)
-                   :else (assoc icon-opts :icon octicons/alert)))
+                   :else (assoc icon-opts :icon FA/FaTriangleExclamation)))
 
           ($ :span
              {:class ["font-mono" "pl-2"]}
@@ -67,13 +66,13 @@
                                               (set-show true)
                                               (localstorage/set-item! storage-label true))
                            :action/label    "Show"
-                           :action/icon     octicons/chevron-down16
+                           :action/icon     FA/FaChevronDown
                            :action/disabled show?}
                           {:action/on-click (fn [_]
                                               (set-show false)
                                               (localstorage/remove-item! storage-label))
                            :action/label    "Hide"
-                           :action/icon     octicons/chevron-up16
+                           :action/icon     FA/FaChevronUp
                            :action/disabled (not show?)}]
                          actions)})))
        (when show? ($ comp (or opts {}))))))
@@ -106,20 +105,20 @@
            ($ widget-bar {:comp  pomodoro/widget
                           :label "pomodoro"
                           :opts  opts
-                          :icon  octicons/clock16
+                          ;; :icon  octicons/clock16
                           :bar   pomodoro/bar})
 
            ($ widget-bar {:comp  focus/widget
                           :label "current-focus"
                           :opts  opts
-                          :icon  octicons/light-bulb16
+                          ;; :icon  octicons/light-bulb16
                           :actions
                           [{:action/label    "Clear Current Todos"
                             :action/on-click #(handlers/clear-current-todos)}]})
 
            ($ widget-bar {:comp  todos/widget
                           :label "todos"
-                          :icon  octicons/checklist16
+                          ;; :icon  octicons/checklist16
                           :opts  (assoc opts :filter-id :dashboard-todos)
                           :actions
                           [{:action/label    "Process Prioritized Actions"
@@ -128,25 +127,25 @@
            ($ widget-bar {:comp  blog/widget
                           :label "blog"
                           :opts  (assoc opts :filter-id :dashboard-blog)
-                          :icon  blog/icon
+                          ;; :icon  blog/icon
                           :actions
                           [{:action/label    "Publish N Updated notes"
                             :action/on-click #(js/alert "todo")}]})
 
            ($ widget-bar {:comp  today/widget
                           :label "today"
-                          :icon  today/icon
+                          ;; :icon  today/icon
                           :opts  (assoc opts :filter-id :dashboard-today)})
 
            ($ widget-bar {:comp  commits/widget
                           :label "commits"
-                          :icon  commits/icon
+                          ;; :icon  commits/icon
                           :opts  opts})
 
            ($ widget-bar {:comp  screenshots/page
                           :label "screenshots-clips"
                           :opts  opts
-                          :icon  octicons/image16
+                          ;; :icon  octicons/image16
                           :actions
                           [{:action/label    "Ingest screenshots"
                             :action/on-click #(handlers/ingest-screenshots)}
@@ -155,17 +154,17 @@
 
            ($ widget-bar {:comp    workspaces/widget
                           :label   "workspaces"
-                          :icon    octicons/clippy16
+                          ;; :icon    octicons/clippy16
                           :actions (hooks.workspaces/actions)})
 
            ($ widget-bar {:comp    chess-games/widget
                           :label   "chess games"
                           :opts    opts
-                          :icon    octicons/moon16
+                          ;; :icon    octicons/moon16
                           :actions (chess-games/actions)})
 
            ($ widget-bar {:label "events"
-                          :icon  octicons/calendar16
+                          ;; :icon  octicons/calendar16
                           :opts  opts
                           :comp
                           (fn [opts]

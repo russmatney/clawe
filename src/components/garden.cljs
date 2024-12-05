@@ -1,7 +1,7 @@
 (ns components.garden
   (:require
    [clojure.string :as string]
-   ;; [hiccup-icons.fa :as fa]
+   ["react-icons/fa6" :as FA]
    [uix.core :as uix :refer [defui $]]
 
    [components.debug :as components.debug]
@@ -11,15 +11,15 @@
    [doctor.ui.handlers :as handlers]
    [doctor.ui.db :as ui.db]))
 
-(defui status-icon [todo]
-  (case (:org/status todo)
-    ;; :status/done        fa/check-circle
-    ;; :status/not-started fa/sticky-note
-    ;; :status/in-progress fa/pencil-alt-solid
-    ;; :status/cancelled   fa/ban-solid
-    ;; :status/skipped     fa/eject-solid
-    (when (:org.prop/archive-time todo)
-      ($ :div.text-sm.font-mono "Archived"))))
+(defui status-icon [{:keys [item]}]
+  (if (:org.prop/archive-time item)
+    ($ :div.text-sm.font-mono "Archived")
+    ($ (case (:org/status item)
+         :status/done        FA/FaCircleCheck
+         :status/not-started FA/FaRegNoteSticky
+         :status/in-progress FA/FaPencil
+         :status/cancelled   FA/FaBan
+         :status/skipped     FA/FaEject))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; urls
@@ -263,7 +263,7 @@
                              {:class [(when (#{:status/done :status/cancelled :status/skipped}
                                               (:org/status item))
                                         "text-slate-500")]}
-                             ($ status-icon item)))
+                             ($ status-icon {:item item})))
 
                         ($ :span
                            {:class ["pl-2" "text-lg"]}

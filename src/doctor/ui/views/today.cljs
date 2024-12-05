@@ -1,6 +1,5 @@
 (ns doctor.ui.views.today
   (:require
-   [hiccup-icons.octicons :as octicons]
    [tick.core :as t]
    [uix.core :as uix :refer [defui $]]
 
@@ -10,7 +9,7 @@
    [doctor.ui.db :as ui.db]
    ))
 
-(def icon octicons/calendar16)
+(def icon nil)
 
 
 (defn presets []

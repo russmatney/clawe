@@ -1,11 +1,8 @@
 (ns components.icons
   (:require
    [clojure.string :as string]
-   [hiccup-icons.octicons :as octicons]
-   ;; [hiccup-icons.fa :as fa]
-   ;; [hiccup-icons.fa4 :as fa4]
-   [hiccup-icons.mdi :as mdi]
    [uix.core :as uix :refer [$ defui]]
+   ["react-icons/fa6" :as FA]
 
    [clawe.client :as client]))
 
@@ -148,12 +145,12 @@
              "Tauri App"} window-title)
           (#{"doctor"} app-name))
       {:color "text-city-blue-600"
-       :icon  mdi/doctor}
+       :icon  FA/FaUserDoctor}
 
       (#{"clove"} app-name)
       {:color "text-city-blue-600"
        ;; TODO pick a better icon
-       :icon  mdi/account-heart}
+       :icon  FA/FaUmbrella}
 
       (string/includes? window-title "developer tools")
       {:color "text-city-blue-600"
@@ -191,10 +188,12 @@
       :else
       (do
         (println "missing icon for client" (client/strip client))
-        {:icon octicons/question16}))))
+        {:icon FA/FaCircleQuestion}))))
 
 (defui icon-comp [{:keys [class src icon text]}]
   (cond
     src   ($ :img {:class class :src src})
-    icon  ($ :div {:class class} text #_(some-> icon js->clj (get "type") first str))
+    icon  ($ :div {:class class}
+             (println "rendering icon" icon)
+             ($ icon))
     :else ($ :span {:class class} text)))

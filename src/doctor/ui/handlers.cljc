@@ -21,12 +21,12 @@
              [api.pomodoros :as api.pomodoros]
              [api.repos :as api.repos]
              [taoensso.timbre :as log]]
-       :cljs [[hiccup-icons.fa :as fa]
-              [components.icons :as components.icons]
+       :cljs [[components.icons :as components.icons]
               [components.colors :as colors]
+              [uix.core :as uix :refer [$ defui]]
               ["@heroicons/react/20/solid" :as HIMini]
+              ["react-icons/fa6" :as FA]
               [hooks.workspaces :as hooks.workspaces]
-              [hiccup-icons.octicons :as octicons]
               [doctor.ui.db :as ui.db]])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -175,10 +175,10 @@
        [(if current
           {:action/label    "End"
            :action/on-click #(pomodoro-end-current)
-           :action/icon     octicons/stop16}
+           :action/icon     FA/FaStop}
           {:action/label    "Start"
            :action/on-click #(pomodoro-start-if-break)
-           :action/icon     octicons/play16})])))
+           :action/icon     FA/FaPlay})])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; todos
@@ -331,27 +331,28 @@
      {:action/label    "open-in-journal"
       :action/on-click #(open-in-journal item)
       :action/class    ["text-city-purple-500" "border-city-purple-500"]
-      :action/icon
-      [components.icons/icon-comp
-       {:class ["w-6"]
-        :src   "/assets/candy-icons/emacs.svg"}]}))
+      ;; :action/icon
+      ;; ($ components.icons/icon-comp
+      ;;    {:class ["w-6"]
+      ;;     :src   "/assets/candy-icons/emacs.svg"})
+      }))
 
 #?(:cljs
-   (defn status-plain [it]
+   (defui status-plain [it]
      (when (:org/status it)
-       [:span
-        {:class ["whitespace-nowrap" "font-nes"
-                 "cursor-pointer"
-                 "text-slate-300"
-                 "hover:opacity-50"]}
-        (cond
-          (-> it :org/status #{:status/done})        "[X]"
-          (-> it :org/status #{:status/skipped})     "SKIP"
-          (-> it :org/status #{:status/cancelled})   "CANCEL"
-          (-> it :org/status #{:status/in-progress}) "[-]"
-          (-> it :org/status #{:status/not-started}) "[ ]"
-          ;; this one doesn't really exist - quick UI hack
-          (-> it :org/status #{:status/not-a-todo})  "**")])))
+       ($ :span
+          {:class ["whitespace-nowrap" "font-nes"
+                   "cursor-pointer"
+                   "text-slate-300"
+                   "hover:opacity-50"]}
+          (cond
+            (-> it :org/status #{:status/done})        "[X]"
+            (-> it :org/status #{:status/skipped})     "SKIP"
+            (-> it :org/status #{:status/cancelled})   "CANCEL"
+            (-> it :org/status #{:status/in-progress}) "[-]"
+            (-> it :org/status #{:status/not-started}) "[ ]"
+            ;; this one doesn't really exist - quick UI hack
+            (-> it :org/status #{:status/not-a-todo})  "**")))))
 
 #?(:cljs
    (defn todo->actions [todo]
@@ -410,8 +411,8 @@
 ;; TODO offer/suggest/M-x to change-mode
 "
              :action/on-click    (fn [_] (start-todo todo))
-             :action/icon        #_fa/hashtag-solid
-             [:> HIMini/PlayIcon {:class ["w-4" "h-6"]}]
+             ;; :action/icon        #_fa/hashtag-solid
+             ;; ($ HIMini/PlayIcon {:class ["w-4" "h-6"]})
              ;; disabled if already tagged current or already completed/skipped
              :action/disabled
              (#{:status/done :status/cancelled :status/skipped :status/in-progress}
@@ -425,18 +426,18 @@
                                 (let [res (js/prompt "Add tag")]
                                   (when (seq res)
                                     (add-tag todo res))))
-             :action/icon     fa/hashtag-solid
+             ;; :action/icon     fa/hashtag-solid
              ;; higher priority if missing tags
              :action/priority (if (seq (:org/tags todo)) 0 1)}
 
             ;; db-only commands: delete-from-db, purge-file (for reingestion)
             {:action/label    "delete-from-db"
              :action/on-click #(delete-from-db todo)
-             :action/icon     fa/trash-alt-solid
+             ;; :action/icon     fa/trash-alt-solid
              :action/disabled (not (:db/id todo))}
             {:action/label    "purge-file"
              :action/on-click #(purge-org-source-file todo)
-             :action/icon     fa/trash-solid
+             ;; :action/icon     fa/trash-solid
              :action/disabled (not (:db/id todo))}
 
             ;; queue toggle
@@ -444,16 +445,16 @@
              :action/on-click (fn [_] (if (:todo/queued-at todo)
                                         (unqueue-todo todo)
                                         (queue-todo todo)))
-             :action/icon     (if (:todo/queued-at todo)
-                                [:> HIMini/BoltSlashIcon {:class ["w-6" "h-6"]}]
-                                [:> HIMini/BoltIcon {:class ["w-6" "h-6"]}])
+             ;; :action/icon     (if (:todo/queued-at todo)
+             ;;                    [:> HIMini/BoltSlashIcon {:class ["w-6" "h-6"]}]
+             ;;                    [:> HIMini/BoltIcon {:class ["w-6" "h-6"]}])
              :action/priority 1}
 
             ;; requeue
             {:action/label    "requeue-todo"
              :action/on-click #(queue-todo todo)
-             :action/icon
-             [:> HIMini/ArrowPathIcon {:class ["w-6" "h-6"]}]
+             ;; :action/icon
+             ;; [:> HIMini/ArrowPathIcon {:class ["w-6" "h-6"]}]
              :action/disabled
              (not
                (and (not (#{:status/cancelled :status/done} status))
@@ -467,19 +468,19 @@
              :action/priority (if (or (:todo/queued-at todo)
                                       (#{:status/in-progress :status/not-started}
                                         (:org/status todo))) 2 0)
-             :action/comp     [status-plain {:org/status :status/done}]}
+             :action/comp     ($ status-plain {:org/status :status/done})}
 
             ;; mark-skipped
             {:action/label    "mark-skipped"
              :action/disabled (#{:status/skipped} status)
              :action/on-click #(skip-todo todo)
-             :action/comp     [status-plain {:org/status :status/skipped}]}
+             :action/comp     ($ status-plain {:org/status :status/skipped})}
 
             ;; mark-cancelled
             {:action/label    "mark-cancelled"
              :action/on-click #(cancel-todo todo)
              :action/disabled (#{:status/cancelled} status)
-             :action/comp     [status-plain {:org/status :status/cancelled}]}
+             :action/comp     ($ status-plain {:org/status :status/cancelled})}
 
             ;; mark-not-started
             {:action/label    "mark-not-started"
@@ -487,13 +488,13 @@
              :action/priority (if (or (:todo/queued-at todo)
                                       (#{:status/in-progress} (:org/status todo))) 2 0)
              :action/disabled (#{:status/not-started} status)
-             :action/comp     [status-plain {:org/status :status/not-started}]}
+             :action/comp     ($ status-plain {:org/status :status/not-started})}
 
             ;; mark not-a-todo (clear todo status)
             {:action/label    "clear-todo-status"
              :action/on-click #(clear-status todo)
              :action/disabled (not status)
-             :action/comp     [status-plain {:org/status :status/not-a-todo}]}])
+             :action/comp     ($ status-plain {:org/status :status/not-a-todo})}])
          (remove nil?)))))
 
 (defhandler publish-note [item]
@@ -512,10 +513,12 @@
                           (let [res (js/prompt "Add tag")]
                             (when (seq res)
                               (add-tag item res))))
-       :action/icon     fa/hashtag-solid}
+       ;; :action/icon     fa/hashtag-solid
+       }
       {:action/label    "purge-source-file"
        :action/on-click #(purge-org-source-file item)
-       :action/icon     fa/trash-alt-solid}
+       ;; :action/icon     fa/trash-alt-solid
+       }
       {:action/label    "Publish"
        :action/on-click (fn [_] (publish-note item))
        :action/priority 1
@@ -537,13 +540,15 @@
        :action/on-click (fn [_]
                           (println "checking git status for item" item)
                           (check-repo-status item))
-       :action/icon     fa/check-circle-solid}
+       ;; :action/icon     fa/check-circle-solid
+       }
       {:action/label    "ingest-commits"
        :action/on-click #(ingest-commits-for-repo item)
        :action/icon     [:> HIMini/ArrowDownOnSquareStackIcon {:class ["w-4" "h-6"]}]}
       {:action/on-click #(delete-from-db item)
        :action/label    "delete-from-db"
-       :action/icon     fa/trash-alt-solid}]))
+       ;; :action/icon     fa/trash-alt-solid
+       }]))
 
 #?(:cljs
    (defn wallpaper->actions [item]
@@ -555,15 +560,16 @@
        :action/icon     [:> HIMini/ArrowDownOnSquareStackIcon {:class ["w-4" "h-6"]}]}
       {:action/on-click #(delete-from-db item)
        :action/label    "delete-from-db"
-       :action/icon     fa/trash-alt-solid}]))
+       ;; :action/icon     fa/trash-alt-solid
+       }]))
 
 #?(:cljs
    (defn workspace->actions [wsp]
      [{:action/label    "Focus"
-       :action/icon     octicons/pin16
+       ;; :action/icon     octicons/pin16
        :action/on-click #(hooks.workspaces/focus-workspace wsp)}
       {:action/label "Close"
-       :action/icon  octicons/trash
+       ;; :action/icon  octicons/trash
        :action/on-click
        #(hooks.workspaces/close-workspaces wsp)}]))
 
@@ -612,7 +618,8 @@
             (:db/id item)
             [{:action/on-click #(delete-from-db item)
               :action/label    "delete-from-db"
-              :action/icon     fa/trash-alt-solid}]
+              ;; :action/icon     fa/trash-alt-solid
+              }]
 
             :else [])
           (concat (or inferred []))

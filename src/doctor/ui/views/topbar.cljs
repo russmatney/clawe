@@ -1,7 +1,6 @@
 (ns doctor.ui.views.topbar
   (:require
    [clojure.string :as string]
-   [hiccup-icons.fa :as fa]
    [tick.core :as t]
    [uix.core :as uix :refer [$ defui]]
    [wing.core :as w]
@@ -140,7 +139,9 @@
                              ;; TODO toggle mute
                              )
           :action/icon     (if (:microphone/muted metadata)
-                             fa/microphone-slash-solid fa/microphone-solid)}
+                             nil
+                             ;; fa/microphone-slash-solid fa/microphone-solid
+                             )}
 
          {:action/on-click (toggle-background-mode metadata)
           :action/label    "toggle"

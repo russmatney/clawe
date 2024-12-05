@@ -1,6 +1,5 @@
 (ns doctor.ui.views.blog
   (:require
-   [hiccup-icons.octicons :as octicons]
    [tick.core :as t]
    [uix.core :as uix :refer [$ defui]]
 
@@ -16,8 +15,7 @@
    [doctor.ui.hooks.use-blog :as use-blog]
    [doctor.ui.handlers :as handlers]))
 
-(def icon
-  octicons/comment-discussion16)
+(def icon nil)
 
 (defn is-daily? [note]
   (some->> note :org/short-path (re-seq #"^daily/")))
