@@ -1,12 +1,12 @@
 (ns clawe.toggle
   (:require
    [ralphie.notify :as notify]
-   [clawe.config :as clawe.config]
    [clawe.client :as client]
    [clawe.client.create :as client.create]
    [clawe.doctor :as clawe.doctor]
    [clawe.wm :as wm]
    [clawe.workspace :as workspace]
+   [clawe.config :as clawe.config]
    [timer]))
 
 (timer/print-since "clawe.toggle NS loaded")
