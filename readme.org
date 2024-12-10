@@ -23,6 +23,11 @@
 #+html: </h1>
 #+html: </div>
 
+Lately: I'm refactoring away from 'managing' each wm config - clawe
+will instead provide a useful CLI for doing some wm things.
+
+--
+
 I'm putting together an overview of this whole project [[https://russmatney.com/note/clawe_overview_video.html][on my blog]].
 
 A stream covering the motivation and showing some of the namespaces is available
