@@ -105,17 +105,19 @@
   ([_]
    (log "reloading...")
 
-   (log "(clawe.config/reload-config)")
-   ;; note this doesn't reload the backend config unless called from there
-   (clawe.config/reload-config)
+   ;; TODO ping backend to reload it's config/state
+   ;; (log "(clawe.config/reload-config)")
+   ;; ;; note this doesn't reload the backend config unless called from there
+   ;; (clawe.config/reload-config)
 
    ;; Bindings
-   (when-not (clawe.config/is-mac?)
-     (log "rewriting awm bindings")
-     (awm.bindings/write-awesome-bindings)
-     (log "resetting sxhkd bindings")
-     ;; NOTE this ensures the sxhkd tmux session as well, which is required for (some) keybindings to work!
-     (sxhkd.bindings/reset-bindings))
+   ;; TODO clean up bindings stuff - we don't do this anymore
+   ;; (when-not (clawe.config/is-mac?)
+   ;;   (log "rewriting awm bindings")
+   ;;   (awm.bindings/write-awesome-bindings)
+   ;;   (log "resetting sxhkd bindings")
+   ;;   ;; NOTE this ensures the sxhkd tmux session as well, which is required for (some) keybindings to work!
+   ;;   (sxhkd.bindings/reset-bindings))
 
    (ensure-default-workspaces)
    (ensure-default-clients)
@@ -128,15 +130,14 @@
          (proc/check)))
 
    ;; Reload completions/caches
-   (when-not (clawe.config/is-mac?)
-     (log "reloading zsh tab completion")
-     (install-zsh-tab-completion))
+   ;; (when-not (clawe.config/is-mac?)
+   ;;   (log "reloading zsh tab completion")
+   ;;   (install-zsh-tab-completion))
 
    ;; Doom env refresh - probably a race-case here....
    (tmux/fire {:tmux.fire/cmd       "doom env"
                :tmux.fire/session   "dotfiles"
-               :tmux.fire/directory "~/dotfiles"
-               })
+               :tmux.fire/directory "~/dotfiles"})
    (emacs/fire "(doom/reload-env)")
 
    (clawe.doctor/update-topbar)
