@@ -99,8 +99,18 @@ yabai -m rule --add title="tauri-doctor-dashboard" scratchpad=clawe-dashboard gr
 yabai -m rule --add app="Emacs" title="journal" scratchpad=emacs-journal
 yabai -m rule --add app="Emacs" title="floating-emacs" scratchpad=emacs-floating grid=11:11:1:1:9:9
 
+yabai -m signal --add event=application_launched action='clawebb -x clawe.doctor/update-topbar'
+yabai -m signal --add event=application_terminated action='clawebb -x clawe.doctor/update-topbar'
+yabai -m signal --add event=application_deactivated action='clawebb -x clawe.doctor/update-topbar'
+yabai -m signal --add event=application_activated action='clawebb -x clawe.doctor/update-topbar'
+yabai -m signal --add event=application_visible action='clawebb -x clawe.doctor/update-topbar'
+yabai -m signal --add event=application_hidden action='clawebb -x clawe.doctor/update-topbar'
+yabai -m signal --add event=space_created action='clawebb -x clawe.doctor/update-topbar'
+yabai -m signal --add event=space_destroyed action='clawebb -x clawe.doctor/update-topbar'
+yabai -m signal --add event=space_changed action='clawebb -x clawe.doctor/update-topbar'
+
 yabai -m rule --apply
 
-bb --config ~/russmatney/clawe/bb.edn -x clawe.config/set-wm :wm yabai
-# bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/reload
+clawebb -x clawe.config/set-wm :wm yabai
+# clawebb -x clawe.doctor/reload
 echo "yabai configuration loaded."
