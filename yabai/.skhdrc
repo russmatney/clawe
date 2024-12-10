@@ -210,10 +210,10 @@ cmd - q : yabai -m window --close
 # walking spaces
 cmd - p : yabai -m space --focus next \
        || yabai -m space --focus first \
-       && bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/update-topbar
+       && clawebb -x clawe.doctor/update-topbar
 cmd - n : yabai -m space --focus prev \
        || yabai -m space --focus last \
-       && bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/update-topbar
+       && clawebb -x clawe.doctor/update-topbar
 
 # cycle windows in current space (0x32 is `)
 # use skhd --observe to learn keycodes
@@ -230,32 +230,32 @@ cmd + shift - 0x32 : yabai -m window --focus prev \
 
 # dragging spaces
 shift + cmd - left : yabai -m space --move prev \
-       && bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/update-topbar
+       && clawebb -x clawe.doctor/update-topbar
 
 shift + cmd - right : yabai -m space --move next \
-       && bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/update-topbar
+       && clawebb -x clawe.doctor/update-topbar
 
 # jumping to spaces, jump back if on that space
 cmd - 1 : yabai -m space --focus 1 || yabai -m space --focus recent \
-       && bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/update-topbar
+       && clawebb -x clawe.doctor/update-topbar
 cmd - 2 : yabai -m space --focus 2 || yabai -m space --focus recent \
-       && bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/update-topbar
+       && clawebb -x clawe.doctor/update-topbar
 cmd - 3 : yabai -m space --focus 3 || yabai -m space --focus recent \
-       && bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/update-topbar
+       && clawebb -x clawe.doctor/update-topbar
 cmd - 4 : yabai -m space --focus 4 || yabai -m space --focus recent \
-       && bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/update-topbar
+       && clawebb -x clawe.doctor/update-topbar
 cmd - 5 : yabai -m space --focus 5 || yabai -m space --focus recent \
-       && bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/update-topbar
+       && clawebb -x clawe.doctor/update-topbar
 cmd - 6 : yabai -m space --focus 6 || yabai -m space --focus recent \
-       && bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/update-topbar
+       && clawebb -x clawe.doctor/update-topbar
 cmd - 7 : yabai -m space --focus 7 || yabai -m space --focus recent \
-       && bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/update-topbar
+       && clawebb -x clawe.doctor/update-topbar
 cmd - 8 : yabai -m space --focus 8 || yabai -m space --focus recent \
-       && bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/update-topbar
+       && clawebb -x clawe.doctor/update-topbar
 cmd - 9 : yabai -m space --focus 9 || yabai -m space --focus recent \
-       && bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/update-topbar
+       && clawebb -x clawe.doctor/update-topbar
 cmd - 0 : yabai -m space --focus 10 || yabai -m space --focus recent \
-       && bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/update-topbar
+       && clawebb -x clawe.doctor/update-topbar
 
 # TODO probably drop all these, and make something useful out of them ('modes' for 6-0?)
 # shift + cmd - 1 : yabai -m window --space 1
@@ -270,11 +270,11 @@ shift + cmd - 8 : yabai -m window --space 8
 shift + cmd - 9 : yabai -m window --space 9
 shift + cmd - 0 : yabai -m window --space 0
 
-cmd - r : bb --config ~/russmatney/clawe/bb.edn -x clawe.restart/reload
+cmd - r : clawebb -x clawe.restart/reload
 
 # emacs, term toggling
-shift + cmd - return : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key emacs
-cmd - return : bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key terminal
+shift + cmd - return : clawebb -x clawe.toggle/toggle --key emacs
+cmd - return : clawebb -x clawe.toggle/toggle --key terminal
 
 # skhdrc
 # show all scratchpad windows if inaccessible due to yabai restart or crash
@@ -284,22 +284,20 @@ cmd + alt - r : yabai -m window --scratchpad recover
 cmd + alt - s : yabai -m window --toggle spotify || open  -a Spotify
 cmd + alt - d : yabai -m window --toggle discord || open -a Discord
 cmd - t : yabai -m window --toggle web || open  -a Firefox
-cmd - y : yabai -m window --toggle clawe-dashboard || bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key dashboard
-cmd - u : yabai -m window --toggle emacs-journal || bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key journal
-cmd - e : yabai -m window --toggle emacs-floating || bb --config ~/russmatney/clawe/bb.edn -x clawe.toggle/toggle --key floating-emacs
+cmd - y : yabai -m window --toggle clawe-dashboard || clawebb -x clawe.toggle/toggle --key dashboard
+cmd - u : yabai -m window --toggle emacs-journal || clawebb -x clawe.toggle/toggle --key journal
+cmd - e : yabai -m window --toggle emacs-floating || clawebb -x clawe.toggle/toggle --key floating-emacs
 
-cmd + alt - b : yabai -m window --toggle devweb || bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key devweb
-cmd + alt - a : yabai -m window --toggle slack || bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key slack
-cmd + alt - m : yabai -m window --toggle messages ||  bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key messages
+cmd + alt - b : yabai -m window --toggle devweb || clawebb -x clawe.toggle/toggle --key devweb
+cmd + alt - a : yabai -m window --toggle slack || clawebb -x clawe.toggle/toggle --key slack
+cmd + alt - m : yabai -m window --toggle messages ||  clawebb -x clawe.toggle/toggle --key messages
 cmd + alt - n : yabai -m window --toggle notion
-cmd + alt - g : yabai -m window --toggle godot || bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key godot
-cmd + alt - x : yabai -m window --toggle xcode || bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key xcode
-cmd + alt - p : yabai -m window --toggle aseprite || bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key aseprite
-cmd + alt - o : yabai -m window --toggle obsidian || bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-toggle --key obsidian
+cmd + alt - g : yabai -m window --toggle godot || clawebb -x clawe.toggle/toggle --key godot
+cmd + alt - x : yabai -m window --toggle xcode || clawebb -x clawe.toggle/toggle --key xcode
+cmd + alt - p : yabai -m window --toggle aseprite || clawebb -x clawe.toggle/toggle --key aseprite
+cmd + alt - o : yabai -m window --toggle obsidian || clawebb -x clawe.toggle/toggle --key obsidian
 
-cmd + shift - d : bb --config ~/russmatney/clawe/bb.edn -x clawe.rules/clean-up-workspaces
-cmd + shift - x : bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-mx
-cmd + shift + alt - x : bb --config ~/russmatney/clawe/bb.edn -x clawe.mx/mx-fast
-cmd + shift - w : bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-mx-suggestions
-cmd + shift + alt - w : bb --config ~/russmatney/clawe/bb.edn -x clawe.mx/mx-suggestions
-cmd + shift - o : bb --config ~/russmatney/clawe/bb.edn -x clawe.doctor/clawe-mx-open
+cmd + shift - d : clawebb -x clawe.rules/clean-up-workspaces
+cmd + shift - x : clawebb -x clawe.mx/mx
+cmd + shift - w : clawebb -x clawe.mx/mx-suggestions
+cmd + shift - o : clawebb -x clawe.mx/mx-open
