@@ -1,15 +1,15 @@
 (ns clawe.config
   (:require
-   [taoensso.timbre :as log]
    [aero.core :as aero]
+   [babashka.fs :as fs]
    [clojure.java.io :as io]
+   [clojure.string :as string]
+   [systemic.core :as sys :refer [defsys]]
+   [taoensso.timbre :as log]
+   [zprint.core :as zp]
+
    [ralphie.zsh :as zsh]
    ;; [ralphie.emacs :as emacs]
-   [babashka.fs :as fs]
-   [systemic.core :as sys :refer [defsys]]
-   [zprint.core :as zp]
-   [clojure.string :as string]
-
    [timer :as timer]
    ))
 
@@ -20,6 +20,7 @@
 
 (def clawe-config-path ".config/clawe/clawe.edn")
 (def clawe-local-config-path ".local/share/clawe/local.edn")
+(def clawe-logs-path ".log/clawe/clawe.out.txt")
 
 (defn config-resource [path]
   (let [conf-clawe (io/file (str (fs/home) "/" path))]
@@ -208,3 +209,4 @@
 
 (comment
   (update-client-def "journal" {:client/some "other-data"}))
+

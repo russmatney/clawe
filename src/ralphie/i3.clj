@@ -2,7 +2,11 @@
   (:require
    [clojure.string :as string]
    [cheshire.core :as json]
-   [babashka.process :as process]))
+   [babashka.process :as process]
+   [timer]
+   ))
+
+(timer/print-since "ralphie.i3 ns loading")
 
 (defn wsp->workspace-title [wsp]
   (if (:i3/name wsp)
@@ -90,7 +94,8 @@
   ([] (workspaces (tree)))
   ([t]
    ;; at some point get_tree's workspace containers weren't marked 'focused' anymore?
-   (let [wsps-by-id (workspaces-fast-by-id)]
+   (let [t          (or t (tree))
+         wsps-by-id (workspaces-fast-by-id)]
      (->> (content-node t) :i3/nodes
           (map (fn [wsp] (merge wsp (get wsps-by-id (:i3/id wsp)))))))))
 

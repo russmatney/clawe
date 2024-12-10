@@ -1,7 +1,8 @@
 (ns clawe.wm
   (:require
-   [systemic.core :as sys :refer [defsys]]
    [babashka.fs :as fs]
+   [clojure.string :as string]
+   [systemic.core :as sys :refer [defsys]]
 
    [clawe.awesome :as clawe.awesome]
    [clawe.config :as clawe.config]
@@ -9,7 +10,6 @@
    [clawe.yabai :as clawe.yabai]
    [clawe.i3 :as clawe.i3]
    [clawe.client :as client]
-   [clojure.string :as string]
    [timer :as timer])
   (:import
    [clawe.awesome Awesome]
@@ -33,7 +33,7 @@
       (= wm :wm/yabai)   (Yabai.)
       (= wm :wm/awesome) (Awesome.)
       :else
-      (if (clawe.config/is-mac?) (Yabai.) (Awesome.)))))
+      (if (clawe.config/is-mac?) (Yabai.) (I3.)))))
 
 (defn reload-wm []
   (when (sys/running? `*wm*)
@@ -47,7 +47,6 @@
 ;; workspace helpers
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def default-directory (str (fs/home)))
 (defn- ensure-directory
   "Makes sure the passed workspace has a `:workspace/directory` set.
 
@@ -57,7 +56,7 @@
   [{:keys [workspace/directory] :as wsp}]
   (cond
     (not directory)
-    (assoc wsp :workspace/directory default-directory)
+    (assoc wsp :workspace/directory (str (fs/home)))
 
     (re-seq #"^~" directory)
     (update wsp :workspace/directory #(string/replace % "~" (str (fs/home))))
