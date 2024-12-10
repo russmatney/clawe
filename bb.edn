@@ -45,7 +45,7 @@
 
     (defn is-mac? []
       ;; TODO something more reasonable
-      (= "walt" (hostname)))
+      (string/includes? (hostname) "walt"))
 
     (defn pp [x]
       (binding [pprint/*print-right-margin* 130]
@@ -72,8 +72,9 @@
          (shell {:dir       (str (home-dir) "/russmatney/clawe")
                  :extra-env {"WEBKIT_DISABLE_DMABUF_RENDERER" "1"}} cmd)))))
 
-  home   (pp (home-dir))
-  is-mac (pp (is-mac?))
+  home     (pp (home-dir))
+  hostname (pp (hostname))
+  is-mac   (pp (is-mac?))
 
   clj-kondo      (shell "clj-kondo --lint src")
   clj-kondo-test (shell "clj-kondo --lint test")
@@ -209,10 +210,31 @@
                            (shelll "launchctl load /Users/russ/Library/LaunchAgents/com.clawe.dashboard.plist")))
   doctor-restart-focus (run 'restart-doctor-focus)
 
-  stop-doctor    (shell "systemctl --user stop doctor-be doctor-fe doctor-topbar")
-  doctor-stop    {:depends [stop-doctor]}
-  stop-doctor-be (shell "systemctl --user stop doctor-be")
-  doctor-stop-be {:depends [stop-doctor-be]}
+  stop-doctor           (if (is-mac?)
+                          (do
+                            (shelll "launchctl unload /Users/russ/Library/LaunchAgents/com.clawe.doctor-be.plist")
+                            (shelll "launchctl unload /Users/russ/Library/LaunchAgents/com.clawe.doctor-fe.plist")
+                            (shelll "launchctl unload /Users/russ/Library/LaunchAgents/com.clawe.topbar.plist")
+                            (shelll "launchctl unload /Users/russ/Library/LaunchAgents/com.clawe.dashboard.plist"))
+                          (shelll "systemctl --user stop doctor-be doctor-fe doctor-topbar"))
+  doctor-stop           {:depends [stop-doctor]}
+  stop-doctor-be        (if (is-mac?)
+                          (shelll "launchctl unload /Users/russ/Library/LaunchAgents/com.clawe.doctor-be.plist")
+                          (shelll "systemctl --user stop doctor-be"))
+  doctor-stop-be        {:depends [stop-doctor-be]}
+  stop-doctor-fe        (if (is-mac?)
+                          (shelll "launchctl unload /Users/russ/Library/LaunchAgents/com.clawe.doctor-fe.plist")
+                          (shelll "systemctl --user stop doctor-fe"))
+  doctor-stop-fe        {:depends [stop-doctor-fe]}
+  stop-doctor-topbar    (if (is-mac?)
+                          (shelll "launchctl unload /Users/russ/Library/LaunchAgents/com.clawe.topbar.plist")
+                          (shelll "systemctl --user stop doctor-topbar"))
+  doctor-stop-topbar    {:depends [stop-doctor-topbar]}
+  stop-doctor-dashboard (if (is-mac?)
+                          (shelll "launchctl unload /Users/russ/Library/LaunchAgents/com.clawe.dashboard.plist")
+                          nil
+                          #_(shelll "systemctl --user stop doctor-dashboard"))
+  doctor-stop-dashboard {:depends [stop-doctor-dashboard]}
 
   log-doctor         {:task (do
                               (if (is-mac?)
