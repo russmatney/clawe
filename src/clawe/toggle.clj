@@ -116,18 +116,19 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn execute-toggle-action [tog-action opts]
-  (let [[action client-or-def] tog-action]
+  (let [[action client-or-def] tog-action
+        key                    ((some-fn :client/key :key) opts)]
     (println "Executing" action)
     (case action
       :no-def
       (do
         (println "WARN: [toggle] no def found for :client/key in" opts)
-        (notify/notify "[no def]" (:client/key opts "No --key")))
+        (notify/notify "[no def]" (or key "No --key")))
 
       :create-client
       (do
         (println "create" (client/strip client-or-def))
-        (notify/notify "Creating client" (:client/key opts "no --key"))
+        (notify/notify "Creating client" key)
         (client.create/create-client client-or-def opts))
 
       :hide-client
@@ -158,7 +159,7 @@
    ;; could support overrides for :hide/*, :create/*, :focus/* options
    {:alias {:key :client/key}}}
   [args]
-  (timer/print-since "clawe.toggle/toggle start")
+  (timer/print-since (str "clawe.toggle/toggle start " args))
   (let [all-clients       (wm/active-clients)
         current-workspace (wm/current-workspace
                             {:prefetched-clients all-clients})
