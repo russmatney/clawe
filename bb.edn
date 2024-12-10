@@ -38,10 +38,14 @@
 
     (defn env [s] (System/getenv s))
 
+    (defn hostname []
+      (-> (shell {:out :string} "zsh -c 'hostname'") :out string/trim))
     (defn home-dir []
-      (-> (shell {:out :string}
-                 "zsh -c 'echo -n ~'")
-          :out))
+      (-> (shell {:out :string} "zsh -c 'echo -n ~'") :out string/trim))
+
+    (defn is-mac? []
+      ;; TODO something more reasonable
+      (= "walt" (hostname)))
 
     (defn pp [x]
       (binding [pprint/*print-right-margin* 130]
@@ -68,7 +72,8 @@
          (shell {:dir       (str (home-dir) "/russmatney/clawe")
                  :extra-env {"WEBKIT_DISABLE_DMABUF_RENDERER" "1"}} cmd)))))
 
-  home (pp (home-dir))
+  home   (pp (home-dir))
+  is-mac (pp (is-mac?))
 
   clj-kondo      (shell "clj-kondo --lint src")
   clj-kondo-test (shell "clj-kondo --lint test")
@@ -155,45 +160,53 @@
              :task (run-doctor-tauri-app {:decorations true} "focus")}
 
   restart-doctor (do
-                   #_(shell "systemctl --user daemon-reload")
-                   #_(shell "systemctl --user restart doctor-be doctor-fe")
-
-                   (shelll "launchctl unload /Users/russ/Library/LaunchAgents/com.clawe.doctor-fe.plist")
-                   (shelll "launchctl load /Users/russ/Library/LaunchAgents/com.clawe.doctor-fe.plist")
-                   (shelll "launchctl unload /Users/russ/Library/LaunchAgents/com.clawe.doctor-be.plist")
-                   (shelll "launchctl load /Users/russ/Library/LaunchAgents/com.clawe.doctor-be.plist")
-
                    (log "Restarting doctor backend and frontend")
                    (log "Normally takes <10 seconds")
-                   (log "Expect a popup from doctor-app when the frontend is ready for a re-render"))
+                   (log "Expect a popup from doctor-app when the frontend is ready for a re-render")
+
+                   (when-not (is-mac?)
+                     (shell "systemctl --user daemon-reload")
+                     (shell "systemctl --user restart doctor-be doctor-fe"))
+
+                   (when (is-mac?)
+                     (shelll "launchctl unload /Users/russ/Library/LaunchAgents/com.clawe.doctor-fe.plist")
+                     (shelll "launchctl load /Users/russ/Library/LaunchAgents/com.clawe.doctor-fe.plist")
+                     (shelll "launchctl unload /Users/russ/Library/LaunchAgents/com.clawe.doctor-be.plist")
+                     (shelll "launchctl load /Users/russ/Library/LaunchAgents/com.clawe.doctor-be.plist")))
   doctor-restart (run 'restart-doctor)
 
   restart-doctor-be (do
-                      #_(shell "systemctl --user restart doctor-be")
-                      (shelll "launchctl unload /Users/russ/Library/LaunchAgents/com.clawe.doctor-be.plist")
-                      (shelll "launchctl load /Users/russ/Library/LaunchAgents/com.clawe.doctor-be.plist")
-                      )
+                      (when-not (is-mac?)
+                        (shell "systemctl --user restart doctor-be"))
+
+                      (when (is-mac?)
+                        (shelll "launchctl unload /Users/russ/Library/LaunchAgents/com.clawe.doctor-be.plist")
+                        (shelll "launchctl load /Users/russ/Library/LaunchAgents/com.clawe.doctor-be.plist")))
   doctor-restart-be (run 'restart-doctor-be)
 
   restart-doctor-fe (do
-                      #_(shell "systemctl --user restart doctor-fe")
-                      (shelll "launchctl unload /Users/russ/Library/LaunchAgents/com.clawe.doctor-fe.plist")
-                      (shelll "launchctl load /Users/russ/Library/LaunchAgents/com.clawe.doctor-fe.plist")
-                      )
+                      (when-not (is-mac?)
+                        (shell "systemctl --user restart doctor-fe"))
+                      (when (is-mac?)
+                        (shelll "launchctl unload /Users/russ/Library/LaunchAgents/com.clawe.doctor-fe.plist")
+                        (shelll "launchctl load /Users/russ/Library/LaunchAgents/com.clawe.doctor-fe.plist")))
   doctor-restart-fe (run 'restart-doctor-fe)
 
   restart-doctor-topbar (do
-                          #_(shell "systemctl --user restart doctor-topbar")
-                          (shelll "launchctl unload /Users/russ/Library/LaunchAgents/com.clawe.topbar.plist")
-                          (shelll "launchctl load /Users/russ/Library/LaunchAgents/com.clawe.topbar.plist")
-                          )
+                          (when-not (is-mac?)
+                            (shell "systemctl --user restart doctor-topbar"))
+                          (when (is-mac?)
+                            (shelll "launchctl unload /Users/russ/Library/LaunchAgents/com.clawe.topbar.plist")
+                            (shelll "launchctl load /Users/russ/Library/LaunchAgents/com.clawe.topbar.plist")))
   doctor-restart-topbar (run 'restart-doctor-topbar)
 
   restart-doctor-focus (do
-                         #_(shell "systemctl --user restart doctor-focus")
-                         (shelll "launchctl unload /Users/russ/Library/LaunchAgents/com.clawe.dashboard.plist")
-                         (shelll "launchctl load /Users/russ/Library/LaunchAgents/com.clawe.dashboard.plist")
-                         )
+                         (when-not (is-mac?)
+                           (shell "systemctl --user restart doctor-focus"))
+
+                         (when (is-mac?)
+                           (shelll "launchctl unload /Users/russ/Library/LaunchAgents/com.clawe.dashboard.plist")
+                           (shelll "launchctl load /Users/russ/Library/LaunchAgents/com.clawe.dashboard.plist")))
   doctor-restart-focus (run 'restart-doctor-focus)
 
   stop-doctor    (shell "systemctl --user stop doctor-be doctor-fe doctor-topbar")
@@ -202,28 +215,31 @@
   doctor-stop-be {:depends [stop-doctor-be]}
 
   log-doctor         {:task (do
-                              #_(shelll "journalctl --user -n 100 -f -u doctor-be -u doctor-fe -u doctor-topbar --all --no-hostname")
-                              (shelll "tail -f /Users/russ/.log/clawe/doctor-be.out.log /Users/russ/.log/clawe/doctor-fe.out.log")
-                              )
+                              (if (is-mac?)
+                                (shelll "tail -f /Users/russ/.log/clawe/doctor-be.out.log /Users/russ/.log/clawe/doctor-fe.out.log")
+                                (shelll "journalctl --user -n 100 -f -u doctor-be -u doctor-fe -u doctor-topbar --all --no-hostname")))
                       :doc  "Tail the doctor logs. FE, BE, and topbar via journalctl"}
   tail-doctor        (run 'log-doctor)
   doctor-log         (run 'log-doctor)
   doctor-tail        (run 'log-doctor)
   log-doctor-fe      {:task (do
-                              #_(shelll "journalctl --user -n 100 -f -u doctor-fe --all --no-hostname")
-                              (shelll "tail -f /Users/russ/.log/clawe/doctor-fe.out.log -n 500")
-                              )}
+                              (if (is-mac?)
+                                (shelll "tail -f /Users/russ/.log/clawe/doctor-fe.out.log -n 500")
+                                (shelll "journalctl --user -n 100 -f -u doctor-fe --all --no-hostname")))}
   tail-doctor-fe     (run 'log-doctor-fe)
   doctor-log-fe      (run 'log-doctor-fe)
   doctor-tail-fe     (run 'log-doctor-fe)
   log-doctor-be      {:task (do
-                              #_(shelll "journalctl --user -n 100 -f -u doctor-be --all --no-hostname")
-                              (shelll "tail -f /Users/russ/.log/clawe/doctor-be.out.log -n 500")
-                              )}
+                              (if (is-mac?)
+                                (shelll "tail -f /Users/russ/.log/clawe/doctor-be.out.log -n 500")
+                                (shelll "journalctl --user -n 100 -f -u doctor-be --all --no-hostname")))}
   tail-doctor-be     (run 'log-doctor-be)
   doctor-log-be      (run 'log-doctor-be)
   doctor-tail-be     (run 'log-doctor-be)
-  log-doctor-topbar  {:task (shelll "journalctl --user -n 100 -f -u doctor-topbar --all --no-hostname")}
+  log-doctor-topbar  {:task
+                      (if (is-mac?)
+                        (shelll "tail -f /Users/russ/.log/clawe/doctor-topbar.out.log -n 500")
+                        (shelll "journalctl --user -n 100 -f -u doctor-topbar --all --no-hostname"))}
   tail-doctor-topbar (run 'log-doctor-topbar)
   doctor-log-topbar  (run 'log-doctor-topbar)
   doctor-tail-topbar (run 'log-doctor-topbar)
