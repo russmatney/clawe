@@ -60,28 +60,33 @@
 
   If no :rofi/label, or if the existing one starts with a `<` (i.e. `<span>`),
   it is left as is."
-  [{:rofi/keys [label description] :as x}]
-  (cond
-    (config/osx?)         x
-    (not label)           x
-    (#{\<} (first label)) x
-    :else
-    (assoc x :rofi/label
-           (str "<span>" label "</span>"
-                (when description (str " <span color='gray'>" description "</span>"))))))
+  [{:rofi/keys [label description]
+    :keys      [osx?]
+    :as        x}]
+  (let [osx? (if (nil? osx?) (config/osx?) osx?)]
+    (cond
+      osx?                  x
+      (not label)           x
+      (#{\<} (first label)) x
+      :else
+      (assoc x :rofi/label
+             (str "<span>" label "</span>"
+                  (when description (str " <span color='gray'>" description "</span>")))))))
 
 (comment
   (build-label {:rofi/label "hi"})
   (build-label {:rofi/label "hi" :rofi/description "desc"}))
 
 (defn xs->input-string [{:keys [mru-cache-id sep]} xs]
-  (let [maps? (-> xs first map?)
-        xs    (if maps? (->> xs (map build-label)) xs)
+  (let [osx?  (config/osx?)
+        maps? (-> xs first map?)
+        xs    (if maps? (->> xs (map #(build-label (assoc % :osx? osx?)))) xs)
 
-        labels     (if maps? (->> xs
-                                  (map (some-fn :label :rofi/label))
-                                  (map escape-rofi-label))
-                       xs)
+        labels (if maps? (->> xs
+                              (map (some-fn :label :rofi/label))
+                              (map escape-rofi-label))
+                   xs)
+
         labels-set (into #{} labels)
 
         mru-cache     (->> (read-mru-cache {:cache-id mru-cache-id})
@@ -127,15 +132,15 @@
      (let [msg (or msg message)
            sep (if (config/osx?) "\n" "|")
            rofi-input
-           (cond (seq xs) (let [label-input (xs->input-string-memoized (assoc opts :sep sep) xs)]
-                            ;; invoke this callback to update calling rofi caches
-                            (when label-input->cache
-                              (label-input->cache label-input))
-                            label-input)
+           (cond (seq xs)
+                 (let [label-input (xs->input-string-memoized (assoc opts :sep sep) xs)]
+                   ;; invoke this callback to update calling rofi caches
+                   (when label-input->cache
+                     (label-input->cache label-input))
+                   label-input)
 
                  (fs/exists? input-file) input-file)
 
-           _ (timer/print-since "rofi labels string joined")
            selected-label
            (some->
              (if (config/osx?)
