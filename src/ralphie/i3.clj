@@ -50,7 +50,6 @@
   ([t] (tree-seq flatten-nodes flatten-nodes t)))
 
 (defn content-node
-  "Most parses/paths stem from here"
   ([] (content-node (tree)))
   ([t]
    (some->> t :i3/nodes

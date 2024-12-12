@@ -118,7 +118,6 @@
       (r.i3/move-client-to-workspace c (-> wsp ensure-i3-name)))))
 
 (comment
-
   (def wsps
     (clawe.wm.protocol/-active-workspaces
       (I3.) nil))
@@ -137,6 +136,4 @@
   (clawe.wm.protocol/-move-client-to-workspace
     (I3.) nil (nth clients 4)
     (first (clawe.wm.protocol/-current-workspaces
-             (I3.) nil)))
-
-  )
+             (I3.) nil))))

@@ -4,37 +4,9 @@
    [cheshire.core :as json]
    [babashka.process :as process]))
 
-(comment :hi (+ 3 4))
+;; swaymsg
 
-(defn ensure-emacs [{:keys [name] :as wsp-data}]
-  (try
-    (let [initial-file nil
-          eval-str     (str
-                         "(progn "
-                         " (russ/open-workspace \"" name "\") "
-                         (when initial-file
-                           (str " (find-file \"" initial-file "\") " " "))
-                         " )")]
-
-      (-> (process/$ emacsclient --no-wait --create-frame
-                     -F ~(str "((name . \"" name "\"))")
-                     --eval ~eval-str)
-          process/check))
-    (catch Exception e (println e))))
-
-(defn ensure-workspace
-  "Create instances for the passed workspace data"
-  [{:keys [name] :as data}]
-  ;; ensure emacs workspace
-  (ensure-emacs data)
-  ;; TODO ensure tmux workspace
-  ;; TODO ensure sway workspace
-  name)
-
-(comment
-  (ensure-workspace {:name "clawe"}))
-
-(defn sway-msg! [msg]
+(defn swaymsg! [msg]
   (let [cmd (str "swaymsg " msg)]
     (-> (process/process
           {:cmd cmd :out :string})
@@ -44,41 +16,149 @@
         (json/parse-string
           (fn [k] (keyword "sway" k))))))
 
-(def workspaces
-  {1 {:workspace/name      "dotfiles"
-      :workspace/directory "~/dotfiles"
-      :workspace/num       1}
-   2 {:workspace/name      "clawe"
-      :workspace/directory "~/russmatney/clawe"
-      :workspace/num       2}
-   3 {:workspace/name      "advent-of-code"
-      :workspace/directory "~/russmatney/advent-of-code"
-      :workspace/num       3}})
+(comment
+  (swaymsg! "-t get_tree")
+  (swaymsg! "-t get_workspaces")
+  (current-workspace))
 
-(def ix->wsp (->> workspaces
-                  ;; (map (fn [wsp] [(:workspace/num wsp) wsp]))
-                  ;; (into {})
-                  ))
+;; workspace read
+
+(defn workspaces []
+  (swaymsg! "-t get_workspaces"))
 
 (defn current-workspace []
   (some->>
-    (sway-msg! "-t get_workspaces --raw")
+    (swaymsg! "-t get_workspaces")
     (filter :sway/focused)
-    first
-    :sway/num
-    ix->wsp))
+    first))
+
+(defn get-workspace [{:keys [name]}]
+  (some->>
+    (swaymsg! "-t get_workspaces")
+    (filter (comp #(string/includes? % name) :sway/name))
+    first))
+
+;; helpers
+
+(defn next-wsp-number []
+  (let [existing-wsp-nums (->> (workspaces) (map :sway/num) (into #{}))]
+    (->> (range 10)
+         (drop 1)
+         (remove existing-wsp-nums)
+         first)))
 
 (comment
-  (sway-msg! "-t get_tree --raw")
-  (sway-msg! "-t get_workspaces --raw")
-  (current-workspace)
-  )
+  (next-wsp-number))
 
-(defn ensure-current-workspace [opts]
-  (println "ensuring in current workspace" opts)
-  (let [wsp (current-workspace)]
-    (println wsp)
-    (when (#{"emacs"} (:app opts))
-      (ensure-workspace {:name (:workspace/name wsp)}))
-    )
-  )
+(defn ix->wsp
+  ([ix] (ix->wsp (workspaces) ix))
+  ([wsps ix] (some->> wsps (filter (comp #{ix} :sway/num)) first)))
+
+(defn wsp->workspace-title [wsp]
+  (if (:sway/name wsp)
+    (string/replace (:sway/name wsp) #"^.*: ?" "")
+    (:workspace/title wsp)))
+
+;; workspace write
+
+(defn create-workspace [{:keys [name]}]
+  (when name
+    (let [num (next-wsp-number)]
+      (swaymsg! (str "workspace " num ": " name)))))
+
+(defn focus-workspace [{:keys [num]}]
+  (when num
+    (swaymsg! (str "workspace number " num))))
+
+(defn swap-workspaces-by-index [ixa ixb]
+  (let [wsps   (workspaces)
+        a      (ix->wsp wsps ixa)
+        name-a (wsp->workspace-title a)
+        b      (ix->wsp wsps ixb)
+        name-b (wsp->workspace-title b)]
+    (swaymsg! (str "\""
+                   "rename workspace \\\"" (:sway/name a)  "\\\" to " ixb ":" name-a " ; "
+                   (when b
+                     (str "rename workspace \\\"" (:sway/name b) "\\\" to " ixa ":" name-b))
+                   "\""))))
+
+(comment
+  (create-workspace {:name "clawe"})
+  (focus-workspace {:num 2})
+  (swap-workspaces-by-index 1 2))
+
+;; client read
+
+(defn tree []
+  (swaymsg! "-t get_tree"))
+
+(defn flatten-nodes
+  [x] (flatten ((juxt :sway/nodes :sway/floating_nodes) x)))
+
+(defn all-nodes
+  "Returns all :i3/nodes and :i3/floating_nodes"
+  [] (->> (tree) (tree-seq flatten-nodes flatten-nodes)))
+
+(comment
+  (tree)
+  (all-nodes))
+
+(defn clients []
+  (->> (all-nodes)
+       (filter (some-fn :sway/app_id :sway/window_properties))))
+
+(defn scratchpad-clients []
+  (->> (all-nodes)
+       (filter (some-fn :sway/app_id :sway/window_properties))
+       ;; no sure this is right
+       (filter (comp #{"fresh"} :sway/scratchpad_state))))
+
+(defn wsp->clients [{:keys [] :as wsp}]
+  ;; note sure if this gets tiling clients
+  (->> wsp
+       (tree-seq flatten-nodes flatten-nodes)
+       (filter (some-fn :sway/app_id :sway/window_properties))))
+
+(comment
+  (-> (current-workspace)
+      wsp->clients))
+
+;; client write
+
+(defn focus-client [client]
+  (swaymsg! (str " [con_id=" (:sway/id client) "] focus")))
+
+(defn bury-client [client]
+  (swaymsg! (str " [con_id=" (:sway/id client) "] floating disable")))
+
+(defn bury-clients [clients]
+  (swaymsg!
+    (string/join " ; "
+                 (->> clients
+                      (map (fn [client] (str " [con_id=" (:sway/id client) "] floating disable")))))))
+
+(defn close-client [client]
+  (swaymsg! (str " [con_id=" (:sway/id client) "] kill")))
+
+(defn hide-scratchpad [client]
+  (swaymsg! (str " [con_id=" (:sway/id client) "] move scratchpad")))
+
+(defn find-or-create-wsp-name [wsp]
+  (when wsp
+    (if (:sway/name wsp)
+      (:sway/name wsp)
+      (if-let [title (:workspace/title wsp)]
+        (if-let [w (-> {:name title} get-workspace)]
+          (:sway/name w)
+          (str (next-wsp-number) ": " title))
+        (println "No :sway/name or :workspace/title on passed wsp" wsp)))))
+
+(defn move-client-to-workspace [client wsp]
+  (when (and (:sway/id client) wsp)
+    (when-let [wsp-name (find-or-create-wsp-name wsp)]
+      (swaymsg!
+        (str
+          "\""
+          "[con_id=" (:swayi3/id client) "] "
+          "move --no-auto-back-and-forth to workspace " wsp-name
+          "\"")))))
