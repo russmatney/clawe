@@ -107,7 +107,6 @@
            (shelll (str "bb -cp " cp " --uberjar clawe.jar -m clawe.core")))}
   install-clawe {:depends [clawe-install]}
 
-
   outdated (clojure "-M:full-stack-deps:outdated")
 
   dev-doctor

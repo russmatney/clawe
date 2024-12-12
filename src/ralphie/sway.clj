@@ -4,9 +4,7 @@
    [cheshire.core :as json]
    [babashka.process :as process]))
 
-(comment
-  :hi
-  (+ 3 4))
+(comment :hi (+ 3 4))
 
 (defn ensure-emacs [{:keys [name] :as wsp-data}]
   (try

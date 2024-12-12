@@ -11,6 +11,7 @@
    [ralphie.config :as r.config]
    [timer :as timer]))
 
+
 (timer/print-since "clawe.config ns loading")
 
 
@@ -131,6 +132,7 @@
   (sys/start! `*config*)
   (let [val        (cond
                      (#{"i3" :i3 :wm/i3} wm)                :wm/i3
+                     (#{"sway" :sway :wm/sway} wm)          :wm/sway
                      (#{"awesome" :awesome :wm/awesome} wm) :wm/awesome
                      (#{"yabai" :yabai :wm/yabai} wm)       :wm/yabai)
         current-wm (get-wm)]

@@ -9,6 +9,7 @@
    [clawe.wm.protocol :as wm.protocol]
    [clawe.yabai :as clawe.yabai]
    [clawe.i3 :as clawe.i3]
+   [clawe.sway :as clawe.sway]
    [clawe.client :as client]
    [ralphie.emacs :as r.emacs]
    [ralphie.config :as r.config]
@@ -17,7 +18,8 @@
   (:import
    [clawe.awesome Awesome]
    [clawe.yabai Yabai]
-   [clawe.i3 I3]))
+   [clawe.i3 I3]
+   [clawe.sway Sway]))
 
 
 (timer/print-since "clawe.wm ns loading")
@@ -32,6 +34,7 @@
   :start
   (let [wm (clawe.config/get-wm)]
     (cond
+      (= wm :wm/sway)    (Sway.)
       (= wm :wm/i3)      (I3.)
       (= wm :wm/yabai)   (Yabai.)
       (= wm :wm/awesome) (Awesome.)
