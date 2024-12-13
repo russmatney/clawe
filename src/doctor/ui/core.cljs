@@ -3,9 +3,11 @@
    [dates.transit-time-literals :as ttl]
    [plasma.client]
    [taoensso.telemere :as log]
+   [taoensso.telemere.utils :as log.utils]
    [time-literals.read-write]
    [tick.timezone]
    [tick.locale-en-us]
+   [tick.core :as t]
 
    [uix.core :as uix :refer [defui $]]
    [uix.dom :as uix.dom]
@@ -187,9 +189,28 @@
   []
   (enable-console-print!)
   (log/set-min-level! :debug)
-  ;; (log/add-handler!
-  ;;   :my-console-raw-handler
-  ;;   (log/handler:console-raw {}))
+  (log/remove-handler! :default/console)
+  (log/add-handler!
+    :custom-console
+    (log/handler:console
+      {:output-fn
+       (log/format-signal-fn
+         {:preamble-fn
+          (log.utils/signal-preamble-fn
+            {:format-inst-fn
+             (fn [inst]
+               (->> inst
+                    (t/zoned-date-time)
+                    (t/format "h:MM:ss")))})})}))
   (time-literals.read-write/print-time-literals-cljs!)
   (start-plasma)
   (mount-root))
+
+(comment
+  (log/get-handlers)
+  (log/remove-handler! :custom-console)
+  (log/log! {:level :info
+             :data  {:hello :world}}
+            "hello world")
+  (t/format "h:mm:ss" (t/zoned-date-time
+                        #inst "2024-12-13T17:29:44.179-00:00")))

@@ -31,13 +31,13 @@
 (log/add-handler!
   :durable
   (log/handler:file
-    {:output-fn     (log/format-signal-fn
-                      {:preamble-fn
-                       (log.utils/signal-preamble-fn
-                         {:format-inst-fn
-                          (log.utils/format-inst-fn
-                            {:formatter (java.time.format.DateTimeFormatter/ofPattern "dd HH:mm:ss")
-                             :zone      (.getOffset (java.time.ZonedDateTime/now (java.time.ZoneId/of "America/New_York")))})})})
+    {:output-fn
+     (log/format-signal-fn
+       {:preamble-fn
+        (log.utils/signal-preamble-fn
+          {:format-inst-fn
+           (log.utils/format-inst-fn
+             {:formatter (java.time.format.DateTimeFormatter/ofPattern "dd HH:mm:ss")})})})
      :max-file-size (* 1024 1024 4)})
   {:needs-stopping? true})
 
