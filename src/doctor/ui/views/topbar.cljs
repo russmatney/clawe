@@ -241,9 +241,11 @@
               ($ :span
                  {:class ["font-nes" "text-city-blue-500" "whitespace-nowrap"
                           "text-4xl" "pl-3"]}
-                 (components.format/s-shortener
-                   {:length 6 :break "|"}
-                   (string/replace (:workspace/title current-workspace) "-" "")))))
+                 ;; if too narrow, use shortener
+                 (:workspace/title current-workspace)
+                 #_(components.format/s-shortener
+                     {:length 6 :break "|"}
+                     (string/replace (:workspace/title current-workspace) "-" "")))))
 
           ($ :div
              {:class ["overflow-scroll"]}

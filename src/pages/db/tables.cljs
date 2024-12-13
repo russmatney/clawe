@@ -274,6 +274,7 @@
   ([{:keys [doctor-type entities] :as opts}]
    (cond
      ;; TODO table for :type/todo
+     ;; TODO re-enable this!
 
      ;; (#{:type/note} doctor-type)
      ;; (garden-note-table-def entities)
