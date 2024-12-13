@@ -1,33 +1,53 @@
 (ns doctor.server
   (:require
-   [taoensso.telemere :as log]
-   [taoensso.telemere.utils :as log.utils]
-   [systemic.core :as sys :refer [defsys]]
+   [cognitect.transit :as transit]
+   [clojure.string :as string]
+   [datascript.transit :as dt]
+   [hiccup.page :as hiccup]
+   [muuntaja.core :as muu]
+   [muuntaja.format.form :as muu.form]
+   [muuntaja.middleware :as muu.middleware]
    [plasma.server :as plasma.server]
    [plasma.server.interceptors :as plasma.interceptors]
-   [cognitect.transit :as transit]
    [ring.adapter.undertow :as undertow]
    [ring.adapter.undertow.websocket :as undertow.ws]
-   [datascript.transit :as dt]
-   [wallpapers.core :as wallpapers]
+   [systemic.core :as sys :refer [defsys]]
+   [taoensso.telemere :as log]
+   [taoensso.telemere.utils :as log.utils]
 
-   [muuntaja.middleware :as muu.middleware]
-   [muuntaja.format.form :as muu.form]
-   [muuntaja.core :as muu]
-
-   [dates.transit-time-literals :as ttl]
    [api.db :as api.db]
    [api.topbar :as api.topbar]
    [api.workspaces :as api.workspaces]
+   [dates.transit-time-literals :as ttl]
    [db.core :as db]
    [db.listeners :as db.listeners]
    [doctor.config :as doctor.config]
    [doctor.api :as doctor.api]
    [garden.watcher :as garden.watcher]
    [ralphie.notify :as notify]
-   [hiccup.page :as hiccup]))
+   [wallpapers.core :as wallpapers]))
 
 (log/set-min-level! :debug)
+(log/remove-handler! :default/console)
+
+;; shorter prefix console handler
+(log/add-handler!
+  :console
+  (log/handler:console
+    {:output-fn
+     (log/format-signal-fn
+       {:preamble-fn
+        (fn [signal]
+          (->
+            ((log.utils/signal-preamble-fn
+               {:format-inst-fn
+                (log.utils/format-inst-fn
+                  {:formatter (java.time.format.DateTimeFormatter/ofPattern "dd HH:mm:ss")})})
+             signal)
+            (string/replace ".nyc.rr.com" "")))})})
+  {:needs-stopping? true})
+
+;; file log handler
 (log/add-handler!
   :durable
   (log/handler:file
@@ -40,6 +60,12 @@
              {:formatter (java.time.format.DateTimeFormatter/ofPattern "dd HH:mm:ss")})})})
      :max-file-size (* 1024 1024 4)})
   {:needs-stopping? true})
+
+(comment
+  (keys (log/get-handlers))
+  (log/remove-handler! :console)
+  (log/log! :info "hi"))
+
 
 (def m (muu/create
          (-> muu/default-options
@@ -89,16 +115,7 @@
      :transit-read-handlers  transit-read-handlers
      :transit-write-handlers transit-write-handlers
      :interceptors           [(plasma.interceptors/auto-require (fn [_] (sys/start!)))
-                              (plasma.interceptors/load-metadata)
-                              #_{:name :doctor-logging
-                                 :enter
-                                 (fn [ctx]
-                                   (let [{:keys [fn-var args event-name]} (:request ctx)]
-                                     (log/log! :debug
-                                               ["\nplasma interceptor"
-                                                "fn-var" fn-var "event-name" event-name])
-                                     (when (seq args) (log/log! :debug ["args" args])))
-                                   ctx)}]}))
+                              (plasma.interceptors/load-metadata)]}))
 
 (defn ->plasma-undertow-ws-handler [_req]
   {:undertow/websocket
