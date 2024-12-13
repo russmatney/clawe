@@ -24,7 +24,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defsys ^:dynamic *wm*
-  :extra-deps
+  :deps
   [clawe.config/*config*]
   :start
   (let [wm (clawe.config/get-wm)]

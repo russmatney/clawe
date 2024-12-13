@@ -33,18 +33,44 @@
        (log/log! :info "stopping *nrepl*")
        (nrepl/stop-server @nrepl-val))}))
 
-(defn -main
-  "Main entrypoint for the Doctor server"
-  []
+(defsys ^:dynamic *exit-code-promise*
+  "Systemic system to prevent shutdown until somebody delivers an exit code"
+  :start (promise) :stop (deliver *exit-code-promise* 0))
+
+(defn -main [& _args]
+  (systemic.core/start! `*exit-code-promise*)
   (try
-    (sys/start! `*nrepl*)
-    (sys/start! `server/*server*)
+    (sys/start! `*exit-code-promise*
+                `*nrepl*
+                `server/*server*)
+    (.addShutdownHook
+      (Runtime/getRuntime)
+      (Thread. (fn []
+                 (log/log! {:id ::shutdown-hook} "Shutting down systems on system hook")
+                 (sys/stop!))))
     (catch Exception e
-      (let [{:keys [cause system]} (ex-data e)]
-        (println "server startup error" e)
-        (if cause
-          (log/log! :info [e "Error during system startup" {:system system}])
-          (log/log! :info [e "Error during startup"]))
-        ;; wait a little bit before dying so that the error gets flushed
-        (Thread/sleep 10000)
-        (throw (or cause e))))))
+      (let [{:keys [system]} (ex-data e)]
+        (log/error!
+          {:id   ::system-start-error
+           :msg  "Error during system startup"
+           :data {:system system}}
+          e)
+        (try
+          (let [running-systems
+                (->> systemic.core/*registry*
+                     (deref)
+                     (keys)
+                     (filter sys/running?)
+                     (remove #{`*exit-code-promise*}))]
+            (log/log! {:id   ::partial-shutdown
+                       :data {:systems running-systems}}
+                      "Shutting down partially started systems")
+            (apply sys/stop! running-systems))
+          (catch Exception e
+            (log/error! {:id  ::partial-shutdown-error
+                         :msg "Error during partial shutdown"}
+                        e))
+          (finally
+            (Thread/sleep 10000)
+            (deliver *exit-code-promise* 1))))))
+  (System/exit @*exit-code-promise*))

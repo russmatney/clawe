@@ -197,7 +197,7 @@
 
 (defsys ^:dynamic *server*
   "Doctor webserver"
-  :extra-deps
+  :deps
   [api.workspaces/*workspaces-stream*
    api.topbar/*topbar-metadata-stream*
    api.db/*db-stream*
