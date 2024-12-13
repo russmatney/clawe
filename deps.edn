@@ -28,7 +28,8 @@
 
   clj-kondo/clj-kondo {:mvn/version "2024.11.14"}}
  :aliases
- {:dev      {:jvm-opts ["-XX:-OmitStackTraceInFastThrow"]}
+ {:dev      {:jvm-opts ["-XX:-OmitStackTraceInFastThrow"
+                        "-XX:+HeapDumpOnOutOfMemoryError"]}
   :outdated {:extra-deps {com.github.liquidz/antq {:mvn/version "2.11.1250"}}
              :main-opts  ["-m" "antq.core"]}
 

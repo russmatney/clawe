@@ -1,8 +1,9 @@
 (ns api.workspaces
   (:require
+   [manifold.stream :as s]
    [taoensso.telemere :as log]
    [systemic.core :refer [defsys] :as sys]
-   [manifold.stream :as s]
+
    [clawe.wm :as wm]
    [util :as util]))
 
@@ -24,14 +25,16 @@
   :stop (s/close! *workspaces-stream*))
 
 (comment
-  (sys/start! `*workspaces-stream*))
+  (sys/start! `*workspaces-stream*)
+  (sys/restart! `*workspaces-stream*)
+  )
 
 (defn push-updated-workspaces []
+
   (log/log! :debug "pushing to workspaces stream (updating topbar)!")
   (s/put! *workspaces-stream* (active-workspaces)))
 
 (comment
-  (push-updated-workspaces)
-  )
+  (push-updated-workspaces))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

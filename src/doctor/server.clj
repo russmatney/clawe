@@ -222,7 +222,10 @@
       ;; be sure to return the server as the system
       server))
   :stop
+  (println "stopping *server*")
+  (log/log! :info "*server* stopping")
   (.stop *server*))
+
 
 (defn restart []
   (if (sys/running? `*server*)
