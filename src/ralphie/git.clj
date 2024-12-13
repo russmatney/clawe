@@ -5,7 +5,7 @@
    [cheshire.core :as json]
    [clojure.string :as string]
    [clojure.edn :as edn]
-   [taoensso.telemere :as log]
+   ;; [taoensso.telemere :as log]
 
    [defthing.defcom :refer [defcom] :as defcom]
    [ralphie.notify :refer [notify]]
@@ -101,7 +101,7 @@
          (notify (str "Successful clone: " repo-id)))
     (catch Exception e
       (notify "Error while cloning" e)
-      (log/log! :error ["Error while cloning" e]))))
+      (println :error ["Error while cloning" e]))))
 
 (comment
   (clone {:repo-id "metosin/eines"})
@@ -401,7 +401,7 @@
            oldest-first]
     :as   opts}]
   (when-not (or dir path)
-    (log/log! :warn ["ralphie.git/commits needs dir or path" dir path]))
+    (println :warn ["ralphie.git/commits needs dir or path" dir path]))
   (let [dir  (or (and dir (fs/expand-home dir))
                  ;; do we need to traverse to find nearest git parent?
                  (when path (-> path fs/expand-home fs/parent str)))
@@ -438,7 +438,7 @@
             oldest-first reverse
             oldest-first (take n)))
       (catch Exception e
-        (log/log! :error ["Error fetching commits for dir" dir opts e])
+        (println :error ["Error fetching commits for dir" dir opts e])
         nil))))
 
 (comment
@@ -470,7 +470,7 @@
   (try
     (read-string str)
     (catch Exception e
-      (log/log! :error [message raw e])
+      (println :error [message raw e])
       nil)))
 
 (defn ->stat-line
@@ -514,7 +514,7 @@
         :commit/files-renamed (->> parsed-stat-lines (filter :git.stat/is-rename) count)
         :commit/stat-lines    parsed-stat-lines})
      (catch Exception e
-       (log/log! :error ["Failed to parse ->stats with lines" dir stat-lines e])
+       (println :error ["Failed to parse ->stats with lines" dir stat-lines e])
        nil))))
 
 (comment
@@ -565,7 +565,7 @@
         util/partition-by-newlines
         (->> (partition 3) (map (partial ->stats-commit dir))))
       (catch Exception e
-        (log/log! :error ["Error fetching commit stats for dir" dir opts e])
+        (println :error ["Error fetching commit stats for dir" dir opts e])
         nil))))
 
 
