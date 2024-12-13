@@ -2,8 +2,9 @@
   (:require
    [uix.core :as uix :refer [$ defui]]
    [tick.core :as t]
-   [dates.tick :as dates]
+   ;; [taoensso.telemere :as log]
 
+   [dates.tick :as dates]
    [doctor.ui.hooks.use-timer :refer [use-interval]]
    [doctor.ui.db :as ui.db]
    ;; [doctor.ui.handlers :as handlers]
@@ -31,17 +32,19 @@
 (defui bar [{:keys [conn]}]
   (let [{:keys [current last]} (ui.db/pomodoro-state conn)
         _time                  (use-interval {:->value  t/zoned-date-time
-                                              :interval 500})]
+                                              ;; every 30s
+                                              :interval 30000})]
     ($ :div
        {:class ["flex flex-row" "items-center" "justify-between" "whitespace-nowrap"]}
        ($ :div
           {:class ["text-slate-200" "font-nes" "text-sm" "pr-2"]}
-          (cond current
-                ($ :span (dates/human-time-since (:pomodoro/started-at current)))
-                last
-                ($ :span
-                   "B: "
-                   (dates/human-time-since (:pomodoro/finished-at last)))))
+          (cond
+            current
+            ($ :span (dates/human-time-since (:pomodoro/started-at current)))
+            last
+            ($ :span
+               "B: "
+               (dates/human-time-since (:pomodoro/finished-at last)))))
        #_ ($ components.actions/actions-list (handlers/pomodoro-actions conn)))))
 
 (defui pomodoro-list [pomodoros]
@@ -75,9 +78,10 @@
                ")"))))))
 
 (defui widget [{:keys [conn] :as _opts}]
-  (let [_time
+  (let [
+        _time
         (use-interval {:->value  t/zoned-date-time
-                       :interval 1500})
+                       :interval 30000})
         {:keys [current last] :as p-state} (ui.db/pomodoro-state conn)
         pomodoros                          (ui.db/pomodoros conn)]
     ;; (println "time" time)

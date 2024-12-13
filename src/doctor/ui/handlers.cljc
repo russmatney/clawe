@@ -2,32 +2,35 @@
   (:require
    [plasma.core :refer [defhandler]]
    [dates.tick :as dates.tick]
-   #?@(:clj [[garden.core :as garden]
-             [ralphie.emacs :as emacs]
-             [git.core :as git]
-             [chess.core :as chess]
-             [screenshots.core :as screenshots]
-             [clips.core :as clips]
-             [chess.db :as chess.db]
-             [wallpapers.core :as wallpapers]
-             [clawe.wm :as wm]
-             [db.core :as db]
-             [datascript.core :as d]
+   #?@(:clj [[datascript.core :as d]
              [org-crud.api :as org-crud.api]
-             [garden.db :as garden.db]
+             [taoensso.telemere :as log]
+
              [api.blog :as api.blog]
-             [blog.db :as blog.db]
              [api.todos :as api.todos]
              [api.pomodoros :as api.pomodoros]
              [api.repos :as api.repos]
-             [taoensso.telemere :as log]]
-       :cljs [[components.icons :as components.icons]
-              [components.colors :as colors]
-              [uix.core :as uix :refer [$ defui]]
+             [api.topbar :as api.topbar]
+             [chess.core :as chess]
+             [chess.db :as chess.db]
+             [clawe.wm :as wm]
+             [clips.core :as clips]
+             [blog.db :as blog.db]
+             [db.core :as db]
+             [garden.db :as garden.db]
+             [garden.core :as garden]
+             [git.core :as git]
+             [ralphie.emacs :as emacs]
+             [screenshots.core :as screenshots]
+             [wallpapers.core :as wallpapers]]
+       :cljs [[uix.core :as uix :refer [$ defui]]
               ["@heroicons/react/20/solid" :as HIMini]
               ["react-icons/fa6" :as FA]
-              [hooks.workspaces :as hooks.workspaces]
-              [doctor.ui.db :as ui.db]])))
+
+              [components.icons :as components.icons]
+              [components.colors :as colors]
+              [doctor.ui.db :as ui.db]
+              [hooks.workspaces :as hooks.workspaces]])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; db items
@@ -163,10 +166,12 @@
 
 (defhandler pomodoro-start-if-break []
   (api.pomodoros/start-if-break)
+  (api.topbar/push-topbar-metadata)
   :ok)
 
 (defhandler pomodoro-end-current []
   (api.pomodoros/end-current)
+  (api.topbar/push-topbar-metadata)
   :ok)
 
 #?(:cljs

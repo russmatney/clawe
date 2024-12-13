@@ -1,15 +1,17 @@
 (ns api.topbar
   (:require
-   [systemic.core :refer [defsys] :as sys]
-   [manifold.stream :as s]
-   [ralphie.battery :as r.battery]
-   [ralphie.pulseaudio :as r.pulseaudio]
-   [ralphie.spotify :as r.spotify]
    [babashka.process :as process]
    [clojure.string :as string]
-   [db.core :as db]
+   [manifold.stream :as s]
+   [systemic.core :refer [defsys] :as sys]
+   [taoensso.telemere :as log]
+   [tick.core :as t]
+
    [dates.tick :as dates.tick]
-   [tick.core :as t]))
+   [db.core :as db]
+   [ralphie.battery :as r.battery]
+   [ralphie.pulseaudio :as r.pulseaudio]
+   [ralphie.spotify :as r.spotify]))
 
 (declare push-topbar-metadata)
 
@@ -111,6 +113,7 @@
   (sys/start! `*topbar-metadata-stream*))
 
 (defn push-topbar-metadata []
+  (log/log! :debug "pushing to topbar stream")
   (s/put! *topbar-metadata-stream* (build-topbar-metadata)))
 
 (comment
@@ -120,7 +123,6 @@
     first)
 
   (push-topbar-metadata))
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; subscribe to i3
