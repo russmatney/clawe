@@ -98,7 +98,7 @@
      ($ :div {:class ["min-h-screen"
                       "flex" "flex-row"
                       "bg-city-blue-800"]}
-        ($ :div {:class ["flex flex-col" "w-full"]}
+        ($ :div {:class ["flex flex-col" "w-full" "overflow-auto"]}
            (when-not hide-header
              ($ :div
                 {:class ["bg-city-blue-gray-600"

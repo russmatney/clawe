@@ -4,9 +4,10 @@
    [taoensso.telemere :as t]
    #?@(:clj [[api.db :as api.db]]
        :cljs [[datascript.core :as d]
-              [uix.core :as uix]
+              ;; [uix.core :as uix]
               [doctor.ui.hooks.plasma :refer [with-stream with-rpc]]
-              [db.schema :refer [schema]]])))
+              ;; [db.schema :refer [schema]]
+              ])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; API

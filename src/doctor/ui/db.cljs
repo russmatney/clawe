@@ -114,22 +114,22 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn pomodoro-state [conn]
-  (let [current (some->>
-                  (d/q '[:find (pull ?e [*])
-                         :where [?e :pomodoro/started-at _]] @conn)
-                  (map first)
-                  (sort-by :pomodoro/started-at dt/sort-latest-first)
-                  first)
-        last    (some->>
-                  (d/q '[:find (pull ?e [*])
-                         :where [?e :pomodoro/finished-at _]] @conn)
-                  (map first)
-                  (sort-by :pomodoro/finished-at dt/sort-latest-first)
-                  first)]
-    (if (dt/newer (:pomodoro/started-at current)
-                  (:pomodoro/finished-at last))
-      {:current current :last last}
-      {:last last})))
+  (let [latest-started  (some->>
+                          (d/q '[:find (pull ?e [*])
+                                 :where [?e :pomodoro/started-at _]] @conn)
+                          (map first)
+                          (sort-by :pomodoro/started-at dt/sort-latest-first)
+                          first)
+        latest-finished (some->>
+                          (d/q '[:find (pull ?e [*])
+                                 :where [?e :pomodoro/finished-at _]] @conn)
+                          (map first)
+                          (sort-by :pomodoro/finished-at dt/sort-latest-first)
+                          first)]
+    (if (dt/newer (:pomodoro/started-at latest-started)
+                  (:pomodoro/finished-at latest-finished))
+      {:current latest-started :last latest-finished}
+      {:last latest-finished})))
 
 (defn pomodoros [conn]
   (when conn

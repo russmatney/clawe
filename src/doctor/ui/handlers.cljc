@@ -366,8 +366,7 @@
             ;; ensure uuid
             {:action/label    "ensure-uuid"
              :action/on-click #(ensure-uuid todo)
-             :action/icon
-             [:> HIMini/FingerPrintIcon {:class ["w-6" "h-6"]}]
+             :action/comp     ($ HIMini/FingerPrintIcon {:class ["w-6" "h-6"]})
              :action/disabled (:org/id todo)
              :action/priority -10}] ;; low-prority
 
@@ -544,7 +543,8 @@
        }
       {:action/label    "ingest-commits"
        :action/on-click #(ingest-commits-for-repo item)
-       :action/icon     [:> HIMini/ArrowDownOnSquareStackIcon {:class ["w-4" "h-6"]}]}
+       ;; :action/icon     ($ HIMini/ArrowDownOnSquareStackIcon {:class ["w-4" "h-6"]})
+       }
       {:action/on-click #(delete-from-db item)
        :action/label    "delete-from-db"
        ;; :action/icon     fa/trash-alt-solid
@@ -554,10 +554,10 @@
    (defn wallpaper->actions [item]
      [{:action/label    "set-wallpaper"
        :action/on-click #(set-wallpaper item)
-       :action/icon     [:> HIMini/PhotoIcon {:class ["w-4" "h-6"]}]}
+       :action/comp     ($ HIMini/PhotoIcon {:class ["w-4" "h-6"]})}
       {:action/label    "ingest-wallpapers"
        :action/on-click #(ingest-wallpapers)
-       :action/icon     [:> HIMini/ArrowDownOnSquareStackIcon {:class ["w-4" "h-6"]}]}
+       :action/comp     ($ HIMini/ArrowDownOnSquareStackIcon {:class ["w-4" "h-6"]})}
       {:action/on-click #(delete-from-db item)
        :action/label    "delete-from-db"
        ;; :action/icon     fa/trash-alt-solid
