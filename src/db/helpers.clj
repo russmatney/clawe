@@ -1,6 +1,6 @@
 (ns db.helpers
   (:require
-   [taoensso.timbre :as log]
+   [taoensso.telemere :as log]
    [wing.core :as w]
    [tick.core :as t]
    [dates.tick :as dates.tick])
@@ -48,7 +48,7 @@
                    true
                    (do
                      (when-not (nil? v)
-                       (log/warn "unsupported type" t v k)
+                       (log/log! :warn ["unsupported type" t v k])
                        (when (:on-unsupported-type opts)
                          ((:on-unsupported-type opts) m)))
                      nil)))))
@@ -78,7 +78,7 @@
    (let [supported-keys   (supported-type-keys opts map-tx)
          [to-tx rejected] (w/partition-keys map-tx supported-keys)]
      (when (and (seq rejected) (:log-rejected opts))
-       (log/debug "db transact rejected vals" rejected))
+       (log/log! :debug ["db transact rejected vals" rejected]))
      (->> to-tx
           ;; might be unnecessary b/c it's not 'supported'
           (remove (comp nil? second))

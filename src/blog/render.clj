@@ -2,10 +2,11 @@
   (:require
    [babashka.fs :as fs]
    [babashka.process :as process]
-   [taoensso.timbre :as log]
+   [taoensso.telemere :as log]
    [hiccup.page :as hiccup.page]
    [hiccup2.core :as hiccup2.core]
    [clojure.string :as string]
+
    [ralphie.notify :as notify]
    [blog.components.header :as blog.components.header]
    [blog.config :as blog.config]
@@ -25,7 +26,7 @@
     (catch Exception e
       (notify/notify {:subject "Error formatting html file!"
                       :body    path})
-      (log/warn "Error formatting file: " path ", throwing exception!")
+      (log/log! :warn ["Error formatting file: " path ", throwing exception!"])
       (throw e))))
 
 ;; --new-inline-tags fn
@@ -43,7 +44,7 @@
 (defn ensure-path [path]
   (let [parent (fs/parent path)]
     (when-not (fs/exists? parent)
-      (log/info "ensuring parent dir exists")
+      (log/log! :info "ensuring parent dir exists")
       (fs/create-dirs parent))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -75,7 +76,7 @@
 
         #_(when-not @blog.config/!debug-mode)
         (when true
-          (log/info "[BLOG-RENDER]: Debug Build, including live.js")
+          (log/log! :info "[BLOG-RENDER]: Debug Build, including live.js")
           [:script {:type "text/javascript"
                     :src  "https://livejs.com/live.js"}])
 
@@ -116,7 +117,7 @@ gtag('config', '" ga-id "');"))])]
 
                           :else (str public-path path))]
     (ensure-path path)
-    (log/info "[PUBLISH]: writing path" path)
+    (log/log! :info ["[PUBLISH]: writing path" path])
     (spit path (->html-with-escaping
                  (if title (str title " - " main-title) main-title)
                  content))
@@ -128,18 +129,18 @@ gtag('config', '" ga-id "');"))])]
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn write-styles
-"Generate and write tailwind styles for the current blog public/ dir."
-[]
-(log/info "[PUBLISH]: exporting tailwind styles")
+  "Generate and write tailwind styles for the current blog public/ dir."
+  []
+  (log/log! :info "[PUBLISH]: exporting tailwind styles")
   (let [content-path (str (blog.config/blog-content-public) "/**/*.html")]
-  (->
-    ^{:out :string :dir (blog.config/blog-content-root)}
-    (process/$ npx tailwindcss
-               -c "resources/tailwind.config.js"
-               -i "resources/styles.css"
-               --content ~content-path
-               -o ~(str "public/styles.css"))
-    process/check :out)))
+    (->
+      ^{:out :string :dir (blog.config/blog-content-root)}
+      (process/$ npx tailwindcss
+                 -c "resources/tailwind.config.js"
+                 -i "resources/styles.css"
+                 --content ~content-path
+                 -o ~(str "public/styles.css"))
+      process/check :out)))
 
 (comment
   (write-page

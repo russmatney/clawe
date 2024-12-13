@@ -2,8 +2,9 @@
   (:require
    [juxt.dirwatch :as dirwatch]
    [systemic.core :as sys :refer [defsys]]
-   [taoensso.timbre :as log]
+   [taoensso.telemere :as log]
    [babashka.fs :as fs]
+
    [garden.db :as garden.db]))
 
 (defn garden-dir-path []
@@ -20,26 +21,28 @@
          (->> should-sync-match-strs
               (filter (fn [[k reg]]
                         (when (seq (re-seq reg path))
-                          (log/debug "File matches pattern" k)
+                          (log/log! :debug ["File matches pattern" k])
                           k)))
               first))))
 
 (defsys ^:dynamic *garden-watcher*
   :start
-  (log/info "Starting *garden-watcher*")
+  (log/log! :info "Starting *garden-watcher*")
   (dirwatch/watch-dir
     (fn [event]
       ;; TODO ignore .git
       ;; (when-not (#{".git"} (some-> event :file str fs/extension))
-      ;;   (log/debug (:action event) "event" event))
+      ;;   (log/log! :debug [(:action event) "event" event]))
       (when (and (not (#{:delete} (:action event)))
                  (should-sync-file? (:file event)))
-        (log/debug "Syncing file" (str (fs/file-name (:file event))))
+        (log/log! {:level :info
+                   :data  {:file (str (fs/file-name (:file event)))}}
+                  "Syncing file")
         (garden.db/sync-and-purge-for-path (:file event))))
     (garden-dir-path))
 
   :stop
-  (log/debug "Closing *garden-watcher*")
+  (log/log! :debug "Closing *garden-watcher*")
   (dirwatch/close-watcher *garden-watcher*))
 
 

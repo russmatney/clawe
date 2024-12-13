@@ -27,7 +27,7 @@
   (sys/start! `*workspaces-stream*))
 
 (defn push-updated-workspaces []
-  (t/log! :info "pushing to workspaces stream (updating topbar)!")
+  (t/log! :debug "pushing to workspaces stream (updating topbar)!")
   (s/put! *workspaces-stream* (active-workspaces)))
 
 (comment

@@ -1,7 +1,7 @@
 (ns components.note
   (:require
    [clojure.set :as set]
-   [taoensso.timbre :as log]
+   [taoensso.telemere :as log]
    [tick.core :as t]
    [uix.core :as uix :refer [$ defui]]
 
@@ -72,9 +72,9 @@
   (let [parsed
         (-> note :file/last-modified dates/parse-time-string)]
     (when-not parsed
-      (log/debug "could not parse :file/last-modified"
-                 (-> note :file/last-modified)
-                 note))
+      (log/log! :debug ["could not parse :file/last-modified"
+                        (-> note :file/last-modified)
+                        note]))
     (when parsed
       (t/format "MMM dd, YYYY" parsed))))
 

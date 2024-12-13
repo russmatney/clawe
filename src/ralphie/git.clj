@@ -3,6 +3,10 @@
    [babashka.process :refer [$ check] :as process]
    [babashka.fs :as fs]
    [cheshire.core :as json]
+   [clojure.string :as string]
+   [clojure.edn :as edn]
+   [taoensso.telemere :as log]
+
    [defthing.defcom :refer [defcom] :as defcom]
    [ralphie.notify :refer [notify]]
    [ralphie.rofi :as rofi]
@@ -12,9 +16,7 @@
    [ralphie.re :as re]
    [ralphie.zsh :as zsh]
    [ralphie.bb :as bb]
-   [clojure.string :as string]
    [ralphie.tmux :as tmux]
-   [clojure.edn :as edn]
    [util :as util]))
 
 (defn repo-todo-paths [repo-ids]
@@ -99,7 +101,7 @@
          (notify (str "Successful clone: " repo-id)))
     (catch Exception e
       (notify "Error while cloning" e)
-      (println e))))
+      (log/log! :error ["Error while cloning" e]))))
 
 (comment
   (clone {:repo-id "metosin/eines"})
@@ -139,9 +141,6 @@
        (rofi/rofi {:message        "Select repo to clone"
                    ;; if it ever comes to that
                    :rofi/on-select clone})))
-
-(comment
-  (dorun (map println (clone-from-suggestions))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; clone cmd, handler
@@ -402,8 +401,7 @@
            oldest-first]
     :as   opts}]
   (when-not (or dir path)
-    ;; TODO can we use timbre in bb?
-    (println "WARN ralphie.git/commits needs dir or path" dir path))
+    (log/log! :warn ["ralphie.git/commits needs dir or path" dir path]))
   (let [dir  (or (and dir (fs/expand-home dir))
                  ;; do we need to traverse to find nearest git parent?
                  (when path (-> path fs/expand-home fs/parent str)))
@@ -440,8 +438,7 @@
             oldest-first reverse
             oldest-first (take n)))
       (catch Exception e
-        (println "Error fetching commits for dir" dir opts)
-        (println e)
+        (log/log! :error ["Error fetching commits for dir" dir opts e])
         nil))))
 
 (comment
@@ -473,8 +470,7 @@
   (try
     (read-string str)
     (catch Exception e
-      (println message raw)
-      (println e)
+      (log/log! :error [message raw e])
       nil)))
 
 (defn ->stat-line
@@ -518,8 +514,7 @@
         :commit/files-renamed (->> parsed-stat-lines (filter :git.stat/is-rename) count)
         :commit/stat-lines    parsed-stat-lines})
      (catch Exception e
-       (println "Failed to parse ->stats with lines" dir stat-lines)
-       (println e)
+       (log/log! :error ["Failed to parse ->stats with lines" dir stat-lines e])
        nil))))
 
 (comment
@@ -570,8 +565,7 @@
         util/partition-by-newlines
         (->> (partition 3) (map (partial ->stats-commit dir))))
       (catch Exception e
-        (println "Error fetching commit stats for dir" dir opts)
-        (println e)
+        (log/log! :error ["Error fetching commit stats for dir" dir opts e])
         nil))))
 
 

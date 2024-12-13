@@ -5,7 +5,7 @@
 
    [babashka.fs :as fs]
    [datascript.core :as d]
-   [taoensso.timbre :as log]
+   [taoensso.telemere :as log]
    [systemic.core :refer [defsys] :as sys]
    [time-literals.read-write :as tl]
 
@@ -30,10 +30,10 @@
         (if datoms
           (-> datoms (d/conn-from-datoms schema) d/db)
           (do
-            (log/info "No datoms found in db file, creating empty db")
+            (log/log! :info "No datoms found in db file, creating empty db")
             (d/empty-db schema))))
       (do
-        (log/info "No db file found creating empty one")
+        (log/log! :info "No db file found creating empty one")
         (fs/create-dirs (fs/parent db-file))
         (fs/create-file db-file)
         (d/empty-db schema)))))
@@ -72,7 +72,7 @@
   (pr-str (d/db *conn*)))
 
 (defn write-db-to-file []
-  #_(log/debug "Writing Doctor DB to file")
+  #_(log/log! :debug "Writing Doctor DB to file")
   (spit (db.config/db-path) (print-db)))
 
 (defn clear-db []
@@ -211,11 +211,11 @@
                                     tx)))
                     (into []))]
      (when verbose?
-       (log/debug "Transacting records" (count txs)))
+       (log/log! :debug ["Transacting records" (count txs)]))
      (try
        (d/transact! *conn* txs)
        (catch Exception e
-         (log/warn "Exception while transacting data!" e)
+         (log/log! :warn ["Exception while transacting data!" e])
          (when on-error (on-error txs))
          ;; TODO consider default retry with fewer txs
          (when on-retry (on-retry txs)))))))
@@ -305,7 +305,7 @@
   ;; no args supported yet - but this is here to be tested from the cli
   ([] (query-db nil))
   ([args]
-   (log/info "db.core/query-db called" args)
+   (log/log! :info ["db.core/query-db called" args])
    (doall
      (->>
        (query '[:find (pull ?e [*])

@@ -1,17 +1,18 @@
 (ns garden.core
   (:require
-   [taoensso.timbre :as log]
    [babashka.fs :as fs]
+   [clojure.string :as string]
    [org-crud.core :as org-crud]
    [org-crud.update :as org-crud.update]
-   [ralphie.zsh :as r.zsh]
-   [util]
-   [clojure.string :as string]
+   [taoensso.telemere :as log]
+   [tick.core :as t]
+   [wing.core :as w]
+
    [dates.tick :as dates.tick]
    [db.core :as db]
-   [wing.core :as w]
+   [ralphie.zsh :as r.zsh]
    [ralphie.git :as r.git]
-   [tick.core :as t]))
+   [util]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; org file paths
@@ -335,19 +336,19 @@
       dates.tick/parse-time-string))
 
 (defn reset-last-modified [item new-lm]
-  (log/info "Setting last-modified for" (:org/short-path item) new-lm)
+  (log/log! :info ["Setting last-modified for" (:org/short-path item) new-lm])
   (fs/set-last-modified-time
     (:org/source-file item) (t/instant new-lm)))
 
 (defn reset-last-modified-via-git [item]
   (let [commit-dt (-> item :org/source-file last-commit-dt)]
     (when-not commit-dt
-      (log/warn "No latest commit for item" (:org/short-path item)))
+      (log/log! :warn ["No latest commit for item" (:org/short-path item)]))
     (when commit-dt
       (if (and (:file/last-modified item)
                (t/>= commit-dt (:file/last-modified item)))
-        (log/debug "Latest commit dt is AFTER last-modified, skipping lm reset"
-                   (:org/short-path item))
+        (log/log! :debug ["Latest commit dt is AFTER last-modified, skipping lm reset"
+                          (:org/short-path item)])
         (reset-last-modified item commit-dt)))))
 
 (defn reset-created-at-via-git [item]
@@ -356,8 +357,8 @@
           created-at      (-> item :org.prop/created-at)]
       (when first-commit-dt
         (if (and created-at (t/>= first-commit-dt created-at))
-          (log/debug "First commit dt is AFTER item created-at, skipping created-at reset"
-                     (:org/short-path item))
+          (log/log! :debug ["First commit dt is AFTER item created-at, skipping created-at reset"
+                            (:org/short-path item)])
           (org-crud.update/update! item {:org.prop/created-at            first-commit-dt
                                          :org.update/reset-last-modified true}))))))
 

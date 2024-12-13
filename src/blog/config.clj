@@ -1,6 +1,6 @@
 (ns blog.config
   (:require
-   [taoensso.timbre :as log]
+   [taoensso.telemere :as log]
    [aero.core :as aero]
    [tick.core :as t]
    [systemic.core :as sys :refer [defsys]]
@@ -38,7 +38,7 @@
 (defn ->config [] (aero/read-config blog-edn))
 
 (defsys ^:dynamic *config* :start
-  (log/info "[BLOG-CONFIG]: Restarting *config*")
+  (log/log! :info "[BLOG-CONFIG]: Restarting *config*")
   (atom (->config)))
 
 (defn reload-config []
@@ -109,7 +109,7 @@
   [note]
   (let [short-path (:org/short-path note)]
     (if-not short-path
-      (log/warn "[ERROR: config/update-note]: no :short-path for passed note")
+      (log/log! :warn "[ERROR: config/update-note]: no :short-path for passed note")
       (-> @*config*
           (update-in [:notes short-path] merge note)
           write-config))

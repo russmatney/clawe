@@ -54,8 +54,10 @@
                     (map #(d/entity @conn %))
                     (map :doctor/type)
                     frequencies
-                    (str "received data: " "datoms: " (count items) " ")
-                    (t/log! :info)))
+                    (#(t/log! {:level :info
+                               :data  {:freq-count (count %)
+                                       :freqs      %}}
+                              "Received data"))))
 
              ;; (->> items (take 2)
              ;;      (map (fn [dt] [(:a dt) (:v dt)]))

@@ -1,6 +1,6 @@
 (ns api.pomodoros
   (:require
-   [taoensso.timbre :as log]
+   [taoensso.telemere :as log]
    [db.core :as db]
    [dates.tick :as dt]
    [ralphie.notify :as notify]))
@@ -30,7 +30,7 @@
 (defn start-if-break []
   (let [current (:current (get-state))]
     (if current
-      (log/warn "Attempted to start-new pomodoro when current exists, doing nothing")
+      (log/log! :warn "Attempted to start-new pomodoro when current exists, doing nothing")
       (do
         (-> {:doctor/type         :type/pomodoro
              :pomodoro/started-at (dt/now)
@@ -87,7 +87,7 @@
 (defn route
   "Routes an api request."
   [{:keys [uri _query-string] :as _req}]
-  ;; (log/debug "Routing API req" req (System/currentTimeMillis))
+  ;; (log/log! :debug "Routing API req" req (System/currentTimeMillis))
 
   (cond
     (= "/api/pomodoros" uri)

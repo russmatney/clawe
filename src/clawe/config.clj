@@ -5,7 +5,7 @@
    [clojure.java.io :as io]
    [clojure.string :as string]
    [systemic.core :as sys :refer [defsys]]
-   [taoensso.timbre :as log]
+   ;; [taoensso.telemere :as log]
    [zprint.core :as zp]
 
    [ralphie.zsh :as zsh]
@@ -26,7 +26,7 @@
   (let [conf-clawe (io/file (str (fs/home) "/" path))]
     (if (fs/exists? conf-clawe) conf-clawe
         (do
-          (log/error (str path "not found, falling back on template."))
+          (println :error [path "not found, falling back on template."])
           (io/resource "clawe-template.edn")))))
 
 (defn read-config [path]
@@ -144,10 +144,10 @@
                      (#{"yabai" :yabai :wm/yabai} wm)       :wm/yabai)
         current-wm (get-wm)]
     (when-not val
-      (log/warn "Unhandled set-wm val" wm))
+      (println :warn ["Unhandled set-wm val" wm]))
 
     (when-not (= val current-wm)
-      (log/warn "New window-manager, writing local config")
+      (println :warn "New window-manager, writing local config")
       (-> {:wm val} (write-config
                       {:path      clawe-local-config-path
                        :is-local? true}))))

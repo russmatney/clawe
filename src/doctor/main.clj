@@ -1,10 +1,11 @@
 (ns doctor.main
   (:require
    [systemic.core :as sys :refer [defsys]]
-   [taoensso.timbre :as log]
+   [taoensso.telemere :as log]
    [nrepl.server :as nrepl]
    [cider.nrepl :as cider]
    [refactor-nrepl.middleware :as refactor-mw]
+
    [doctor.server :as server]
    [doctor.config :as config])
   (:gen-class))
@@ -13,7 +14,7 @@
   :closure
   (let [nrepl-val (atom nil)
         port      (:nrepl/port config/*config*)]
-    (log/info "Starting Doctor backend *nrepl*" {:port port})
+    (log/log! :info ["Starting Doctor backend *nrepl*" {:port port}])
     (try
       (reset! nrepl-val (nrepl/start-server
                           :port port
@@ -21,7 +22,7 @@
                           (refactor-mw/wrap-refactor
                             cider/cider-nrepl-handler)))
       (catch Exception e
-        (log/error e "nrepl server error")))
+        (log/log! :error [e "nrepl server error"])))
     {:stop
      (fn []
        (nrepl/stop-server @nrepl-val))}))
@@ -35,8 +36,8 @@
     (catch Exception e
       (let [{:keys [cause system]} (ex-data e)]
         (if cause
-          (log/error e "Error during system startup" {:system system})
-          (log/error e "Error during startup"))
+          (log/log! :error [e "Error during system startup" {:system system}])
+          (log/log! :error [e "Error during startup"]))
         ;; wait a little bit before dying so that the error gets flushed
         (Thread/sleep 10000)
         (throw (or cause e))))))

@@ -1,12 +1,13 @@
 (ns garden.db
   (:require
+   [babashka.fs :as fs]
+   [clojure.set :as set]
+   [clojure.string :as string]
+   [taoensso.telemere :as log]
+
    [db.core :as db]
    [garden.core :as garden]
-   [clojure.string :as string]
-   [taoensso.timbre :as log]
-   [item.core :as item]
-   [clojure.set :as set]
-   [babashka.fs :as fs]))
+   [item.core :as item]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ->db-item
@@ -34,7 +35,7 @@
   (let [fallback (fallback-id item)
         db-match (fetch-matching-db-item item)]
     (if-not (or id fallback)
-      (log/info "Could not create fallback id for org item" (:org/name-string item))
+      (log/log! :warn ["Could not create fallback id for org item" (:org/name-string item)])
 
       (cond-> item
         id (assoc :org/id id)
@@ -154,8 +155,9 @@
     (->> txs
          (map
            (fn [item]
-             (log/info (str "\n" (:org/source-file item) " - " (:org/fallback-id item))
-                       item))))) )
+             (log/log! :info
+                       [(str "\n" (:org/source-file item) " - " (:org/fallback-id item))
+                        item]))))) )
 
 (comment
   (-on-error-log-notes []))
@@ -176,7 +178,7 @@
                 :verbose? true
                 :on-unsupported-type
                 (fn [note]
-                  (log/debug "Unsupported type on note" note))
+                  (log/log! :debug ["Unsupported type on note" note]))
                 ;; retry logic that narrows in on bad records
                 ;; NOTE not ideal if we care about things belonging to the same transaction
                 :on-retry
@@ -185,12 +187,12 @@
                         half (/ size 2)]
                     (if (> size 1)
                       (do
-                        (log/info "\n\nRetrying with smaller groups." (count notes))
+                        (log/log! :info ["\n\nRetrying with smaller groups." (count notes)])
                         (transact-garden-notes (->> notes (take half)))
                         (transact-garden-notes (->> notes (drop half) (take half))))
-                      (log/info "\n\nProblemmatic record:"
-                                (some-> notes first
-                                        ((fn [x] (:org/name-string x x))))))))})))
+                      (log/log! :info ["\n\nProblemmatic record:"
+                                       (some-> notes first
+                                               ((fn [x] (:org/name-string x x))))]))))})))
       doall)))
 
 (defn sync-garden-notes-to-db
@@ -270,10 +272,10 @@
           notes-to-purge
           (->> all-db-notes (remove ->should-keep?))]
       (when (seq notes-to-purge)
-        (log/info
-          "Purging" (count notes-to-purge) "/" (count all-db-notes) "notes from the db\n"
-          "on path" garden-path "\n"
-          (->> notes-to-purge (map (some-fn :org/name-string :org/name identity)))))
+        (log/log! :info
+                  ["Purging" (count notes-to-purge) "/" (count all-db-notes) "notes from the db\n"
+                   "on path" garden-path "\n"
+                   (->> notes-to-purge (map (some-fn :org/name-string :org/name identity)))]))
       (->> notes-to-purge
            (map :db/id)
            (remove nil?)
@@ -360,7 +362,7 @@
                     id fb-id)
           (map first))]
     (when (> (count matches) 1)
-      (log/info "Multiple matches found for org item" id fb-id (->> matches (map :db/id))))
+      (log/log! :info ["Multiple matches found for org item" id fb-id (->> matches (map :db/id))]))
 
     (some->> matches first)))
 

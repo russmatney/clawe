@@ -63,8 +63,7 @@
     metosin/muuntaja-form         {:mvn/version "0.6.10"}
 
     ;; logging
-    com.taoensso/telemere {:mvn/version "1.0.0-SNAPSHOT"}
-    com.taoensso/timbre   {:mvn/version "6.6.1"}
+    com.taoensso/telemere {:mvn/version "1.0.0-RC1"}
 
     ;; file-watching
     hawk/hawk {:mvn/version "0.2.11"}

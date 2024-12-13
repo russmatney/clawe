@@ -1,6 +1,6 @@
 (ns doctor.ui.db
   (:require
-   [taoensso.timbre :as log]
+   [taoensso.telemere :as log]
    [datascript.core :as d]
    [dates.tick :as dt]
    [wing.core :as w]))
@@ -9,7 +9,7 @@
   (if-not n
     xs
     (let [ct (count xs)]
-      (when (> ct n) (log/info ct label "in db, trimming to" n))
+      (when (> ct n) (log/log! :info [ct label "in db, trimming to" n]))
       (->> xs (take n)))))
 
 ;; TODO tests for this namespace

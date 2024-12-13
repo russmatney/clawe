@@ -20,7 +20,7 @@
              [api.todos :as api.todos]
              [api.pomodoros :as api.pomodoros]
              [api.repos :as api.repos]
-             [taoensso.timbre :as log]]
+             [taoensso.telemere :as log]]
        :cljs [[components.icons :as components.icons]
               [components.colors :as colors]
               [uix.core :as uix :refer [$ defui]]
@@ -34,7 +34,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defhandler delete-from-db [item]
-  (log/info "deleting item from db" item)
+  (log/log! :info ["deleting item from db" item])
   (db/retract-entities (:db/id item))
   :ok)
 
@@ -79,7 +79,7 @@
   (garden/full-item item))
 
 (defhandler purge-org-source-file [item]
-  (log/info "purging-org-source-file from db" (:org/source-file item))
+  (log/log! :info ["purging-org-source-file from db" (:org/source-file item)])
   (when (:org/source-file item)
     ;; TODO rewrite to delete without query, using an identifier
     (->>
@@ -94,7 +94,7 @@
   :ok)
 
 (defhandler add-tag [item tag]
-  (log/debug "adding tag to item" tag (:org/name-string item))
+  (log/log! :debug ["adding tag to item" tag (:org/name-string item)])
   (when (:db/id item)
     (db/transact {:db/id (:db/id item) :org/tags (into (or (:org/tags item) #{}) #{tag})}))
   (org-crud.api/update! item {:org/tags tag})
@@ -141,7 +141,7 @@
   :ok)
 
 (defhandler ingest-commits-for-repo [repo]
-  (log/info "ingesting commits for repo" repo)
+  (log/log! :info ["ingesting commits for repo" repo])
   (git/ingest-commits-for-repo repo)
   :ok)
 
@@ -190,15 +190,15 @@
 
 (defhandler queue-todo [todo]
   (let [new-id (random-uuid)]
-    (log/debug "queuing todo")
+    (log/log! :debug "queuing todo")
     (when-not (:org/id todo)
       (org-crud.api/update! todo {:org/id new-id})
-      (log/debug "added id to org"))
+      (log/log! :debug "added id to org"))
     (cond-> todo
       (:org/id todo) (assoc :org/id new-id)
       true           (assoc :todo/queued-at (System/currentTimeMillis))
       true           db/transact)
-    (log/debug "transacted new item"))
+    (log/log! :info "transacted new item"))
   :ok)
 
 (defhandler unqueue-todo [todo]
@@ -277,7 +277,7 @@
 
 (defhandler set-priority [todo priority]
   (when-not (#{"A" "B" "C"} priority)
-    (log/warn "set-priority - unexpected priority passed:" priority))
+    (log/log! :warn ["set-priority - unexpected priority passed:" priority]))
   (org-crud.api/update! todo
                         (cond-> {:org/priority priority}
                           (not (:org/id todo))
@@ -293,7 +293,7 @@
             "C" "B"
             nil "C")
           (do
-            (log/warn "inc-pri - unexpected priority found, overwriting:" (:org/priority todo))
+            (log/log! :warn ["inc-pri - unexpected priority found, overwriting:" (:org/priority todo)])
             "C"))]
     (org-crud.api/update! todo
                           (cond->
@@ -310,7 +310,7 @@
             "B" "C"
             "C" nil)
           (do
-            (log/warn "dec-pri - unexpected priority found, overwriting:" (:org/priority todo))
+            (log/log! :warn ["dec-pri - unexpected priority found, overwriting:" (:org/priority todo)])
             nil))]
     (when-not priority
       (->> [[:db.fn/retractAttribute (:db/id todo) :org/priority]]
@@ -529,7 +529,7 @@
        :action/disabled (not (:blog/published item))}]))
 
 (defhandler check-repo-status [repo]
-  (log/info "checking repo status" repo)
+  (log/log! :info ["checking repo status" repo])
   (api.repos/update-repo-status repo)
   :ok)
 

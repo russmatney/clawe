@@ -1,11 +1,12 @@
 (ns git.core
   (:require
-   [ralphie.git :as r.git]
-   [db.core :as db]
    [babashka.fs :as fs]
-   [clawe.wm :as wm]
    [clojure.string :as string]
-   [taoensso.timbre :as log]))
+   [taoensso.telemere :as t]
+
+   [clawe.wm :as wm]
+   [db.core :as db]
+   [ralphie.git :as r.git]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; repos
@@ -40,7 +41,7 @@
 (defn ingest-clawe-repos []
   (let [dirs  (clawe-git-dirs)
         repos (->> dirs (map dir->db-repo))]
-    (log/info "Ingesting" (count repos) "repos from clawe")
+    (t/log! :info ["Ingesting" (count repos) "repos from clawe"])
     (db/transact repos)))
 
 (defn db-repos
@@ -133,9 +134,9 @@
                      (map ->db-commit))]
     (if (seq commits)
       (do
-        (log/info "syncing" (count commits) "commits to the db")
+        (t/log! :info ["syncing" (count commits) "commits to the db"])
         (db/transact commits))
-      (log/warn "No commits found for opts" opts))))
+      (t/log! :info ["No commits found for opts" opts]))))
 
 ;; TODO malli type hints for inputs like these!
 (defn ingest-commits-for-repo
@@ -144,11 +145,11 @@
    (let [n (:n opts 100)]
      (if-let [db-repo (fetch-repo repo)]
        (do
-         (log/info "ingesting commits for repo" db-repo)
+         (t/log! :info ["ingesting commits for repo" db-repo])
          (sync-commits-to-db
            {:dirs [(:repo/directory db-repo)]
             :n    n}))
-       (log/warn "No DB Repo for repo desc" repo)))))
+       (t/log! :warn ["No DB Repo for repo desc" repo])))))
 
 (comment
   (fetch-repo {:repo/short-path "russmatney/clawe"})

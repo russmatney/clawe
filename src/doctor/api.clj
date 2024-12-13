@@ -1,6 +1,7 @@
 (ns doctor.api
   (:require
-   ;; [taoensso.timbre :as log]
+   [taoensso.telemere :as log]
+
    [api.workspaces :as workspaces]
    [api.topbar :as topbar]
    [api.todos :as todos]
@@ -19,7 +20,9 @@
 (defn route
   "Routes an api request."
   [{:keys [uri query-string] :as req}]
-  ;; (log/debug "Routing API req" req (System/currentTimeMillis))
+  (log/log! {:level :debug
+             :data  {:uri uri :query-string query-string}}
+            ["Routing API req" (System/currentTimeMillis)])
 
   (cond
     (string/starts-with? "/api/pomodoros" uri)

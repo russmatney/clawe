@@ -1,9 +1,7 @@
 (ns doctor.server
   (:require
-   [clojure.string :as string]
-   [taoensso.telemere :as t]
-   [taoensso.timbre :as log]
-   [taoensso.encore :as enc]
+   [taoensso.telemere :as log]
+   [taoensso.telemere.utils :as log.utils]
    [systemic.core :as sys :refer [defsys]]
    [plasma.server :as plasma.server]
    [plasma.server.interceptors :as plasma.interceptors]
@@ -29,30 +27,19 @@
    [ralphie.notify :as notify]
    [hiccup.page :as hiccup]))
 
-(defn log-output-fn
-  [data]
-  (let [{:keys [level ?err #_vargs _msg_ ?ns-str ?file _hostname_
-                _timestamp_ ?line output-opts]}
-        data]
-
-    (str
-      #_(when-let [ts (force timestamp_)]
-          (str ts " "))
-      #_ (force hostname_)
-      #_ " "
-      (string/upper-case (name level))  " "
-      "[" (or ?ns-str ?file "?") ":" (or ?line "?") "]: "
-
-      (when-let [msg-fn (get output-opts :msg-fn log/default-output-msg-fn)]
-        (msg-fn data))
-
-      (when-let [_err ?err]
-        (when-let [ef (get output-opts :error-fn log/default-output-error-fn)]
-          (when-not   (get output-opts :no-stacktrace?) ; Back compatibility
-            (str enc/system-newline
-                 (ef data))))))))
-
-(log/merge-config! {:output-fn log-output-fn})
+(log/set-min-level! :debug)
+(log/add-handler!
+  :durable
+  (log/handler:file
+    {:output-fn     (log/format-signal-fn
+                      {:preamble-fn
+                       (log.utils/signal-preamble-fn
+                         {:format-inst-fn
+                          (log.utils/format-inst-fn
+                            {:formatter (java.time.format.DateTimeFormatter/ofPattern "dd HH:mm:ss")
+                             :zone      (.getOffset (java.time.ZonedDateTime/now (java.time.ZoneId/of "America/New_York")))})})})
+     :max-file-size (* 1024 1024 4)})
+  {:needs-stopping? true})
 
 (def m (muu/create
          (-> muu/default-options
@@ -96,9 +83,9 @@
   (plasma.server/make-server
     {:session-atom           *sessions*
      :send-fn                #(undertow.ws/send %2 %1)
-     :on-error               #(log/warn (:error %) "Error in plasma handler"
-                                        (-> % :ctx :request (select-keys
-                                                              #{:event-name :fn-var :args})))
+     :on-error               #(log/log! :warn [(:error %) "Error in plasma handler"
+                                               (-> % :ctx :request (select-keys
+                                                                     #{:event-name :fn-var :args}))])
      :transit-read-handlers  transit-read-handlers
      :transit-write-handlers transit-write-handlers
      :interceptors           [(plasma.interceptors/auto-require (fn [_] (sys/start!)))
@@ -107,9 +94,10 @@
                                  :enter
                                  (fn [ctx]
                                    (let [{:keys [fn-var args event-name]} (:request ctx)]
-                                     (log/debug "\nplasma interceptor"
-                                                "fn-var" fn-var "event-name" event-name)
-                                     (when (seq args) (log/debug "args" args)))
+                                     (log/log! :debug
+                                               ["\nplasma interceptor"
+                                                "fn-var" fn-var "event-name" event-name])
+                                     (when (seq args) (log/log! :debug ["args" args])))
                                    ctx)}]}))
 
 (defn ->plasma-undertow-ws-handler [_req]
@@ -117,19 +105,19 @@
    {:on-open
     #(do
        (plasma.server/on-connect! *plasma-server* (:channel %))
-       (log/info "client connected" (str "(" (count @*sessions*) " current)"))
+       (log/log! :info ["client connected" (str "(" (count @*sessions*) " current)")])
        (server-status-notif {:notify/subject "Websocket connected"}))
     :on-close-message
     #(do
        (plasma.server/on-disconnect! *plasma-server* (:channel %))
-       (log/info "client disconnected" (str "(" (count @*sessions*) " current)"))
+       (log/log! :info ["client disconnected" (str "(" (count @*sessions*) " current)")])
        (server-status-notif {:notify/subject "Websocket connected"}))
     :on-message #(plasma.server/on-message! *plasma-server*
                                             (:channel %)
                                             (:data %))
     :on-error   #(do
-                   (log/debug "Error in plasma-ws" (:error %))
-                   (log/debug "on channel" (:channel %)))}})
+                   (log/log! :debug ["Error in plasma-ws" (:error %)])
+                   (log/log! :debug ["on channel" (:channel %)]))}})
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -207,7 +195,7 @@
   :start
   (wallpapers/ensure-wallpaper)
   (let [port (:server/port doctor.config/*config*)]
-    (log/info "Starting *server* on port" port)
+    (log/log! :info ["Starting *server* on port" port])
     (let [server (undertow/run-undertow
                    app {:port             port
                         :session-manager? false

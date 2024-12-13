@@ -1,8 +1,10 @@
 (ns blog.publish
   (:require
    [clojure.string :as string]
+   [babashka.fs :as fs]
    [tick.core :as t]
-   [taoensso.timbre :as log]
+   [taoensso.telemere :as log]
+
    [dates.tick :as dates]
    [ralphie.notify :as notify]
    [blog.render :as render]
@@ -14,8 +16,7 @@
    [blog.pages.resources :as pages.resources]
    [blog.db :as blog.db]
    [blog.config :as blog.config]
-   [components.note :as note]
-   [babashka.fs :as fs]))
+   [components.note :as note]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; publish notes
@@ -33,9 +34,9 @@
             (filter (comp #{(str path-or-note)} :org/source-file))
             first))]
     (if-not note
-      (log/info "[PUBLISH] could not find published note" path-or-note)
+      (log/log! :info ["[PUBLISH] could not find published note" path-or-note])
       (do
-        (log/info "[PUBLISH] exporting note: " (:org/short-path note))
+        (log/log! :info ["[PUBLISH] exporting note: " (:org/short-path note)])
         (render/write-page
           {:note  note
            :content
@@ -46,7 +47,7 @@
 
 (defn publish-notes []
   (let [notes-to-publish (blog.db/published-notes)]
-    (log/info "[PUBLISH] publishing " (count notes-to-publish) " notes")
+    (log/log! :info ["[PUBLISH] publishing " (count notes-to-publish) " notes"])
     (doseq [note notes-to-publish]
       (publish-note note))))
 
@@ -55,14 +56,14 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn publish-index-by-tag []
-  (log/info "[PUBLISH] exporting index-by-tag.")
+  (log/log! :info "[PUBLISH] exporting index-by-tag.")
   (render/write-page
     {:path    "/tags.html"
      :content (pages.tags/page)
      :title   "Notes By Tag"}))
 
 (defn publish-date-indexes []
-  (log/info "[PUBLISH] exporting date-indexes.")
+  (log/log! :info "[PUBLISH] exporting date-indexes.")
 
   (render/write-page
     {:path    "/created-at.html"
@@ -83,7 +84,7 @@
      :title   "By Modified Date"}))
 
 (defn publish-index []
-  (log/info "[PUBLISH] exporting index.")
+  (log/log! :info "[PUBLISH] exporting index.")
   (render/write-page
     {:path    "/index.html"
      :content (pages.index/page)
@@ -103,7 +104,7 @@
 (defn ensure-image-dir []
   (let [dir (blog.config/blog-content-images)]
     (when-not (fs/exists? dir)
-      (log/info "creating image dir")
+      (log/log! :info "creating image dir")
       (fs/create-dirs dir))))
 
 (defn publish-images []
@@ -112,20 +113,20 @@
         images (->> notes
                     ;; TODO exclude unpublished daily items
                     (mapcat note/->all-images))]
-    (log/info "[PUBLISH] exporting" (count images) "images")
+    (log/log! :info ["[PUBLISH] exporting" (count images) "images"])
     (->> images
          (map (fn [{:as img :keys [image/path]}]
                 (let [path ;; TODO attempt expand-home in org-crud
                       (fs/expand-home path)]
                   (if (fs/exists? path)
                     (let [new-path (blog.config/image->blog-path img)]
-                      (log/debug "[PUBLISH] copying image" new-path)
+                      (log/log! :debug ["[PUBLISH] copying image" new-path])
                       (fs/copy path new-path {:replace-existing true}))
-                    (log/warn "[PUBLISH] image path does not exist" path)))))
+                    (log/log! :warn ["[PUBLISH] image path does not exist" path])))))
          doall
          (remove nil?)
          count
-         (#(log/info "[PUBLISH] Copied" % "images")))))
+         (#(log/log! :info ["[PUBLISH] Copied" % "images"])))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; publish devlogs
@@ -134,21 +135,21 @@
 (defn ensure-devlogs-dir []
   (let [dir (blog.config/blog-content-devlogs)]
     (when-not (fs/exists? dir)
-      (log/info "creating devlog dir")
+      (log/log! :info "creating devlog dir")
       (fs/create-dirs dir))))
 
 (defn publish-devlogs []
   (ensure-devlogs-dir)
   (let [paths (blog.config/devlog-html-paths)]
-    (log/info "[PUBLISH] exporting" (count paths) "devlog html files")
+    (log/log! :info ["[PUBLISH] exporting" (count paths) "devlog html files"])
     (->> paths (map (fn [path]
                       (let [new-path (blog.config/path->devlog-path path)]
-                        (log/debug "[PUBLISH] copying path" new-path)
+                        (log/log! :debug ["[PUBLISH] copying path" new-path])
                         (fs/copy path new-path {:replace-existing true}))))
          doall
          (remove nil?)
          count
-         (#(log/info "[PUBLISH] Copied" % "images")))))
+         (#(log/log! :info ["[PUBLISH] Copied" % "images"])))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; publish-all
@@ -170,7 +171,7 @@
     (publish-devlogs)
     (render/write-styles)
     (let [time-str (str (dates/millis-since start-t) "ms")]
-      (log/info "[PUBLISH]: blog publish complete " time-str)
+      (log/log! :info ["[PUBLISH]: blog publish complete " time-str])
       (notify/notify {:subject "Rebuilding blog [Complete]"
                       :body    (str "Rebuilt in " time-str)
                       :id      notif-id}))))

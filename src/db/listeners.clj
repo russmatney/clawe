@@ -1,6 +1,6 @@
 (ns db.listeners
   (:require
-   [taoensso.timbre :as log]
+   [taoensso.telemere :as log]
    [systemic.core :as sys :refer [defsys]]
    [datascript.core :as d]
 
@@ -30,7 +30,7 @@
              (filter :event/timestamp)
              (map (fn [ent] (select-keys ent [:db/id :event/timestamp]))))]
     (when (> (count ent-updates) 0)
-      (log/info "[DB] Adding :event/timestamp to " (count ent-updates) " records")
+      (log/log! :info ["[DB] Adding :event/timestamp to " (count ent-updates) " records"])
       (db/transact ent-updates))))
 
 (comment
@@ -78,7 +78,7 @@
 
 (defsys ^:dynamic *data-expander*
   :start
-  (log/info "Adding *data-expander* db listener")
+  (log/log! :info "Adding *data-expander* db listener")
   (sys/start! `db/*conn*)
   (d/listen!
     db/*conn* :data-expander
@@ -87,14 +87,14 @@
         (ensure-timestamps tx)
         ;; TODO support :ingested-at (or is this just tx-id)?
         (catch Exception e
-          (log/warn "Error in *data-expander* db listener" e)
+          (log/log! :warn ["Error in *data-expander* db listener" e])
           tx))))
   :stop
   (try
-    (log/debug "Removing *data-expander* db listener")
+    (log/log! :debug "Removing *data-expander* db listener")
     (d/unlisten! db/*conn* :data-expander)
     (catch Exception e
-      (log/debug "err removing listener" e)
+      (log/log! :debug ["err removing listener" e])
       nil)))
 
 (comment
@@ -131,8 +131,8 @@
                              (filter (comp blog.db/published-id? :org/id)))]
 
     (when (seq published-notes)
-      (log/info "rerendering edited notes!"
-                (->> txed-ents (map :org/name-string)))
+      (log/log! :info ["rerendering edited notes!"
+                       (->> txed-ents (map :org/name-string))])
       (->> published-notes (map blog.db/update-db-note) doall)
       (->> published-notes
            ;; NOTE CAREFUL! this is an easy way to accidentally publish notes!
@@ -152,14 +152,14 @@
           (tx->republish-updated-note tx)
 
           (catch Exception e
-            (log/warn "Error in garden->blog db listener" e)
+            (log/log! :warn ["Error in garden->blog db listener" e])
             tx)))))
   :stop
   (try
-    (log/debug "Removing :garden->blog db listener")
+    (log/log! :debug "Removing :garden->blog db listener")
     (d/unlisten! db/*conn* :garden->blog)
     (catch Exception e
-      (log/debug "err removing listener" e)
+      (log/log! :debug ["err removing listener" e])
       nil)))
 
 (defn start-garden->blog-listener []

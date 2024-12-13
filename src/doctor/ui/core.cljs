@@ -2,8 +2,7 @@
   (:require
    [dates.transit-time-literals :as ttl]
    [plasma.client]
-   [taoensso.telemere :as t]
-   [taoensso.timbre :as log]
+   [taoensso.telemere :as log]
    [time-literals.read-write]
    [tick.timezone]
    [tick.locale-en-us]
@@ -17,8 +16,6 @@
 
    [datascript.core :as d]
    [datascript.transit :as dt]
-   [clojure.string :as string]
-   [taoensso.encore :as enc]
 
    [pages.core :as pages]
    [pages.db :as pages.db]
@@ -45,31 +42,6 @@
    [doctor.ui.views.dashboard :as views.dashboard]
    [doctor.ui.views.workspaces :as views.workspaces]
    ))
-
-(defn output-fn
-  [data]
-  (let [{:keys [level ?err #_vargs _msg_ ?ns-str ?file _hostname_
-                _timestamp_ ?line output-opts]}
-        data]
-
-    (str
-      #_(when-let [ts (force timestamp_)]
-          (str ts " "))
-      #_ (force hostname_)
-      #_ " "
-      (string/upper-case (name level))  " "
-      "[" (or ?ns-str ?file "?") ":" (or ?line "?") "]: "
-
-      (when-let [msg-fn (get output-opts :msg-fn log/default-output-msg-fn)]
-        (msg-fn data))
-
-      (when-let [_err ?err]
-        (when-let [ef (get output-opts :error-fn log/default-output-error-fn)]
-          (when-not   (get output-opts :no-stacktrace?) ; Back compatibility
-            (str enc/system-newline
-                 (ef data))))))))
-
-(log/merge-config! {:output-fn output-fn})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; routes, home
@@ -148,10 +120,10 @@
 
 (def plasma-ws-url (str "ws://" SERVER_HOST ":" SERVER_PORT "/plasma-ws"))
 
-(defn on-close [] (t/log! :info "Connection with server closed"))
-(defn on-error [] (t/log! :info "Connection with server error"))
-(defn on-open [] (t/log! :info "Connection with server open"))
-(defn on-reconnect [] (t/log! :info "Reconnected to server"))
+(defn on-close [] (log/log! :info "Connection with server closed"))
+(defn on-error [] (log/log! :info "Connection with server error"))
+(defn on-open [] (log/log! :info "Connection with server open"))
+(defn on-reconnect [] (log/log! :info "Reconnected to server"))
 
 (defn start-plasma []
   (plasma.client/use-transport!
@@ -214,6 +186,10 @@
 (defn init
   []
   (enable-console-print!)
+  (log/set-min-level! :debug)
+  ;; (log/add-handler!
+  ;;   :my-console-raw-handler
+  ;;   (log/handler:console-raw {}))
   (time-literals.read-write/print-time-literals-cljs!)
   (start-plasma)
   (mount-root))

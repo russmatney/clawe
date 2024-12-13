@@ -1,6 +1,6 @@
 (ns api.blog
   (:require
-   [taoensso.timbre :as log]
+   [taoensso.telemere :as log]
    [systemic.core :as sys :refer [defsys]]
    [manifold.stream :as s]
    [tick.core :as t]
@@ -26,7 +26,7 @@
      (->> db :root-notes-by-id vals
           (filter (fn [note]
                     (when-not (some-> note :file/last-modified)
-                      (log/info "Note without :file/last-modified" note))
+                      (log/log! :info ["Note without :file/last-modified" note]))
                     (when (some-> note :file/last-modified)
                       (dates/sort-latest-first
                         (-> note :file/last-modified dates/parse-time-string)
@@ -52,7 +52,7 @@
   :stop (s/close! *blog-data-stream*))
 
 (defn update-blog-data []
-  (log/info "Pushing blog data update to client")
+  (log/log! :info "Pushing blog data update to client")
   (s/put! *blog-data-stream* (build-blog-data)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -60,7 +60,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn publish [note]
-  (log/info "Publishing" (:org/short-path note))
+  (log/log! :info ["Publishing" (:org/short-path note)])
 
   (let [;; update note
         note (-> note
@@ -83,7 +83,7 @@
   (update-blog-data))
 
 (defn unpublish [note]
-  (log/info "Unpublishing" (:org/short-path note))
+  (log/log! :info ["Unpublishing" (:org/short-path note)])
   (blog.config/drop-note-def (:org/short-path note))
   (blog.db/update-db-note note)
   (update-blog-data))

@@ -3,15 +3,15 @@
    [babashka.fs :as fs]
    [clojure.string :as string]
    [tick.core :as t]
-   [dates.tick :as dates]
-   [taoensso.timbre :as log]
+   [taoensso.telemere :as log]
    [org-crud.core :as org-crud]
+   [org-crud.update :as org-crud.update]
+   [systemic.core :as sys]
 
+   [dates.tick :as dates]
    [util :refer [ensure-uuid]]
    [garden.core :as garden]
-   [systemic.core :as sys]
-   [blog.config :as blog.config]
-   [org-crud.update :as org-crud.update]))
+   [blog.config :as blog.config]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; db shape and build
@@ -66,15 +66,15 @@
                   m all-link-ids))))))
 
 (defn build-db []
-  (log/info "[DB]: building blog.db")
+  (log/log! :info "[DB]: building blog.db")
   (let [start-t     (t/now)
         blog-config @blog.config/*config*
         blog-db     (->> (garden/all-garden-notes-nested)
                          (reduce
                            (partial add-note-to-db blog-config)
                            initial-db))]
-    (log/info "[DB]: blog.db built"
-              (str (dates/millis-since start-t) "ms"))
+    (log/log! :info ["[DB]: blog.db built"
+                     (str (dates/millis-since start-t) "ms")])
     blog-db))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -84,18 +84,18 @@
 (sys/defsys ^:dynamic *notes-db*
   :start
   (blog.config/reload-config)
-  (log/info "[BLOG-DB]: Restarting *notes-db*")
+  (log/log! :info "[BLOG-DB]: Restarting *notes-db*")
   (atom (build-db)))
 
 
 (defn update-db-note [note]
   (let [note        (-> note :org/source-file org-crud/path->nested-item)
         blog-config @blog.config/*config*]
-    (log/info "Updating *notes-db* with note" (:org/short-path note))
+    (log/log! :info ["Updating *notes-db* with note" (:org/short-path note)])
     ;; TODO we will need to remove references first
     ;; e.g. when links are updated/deleted
     (swap! *notes-db* (fn [db]
-                        (log/info "updating db")
+                        (log/log! :info "updating db")
                         (add-note-to-db blog-config db note)))))
 
 (defn refresh-notes []
@@ -187,7 +187,7 @@
   (let [note (id->note id)]
     (if note
       (note->published-uri note)
-      (log/warn "[WARN: bad data]: could not find org note with id:" id))))
+      (log/log! :warn ["[WARN: bad data]: could not find org note with id:" id]))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; scratch pad

@@ -1,13 +1,14 @@
 (ns blog.item
   (:require
-   [taoensso.timbre :as log]
+   [taoensso.telemere :as log]
    [babashka.fs :as fs]
    [clojure.set :as set]
    [clojure.string :as string]
    [org-crud.core :as org-crud]
+   [tick.core :as t]
+
    [blog.db :as blog.db]
    [blog.config :as blog.config]
-   [tick.core :as t]
    [dates.tick :as dates]
    [components.colors :as colors]
    [util]))
@@ -372,7 +373,7 @@ and [[https://github.com/russmatney/org-crud][this other repo]]")
 
     :else
     (do
-      (log/warn "[WARN]: unknown block type, using fallback block markup")
+      (log/log! :warn "[WARN]: unknown block type, using fallback block markup")
       [:div
        (->> content (map :text)
             (map (fn [t] [:span t]))
@@ -412,7 +413,7 @@ and [[https://github.com/russmatney/org-crud][this other repo]]")
                                 seq)))
                  first)]
     (when (some-> img blog.config/image->blog-path fs/exists?)
-      (log/info "Creating img component in note" (:org/source-file item))
+      (log/log! :info ["Creating img component in note" (:org/source-file item)])
       (let [img-path (blog.config/image->uri img)
             alt      (:image/name img (str (:image/path img)))]
         [:div

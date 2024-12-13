@@ -5,7 +5,7 @@
    [db.core :as db]
    [garden.core :as garden]
    [datascript.core :as d]
-   [taoensso.timbre :as log]
+   [taoensso.telemere :as log]
    [dates.tick :as dt]))
 
 (defn prioritized-todos->es []
@@ -180,12 +180,12 @@
 
 (defn push-to-fe-db [txs]
   (when (seq txs)
-    (log/debug "Pushing txs to frontend")
+    (log/log! :debug "Pushing txs to frontend")
     (s/put! *db-stream* txs)))
 
 (defsys ^:dynamic *tx->fe-db*
   :start (do
-           (log/info "Adding :tx->fe-db db listener")
+           (log/log! :info "Adding :tx->fe-db db listener")
            (sys/start! `db/*conn*)
            (d/listen!
              db/*conn* :tx->fe-db
@@ -193,14 +193,14 @@
                (try
                  (push-to-fe-db (:tx-data tx))
                  (catch Exception e
-                   (log/warn "Error in tx->fe-db db listener" e)
+                   (log/log! :warn ["Error in tx->fe-db db listener" e])
                    tx)))))
   :stop
   (try
-    (log/debug "Removing :tx->fe-db db listener")
+    (log/log! :debug "Removing :tx->fe-db db listener")
     (d/unlisten! db/*conn* :tx->fe-db)
     (catch Exception e
-      (log/debug "err removing listener" e)
+      (log/log! :debug ["err removing listener" e])
       nil)))
 
 (defn start-tx->fe-listener []

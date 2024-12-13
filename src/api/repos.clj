@@ -1,14 +1,15 @@
 (ns api.repos
   (:require
-   [taoensso.timbre :as log]
+   [taoensso.telemere :as log]
    [tick.core :as t]
-   [ralphie.git :as ralphie.git]
+
    [dates.tick :as dt]
    [db.core :as db]
-   [git.core :as git]))
+   [git.core :as git]
+   [ralphie.git :as ralphie.git]))
 
 (defn update-repo-status [repo]
-  (log/info "fetching and checking repo status" repo)
+  (log/log! :info ["fetching and checking repo status" repo])
   ;; this likely won't finish before the next status check runs
   ;; maybe we want to wait a tick?
   (ralphie.git/fetch-via-tmux (:repo/directory repo))
@@ -23,7 +24,7 @@
                  (not needs-pull?) (assoc :repo/did-not-need-pull-at now)
                  needs-push?       (assoc :repo/needs-push-at now)
                  (not needs-push?) (assoc :repo/did-not-need-push-at now))]
-    (log/info "update" (:repo/directory repo))
+    (log/log! :info ["update" (:repo/directory repo)])
     (db/transact (merge repo update) {:verbose? true}))
   :ok)
 
