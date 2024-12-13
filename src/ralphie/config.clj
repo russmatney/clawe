@@ -4,9 +4,11 @@
    [clojure.string :as string]
    [ralphie.zsh :as zsh]))
 
-(defn osx? [] (boolean (string/includes? (zsh/expand "$OSTYPE") "darwin")))
-(comment (osx?))
+(defn osx? [& _]
+  (not (boolean (#{"Linux"} (System/getProperty "os.name")))))
 
+(comment
+  (osx?))
 
 ;; TODO this should all come via resources/*.edn and aero, maybe systemic as well
 (defn home-dir [] (fs/home))
