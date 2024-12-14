@@ -12,7 +12,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def converted-type-map
-  {ZonedDateTime t/inst})
+  {ZonedDateTime                    t/inst
+   ;; convert lazy seqs into vecs
+   (type (->> (repeat 5) (take 3))) vec})
 
 (defn convert-matching-types [map-tx]
   (->> map-tx
@@ -23,9 +25,14 @@
        (into {})))
 
 (comment
-  (convert-matching-types
-    {:some-zdt (dates.tick/now)
-     :some     "val"}))
+  (type (->> (repeat 5) (take 4000)))
+  (def res
+    (convert-matching-types
+      {:some-zdt (dates.tick/now)
+       :some     "val"
+       :lazy     (->> (repeat 5) (take 4000))
+       }))
+  (vector? (:lazy res)))
 
 (def supported-types
   (->> [6 1.0 "hi" :some-keyword true
@@ -48,7 +55,8 @@
                    true
                    (do
                      (when-not (nil? v)
-                       (log/log! :warn ["unsupported type" t v k])
+                       (log/log! {:level :warn :data {:type t :val v :key k}}
+                                 "unsupported type")
                        (when (:on-unsupported-type opts)
                          ((:on-unsupported-type opts) m)))
                      nil)))))
