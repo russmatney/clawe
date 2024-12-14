@@ -8,8 +8,8 @@
    [api.blog :as blog]
    [api.pomodoros :as pomodoros]
    [api.repos :as repos]
-   [screenshots.core :as screenshots]
-   [clips.core :as clips]
+   [api.screenshots :as screenshots]
+   [api.clips :as clips]
 
    [clawe.restart :as clawe.restart]
    [clawe.mx :as clawe.mx]

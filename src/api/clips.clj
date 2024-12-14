@@ -1,26 +1,24 @@
-(ns clips.core
+(ns api.clips
   (:require
-   [babashka.process :as proc]
    [clojure.string :as string]
    [babashka.fs :as fs]
+
    [dates.tick :as dates.tick]
-   [db.core :as db]))
+   [db.core :as db]
+   [ralphie.config :as r.config]))
 
-
-(defn local-clip-paths
-  ([] (local-clip-paths (str (fs/home) "/Dropbox/game-assets/game-clips")))
-  ([dir]
-   (if (not (fs/exists? dir))
-     (println "clip dir path does not exist!" dir)
-     (->> dir
-          fs/list-dir
-          (filter fs/directory?)
-          (#(fs/list-dirs % "*.{gif,mp4}"))
-          (map str)))))
+(defn local-clip-paths []
+  (let [dir (r.config/game-clips-dir)]
+    (if (not (fs/exists? dir))
+      (println "clip dir path does not exist!" dir)
+      (->> dir
+           fs/list-dir
+           (filter fs/directory?)
+           (#(fs/list-dirs % "*.{gif,mp4}"))
+           (map str)))))
 
 (comment
-  (local-clip-paths)
-  )
+  (local-clip-paths))
 
 
 (defn fname->clip [f]

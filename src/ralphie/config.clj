@@ -24,3 +24,9 @@
 
 (defn wallpapers-dir []
   (str (fs/home) "/Dropbox/wallpapers"))
+
+(defn screenshots-dir []
+  (str (fs/home) "/Screenshots"))
+
+(defn game-clips-dir []
+  (str (fs/home) "/Dropbox/game-assets/game-clips"))

@@ -7,22 +7,23 @@
              [taoensso.telemere :as log]
 
              [api.blog :as api.blog]
-             [api.todos :as api.todos]
+             [api.clips :as api.clips]
              [api.pomodoros :as api.pomodoros]
              [api.repos :as api.repos]
+             [api.screenshots :as api.screenshots]
+             [api.todos :as api.todos]
              [api.topbar :as api.topbar]
+             [api.wallpapers :as api.wallpapers]
+
+             [blog.db :as blog.db]
              [chess.core :as chess]
              [chess.db :as chess.db]
              [clawe.wm :as wm]
-             [clips.core :as clips]
-             [blog.db :as blog.db]
              [db.core :as db]
              [garden.db :as garden.db]
              [garden.core :as garden]
              [git.core :as git]
-             [ralphie.emacs :as emacs]
-             [screenshots.core :as screenshots]
-             [wallpapers.core :as wallpapers]]
+             [ralphie.emacs :as emacs]]
        :cljs [[uix.core :as uix :refer [$ defui]]
               ["@heroicons/react/20/solid" :as HIMini]
               ["react-icons/fa6" :as FA]
@@ -116,11 +117,11 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defhandler ingest-screenshots []
-  (screenshots/ingest-screenshots)
+  (api.screenshots/ingest-screenshots)
   :ok)
 
 (defhandler ingest-clips []
-  (clips/ingest-clips)
+  (api.clips/ingest-clips)
   :ok)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -153,11 +154,11 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defhandler ingest-wallpapers []
-  (wallpapers/ingest-wallpapers)
+  (api.wallpapers/ingest-wallpapers)
   :ok)
 
 (defhandler set-wallpaper [item]
-  (wallpapers/set-wallpaper item)
+  (api.wallpapers/set-wallpaper item)
   :ok)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

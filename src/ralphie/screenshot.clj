@@ -3,11 +3,13 @@
    [defthing.defcom :refer [defcom] :as defcom]
    [ralphie.rofi :as rofi]
    [ralphie.notify :refer [notify]]
-   [babashka.process :refer [$ check]]))
+   [ralphie.config :as r.config]
+   [babashka.process :refer [$ check]]
+   [babashka.fs :as fs]))
 
+;; TODO refactor to use shotgun + slop directly instead of scripts
 (defn select-region
   "Depends on ~/.local/bin/screenshot-region"
-  ;; TODO refactor to use shotgun + slop directly here
   []
   (-> ($ screenshot-region)
       check)
@@ -43,3 +45,18 @@
                      :on-select (fn [_arg] (full-screen))}
                     {:label     "select region"
                      :on-select (fn [_arg] (select-region))}])))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; list local filepaths
+
+(defn screenshot-file-paths []
+  (->> (r.config/screenshots-dir)
+       (fs/list-dir)
+       (map str)))
+
+(defn screenshots-sorted []
+  (->> (screenshot-file-paths)
+       ;; cheaply sorts by date
+       ;; could also rename to make this easier
+       sort
+       reverse))

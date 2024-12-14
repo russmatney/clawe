@@ -1,26 +1,11 @@
-(ns screenshots.core
+(ns api.screenshots
   (:require
-   [babashka.process :as proc]
    [clojure.string :as string]
    [babashka.fs :as fs]
+
+   [ralphie.screenshot :as r.screenshot]
    [dates.tick :as dates.tick]
    [db.core :as db]))
-
-
-(defn local-screenshot-file-paths []
-  (let [base-dir (str (fs/home) "/Screenshots/")]
-    (->
-      ^{:dir base-dir :out :string}
-      (proc/$ ls)
-      proc/check :out
-      (string/split #"\n")
-      (->>
-        (filter seq)
-        (map #(str base-dir %))
-        sort
-        ;; attempting to cheaply sort by date
-        ;; could just rename the ones in the wrong pattern to match the new ones
-        reverse))))
 
 
 (defn fname->screenshot [f]
@@ -47,7 +32,7 @@
 
 
 (defn all-screenshots []
-  (->> (local-screenshot-file-paths)
+  (->> (r.screenshot/screenshot-file-paths)
        (map fname->screenshot)
        (remove nil?)))
 

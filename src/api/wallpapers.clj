@@ -1,4 +1,4 @@
-(ns wallpapers.core
+(ns api.wallpapers
   (:require
    [babashka.fs :as fs]
 
