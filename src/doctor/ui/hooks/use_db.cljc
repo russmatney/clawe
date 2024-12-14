@@ -55,8 +55,7 @@
      (let [[result set-result] (uix/use-state nil)
            ->result            (cond
                                  conn->result (fn [] (conn->result conn))
-                                 q            (fn [] (->> (d/q q @conn) (map first))))
-           ]
+                                 q            (fn [] (->> (d/q q @conn) (map first))))]
        ;; run in use-effect?
        (uix/use-effect
          (fn []

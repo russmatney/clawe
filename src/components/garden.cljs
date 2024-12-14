@@ -73,12 +73,13 @@
     ($ tags-list all-tags)))
 
 (defn all-tags [{:keys [conn]} _item]
+  []
   #_(println "all-tags called")
   #_(println
       #_(ui.db/garden-tags conn))
-  (->>
-    (ui.db/garden-tags conn)
-    (take 3)))
+  #_(->>
+      (ui.db/garden-tags conn)
+      (take 3)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; name/line
@@ -111,13 +112,14 @@
                                     "cursor-pointer"]
                                    text-classes)}
                           link-text))
-      :popover-comp ($ full-note {:item {:org/id link-id}})}))
+      :popover-comp nil
+      #_            ($ full-note {:item {:org/id link-id}})}))
 
 (def id-regex
   "The second group is anything except a closing \\]."
   #"\[\[id:([A-Za-z0-9-]+)\]\[([^\]]+)\]\]")
 
-(defui text->comps
+(defn text->comps
   [{:keys [text] :as opts}]
   (let [matches  (re-seq id-regex text)
         to-regex (fn [s]
@@ -138,40 +140,45 @@
                         (let [splits (string/split comp (to-regex match))]
                           (if (#{1} (count splits))
                             [(first splits)] ;; return the unmatched, untouched string
-                            (->> splits
-                                 (map (fn [split]
-                                        (if (not (= split match))
-                                          split ;; return not-a-match, leave as string so further matches don't have to dig
-                                          [link-text-with-popover
-                                           (merge {:link-id link-id :link-text link-text
-                                                   :key     (str match)}
-                                                  opts)])))))))))) ;; component here
-             ) [text])
+                            (if-not (seq? splits)
+                              nil ;; no idea why this isn't iseqable sometimes
+                              ;; TODO restore popover links here
+                              (->> splits
+                                   js->clj
+                                   (map (fn [split]
+                                          (if (not (= split match))
+                                            split ;; return not-a-match, leave as string so further matches don't have to dig
+                                            ($ link-text-with-popover
+                                               (assoc opts
+                                                      :link-id link-id
+                                                      :link-text link-text
+                                                      :key     (str match))))))))))))))
+             )
+           [text])
          (remove empty?)
          (map-indexed (fn [i comp-or-str]
                         (if (string? comp-or-str)
                           ;; wrap strings in :spans (better spacing control)
-                          ($ :span
-                             {:class ["inline-flex"] :key i}
+                          ($ :span {:class ["inline-flex"] :key i}
                              comp-or-str)
                           ($ comp-or-str {:key i}))))
          (into []))))
 
 (comment
   (text->comps
-    "[[id:3a89063f-ef16-4156-9858-fc941b448057][sudo]] and proper [[id:3a89063f-ef16-4156-9858-fc941b448057][vim]] config?")
+    {:text "[[id:3a89063f-ef16-4156-9858-fc941b448057][sudo]] and proper [[id:3a89063f-ef16-4156-9858-fc941b448057][vim]] config?"}
+    )
   (re-pattern "([hi])"))
 
 (defui text-with-links
   [{:keys [text] :as opts}]
   (when (seq text)
     ($ :span
-       {:class
-        (concat
-          ["inline-flex" "space-x-1"]
-          (:text-classes opts))}
+       {:class (concat ["inline-flex" "space-x-1"] (:text-classes opts))}
+
        (for [[i comp] (->> (assoc opts :text text) text->comps (map-indexed vector))]
-         ($ comp {:key i})))))
+         ($ :span {:key i}
+            comp)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; body
@@ -179,7 +186,8 @@
 
 (defui org-body-text [{:keys [item] :as opts}]
   (when (-> item :org/body seq)
-    (let [;; TODO what's this calc doing?
+    (let [
+          ;; TODO what's this calc doing?
           _lines (->> item :org/body
                       (map-indexed vector)
                       (reduce
@@ -226,8 +234,9 @@
               (when (and (not (seq body)) (seq body-string))
                 ($ :pre
                    ($ text-with-links
-                      (assoc opts :text-classes ["flex" "flex-col"])
-                      body-string)))))
+                      (assoc opts
+                             :text-classes ["flex" "flex-col"]
+                             :text body-string))))))
 
          (when show-raw
            ($ components.debug/raw-metadata
@@ -271,11 +280,11 @@
                               (assoc opts :text-classes [(when (#{:status/done :status/cancelled :status/skipped}
                                                                  (:org/status item)) "line-through")
                                                          (when (#{:status/done :status/cancelled :status/skipped}
-                                                                 (:org/status item)) "text-slate-500")])
-                              (:org/name-string item)))))
+                                                                 (:org/status item)) "text-slate-500")]
+                                     :text (:org/name-string item))))))
 
                    ;; recurse
-                   ($ org-body (merge {:nested? true :item item} opts))))))))))
+                   ($ org-body (assoc opts :nested? true :item item))))))))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

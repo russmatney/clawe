@@ -3,12 +3,15 @@
    [uix.core :as uix :refer [defui $]]
 
    [components.screenshot :as screenshot]
+   [doctor.ui.hooks.use-db :as hooks.use-db]
    [doctor.ui.db :as ui.db]))
 
-(defui page [{:keys [conn]}]
-  (let [items (ui.db/events conn {:n           30
-                                  :event-types #{:type/screenshot
-                                                 :type/clip}})]
+(defui page [_opts]
+  (let [items
+        (hooks.use-db/use-query
+          {:conn->result #(ui.db/events % {:n           30
+                                           :event-types #{:type/screenshot
+                                                          :type/clip}})})]
     ($ :div
        {:class ["flex" "flex-row" "flex-wrap"
                 "overflow-hidden"
