@@ -7,8 +7,8 @@
    [components.debug :as debug]
    [components.actions :as actions]
    [doctor.ui.handlers :as handlers]
-   [hooks.workspaces :as hooks.workspaces]
-   [hooks.topbar :as hooks.topbar]))
+   [doctor.ui.hooks.use-workspaces :as hooks.use-workspaces]
+   [doctor.ui.hooks.use-topbar :as hooks.use-topbar]))
 
 (defn dir [s]
   (-> s
@@ -115,7 +115,7 @@
                   {:label "RAW" :data wsp}))])))))
 
 (defui topbar-metadata []
-  (let [metadata (hooks.topbar/use-topbar-metadata)]
+  (let [metadata (hooks.use-topbar/use-topbar-metadata)]
     ($ :span
        {:class ["text-slate-200"]}
        ($ debug/raw-metadata
@@ -178,7 +178,7 @@
             (dir directory))))))
 
 (defui widget [_opts]
-  (let [{:keys [selected-workspaces active-workspaces]} (hooks.workspaces/use-workspaces)]
+  (let [{:keys [selected-workspaces active-workspaces]} (hooks.use-workspaces/use-workspaces)]
     ($ :div
        {:class ["p-4"]}
        ($ :div

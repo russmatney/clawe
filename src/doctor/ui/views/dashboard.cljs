@@ -23,7 +23,7 @@
    [doctor.ui.views.git-status :as git-status]
    [doctor.ui.views.chess-games :as chess-games]
    [doctor.ui.views.workspaces :as workspaces]
-   [hooks.workspaces :as hooks.workspaces]
+   [doctor.ui.hooks.use-workspaces :as hooks.use-workspaces]
    [doctor.ui.handlers :as handlers]
    [doctor.ui.localstorage :as localstorage]))
 
@@ -155,7 +155,7 @@
            ($ widget-bar {:comp    workspaces/widget
                           :label   "workspaces"
                           ;; :icon    octicons/clippy16
-                          :actions (hooks.workspaces/actions)})
+                          :actions (hooks.use-workspaces/actions)})
 
            ($ widget-bar {:comp    chess-games/widget
                           :label   "chess games"

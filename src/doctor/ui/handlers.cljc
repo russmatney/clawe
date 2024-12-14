@@ -31,7 +31,7 @@
               [components.icons :as components.icons]
               [components.colors :as colors]
               [doctor.ui.db :as ui.db]
-              [hooks.workspaces :as hooks.workspaces]])))
+              [doctor.ui.hooks.use-workspaces :as hooks.use-workspaces]])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; db items
@@ -573,17 +573,17 @@
    (defn workspace->actions [wsp]
      [{:action/label    "Focus"
        ;; :action/icon     octicons/pin16
-       :action/on-click #(hooks.workspaces/focus-workspace wsp)}
+       :action/on-click #(hooks.use-workspaces/focus-workspace wsp)}
       {:action/label "Close"
        ;; :action/icon  octicons/trash
        :action/on-click
-       #(hooks.workspaces/close-workspaces wsp)}]))
+       #(hooks.use-workspaces/close-workspaces wsp)}]))
 
 #?(:cljs
    (defn client->actions [client]
      [{:action/label    "focus"
        :action/icon     nil
-       :action/on-click #(hooks.workspaces/focus-client client)}]))
+       :action/on-click #(hooks.use-workspaces/focus-client client)}]))
 
 #?(:cljs
    (defn ->actions

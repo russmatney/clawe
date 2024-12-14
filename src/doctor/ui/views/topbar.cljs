@@ -6,17 +6,15 @@
    [wing.core :as w]
    ["@heroicons/react/20/solid" :as HIMini]
 
-   [components.icons :as icons]
-   [components.charts :as charts]
    [components.actions :as components.actions]
+   ;; [components.charts :as charts]
    [components.colors :as colors]
-   [components.format :as format]
+   ;; [components.format :as format]
+   [components.icons :as icons]
 
-   [hooks.topbar :as hooks.topbar]
-   [hooks.workspaces :as hooks.workspaces]
-
+   [doctor.ui.hooks.use-topbar :as hooks.use-topbar]
+   [doctor.ui.hooks.use-workspaces :as hooks.use-workspaces]
    [doctor.ui.handlers :as handlers]
-   [doctor.ui.hooks.use-topbar :as use-topbar]
    [doctor.ui.views.pomodoro :as pomodoro]
    #_[doctor.ui.views.git-status :as git-status]
    [doctor.ui.views.focus :as focus]))
@@ -124,7 +122,7 @@
 
 (defn toggle-background-mode [{:keys [topbar/background-mode] :as _metadata}]
   (fn [_]
-    (hooks.topbar/set-background-mode
+    (hooks.use-topbar/set-background-mode
       (if (#{:bg/dark} background-mode)
         :bg/light :bg/dark))))
 
@@ -219,11 +217,11 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defui widget [opts]
-  (let [metadata                         (hooks.topbar/use-topbar-metadata)
+  (let [metadata                         (hooks.use-topbar/use-topbar-metadata)
         {:keys [topbar/background-mode]} metadata
         {:keys [active-workspaces
-                selected-workspaces]}    (hooks.workspaces/use-workspaces)
-        topbar-state                     (use-topbar/use-topbar-state)]
+                selected-workspaces]}    (hooks.use-workspaces/use-workspaces)
+        topbar-state                     (hooks.use-topbar/use-topbar-state)]
     ($ :div
        {:class ["h-screen" "overflow-hidden" "text-city-pink-200"
                 (when (#{:bg/dark} background-mode) "bg-gray-700")

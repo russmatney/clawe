@@ -1,4 +1,4 @@
-(ns hooks.workspaces
+(ns doctor.ui.hooks.use-workspaces
   (:require
    [plasma.core :refer [defhandler defstream]]
    [taoensso.telemere :as t]

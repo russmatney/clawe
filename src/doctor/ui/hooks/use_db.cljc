@@ -1,4 +1,4 @@
-(ns hooks.db
+(ns doctor.ui.hooks.use-db
   (:require
    [plasma.core :refer [defhandler defstream]]
    [taoensso.telemere :as t]

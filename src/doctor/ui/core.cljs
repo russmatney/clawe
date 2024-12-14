@@ -29,7 +29,7 @@
    [pages.journal :as pages.journal]
 
    [db.schema :refer [schema]]
-   [hooks.db :as hooks.db]
+   [doctor.ui.hooks.use-db :as hooks.use-db]
    [doctor.ui.hooks.use-reaction :refer [use-reaction]]
 
    [doctor.ui.views.blog :as views.blog]
@@ -173,7 +173,7 @@
 
            ;; not 100% about this datascript bootstrapping...
            conn     (use-reaction conn-ratom)
-           _whateva (hooks.db/use-db {:conn conn})]
+           _whateva (hooks.use-db/use-db {:conn conn})]
        ($ view {:route route :conn conn}))))
 
 (defonce root-el
