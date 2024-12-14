@@ -22,7 +22,6 @@
              [db.core :as db]
              [garden.db :as garden.db]
              [garden.core :as garden]
-             [git.core :as git]
              [ralphie.emacs :as emacs]]
        :cljs [[uix.core :as uix :refer [$ defui]]
               ["@heroicons/react/20/solid" :as HIMini]
@@ -141,12 +140,12 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defhandler ingest-clawe-repos []
-  (git/ingest-clawe-repos)
+  (api.repos/ingest-clawe-repos)
   :ok)
 
 (defhandler ingest-commits-for-repo [repo]
   (log/log! :info ["ingesting commits for repo" repo])
-  (git/ingest-commits-for-repo repo)
+  (api.repos/ingest-commits-for-repo repo)
   :ok)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
