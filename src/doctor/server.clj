@@ -212,7 +212,7 @@
   :start
   (wallpapers/ensure-wallpaper)
   (let [port (:server/port doctor.config/*config*)]
-    (log/log! :info ["Starting *server* on port" port])
+    (log/log! {:data {:port port}} "Starting *server*")
     (let [server (undertow/run-undertow
                    app {:port             port
                         :session-manager? false
@@ -222,8 +222,7 @@
       ;; be sure to return the server as the system
       server))
   :stop
-  (println "stopping *server*")
-  (log/log! :info "*server* stopping")
+  (log/log! "*server* stopping")
   (.stop *server*))
 
 

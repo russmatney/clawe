@@ -1,10 +1,11 @@
 (ns ralphie.notify
   (:require
    [babashka.process :as process :refer [$]]
-   [ralphie.config :as config]
-   [ralphie.cache :as cache]
    [clojure.edn :as edn]
-   [clojure.string :as string]))
+   [clojure.string :as string]
+
+   [ralphie.cache :as cache]
+   [ralphie.config :as config]))
 
 ;; id/replaces-process cache ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

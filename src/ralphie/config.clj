@@ -1,20 +1,18 @@
 (ns ralphie.config
   (:require
-   [babashka.fs :as fs]
-   [clojure.string :as string]
-   [ralphie.zsh :as zsh]))
+   [babashka.fs :as fs]))
 
 (defn osx? [& _]
-  (not (boolean (#{"Linux"} (System/getProperty "os.name")))))
+  (boolean (#{"Mac OS X"} (System/getProperty "os.name"))))
 
-(comment
-  (osx?))
+(comment (osx?))
 
-;; TODO this should all come via resources/*.edn and aero, maybe systemic as well
 (defn home-dir [] (fs/home))
 
+;; TODO cut off with env var
 (defn project-dir [] (str (fs/home) "/russmatney/clawe"))
 
+;; TODO cut off with env var
 (defn github-username [] "russmatney")
 
 (defn monitor []
