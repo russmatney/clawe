@@ -63,7 +63,7 @@
               "text-white" "w-full"
               "flex flex-col"]}
      (when (seq workspaces)
-       (for [wsp workspaces]
+       (for [[i wsp] (->> workspaces (map-indexed vector))]
          (let [{:keys [ ;; TODO restore these git features
                        git/needs-push?
                        git/dirty?
@@ -73,46 +73,46 @@
                        workspace/directory
                        workspace/title
                        workspace/clients]} wsp]
-           [$ :div
-            {:key   title
-             :class ["flex flex-col"]}
-            ($ :div
-               {:class ["flex flex-row justify-between items-center"]}
-               ($ :span {:class ["text-xl font-nes"]}
-                  (:workspace/title wsp))
-
-               ($ :span {:class ["ml-auto"]}
-                  (str (when needs-push? "#needs-push")
-                       (when needs-pull? "#needs-pull")
-                       (when dirty? "#dirty")))
-
-               ($ :span {:class ["ml-auto"]}
-                  ($ actions/actions-list {:actions (handlers/->actions wsp)})))
-
-            ($ :div
-               {:class ["mb-4" "font-mono"]}
-               (dir directory))
-
-            (when session
-              ($ debug/raw-metadata
-                 {:label "Tmux Metadata" :data session}))
-
-            ($ :div
-               {:class ["flex flex-row justify-between items-center" "py-2"]}
-               ($ :span {:class ["text-lg font-mono"]}
-                  (str (count clients) " client(s)")))
-
-            (when (seq clients)
+           ($ :div
+              {:key   i
+               :class ["flex flex-col"]}
               ($ :div
-                 {:class ["flex flex-row flex-wrap" "items-center"]}
-                 (for [client clients]
-                   ($ client-detail {:key    (:client/key client (:client/window-title client))
-                                     :client client}))))
+                 {:class ["flex flex-row justify-between items-center"]}
+                 ($ :span {:class ["text-xl font-nes"]}
+                    (:workspace/title wsp))
 
-            ($ :div
-               {:class ["ml-auto"]}
-               ($ debug/raw-metadata
-                  {:label "RAW" :data wsp}))])))))
+                 ($ :span {:class ["ml-auto"]}
+                    (str (when needs-push? "#needs-push")
+                         (when needs-pull? "#needs-pull")
+                         (when dirty? "#dirty")))
+
+                 ($ :span {:class ["ml-auto"]}
+                    ($ actions/actions-list {:actions (handlers/->actions wsp)})))
+
+              ($ :div
+                 {:class ["mb-4" "font-mono"]}
+                 (dir directory))
+
+              (when session
+                ($ debug/raw-metadata
+                   {:label "Tmux Metadata" :data session}))
+
+              ($ :div
+                 {:class ["flex flex-row justify-between items-center" "py-2"]}
+                 ($ :span {:class ["text-lg font-mono"]}
+                    (str (count clients) " client(s)")))
+
+              (when (seq clients)
+                ($ :div
+                   {:class ["flex flex-row flex-wrap" "items-center"]}
+                   (for [client clients]
+                     ($ client-detail {:key    (:client/key client (:client/window-title client))
+                                       :client client}))))
+
+              ($ :div
+                 {:class ["ml-auto"]}
+                 ($ debug/raw-metadata
+                    {:label "RAW" :data wsp}))))))))
 
 (defui topbar-metadata []
   (let [metadata (hooks.use-topbar/use-topbar-metadata)]
@@ -156,9 +156,9 @@
        (when (seq clients)
          ($ :ul
             {:class ["truncate"]}
-            (for [c (->> clients)]
+            (for [[i c] (->> clients (map-indexed vector))]
               ($ :li
-                 {:key   (:client/id c)
+                 {:key   i
                   :class ["flex flex-row" "items-center"]}
                  (str (:client/window-title c) " | "
                       (:client/app-name c))

@@ -123,7 +123,9 @@
                                            (fn [current] (min max-i (inc current))))
 
         {:keys [fen move best eval eval-diff mate judgment move-number]}
-        (nth all-game-states state-cursor nil)
+        nil
+        ;; TODO restore this!
+        #_ (nth all-game-states state-cursor nil)
 
         {:lichess.game/keys [white-player]} game
         ;; wheel-container-ref                 (uix/ref)
@@ -264,7 +266,9 @@
   ($ :div
      {:class ["grid" "grid-cols-4" "gap-2" "gap-x-8"]}
      (for [[i game-state] (->> game-states (map-indexed vector))]
-       ($ display-game-state {:key i :game-state game-state}))))
+       ($ display-game-state {:key             i :i i
+                              :all-game-states game-states
+                              :game            game-state}))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; detail-popover
@@ -279,65 +283,65 @@
         [show-all-mistakes set-show-all-mistakes] (uix/use-state nil)
         all-game-states                           (build-game-states game)]
 
-    [$ :div
-     {:class ["bg-yo-blue-500" "p-3"
-              "text-city-blue-200"
-              "flex" "flex-col"]}
+    ($ :div
+       {:class ["bg-yo-blue-500" "p-3"
+                "text-city-blue-200"
+                "flex" "flex-col"]}
 
-     ($ :div
-        {:class ["flex" "flex-row"]}
-        ($ :div
-           {:class ["flex" "flex-row"
-                    "items-center"
-                    "gap-x-3"
-                    "font-mono"]}
-           ($ :span
-              {:class ["capitalize"]}
-              perf)
+       ($ :div
+          {:class ["flex" "flex-row"]}
+          ($ :div
+             {:class ["flex" "flex-row"
+                      "items-center"
+                      "gap-x-3"
+                      "font-mono"]}
+             ($ :span
+                {:class ["capitalize"]}
+                perf)
 
-           ($ player-and-rating {:player white-player :rating-diff white-rating-diff})
-           ($ :span "vs")
-           ($ player-and-rating {:player black-player :rating-diff black-rating-diff}))
-        ($ :div
-           {:class ["ml-auto"]}
+             ($ player-and-rating {:player white-player :rating-diff white-rating-diff})
+             ($ :span "vs")
+             ($ player-and-rating {:player black-player :rating-diff black-rating-diff}))
+          ($ :div
+             {:class ["ml-auto"]}
 
-           ($ :div
-              ($ :a
-                 {:href   url
-                  :target "_blank"
-                  :class  ["hover:city-pink-400"
-                           "city-pink-200"
-                           "cursor-pointer"]}
-                 "View on lichess"))))
+             ($ :div
+                ($ :a
+                   {:href   url
+                    :target "_blank"
+                    :class  ["hover:city-pink-400"
+                             "city-pink-200"
+                             "cursor-pointer"]}
+                   "View on lichess"))))
 
-     ($ :div
-        {:class ["text-xl"]}
-        opening-name)
+       ($ :div
+          {:class ["text-xl"]}
+          opening-name)
 
-     ($ :div
-        {:class []}
-        (str (/ (count (string/split moves #" ")) 2) " moves"))
+       ($ :div
+          {:class []}
+          (str (/ (count (string/split moves #" ")) 2) " moves"))
 
-     ;; highlights
-     ($ display-game-states {:game-states (default-game-state-filter all-game-states)})
+       ;; highlights
+       ($ display-game-states {:game-states (default-game-state-filter all-game-states)})
 
-     ;; all mistakes
-     (when (seq analysis)
-       ($ :span {:on-click #(set-show-all-mistakes not)
-                 :class    ["text-city-pink-200"
-                            "hover:text-city-pink-400"
-                            "cursor-pointer"]}
-          "Toggle all mistakes"))
+       ;; all mistakes
+       (when (seq analysis)
+         ($ :span {:on-click #(set-show-all-mistakes not)
+                   :class    ["text-city-pink-200"
+                              "hover:text-city-pink-400"
+                              "cursor-pointer"]}
+            "Toggle all mistakes"))
 
-     (when (and (seq analysis) show-all-mistakes)
-       ($ display-game-states {:game-states (->> all-game-states
-                                                 (filter :judgment)
-                                                 (sort-by (comp js/Math.abs :eval-diff) >)
-                                                 (sort-by (comp not :mate)))}))
+       (when (and (seq analysis) show-all-mistakes)
+         ($ display-game-states {:game-states (->> all-game-states
+                                                   (filter :judgment)
+                                                   (sort-by (comp js/Math.abs :eval-diff) >)
+                                                   (sort-by (comp not :mate)))}))
 
-     ($ :div
-        {:class ["pt-4"]}
-        ($ components.debug/raw-metadata {:data game}))]))
+       ($ :div
+          {:class ["pt-4"]}
+          ($ components.debug/raw-metadata {:data game})))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -346,7 +350,6 @@
 
 (defui cluster-single [opts]
   ($ :div
-     {:class []}
      ($ floating/popover
         {:offset 5
          :click  true
@@ -362,7 +365,7 @@
     ($ :div
        {:class ["flex" "flex-col"]}
        (for [game games]
-         [cluster-single
-          (assoc opts
-                 :game game
-                 :key (:lichess.game/id game))]))))
+         ($ cluster-single
+            (assoc opts
+                   :game game
+                   :key (:lichess.game/id game)))))))
