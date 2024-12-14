@@ -10,7 +10,7 @@
 (defn garden-dir-path []
   (fs/file (str (fs/home) "/todo")))
 
-(def should-sync-match-strs
+(def sync-matches
   {:daily  #"/todo/daily/"
    :garden #"/todo/garden/"
    :basic  #"/todo/icebox.org"})
@@ -18,7 +18,7 @@
 (defn should-sync-file? [file]
   (let [path (str file)]
     (and (#{"org"} (fs/extension file))
-         (->> should-sync-match-strs
+         (->> sync-matches
               (filter (fn [[k reg]]
                         (when (seq (re-seq reg path))
                           (log/log! :debug ["File matches pattern" k])

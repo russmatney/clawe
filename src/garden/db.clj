@@ -247,7 +247,14 @@
 
 (declare fetch-notes-for-source-file)
 
-(defn sync-and-purge-for-path [garden-path]
+(defn sync-and-purge-for-path
+  "A big important function that deserves a better docstring.
+
+  Used by the garden watcher after ~/todo/**/*.org file saves.
+
+  Does several transactions and then some retractions to remove deleted things/newly created ids.
+  "
+  [garden-path]
   (let [parsed-notes-to-sync
         (->> [garden-path]
              garden.core/paths->flattened-garden-notes)
@@ -272,10 +279,13 @@
           notes-to-purge
           (->> all-db-notes (remove ->should-keep?))]
       (when (seq notes-to-purge)
-        (log/log! :info
-                  ["Purging" (count notes-to-purge) "/" (count all-db-notes) "notes from the db\n"
-                   "on path" garden-path "\n"
-                   (->> notes-to-purge (map (some-fn :org/name-string :org/name identity)))]))
+        (log/log! {:data {:notes          (->> notes-to-purge (take 5) (concat ["..."])
+                                               (map (some-fn :org/name-string :org/name identity))
+                                               (string/join " | "))
+                          :path           garden-path
+                          :purge-count    (count notes-to-purge)
+                          :all-note-count (count all-db-notes)}}
+                  ["Purging notes from the db\n"]))
       (->> notes-to-purge
            (map :db/id)
            (remove nil?)

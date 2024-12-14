@@ -30,10 +30,10 @@
         (if datoms
           (-> datoms (d/conn-from-datoms schema) d/db)
           (do
-            (log/log! :info "No datoms found in db file, creating empty db")
+            (log/log! "No datoms found in db file, creating empty db")
             (d/empty-db schema))))
       (do
-        (log/log! :info "No db file found creating empty one")
+        (log/log! "No db file found creating empty one")
         (fs/create-dirs (fs/parent db-file))
         (fs/create-file db-file)
         (d/empty-db schema)))))
@@ -211,7 +211,7 @@
                                     tx)))
                     (into []))]
      (when verbose?
-       (log/log! :debug ["Transacting records" (count txs)]))
+       (log/log! {:data {:count (count txs)}} "Transacting records"))
      (try
        (d/transact! *conn* txs)
        (catch Exception e
@@ -305,7 +305,7 @@
   ;; no args supported yet - but this is here to be tested from the cli
   ([] (query-db nil))
   ([args]
-   (log/log! :info ["db.core/query-db called" args])
+   (log/log! {:data {:args args}} "db.core/query-db called")
    (doall
      (->>
        (query '[:find (pull ?e [*])

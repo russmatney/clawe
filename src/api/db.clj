@@ -163,9 +163,7 @@
                               :org/short-path])
     (filter (comp #{:type/note} :doctor/type))
     #_(sort-by :file/last-modified dt/sort-chrono)
-    (take 5)
-    )
-  )
+    (take 5)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; db stream and frontend data push
@@ -180,12 +178,12 @@
 
 (defn push-to-fe-db [txs]
   (when (seq txs)
-    (log/log! :debug "Pushing txs to frontend")
+    (log/log! {:data {:count (count txs)}} "Pushing txs to frontend")
     (s/put! *db-stream* txs)))
 
 (defsys ^:dynamic *tx->fe-db*
   :start (do
-           (log/log! :info "Adding :tx->fe-db db listener")
+           (log/log! "Adding :tx->fe-db db listener")
            (sys/start! `db/*conn*)
            (d/listen!
              db/*conn* :tx->fe-db
@@ -197,10 +195,10 @@
                    tx)))))
   :stop
   (try
-    (log/log! :debug "Removing :tx->fe-db db listener")
+    (log/log! "Removing :tx->fe-db db listener")
     (d/unlisten! db/*conn* :tx->fe-db)
     (catch Exception e
-      (log/log! :debug ["err removing listener" e])
+      (log/log! ["err removing listener" e])
       nil)))
 
 (defn start-tx->fe-listener []
