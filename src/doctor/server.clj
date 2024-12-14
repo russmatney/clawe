@@ -210,7 +210,6 @@
    db/*conn*
    *plasma-server*]
   :start
-  (wallpapers/ensure-wallpaper)
   (let [port (:server/port doctor.config/*config*)]
     (log/log! {:data {:port port}} "Starting *server*")
     (let [server (undertow/run-undertow

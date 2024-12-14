@@ -1,38 +1,16 @@
 (ns wallpapers.core
   (:require
    [babashka.fs :as fs]
-   [babashka.process :as process]
-   [clojure.string :as string]
 
-   [defthing.defcom :refer [defcom]]
-   [ralphie.zsh :as zsh]
    [ralphie.notify :as notify]
-   [ralphie.config :as r.config]
    [ralphie.wallpaper :as r.wallpaper]
    [db.core :as db]))
 
 
-(defn wp-dir->paths [root]
-  (-> (zsh/expand root)
-      (string/split #" /")
-      (->> (map (fn [p]
-                  (if (string/starts-with? p "/")
-                    p
-                    (str "/" p)))))))
-
-(defn local-wallpapers-file-paths []
-  (->
-    (wp-dir->paths (str (fs/home) "/Dropbox/wallpapers/**/*"))
-    (concat (wp-dir->paths (str (fs/home) "/Dropbox/wallpapers/*")))
-    (->> (filter #(re-seq #"\.(jpeg|jpg|png)$" %)))))
-
-(comment
-  (local-wallpapers-file-paths))
-
 (defn build-db-wallpapers
   "Baked in assumption that all wallpapers are one directory down."
   []
-  (let [paths (local-wallpapers-file-paths)]
+  (let [paths (r.wallpaper/wallpaper-file-paths)]
     (->>
       paths
       (map (fn [f]
@@ -112,22 +90,3 @@
   (println "wallpapers-reload hit!")
   (when-let [wp (last-used-wallpaper)]
     (set-wallpaper {:skip-count true} wp)))
-
-(defcom reload-last-wallpaper (fn [_] (reload)))
-
-
-(defn uptime []
-  (-> ^{:out :string} (process/$ uptime -p) (process/check) :out
-      string/trim-newline
-      (string/replace "up " "")
-      ((fn [s]
-         (let [d    (->> (re-seq #"(\d+)" s) first first Integer/parseInt)
-               unit (-> s (string/split #" ") second)]
-           {:d d :unit unit})))))
-
-(defn ensure-wallpaper []
-  (when-not (r.config/osx?)
-    (let [{:keys [d unit]} (uptime)]
-      (cond (and
-              (#{"minutes" "minute"} unit)
-              (< d 5)) (reload)))))
