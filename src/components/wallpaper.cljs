@@ -32,12 +32,12 @@
        ($ :div {:class ["text-lg"]} id)
        (when last-time-set
          ($ :div {:class ["text-lg"]}
-            (t/instant (t/new-duration last-time-set :millis))))
+            (str (t/instant (t/new-duration last-time-set :millis)))))
 
        (when used-count
          ($ :div {:class ["text-lg"]} used-count))
 
-       ($ components.debug/raw-metadata {:label "Raw"} item)
+       ($ components.debug/raw-metadata {:label "Raw" :data item})
 
        ($ :div.my-3
           (for [ax (actions/->actions item)]

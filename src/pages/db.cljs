@@ -16,7 +16,7 @@
     (->> (d/q '[:find (pull ?e [*])
                 :where
                 [?e :doctor/type _]]
-              conn)
+              @conn)
          (map first))))
 
 (comment

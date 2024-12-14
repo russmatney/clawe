@@ -159,4 +159,4 @@
       :popover-comp
       ($ :div
          {:class ["bg-slate-800"]}
-         [actions-list opts])}))
+         ($ actions-list opts))}))

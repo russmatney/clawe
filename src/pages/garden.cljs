@@ -19,7 +19,7 @@
             "Loading...................."))
 
        (when selected
-         ($ components.garden/selected-node selected))
+         ($ components.garden/selected-node {:item selected}))
 
        ($ :div
           {:class ["flex" "flex-row" "flex-wrap"
@@ -28,5 +28,5 @@
             ($ components.garden/garden-node
                {:key          i
                 :on-select    (fn [_] (set-selected it))
-                :is-selected? (= selected it)}
-               (assoc it :index i)))))))
+                :is-selected? (= selected it)
+                :item         (assoc it :index i)}))))))

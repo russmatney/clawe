@@ -284,15 +284,16 @@
 
 (defui source-file-link
   "A 'link' source-file that fires open-in-emacs on click."
-  [{:org/keys [source-file short-path] :as item}]
-  ($ components.actions/actions-popup
-     {:actions (handlers/garden-file->actions item)
-      :comp
-      ($ :span
-         {:class ["font-mono" "text-xl" "text-city-green-200" "p-2"
-                  "hover:text-city-pink-400"
-                  "cursor-pointer" "whitespace-nowrap"]}
-         (or short-path source-file))}))
+  [{:keys [item]}]
+  (let [{:org/keys [source-file short-path]} item]
+    ($ components.actions/actions-popup
+       {:actions (handlers/garden-file->actions item)
+        :comp
+        ($ :span
+           {:class ["font-mono" "text-xl" "text-city-green-200" "p-2"
+                    "hover:text-city-pink-400"
+                    "cursor-pointer" "whitespace-nowrap"]}
+           (or short-path source-file))})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -316,24 +317,21 @@
        (when created-at
          ($ :div
             {:class ["font-mono"]}
-            created-at))
+            (str created-at)))
 
-       ($ source-file-link item))))
+       ($ source-file-link {:item item}))))
 
-(defui selected-node
-  [{:org.prop/keys [title]
-    :org/keys      [name]
-    :as            item}]
+(defui selected-node [{:keys [item]}]
+  (let [{:org.prop/keys [title] :org/keys [name]} item]
+    ($ :div
+       {:class ["flex" "flex-col" "p-2"]}
+       ($ :span
+          {:class ["font-nes" "text-xl" "text-city-green-200" "p-2"]}
+          (or name title))
 
-  ($ :div
-     {:class ["flex" "flex-col" "p-2"]}
-     ($ :span
-        {:class ["font-nes" "text-xl" "text-city-green-200" "p-2"]}
-        (or name title))
+       ($ source-file-link {:item item})
 
-     ($ source-file-link item)
-
-     ($ org-body item)))
+       ($ org-body {:item item}))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Org file
@@ -350,7 +348,7 @@
        ($ :div
           {:class ["flex" "flex-row" "justify-between" "items-start" "mb-8"]}
 
-          ($ source-file-link item)
+          ($ source-file-link {:item item})
 
           ($ :div {:class ["text-xl" "whitespace-nowrap"]}
              name)
