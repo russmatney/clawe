@@ -140,23 +140,12 @@
              (shelll {:dir (str (home-dir) "/russmatney/clawe")}
                      "npx shadow-cljs watch doctor-app")}
 
-  clawe-be          {:doc "Run the doctor backend."
-                     :task
-                     (run '-clawe-be {:parallel true})}
-  -clawe-be         {:depends [doctor-be]}
-  clawe-fe          {:doc "Run the doctor frontend via shadowcljs."
-                     :task
-                     (shelll {:dir (str (home-dir) "/russmatney/clawe")}
-                             "npx shadow-cljs watch doctor-app")}
-  clawe-full-stack  (run '-clawe-full-stack {:parallel true})
-  -clawe-full-stack {:depends [clawe-be clawe-fe]}
-
   ;; TODO dry up doctor-tauri with a more fully-featured api support (like quickblog)
   topbar    {:doc  "Run the doctor topbar via tauri. Consumed from systemd service."
              :task (run-doctor-tauri-app "topbar")}
-  dashboard {:doc  "Run the doctor focus window via tauri."
+  dashboard {:doc  "Run the doctor dashboard via tauri."
              :task (run-doctor-tauri-app {:decorations true} "dashboard")}
-  focus     {:doc  "Run the doctor focus window via tauri."
+  focus     {:doc  "Run the doctor focus via tauri."
              :task (run-doctor-tauri-app {:decorations true} "focus")}
 
   restart-doctor (do
@@ -200,14 +189,14 @@
                             (shelll "launchctl load /Users/russ/Library/LaunchAgents/com.clawe.topbar.plist")))
   doctor-restart-topbar (run 'restart-doctor-topbar)
 
-  restart-doctor-focus (do
-                         (when-not (is-mac?)
-                           (shell "systemctl --user restart doctor-focus"))
+  restart-doctor-dashboard (do
+                             (when-not (is-mac?)
+                               (shell "systemctl --user restart doctor-dashboard"))
 
-                         (when (is-mac?)
-                           (shelll "launchctl unload /Users/russ/Library/LaunchAgents/com.clawe.dashboard.plist")
-                           (shelll "launchctl load /Users/russ/Library/LaunchAgents/com.clawe.dashboard.plist")))
-  doctor-restart-focus (run 'restart-doctor-focus)
+                             (when (is-mac?)
+                               (shelll "launchctl unload /Users/russ/Library/LaunchAgents/com.clawe.dashboard.plist")
+                               (shelll "launchctl load /Users/russ/Library/LaunchAgents/com.clawe.dashboard.plist")))
+  doctor-restart-dashboard (run 'restart-doctor-dashboard)
 
   stop-doctor           (if (is-mac?)
                           (do
@@ -215,7 +204,7 @@
                             (shelll "launchctl unload /Users/russ/Library/LaunchAgents/com.clawe.doctor-fe.plist")
                             (shelll "launchctl unload /Users/russ/Library/LaunchAgents/com.clawe.topbar.plist")
                             (shelll "launchctl unload /Users/russ/Library/LaunchAgents/com.clawe.dashboard.plist"))
-                          (shelll "systemctl --user stop doctor-be doctor-fe doctor-topbar"))
+                          (shelll "systemctl --user stop doctor-be doctor-fe doctor-topbar doctor-dashboard"))
   doctor-stop           {:depends [stop-doctor]}
   stop-doctor-be        (if (is-mac?)
                           (shelll "launchctl unload /Users/russ/Library/LaunchAgents/com.clawe.doctor-be.plist")
@@ -231,39 +220,45 @@
   doctor-stop-topbar    {:depends [stop-doctor-topbar]}
   stop-doctor-dashboard (if (is-mac?)
                           (shelll "launchctl unload /Users/russ/Library/LaunchAgents/com.clawe.dashboard.plist")
-                          nil
-                          #_(shelll "systemctl --user stop doctor-dashboard"))
+                          (shelll "systemctl --user stop doctor-dashboard"))
   doctor-stop-dashboard {:depends [stop-doctor-dashboard]}
 
-  log-doctor         {:task (do
-                              (if (is-mac?)
-                                (shelll "tail -f /Users/russ/.log/clawe/doctor-be.out.log /Users/russ/.log/clawe/doctor-fe.out.log")
-                                (shelll "journalctl --user -n 100 -f -u doctor-be -u doctor-fe -u doctor-topbar --all --no-hostname")))
-                      :doc  "Tail the doctor logs. FE, BE, and topbar via journalctl"}
-  tail-doctor        (run 'log-doctor)
-  doctor-log         (run 'log-doctor)
-  doctor-tail        (run 'log-doctor)
-  log-doctor-fe      {:task (do
-                              (if (is-mac?)
-                                (shelll "tail -f /Users/russ/.log/clawe/doctor-fe.out.log -n 500")
-                                (shelll "journalctl --user -n 100 -f -u doctor-fe --all --no-hostname")))}
-  tail-doctor-fe     (run 'log-doctor-fe)
-  doctor-log-fe      (run 'log-doctor-fe)
-  doctor-tail-fe     (run 'log-doctor-fe)
-  log-doctor-be      {:task (do
-                              (if (is-mac?)
-                                (shelll "tail -f /Users/russ/.log/clawe/doctor-be.out.log -n 500")
-                                (shelll "journalctl --user -n 100 -f -u doctor-be --all --no-hostname")))}
-  tail-doctor-be     (run 'log-doctor-be)
-  doctor-log-be      (run 'log-doctor-be)
-  doctor-tail-be     (run 'log-doctor-be)
-  log-doctor-topbar  {:task
-                      (if (is-mac?)
-                        (shelll "tail -f /Users/russ/.log/clawe/doctor-topbar.out.log -n 500")
-                        (shelll "journalctl --user -n 100 -f -u doctor-topbar --all --no-hostname"))}
-  tail-doctor-topbar (run 'log-doctor-topbar)
-  doctor-log-topbar  (run 'log-doctor-topbar)
-  doctor-tail-topbar (run 'log-doctor-topbar)
+  log-doctor            {:task (do
+                                 (if (is-mac?)
+                                   (shelll "tail -f /Users/russ/.log/clawe/doctor-be.out.log /Users/russ/.log/clawe/doctor-fe.out.log")
+                                   (shelll "journalctl --user -n 100 -f -u doctor-be -u doctor-fe -u doctor-topbar -u doctor-dashboard --all --no-hostname")))
+                         :doc  "Tail the doctor logs. FE, BE, and topbar via journalctl"}
+  tail-doctor           (run 'log-doctor)
+  doctor-log            (run 'log-doctor)
+  doctor-tail           (run 'log-doctor)
+  log-doctor-fe         {:task (do
+                                 (if (is-mac?)
+                                   (shelll "tail -f /Users/russ/.log/clawe/doctor-fe.out.log -n 500")
+                                   (shelll "journalctl --user -n 100 -f -u doctor-fe --all --no-hostname")))}
+  tail-doctor-fe        (run 'log-doctor-fe)
+  doctor-log-fe         (run 'log-doctor-fe)
+  doctor-tail-fe        (run 'log-doctor-fe)
+  log-doctor-be         {:task (do
+                                 (if (is-mac?)
+                                   (shelll "tail -f /Users/russ/.log/clawe/doctor-be.out.log -n 500")
+                                   (shelll "journalctl --user -n 100 -f -u doctor-be --all --no-hostname")))}
+  tail-doctor-be        (run 'log-doctor-be)
+  doctor-log-be         (run 'log-doctor-be)
+  doctor-tail-be        (run 'log-doctor-be)
+  log-doctor-topbar     {:task
+                         (if (is-mac?)
+                           (shelll "tail -f /Users/russ/.log/clawe/doctor-topbar.out.log -n 500")
+                           (shelll "journalctl --user -n 100 -f -u doctor-topbar --all --no-hostname"))}
+  tail-doctor-topbar    (run 'log-doctor-topbar)
+  doctor-log-topbar     (run 'log-doctor-topbar)
+  doctor-tail-topbar    (run 'log-doctor-topbar)
+  log-doctor-dashboard  {:task
+                         (if (is-mac?)
+                           (shelll "tail -f /Users/russ/.log/clawe/doctor-dashboard.out.log -n 500")
+                           (shelll "journalctl --user -n 100 -f -u doctor-dashboard --all --no-hostname"))}
+  tail-doctor-dashboard (run 'log-doctor-dashboard)
+  doctor-log-dashboard  (run 'log-doctor-dashboard)
+  doctor-tail-dashboard (run 'log-doctor-dashboard)
 
   log-awesome  {:task (shell "tail -f /home/russ/.cache/awesome/logs")
                 :doc  "Tail the awesome logs, via ~/.cache/awesome/logs"}
