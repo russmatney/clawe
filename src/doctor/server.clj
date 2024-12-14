@@ -24,8 +24,7 @@
    [doctor.config :as doctor.config]
    [doctor.api :as doctor.api]
    [garden.watcher :as garden.watcher]
-   [ralphie.notify :as notify]
-   [wallpapers.core :as wallpapers]))
+   [ralphie.notify :as notify]))
 
 (log/set-min-level! :debug)
 (log/remove-handler! :default/console)
