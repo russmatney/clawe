@@ -1,13 +1,14 @@
 (ns doctor.ui.views.todos
   (:require
    [uix.core :as uix :refer [$ defui]]
+   [taoensso.telemere :as log]
+
+   [doctor.ui.hooks.use-db :as hooks.use-db]
    [doctor.ui.db :as ui.db]
    [doctor.ui.handlers :as handlers]
-
    [components.filter :as components.filter]
    [components.todo :as todo]
    [components.filter-defs :as filter-defs]
-
    [components.actions :as components.actions]
    [components.garden :as components.garden]
    [components.item :as item]))
@@ -162,10 +163,11 @@
 ;; main widget
 
 (defui widget [opts]
-  (let [todos                                   (ui.db/list-todos
-                                                  (:conn opts)
-                                                  {:join-children? true
-                                                   :skip-subtasks? true})
+  (let [{:keys [data loading?]}
+        (hooks.use-db/use-query
+          {:conn->result
+           #(ui.db/list-todos % {:join-children? true :skip-subtasks? true})})
+        todos                                   data
         [only-incomplete set-only-incomplete]   (uix/use-state (:only-incomplete opts))
         [hide-in-progress set-hide-in-progress] (uix/use-state (:hide-in-progress opts))
         pills
@@ -194,6 +196,8 @@
                                   (filter #(not (todo/in-progress? %)))))
                 :sort-items todo/sort-todos)
               (update :presets merge (presets))))]
+
+    (log/log! {:data {:todos (count todos)}} "todos rendering")
     ($ :div
        {:class ["bg-city-blue-800" "bg-opacity-90"
                 "flex" "flex-col" "mb-8"]}

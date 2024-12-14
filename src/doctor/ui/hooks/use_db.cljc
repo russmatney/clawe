@@ -3,10 +3,14 @@
    [plasma.core :refer [defhandler defstream]]
    [taoensso.telemere :as t]
    #?@(:clj [[api.db :as api.db]]
-       :cljs [[datascript.core :as d]
-              ;; [uix.core :as uix]
+       :cljs [
+              [datascript.core :as d]
+              [uix.core :as uix]
+              [reagent.core :as r]
+
+              [db.schema :refer [schema]]
               [doctor.ui.hooks.plasma :refer [with-stream with-rpc]]
-              ;; [db.schema :refer [schema]]
+              [doctor.ui.hooks.use-reaction :refer [use-reaction]]
               ])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -41,30 +45,49 @@
 ;; Frontend
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+
+;; #?(:cljs (defonce conn-ratom (r/atom (d/create-conn schema))))
+
+#?(:cljs (defonce conn (d/create-conn schema)))
+
 #?(:cljs
-   (defn use-db [{:keys [conn]}]
+   (defn use-query [{:keys [q conn->result]}]
+     (let [[result set-result] (uix/use-state nil)
+           ->result            (cond
+                                 conn->result (fn [] (conn->result conn))
+                                 q            (fn [] (->> (d/q q @conn) (map first))))
+           ]
+       ;; run in use-effect?
+       (uix/use-effect
+         (fn []
+           (set-result (->result))
+           (d/listen! conn :todos (fn [_tx] (set-result (->result)))))
+         [])
+       {:data     result
+        :loading? (nil? result)})))
+
+#?(:cljs
+   (defn use-db []
      (let [handle-resp
-           (fn [items]
+           (fn [datoms]
              (when conn
-               (d/transact! conn items))
+               (d/transact! conn datoms))
 
              (when conn
-               (->> items
+               (->> datoms
                     (map :e)
                     distinct
                     (map #(d/entity @conn %))
                     (map :doctor/type)
                     frequencies
-                    (#(t/log!
-                        {:level :info :data %}
-                        "Received data"))))
+                    (#(t/log! {:data %} "Received data"))))
 
-             ;; (->> items (take 2)
+             ;; (->> datoms (take 2)
              ;;      (map (fn [dt] [(:a dt) (:v dt)]))
              ;;      (t/log! :info))
 
              ;; (-> (d/empty-db schema)
-             ;;     (d/db-with items)
+             ;;     (d/db-with datoms)
              ;;     ((fn [db]
              ;;        (->>
              ;;          (d/datoms db :eavt)
@@ -86,5 +109,4 @@
        (with-stream [] (db-stream) handle-resp)
        (with-rpc [] (get-db) handle-resp)
 
-       {:db @conn})
-     ))
+       {:conn conn})))

@@ -9,7 +9,10 @@
   (if-not n
     xs
     (let [ct (count xs)]
-      (when (> ct n) (log/log! :info [ct label "in db, trimming to" n]))
+      (when (> ct n)
+        (log/log! {:data {:count     ct
+                          :label     label
+                          :new-count n}} "truncating xs count"))
       (->> xs (take n)))))
 
 ;; TODO tests for this namespace

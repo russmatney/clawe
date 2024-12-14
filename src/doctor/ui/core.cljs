@@ -28,7 +28,6 @@
    [pages.posts :as pages.posts]
    [pages.journal :as pages.journal]
 
-   [db.schema :refer [schema]]
    [doctor.ui.hooks.use-db :as hooks.use-db]
    [doctor.ui.hooks.use-reaction :refer [use-reaction]]
 
@@ -141,11 +140,6 @@
        (merge ttl/read-handlers dt/read-handlers)})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; db
-
-(defonce conn-ratom (r/atom (d/create-conn schema)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; root view
 
 (defui view [{:keys [conn] :as opts}]
@@ -167,13 +161,12 @@
 ;; Bootstrap
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; app
+
 (defui app []
   ($ error-boundary {:on-error js/console.error}
-     (let [route (use-reaction current-route)
-
-           ;; not 100% about this datascript bootstrapping...
-           conn     (use-reaction conn-ratom)
-           _whateva (hooks.use-db/use-db {:conn conn})]
+     (let [route          (use-reaction current-route)
+           {:keys [conn]} (hooks.use-db/use-db)]
        ($ view {:route route :conn conn}))))
 
 (defonce root-el
