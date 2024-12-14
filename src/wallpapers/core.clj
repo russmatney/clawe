@@ -7,9 +7,9 @@
    [defthing.defcom :refer [defcom]]
    [ralphie.zsh :as zsh]
    [ralphie.notify :as notify]
+   [ralphie.config :as r.config]
    [ralphie.wallpaper :as r.wallpaper]
-   [db.core :as db]
-   [clawe.config :as clawe.config]))
+   [db.core :as db]))
 
 
 (defn wp-dir->paths [root]
@@ -126,7 +126,7 @@
            {:d d :unit unit})))))
 
 (defn ensure-wallpaper []
-  (when-not (clawe.config/is-mac?)
+  (when-not (r.config/osx?)
     (let [{:keys [d unit]} (uptime)]
       (cond (and
               (#{"minutes" "minute"} unit)

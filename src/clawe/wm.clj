@@ -10,6 +10,7 @@
    [clawe.yabai :as clawe.yabai]
    [clawe.i3 :as clawe.i3]
    [clawe.client :as client]
+   [ralphie.config :as r.config]
    [timer :as timer])
   (:import
    [clawe.awesome Awesome]
@@ -33,7 +34,7 @@
       (= wm :wm/yabai)   (Yabai.)
       (= wm :wm/awesome) (Awesome.)
       :else
-      (if (clawe.config/is-mac?) (Yabai.) (I3.)))))
+      (if (r.config/osx?) (Yabai.) (I3.)))))
 
 (defn reload-wm []
   (when (sys/running? `*wm*)

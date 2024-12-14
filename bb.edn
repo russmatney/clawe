@@ -44,8 +44,7 @@
       (-> (shell {:out :string} "zsh -c 'echo -n ~'") :out string/trim))
 
     (defn is-mac? []
-      ;; TODO something more reasonable
-      (string/includes? (hostname) "walt"))
+      (boolean (#{"Mac OS X"} (System/getProperty "os.name"))))
 
     (defn pp [x]
       (binding [pprint/*print-right-margin* 130]

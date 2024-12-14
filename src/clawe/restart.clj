@@ -8,6 +8,7 @@
    [ralphie.install :as r.install]
    [ralphie.notify :as notify]
    [ralphie.tmux :as tmux]
+   [ralphie.config :as r.config]
    [babashka.fs :as fs]
 
    ;; required to put bindings in place, otherwise we write empty rc configs
@@ -124,13 +125,13 @@
    (rules/clean-up-workspaces)
 
    ;; Restart Notifications service
-   (when-not (clawe.config/is-mac?)
+   (when-not (r.config/osx?)
      (log "reloading notifications")
      (-> (proc/$ systemctl --user start deadd-notification-center)
          (proc/check)))
 
    ;; Reload completions/caches
-   ;; (when-not (clawe.config/is-mac?)
+   ;; (when-not (r.config/osx?)
    ;;   (log "reloading zsh tab completion")
    ;;   (install-zsh-tab-completion))
 

@@ -8,15 +8,11 @@
    ;; [taoensso.telemere :as log]
    [zprint.core :as zp]
 
-   [ralphie.zsh :as zsh]
-   ;; [ralphie.emacs :as emacs]
-   [timer :as timer]
-   ))
+   [ralphie.config :as r.config]
+   [timer :as timer]))
 
 (timer/print-since "clawe.config ns loading")
 
-(defn calc-is-mac? []
-  (boolean (string/includes? (zsh/expand "$OSTYPE") "darwin")))
 
 (def clawe-config-path ".config/clawe/clawe.edn")
 (def clawe-local-config-path ".local/share/clawe/local.edn")
@@ -35,7 +31,7 @@
 (defn ->config []
   (let [conf (->
                (read-config clawe-config-path)
-               (assoc :is-mac (calc-is-mac?))
+               (assoc :is-mac (r.config/osx?))
                (assoc :home-dir (str (fs/home)))
                (->> ;; i think this means local will overwrite global?
                  (merge (read-config clawe-local-config-path))))]
@@ -86,12 +82,7 @@
      (spit (config-resource path)
            (-> writeable-config
                (zp/zprint-str 100)
-               (string/replace "," "")))
-     ;; emacsclient -e '(progn (find-file "~/.config/clawe/clawe.edn") (aggressive-indent-indent-region-and-on (point-min) (point-max)) (save-buffer))'
-     ;; TODO may need to 'force' the save? or wait to avoid a race-case?
-     ;; TODO prevent the file from opening, and the save from prompting for confirmation, etc
-     ;;(ralphie.emacs/fire "(progn (find-file \"~/.config/clawe/clawe.edn\") (aggressive-indent-indent-region-and-on (point-min) (point-max)) (save-buffer))")
-     )))
+               (string/replace "," ""))))))
 
 (comment
   (write-config nil)
@@ -108,10 +99,6 @@
 (defn doctor-base-url []
   (sys/start! `*config*)
   (:doctor-base-url @*config*))
-
-(defn is-mac? []
-  (sys/start! `*config*)
-  (:is-mac @*config*))
 
 (defn repo-roots []
   (sys/start! `*config*)

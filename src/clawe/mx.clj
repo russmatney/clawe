@@ -17,6 +17,7 @@
    [ralphie.rofi :as rofi]
    [ralphie.systemd :as systemd]
    [ralphie.tmux :as tmux]
+   [ralphie.config :as r.config]
 
    [clawe.client.create :as client.create]
    [clawe.config :as clawe.config]
@@ -471,13 +472,13 @@ hi there
          (mx-commands-fast)
 
          ;; kill tmux/tags/clients
-         (when-not (clawe.config/is-mac?)
+         (when-not (r.config/osx?)
            (kill-things wsp))
 
          ;; systemd stops/restart
-         (when-not (clawe.config/is-mac?)
+         (when-not (r.config/osx?)
            (systemd/rofi-service-opts #(str "Restart " %) :systemd/restart))
-         (when-not (clawe.config/is-mac?)
+         (when-not (r.config/osx?)
            (systemd/rofi-service-opts #(str "Stop " %) :systemd/stop)))
        (remove nil?)))))
 
