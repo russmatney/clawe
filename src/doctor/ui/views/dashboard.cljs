@@ -1,6 +1,10 @@
 (ns doctor.ui.views.dashboard
   (:require
    ["react-icons/fa6" :as FA]
+   ["react-icons/md" :as MD]
+   ["react-icons/gi" :as GI]
+   ["react-icons/go" :as GO]
+   ["react-icons/io5" :as IO]
    [uix.core :as uix :refer [$ defui]]
 
    [doctor.ui.db :as ui.db]
@@ -94,31 +98,33 @@
                                         ($ ingest/ingest-buttons)
                                         ($ ingest/commit-ingest-buttons opts)))
                           :label   "ingestors"
+                          :icon    FA/FaDatabase
                           :opts    opts
                           :actions (ingest/ingest-actions)})
 
            ($ widget-bar {:comp  git-status/widget
                           :label "git-status"
+                          :icon  FA/FaGithub
                           :opts  opts
                           :bar   git-status/bar})
 
            ($ widget-bar {:comp  pomodoro/widget
                           :label "pomodoro"
                           :opts  opts
-                          ;; :icon  octicons/clock16
+                          :icon  GI/GiTomato
                           :bar   pomodoro/bar})
 
            ($ widget-bar {:comp  focus/widget
                           :label "current-focus"
                           :opts  opts
-                          ;; :icon  octicons/light-bulb16
+                          :icon  FA/FaCheck
                           :actions
                           [{:action/label    "Clear Current Todos"
                             :action/on-click #(handlers/clear-current-todos)}]})
 
            ($ widget-bar {:comp  todos/widget
                           :label "todos"
-                          ;; :icon  octicons/checklist16
+                          :icon  FA/FaCheckDouble
                           :opts  (assoc opts :filter-id :dashboard-todos)
                           :actions
                           [{:action/label    "Process Prioritized Actions"
@@ -127,25 +133,25 @@
            ($ widget-bar {:comp  blog/widget
                           :label "blog"
                           :opts  (assoc opts :filter-id :dashboard-blog)
-                          ;; :icon  blog/icon
+                          :icon  FA/FaNewspaper
                           :actions
                           [{:action/label    "Publish N Updated notes"
                             :action/on-click #(js/alert "todo")}]})
 
            ($ widget-bar {:comp  today/widget
                           :label "today"
-                          ;; :icon  today/icon
+                          :icon  FA/FaCalendar
                           :opts  (assoc opts :filter-id :dashboard-today)})
 
            ($ widget-bar {:comp  commits/widget
                           :label "commits"
-                          ;; :icon  commits/icon
+                          :icon  GO/GoGitCommit
                           :opts  opts})
 
            ($ widget-bar {:comp  screenshots/page
                           :label "screenshots-clips"
                           :opts  opts
-                          ;; :icon  octicons/image16
+                          :icon  FA/FaDesktop
                           :actions
                           [{:action/label    "Ingest screenshots"
                             :action/on-click #(handlers/ingest-screenshots)}
@@ -154,17 +160,17 @@
 
            ($ widget-bar {:comp    workspaces/widget
                           :label   "workspaces"
-                          ;; :icon    octicons/clippy16
+                          :icon    MD/MdDashboard
                           :actions (hooks.use-workspaces/actions)})
 
            ($ widget-bar {:comp    chess-games/widget
                           :label   "chess games"
                           :opts    opts
-                          ;; :icon    octicons/moon16
+                          :icon    FA/FaChessKnight
                           :actions (chess-games/actions)})
 
            ($ widget-bar {:label "events"
-                          ;; :icon  octicons/calendar16
+                          :icon  FA/FaCalendar
                           :opts  opts
                           :comp
                           (fn [opts]
