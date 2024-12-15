@@ -130,6 +130,35 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; repo-comp
 
+(defui repo-git-status [{:keys [repo]}]
+  ($ :div
+     {:class ["flex" "flex-col"]}
+     (when (and (nil? (:repo/clean-at repo))
+                (nil? (:repo/dirty-at repo)))
+       ($ :div {:class ["text-slate-800"]}
+          (str "never checked")))
+
+     (when (or (:repo/clean-at repo)
+               (:repo/dirty-at repo))
+       ($ :div
+          {:class [(when (git-status/dirty? repo) "text-city-red-700")]}
+          (if (git-status/dirty? repo) "DIRTY!?"
+              (str "clean " (dates/human-time-since (:repo/clean-at repo)) " ago"))))
+     (when (:repo/did-not-need-push-at repo)
+       ($ :div
+          {:class [(when (git-status/needs-push? repo) "text-city-red-700")]}
+          (if (git-status/needs-push? repo) "Needs Push!?"
+              (str "did-not-need-push "
+                   (dates/human-time-since (:repo/did-not-need-push-at repo))
+                   " ago"))))
+     (when (:repo/did-not-need-pull-at repo)
+       ($ :div
+          {:class [(when (git-status/needs-pull? repo) "text-city-red-700")]}
+          (if (git-status/needs-pull? repo) "Needs Pull!?"
+              (str "did-not-need-pull-at "
+                   (dates/human-time-since (:repo/did-not-need-pull-at repo))
+                   " ago"))))) )
+
 (defui repo-comp
   [{:keys [item index] :as _opts}]
   (let [repo item]
@@ -138,7 +167,12 @@
                 "border" "rounded"
                 "border-city-blue-600"
                 "bg-yo-blue-700"
-                "text-slate-600"]}
+                (cond
+                  (git-status/dirty? repo)      "text-slate-300"
+                  (git-status/needs-pull? repo) "text-slate-300"
+                  (git-status/needs-push? repo) "text-slate-300"
+                  :else                         "text-slate-500")
+                ]}
        ($ :div
           {:class ["flex flex-row" "items-center"]}
           ($ :div {:class ["font-nes"]}
@@ -147,36 +181,9 @@
           ($ :span {:class ["ml-auto"]}
              ($ actions/actions-list {:actions (handlers/->actions repo)})))
 
-       ($ :div
-          {:class ["flex" "flex-col"]}
-          (when (and (nil? (:repo/clean-at repo))
-                     (nil? (:repo/dirty-at repo)))
-            ($ :div {:class ["text-slate-800"]}
-               (str "never checked")))
+       ($ repo-git-status {:repo repo})
 
-          (when (or (:repo/clean-at repo)
-                    (:repo/dirty-at repo))
-            ($ :div
-               {:class [(when (git-status/dirty? repo) "text-city-red-700")]}
-               (if (git-status/dirty? repo) "DIRTY!?"
-                   (str "clean " (dates/human-time-since (:repo/clean-at repo)) " ago"))))
-          (when (:repo/did-not-need-push-at repo)
-            ($ :div
-               {:class [(when (git-status/needs-push? repo) "text-city-red-700")]}
-               (if (git-status/needs-push? repo) "Needs Push!?"
-                   (str "did-not-need-push "
-                        (dates/human-time-since (:repo/did-not-need-push-at repo))
-                        " ago"))))
-          (when (:repo/did-not-need-pull-at repo)
-            ($ :div
-               {:class [(when (git-status/needs-pull? repo) "text-city-red-700")]}
-               (if (git-status/needs-pull? repo) "Needs Pull!?"
-                   (str "did-not-need-pull-at "
-                        (dates/human-time-since (:repo/did-not-need-pull-at repo))
-                        " ago")))))
-
-       (debug/raw-metadata {:data repo})
-       )))
+       (debug/raw-metadata {:data repo}))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
