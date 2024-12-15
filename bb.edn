@@ -68,25 +68,25 @@
                         " --transparent"
                         (when (:decorations opts) " --decorations"))]
          (pp (str "Running clove app: " cmd))
-         (shell {:dir       (str (home-dir) "/russmatney/clawe")
-                 :extra-env {"WEBKIT_DISABLE_DMABUF_RENDERER" "1"}} cmd)))))
+         (shelll {:dir       (str (home-dir) "/russmatney/clawe")
+                  :extra-env {"WEBKIT_DISABLE_DMABUF_RENDERER" "1"}} cmd)))))
 
   home     (pp (home-dir))
   hostname (pp (hostname))
   is-mac   (pp (is-mac?))
 
-  clj-kondo      (shell "clj-kondo --lint src")
-  clj-kondo-test (shell "clj-kondo --lint test")
-  clj-kondo-all  (shell "clj-kondo --lint src:test")
-  lint           (shell "clj-kondo --lint src:test")
+  clj-kondo      (shelll "clj-kondo --lint src")
+  clj-kondo-test (shelll "clj-kondo --lint test")
+  clj-kondo-all  (shelll "clj-kondo --lint src:test")
+  lint           (shelll "clj-kondo --lint src:test")
 
   test-unit
   {:doc  "Run bb unit tests."
-   :task (shell "./test_runner.clj")}
+   :task (shelll "./test_runner.clj")}
 
   test-jvm-unit
   {:doc  "Run jvm unit tests."
-   :task (shell "./bin/kaocha unit")}
+   :task (shelll "./bin/kaocha unit")}
 
   test-cljs-unit
   {:doc  "Run cljs unit tests."
@@ -104,7 +104,7 @@
   clawe-install
   {:doc  "Rebuild the clawe uberjar"
    :task (let [cp (-> ^{:out :string} (p/$ clojure -A:remove-clojure -Spath) p/check :out)]
-           (shell (str "bb -cp " cp " --uberjar clawe.jar -m clawe.core")))}
+           (shelll (str "bb -cp " cp " --uberjar clawe.jar -m clawe.core")))}
   install-clawe {:depends [clawe-install]}
 
 
@@ -114,7 +114,7 @@
   {:doc "Assess the local environment for any issues"
    :task
    (do
-     (shell "systemctl --no-pager --user status doctor-be doctor-fe doctor-topbar")
+     (shelll "systemctl --no-pager --user status doctor-be doctor-fe doctor-topbar")
      (pp "TODO impl ensure local symlinks")
 
      (pp "TODO impl ensure `clove` is installed"))}
@@ -154,8 +154,8 @@
                    (log "Expect a popup from doctor-app when the frontend is ready for a re-render")
 
                    (when-not (is-mac?)
-                     (shell "systemctl --user daemon-reload")
-                     (shell "systemctl --user restart doctor-be doctor-fe"))
+                     (shelll "systemctl --user daemon-reload")
+                     (shelll "systemctl --user restart doctor-be doctor-fe"))
 
                    (when (is-mac?)
                      (shelll "launchctl unload /Users/russ/Library/LaunchAgents/com.clawe.doctor-fe.plist")
@@ -166,7 +166,7 @@
 
   restart-doctor-be (do
                       (when-not (is-mac?)
-                        (shell "systemctl --user restart doctor-be"))
+                        (shelll "systemctl --user restart doctor-be"))
 
                       (when (is-mac?)
                         (shelll "launchctl unload /Users/russ/Library/LaunchAgents/com.clawe.doctor-be.plist")
@@ -175,7 +175,7 @@
 
   restart-doctor-fe (do
                       (when-not (is-mac?)
-                        (shell "systemctl --user restart doctor-fe"))
+                        (shelll "systemctl --user restart doctor-fe"))
                       (when (is-mac?)
                         (shelll "launchctl unload /Users/russ/Library/LaunchAgents/com.clawe.doctor-fe.plist")
                         (shelll "launchctl load /Users/russ/Library/LaunchAgents/com.clawe.doctor-fe.plist")))
@@ -183,7 +183,7 @@
 
   restart-doctor-topbar (do
                           (when-not (is-mac?)
-                            (shell "systemctl --user restart doctor-topbar"))
+                            (shelll "systemctl --user restart doctor-topbar"))
                           (when (is-mac?)
                             (shelll "launchctl unload /Users/russ/Library/LaunchAgents/com.clawe.topbar.plist")
                             (shelll "launchctl load /Users/russ/Library/LaunchAgents/com.clawe.topbar.plist")))
@@ -191,7 +191,7 @@
 
   restart-doctor-dashboard (do
                              (when-not (is-mac?)
-                               (shell "systemctl --user restart doctor-dashboard"))
+                               (shelll "systemctl --user restart doctor-dashboard"))
 
                              (when (is-mac?)
                                (shelll "launchctl unload /Users/russ/Library/LaunchAgents/com.clawe.dashboard.plist")
@@ -260,7 +260,7 @@
   doctor-log-dashboard  (run 'log-doctor-dashboard)
   doctor-tail-dashboard (run 'log-doctor-dashboard)
 
-  log-awesome  {:task (shell "tail -f /home/russ/.cache/awesome/logs")
+  log-awesome  {:task (shelll "tail -f /home/russ/.cache/awesome/logs")
                 :doc  "Tail the awesome logs, via ~/.cache/awesome/logs"}
   tail-awesome (run 'log-awesome)
   awesome-tail (run 'log-awesome)
@@ -274,7 +274,7 @@
   {:task
    (do
      (log "PERMISSION TO FIRE?")
-     (let [{:keys [exit out err] :as res} (shell "i3 -C")]
+     (let [{:keys [exit out err] :as res} (shelll "i3 -C")]
        (if (= exit 0)
          (log "FIRE AT WILL")
          ;; not relevant/necessary - shell throws when there's an error
