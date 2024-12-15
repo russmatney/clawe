@@ -357,6 +357,10 @@
                                         :tmux/cmd     cmd-str
                                         :tmux/target  non-busy-target})
 
+           (println "tmux/fire!" {:tmux/session session
+                                  :tmux/cmd     cmd-str
+                                  :tmux/target  non-busy-target})
+
            (->
              ^{:out :string}
              ($ tmux send-keys

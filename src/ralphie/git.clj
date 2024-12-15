@@ -191,15 +191,21 @@
 
 (defn fetch-via-tmux [repo-path]
   (notify (str "Fetching via tmux/fire " repo-path))
+  (println (str "Fetching via tmux/fire " repo-path))
   (let [repo-short-name
         (-> repo-path re/->repo-id (string/split #"\/") last)]
-    (tmux/fire "git fetch --verbose" {:tmux.fire/session repo-short-name})))
+    (tmux/fire
+      {:tmux.fire/session   repo-short-name
+       :tmux.fire/directory repo-path
+       :tmux.fire/cmd       "git fetch --verbose"})))
 
 (comment
-  (fetch-via-tmux "~/russmatney/dotfiles")
+  (fetch-via-tmux "/Users/russ/russmatney/dotfiles")
 
   (->
-    "~/russmatney/dotfiles"
+    (str
+      (fs/home)
+      "/russmatney/dotfiles")
     (re/->repo-id)
     (string/split #"\/")
     last

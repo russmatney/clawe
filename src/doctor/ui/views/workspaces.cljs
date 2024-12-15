@@ -22,9 +22,6 @@
       (string/replace #"/home/russ" "~")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Detail window
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -129,7 +126,7 @@
            :data  (some->> metadata (sort-by first))}))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; repo-comp
+;; repo-card
 
 (defui repo-git-status [{:keys [repo]}]
   ($ :div
@@ -160,7 +157,7 @@
                    (dates/human-time-since (:repo/did-not-need-pull-at repo))
                    " ago"))))) )
 
-(defui repo-comp
+(defui repo-card
   [{:keys [item index workspace] :as _opts}]
   (let [repo item]
     ($ :div
@@ -197,8 +194,9 @@
        ($ debug/raw-data {:data repo}))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; workspace-card
 
-(defui workspace-comp
+(defui workspace-card
   [{:keys [workspace] :as _opts}]
   (let [{:keys [workspace/directory
                 workspace/color
@@ -256,7 +254,10 @@
             (dir directory)))
 
        (when repo
-         ($ repo-comp {:item repo})))))
+         ($ repo-card {:item repo})))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; widget
 
 (defui widget [_opts]
   (let [{:keys [selected-workspaces active-workspaces]}
@@ -309,10 +310,10 @@
                       "justify-center"
                       ]}
              (for [[i it] (->> active-workspaces (map-indexed vector))]
-               ($ workspace-comp {:key i :workspace it}))
+               ($ workspace-card {:key i :workspace it}))
 
              (for [[i it] (->> repos (map-indexed vector))]
-               ($ repo-comp {:key i :index i :item it})))
+               ($ repo-card {:key i :index i :item it})))
 
           (when show-current?
             ($ :div

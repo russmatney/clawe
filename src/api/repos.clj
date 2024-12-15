@@ -181,7 +181,7 @@
 
 
 (defn update-repo-status [repo]
-  (log/log! :info ["fetching and checking repo status" repo])
+  (log/log! {:data (:repo/directory repo)} "fetching and checking repo status")
   ;; this likely won't finish before the next status check runs
   ;; maybe we want to wait a tick?
   (r.git/fetch-via-tmux (:repo/directory repo))
@@ -196,9 +196,14 @@
                  (not needs-pull?) (assoc :repo/did-not-need-pull-at now)
                  needs-push?       (assoc :repo/needs-push-at now)
                  (not needs-push?) (assoc :repo/did-not-need-push-at now))]
-    (log/log! :info ["update" (:repo/directory repo)])
+    (log/log! {:data (:repo/directory repo)} ["updated repo git status"])
     (db/transact (merge repo update) {:verbose? true}))
   :ok)
+
+
+(comment
+  (update-repo-status {:repo/directory "~/russmatney/glossolalia"})
+  )
 
 (defn tracked-repo?
   ;; TODO support a db-field that we set from the frontend/cli

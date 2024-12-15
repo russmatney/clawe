@@ -7,6 +7,7 @@
    [components.table :as components.table]
    [components.debug :as components.debug]
    [dates.tick :as dates]
+   [doctor.ui.hooks.use-db :as hooks.use-db]
    [doctor.ui.db :as ui.db]
    [doctor.ui.handlers :as handlers]))
 
@@ -15,6 +16,9 @@
 
 (defn dirty? [{:repo/keys [dirty-at clean-at]}]
   (dates/newer dirty-at clean-at))
+
+(defn clean? [{:repo/keys [dirty-at clean-at]}]
+  (dates/newer clean-at dirty-at))
 
 (defn needs-pull? [{:repo/keys [needs-pull-at did-not-need-pull-at]}]
   (dates/newer needs-pull-at did-not-need-pull-at))
@@ -29,11 +33,13 @@
        (when (needs-pull? repo) "#needs-pull")
        (when (needs-push? repo) "#needs-push")))
 
-(defui bar [{:keys [conn]}]
-  (let [repos (->> (ui.db/repos conn)
-                   (sort dirty?)
-                   (sort needs-pull?)
-                   (sort needs-push?))
+(defui bar [_opts]
+  (let [repos (->>
+                (hooks.use-db/use-query {:db->data ui.db/repos})
+                :data
+                (sort dirty?)
+                (sort needs-pull?)
+                (sort needs-push?))
         axs   (->> repos
                    (map (fn [repo]
                           {:action/label    (repo-status-label repo)
@@ -52,10 +58,19 @@
   {:headers ["Repo" ":dirty?" ":needs-push?" ":needs-pull?" "Actions"]
    :->row   (fn [repo]
               [($ components.debug/raw-data
-                  {:label (components.git/short-repo repo)
+                  {:label (or (components.git/short-repo repo) (:repo/directory repo))
                    :data  repo})
 
-               (when (dirty? repo) "DIRTY!?")
+               (cond
+                 (dirty? repo) (str "DIRTY!? "
+                                    "(" (dates/human-time-since
+                                          (:repo/dirty-at repo))
+                                    " ago)")
+                 (clean? repo) (str "clean "
+                                    (dates/human-time-since
+                                      (:repo/clean-at repo))
+                                    " ago")
+                 :else         "never checked!")
                (when (needs-push? repo) "Needs Push!?")
                (when (needs-pull? repo) "Needs Pull!?")
 
@@ -72,13 +87,19 @@
 ;; widget
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defui widget [{:keys [conn] :as _opts}]
-  (let [repos (->> (ui.db/watched-repos conn)
+(defui widget [_opts]
+  (let [repos (->> (hooks.use-db/use-query {:db->data ui.db/repos})
+                   :data
                    (sort dirty?)
                    (sort needs-pull?)
                    (sort needs-push?))]
     ($ :div
-       {:class ["text-center" "my-36" "text-slate-200"]}
+       {:class ["text-center" "my-8"
+                "text-slate-200"]}
+
+       (when (seq repos)
+         ($ :div {:class ["font-nes"]}
+            (str (count repos) " repos found!")))
 
        (when (empty? repos)
          ($ :div {:class ["font-nes"]} "No repos found!"))
