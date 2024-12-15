@@ -79,7 +79,8 @@
                 ($ debug/raw-data
                    {:label "raw items"
                     :data  (->> items (take 10)
-                                (map (fn [x] (update x :org/items (fn [its] (take 2 its))))))}))
+                                (map (fn [x]
+                                       (update x :org/items (fn [its] (take 2 its))))))}))
 
              ($ :div
                 {:class ["ml-auto"]}

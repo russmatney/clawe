@@ -39,7 +39,7 @@
       (let [[k v] data]
         (when-not (exclude-key k)
           ($ :div.font-mono
-             {:key   k
+             {:key   (str level k v)
               :class ["text-slate-400" (str "px-" (* 2 level))]}
              "["
              ($ :span {:class ["text-city-pink-400"]}
