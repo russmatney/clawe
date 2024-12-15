@@ -8,23 +8,19 @@
 
    [components.actions :as components.actions]
    [components.clients :as components.clients]
-   ;; [components.charts :as charts]
    [components.colors :as colors]
-   ;; [components.format :as format]
-   [components.icons :as icons]
 
    [doctor.ui.hooks.use-topbar :as hooks.use-topbar]
    [doctor.ui.hooks.use-workspaces :as hooks.use-workspaces]
    [doctor.ui.handlers :as handlers]
    [doctor.ui.views.pomodoro :as pomodoro]
-   #_[doctor.ui.views.git-status :as git-status]
+   ;; [doctor.ui.views.git-status :as git-status]
    [doctor.ui.views.focus :as focus]))
 
 (defn skip-bar-app? [client]
   (or
     (-> client :client/window-title #{"tauri-doctor-topbar"})
-    (-> client :client/app-name #{"1password"})
-    ))
+    (-> client :client/app-name #{"1password"})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Icons
@@ -165,15 +161,7 @@
           (for [[k v] pcts]
             ($ :div
                {:class ["w-10"] :key (str k)}
-               v
-               ;; ($ charts/pie-chart
-               ;;    {:label (str k)
-               ;;     :value v
-               ;;     :color (case k
-               ;;              :spotify/volume "rgb(255, 205, 86)"
-               ;;              :audio/volume   "rgb(54, 162, 235)",
-               ;;              "rgb(255, 99, 132)")})
-               ))))
+               v))))
 
      ($ sep)
      ($ :div.font-nes {:class ["flex" "flex-row" "space-x-2"]}
@@ -222,8 +210,8 @@
              ($ focus/current-task opts))
 
           ;; TODO impl a quick toggle for topbar feats
-          #_ ($ :div
-                {:class ["overflow-scroll"]}
-                ($ git-status/bar opts))
+          ;; ($ :div
+          ;;    {:class ["overflow-scroll"]}
+          ;;    ($ git-status/bar opts))
 
           ($ clock-host-metadata (assoc opts :topbar-state topbar-state :metadata metadata))))))
