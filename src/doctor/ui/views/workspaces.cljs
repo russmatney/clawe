@@ -136,7 +136,7 @@
      {:class ["flex" "flex-col"]}
      (when (and (nil? (:repo/clean-at repo))
                 (nil? (:repo/dirty-at repo)))
-       ($ :div {:class ["text-slate-800"]}
+       ($ :div {:class ["text-slate-200"]}
           (str "never checked")))
 
      (when (or (:repo/clean-at repo)
@@ -269,8 +269,12 @@
                                 :where
                                 [?e :doctor/type :type/repo]]
                           :id :workspace-repos})
+        wsp-dirs       (->> active-workspaces
+                            (map :workspace/directory)
+                            (into #{}))
 
         repos (->> data
+                   (remove (fn [repo] (wsp-dirs (:repo/directory repo))))
                    (sort git-status/dirty?)
                    (sort git-status/needs-pull?)
                    (sort git-status/needs-push?))]
