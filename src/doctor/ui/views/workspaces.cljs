@@ -11,8 +11,9 @@
    [doctor.ui.handlers :as handlers]
    [doctor.ui.hooks.use-workspaces :as hooks.use-workspaces]
    [doctor.ui.hooks.use-topbar :as hooks.use-topbar]
-   [doctor.ui.db :as ui.db]
-   [doctor.ui.hooks.use-db :as hooks.use-db]))
+   [doctor.ui.hooks.use-db :as hooks.use-db]
+   [doctor.ui.views.git-status :as git-status]
+   [dates.tick :as dates]))
 
 (defn dir [s]
   (-> s
@@ -146,6 +147,34 @@
           ($ :span {:class ["ml-auto"]}
              ($ actions/actions-list {:actions (handlers/->actions repo)})))
 
+       ($ :div
+          {:class ["flex" "flex-col"]}
+          (when (and (nil? (:repo/clean-at repo))
+                     (nil? (:repo/dirty-at repo)))
+            ($ :div {:class ["text-slate-800"]}
+               (str "never checked")))
+
+          (when (or (:repo/clean-at repo)
+                    (:repo/dirty-at repo))
+            ($ :div
+               {:class [(when (git-status/dirty? repo) "text-city-red-700")]}
+               (if (git-status/dirty? repo) "DIRTY!?"
+                   (str "clean " (dates/human-time-since (:repo/clean-at repo)) " ago"))))
+          (when (:repo/did-not-need-push-at repo)
+            ($ :div
+               {:class [(when (git-status/needs-push? repo) "text-city-red-700")]}
+               (if (git-status/needs-push? repo) "Needs Push!?"
+                   (str "did-not-need-push "
+                        (dates/human-time-since (:repo/did-not-need-push-at repo))
+                        " ago"))))
+          (when (:repo/did-not-need-pull-at repo)
+            ($ :div
+               {:class [(when (git-status/needs-pull? repo) "text-city-red-700")]}
+               (if (git-status/needs-pull? repo) "Needs Pull!?"
+                   (str "did-not-need-pull-at "
+                        (dates/human-time-since (:repo/did-not-need-pull-at repo))
+                        " ago")))))
+
        (debug/raw-metadata {:data repo})
        )))
 
@@ -218,14 +247,17 @@
                                :where
                                [?e :doctor/type :type/repo]]})
 
-        repos data]
+        repos (->> data
+                   (sort git-status/dirty?)
+                   (sort git-status/needs-pull?)
+                   (sort git-status/needs-push?))]
     (log/log! {:data {:selected (count selected-workspaces)
                       :active   (count active-workspaces)
                       :repos    (count repos)}}
               "workspaces widget rendering")
     ($ :div
        {:class ["p-4"]}
-       ($ :div
+       ($ :div.header
           {:class ["flex flex-row" "items-center"]}
           ($ :h1
              {:class ["font-nes" "text-2xl" "text-white" "pb-2"]}
@@ -241,7 +273,7 @@
              {:class ["ml-auto"]}
              ($ topbar-metadata)))
 
-       ($ :div
+       ($ :div.content
           {:class ["flex" "flex-row" "pt-4"]}
           ($ :div
              {:class ["flex" "flex-0"
@@ -253,6 +285,7 @@
                ($ workspace-comp {:key i :workspace it}))
 
              (for [[i it] (->> repos
+
                                (map-indexed vector))]
                ($ repo-comp {:key i :index i :item it})))
 
