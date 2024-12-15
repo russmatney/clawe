@@ -164,7 +164,7 @@
   [{:keys [item index workspace] :as _opts}]
   (let [repo item]
     ($ :div
-       {:class ["m-1" "p-4" "w-96"
+       {:class ["m-1" "p-4" "w-72"
                 "border" "rounded"
                 "border-city-blue-600"
                 "bg-yo-blue-700"
@@ -211,15 +211,11 @@
           {:db->data (fn [conn] (ui.db/repo-for-workspace conn workspace))})
         repo data]
     ($ :div
-       {:class ["m-1"
-                "p-4"
-                "border"
-                "rounded"
+       {:class ["m-1" "p-4" "w-96"
+                "border" "rounded"
                 "border-city-blue-600"
                 "bg-yo-blue-700"
-                "text-white"
-                "w-96"
-                ]}
+                "text-white"]}
        ($ :div
           {:class ["flex flex-row" "items-center"]}
           ($ :div

@@ -26,6 +26,9 @@
        :cljs [[uix.core :as uix :refer [$ defui]]
               ["@heroicons/react/20/solid" :as HIMini]
               ["react-icons/fa6" :as FA]
+              ["react-icons/io5" :as IO]
+              ["react-icons/ti" :as TI]
+              ;; ["react-icons/go" :as GO]
 
               [components.icons :as components.icons]
               [components.colors :as colors]
@@ -539,21 +542,17 @@
 
 #?(:cljs
    (defn repo->actions [item]
-     [
-      {:action/label    "check-status"
+     [{:action/label    "check-status"
        :action/on-click (fn [_]
                           (println "checking git status for item" item)
                           (check-repo-status item))
-       ;; :action/icon     fa/check-circle-solid
-       }
+       :action/icon     IO/IoGitCompare}
       {:action/label    "ingest-commits"
        :action/on-click #(ingest-commits-for-repo item)
-       ;; :action/icon     ($ HIMini/ArrowDownOnSquareStackIcon {:class ["w-4" "h-6"]})
-       }
+       :action/icon     FA/FaDownload}
       {:action/on-click #(delete-from-db item)
        :action/label    "delete-from-db"
-       ;; :action/icon     fa/trash-alt-solid
-       }]))
+       :action/icon     FA/FaTrash}]))
 
 #?(:cljs
    (defn wallpaper->actions [item]
@@ -565,18 +564,17 @@
        :action/comp     ($ HIMini/ArrowDownOnSquareStackIcon {:class ["w-4" "h-6"]})}
       {:action/on-click #(delete-from-db item)
        :action/label    "delete-from-db"
-       ;; :action/icon     fa/trash-alt-solid
+       :action/icon     FA/Trash
        }]))
 
 #?(:cljs
    (defn workspace->actions [wsp]
      [{:action/label    "Focus"
-       ;; :action/icon     octicons/pin16
+       :action/icon     TI/TiPinOutline
        :action/on-click #(hooks.use-workspaces/focus-workspace wsp)}
-      {:action/label "Close"
-       ;; :action/icon  octicons/trash
-       :action/on-click
-       #(hooks.use-workspaces/close-workspaces wsp)}]))
+      {:action/label    "Close"
+       :action/icon     FA/FaTrash
+       :action/on-click #(hooks.use-workspaces/close-workspaces wsp)}]))
 
 #?(:cljs
    (defn client->actions [client]

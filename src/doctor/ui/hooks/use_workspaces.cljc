@@ -41,8 +41,7 @@
 
 #?(:clj
    (comment
-     (wm/create-workspace {} "new")
-     ))
+     (wm/create-workspace {} "new")))
 
 (defhandler focus-client [c]
   (t/log! {:data {:title (:client/window-title c)}} "Focusing client")
