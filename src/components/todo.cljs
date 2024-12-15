@@ -3,6 +3,7 @@
    [clojure.set :as set]
    [clojure.string :as string]
    [tick.core :as t]
+   [taoensso.telemere :as log]
    [uix.core :as uix :refer [$ defui]]
 
    [components.colors :as colors]
@@ -75,10 +76,8 @@
 ;; priority-label
 
 (defui priority-label
-  [{:keys [item] :as opts}]
-  (let [priort (cond (string? item) item
-                     (map? item)    (:org/priority item)
-                     :else          item)]
+  [{:keys [item fallback] :as opts}]
+  (let [priort (:org/priority item fallback)]
     (when priort
       ($ :span
          (merge {:class
@@ -189,8 +188,7 @@
                 "flex" "flex-row" "flex-wrap"]}
        ":"
        (for [[i tag] (->> item :org/tags (map-indexed vector))]
-         ($ :span
-            {:key tag}
+         ($ :span {:key i}
             ($ :span
                {:class
                 (concat ["cursor-pointer" "hover:line-through"]
@@ -299,7 +297,7 @@
 (defui card-or-card-group
   "Renders the passed todo as a card.
   If it has children (i.e. sub-tasks) they will be rendered as a group of cards."
-  [{:keys [filter-by filter-fn item]}]
+  [{:keys [filter-by filter-fn item i]}]
   (let [todos             (->> item
                                (tree-seq (comp seq :org/items) :org/items)
                                (remove nil?)
@@ -311,8 +309,8 @@
                             filter-fn filter-fn)
         [children? todos] (if (seq todos) [true todos] [false [item]])
         groups            (group-by (fn [it] (-> it :org/parent-names str)) todos)]
-
-    ($ :div {:class ["flex" "flex-col"]}
+    ;; (log/log! {:data {:i i}} "rendering card-or-card-group")
+    ($ :div {:class ["flex" "flex-col"] :key i}
        (for [[pnames grouped-todos] groups]
          ($ :div
             {:key   (str pnames)
@@ -349,8 +347,7 @@
               ($ :div
                  {:class ["flex" "flex-row" "flex-wrap" "justify-around"]}
                  (for [[i td] (->> grouped-todos sort-todos (map-indexed vector))]
-                   ($ :div
-                      {:key i :class ["p-2"]}
+                   ($ :div {:key i :class ["p-2"]}
                       ($ card {:hide-parent-names? true :item td}))))
               ($ :div
                  {:class ["p-2"]}
@@ -362,7 +359,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defui todo-row
-  [{:keys [item]}]
+  [{:keys [item i]}]
   (let [todo item]
     ($ :div
        {:class ["grid" "grid-flow-col" "grid-cols-8"
@@ -371,7 +368,8 @@
                 "border-slate-600"
                 "bg-slate-800"
                 "font-mono"
-                "p-4"]}
+                "p-4"]
+        :key   i}
 
        ($ :div
           {:class ["inline-flex" "items-center" "col-span-4"]}
@@ -457,7 +455,7 @@
                               (sort-by :org/parent-name >)
                               (take na)
                               (map-indexed vector))]
-              ($ todo-row (assoc opts :key i) td)))))))
+              ($ todo-row (assoc opts :key i :item td))))))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

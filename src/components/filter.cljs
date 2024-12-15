@@ -58,26 +58,28 @@
              {:class ["p-6" "flex flex-row" "items-center"]}
              ($ :span
                 {:class ["font-nes" "text-city-blue-400"]}
-                (if (and label label-comp)
-                  [label-comp label]
+                (if (and label-comp (or (seq items) label))
+                  (label-comp {:item (first items) :label label})
                   (str (label->group-by-label label)))
                 (str " (" (count items) ")"))
 
              ($ :span
                 {:class ["pl-4" "font-mono" "text-city-blue-400"]}
-                ($ debug/raw-metadata {:label "raw opts"}
-                   ;; limiting our selection here b/c opts is quite huge
-                   ;; (and has full components in it)
-                   (select-keys
-                     opts
-                     [:label :group-by-key :default-page-size :table-def
-                      :hide-all-tables :hide-all-groups])))
+                ($ debug/raw-metadata
+                   {:label "raw opts"
+                    ;; limiting our selection here b/c opts is quite huge
+                    ;; (and has full components in it)
+                    :data  (select-keys
+                             opts
+                             [:label :group-by-key :default-page-size :table-def
+                              :hide-all-tables :hide-all-groups])}))
 
              ($ :span
                 {:class ["pl-4" "font-mono" "text-city-blue-400"]}
-                ($ debug/raw-metadata {:label "raw items"}
-                   (->> items (take 10)
-                        (map (fn [x] (update x :org/items (fn [its] (take 2 its))))))))
+                ($ debug/raw-metadata
+                   {:label "raw items"
+                    :data  (->> items (take 10)
+                                (map (fn [x] (update x :org/items (fn [its] (take 2 its))))))}))
 
              ($ :div
                 {:class ["ml-auto"]}
@@ -132,13 +134,14 @@
        (when (and show-group group-comp-open? (:group->comp opts))
          ((:group->comp opts) {:group (->> items (take page-size))})))))
 
+;; note :item-by-comp is really opts->comp w/ :item key
 (defui items-by-group [filter-data]
   ($ :div
      (for [[i group-desc]
            (->> (:filtered-item-groups filter-data)
                 (map-indexed vector))]
        ($ group->comp (assoc (merge group-desc filter-data)
-                             :key (str (:label group-desc) i))))))
+                             :key i)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; filter def anchor

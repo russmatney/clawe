@@ -215,7 +215,7 @@
                (assoc filter-data
                       :xs->xs todo/infer-actions
                       :table-def (todos-table-def)
-                      :item->comp #($ todo/card-or-card-group {:item %})))))
+                      :item->comp (fn [opts] ($ todo/card-or-card-group opts))))))
 
        (when (not (seq todos))
          ($ :div

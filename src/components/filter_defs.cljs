@@ -2,6 +2,8 @@
   (:require
    [clojure.string :as string]
    [tick.core :as t]
+   [uix.core :as uix :refer [$]]
+
    [dates.tick :as dates.tick]
    [components.todo :as todo]
    [components.note :as note]
@@ -63,9 +65,9 @@
                         :group-by :org/status}
    :filters/priority   {:label               "Priority"
                         :group-by            :org/priority
-                        :group-by-label      (fn [label]
-                                               (or label "Unprioritized"))
-                        :group-by-label-comp todo/priority-label}
+                        :group-by-label      (fn [label] (or label "Unprioritized"))
+                        :group-by-label-comp (fn [opts]
+                                               ($ todo/priority-label (assoc opts :fallback (:label opts))))}
    :filters/scheduled  {:label        "Scheduled"
                         :group-by     :org/scheduled
                         :format-label (fn [d] (if d

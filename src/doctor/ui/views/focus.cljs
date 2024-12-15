@@ -124,9 +124,8 @@
             ($ :hr {:class ["border-city-blue-900" "pb-4"]})
             ($ item-header {:item todo})
             ($ todo/card-or-card-group
-               {:filter-by
-                (comp not #{:status/skipped :status/done} :org/status)
-                :item todo})
+               {:filter-by (comp not #{:status/skipped :status/done} :org/status)
+                :item      todo})
             ($ item-body {:item todo}))))))
 
 
