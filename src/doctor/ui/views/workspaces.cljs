@@ -12,6 +12,7 @@
    [doctor.ui.hooks.use-workspaces :as hooks.use-workspaces]
    [doctor.ui.hooks.use-topbar :as hooks.use-topbar]
    [doctor.ui.hooks.use-db :as hooks.use-db]
+   [doctor.ui.db :as ui.db]
    [doctor.ui.views.git-status :as git-status]
    [dates.tick :as dates]))
 
@@ -160,7 +161,7 @@
                    " ago"))))) )
 
 (defui repo-comp
-  [{:keys [item index] :as _opts}]
+  [{:keys [item index workspace] :as _opts}]
   (let [repo item]
     ($ :div
        {:class ["m-1" "p-4" "w-96"
@@ -179,7 +180,17 @@
              (str "(" index ") " (:repo/name repo)))
 
           ($ :span {:class ["ml-auto"]}
-             ($ actions/actions-list {:actions (handlers/->actions repo)})))
+             ($ actions/actions-list
+                {:actions
+                 (concat (handlers/->actions repo)
+                         [(when (nil? workspace)
+                            {:action/label "Create"
+                             ;; :action/icon  octicons/trash
+                             :action/on-click
+                             #(hooks.use-workspaces/create-workspace
+                                {:directory (:repo/directory repo)
+                                 :title     (:repo/name repo)})})]
+                         )})))
 
        ($ repo-git-status {:repo repo})
 
@@ -193,7 +204,12 @@
                 workspace/color
                 workspace/title-hiccup
                 workspace/index
-                workspace/clients]} workspace]
+                workspace/clients]} workspace
+
+        {:keys [data]}
+        (hooks.use-db/use-query
+          {:db->data (fn [conn] (ui.db/repo-for-workspace conn workspace))})
+        repo data]
     ($ :div
        {:class ["m-1"
                 "p-4"
@@ -241,7 +257,10 @@
        (when directory
          ($ :span
             {:class ["font-mono"]}
-            (dir directory))))))
+            (dir directory)))
+
+       (when repo
+         ($ repo-comp {:item repo})))))
 
 (defui widget [_opts]
   (let [{:keys [selected-workspaces active-workspaces]}
@@ -291,9 +310,7 @@
              (for [[i it] (->> active-workspaces (map-indexed vector))]
                ($ workspace-comp {:key i :workspace it}))
 
-             (for [[i it] (->> repos
-
-                               (map-indexed vector))]
+             (for [[i it] (->> repos (map-indexed vector))]
                ($ repo-comp {:key i :index i :item it})))
 
           (when show-current?

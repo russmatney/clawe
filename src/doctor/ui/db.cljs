@@ -86,6 +86,18 @@
            (:commit/directory commit))
       first)))
 
+(defn repo-for-workspace [conn workspace]
+  (when conn
+    (->>
+      (d/q '[:find [(pull ?e [*])]
+             :in $ ?dir
+             :where
+             [?e :doctor/type :type/repo]
+             [?e :repo/directory ?dir]]
+           @conn
+           (:workspace/directory workspace))
+      first)))
+
 (defn repos [conn]
   (when conn
     (->>

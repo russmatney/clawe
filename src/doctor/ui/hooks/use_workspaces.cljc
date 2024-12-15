@@ -35,8 +35,17 @@
   (t/log! :info (str "Focusing wsp" (:workspace/title wsp)))
   (wm/focus-workspace wsp))
 
+(defhandler create-workspace [{:keys [title] :as opts}]
+  (t/log! {:data opts} "Creating wsp")
+  (wm/create-workspace opts title))
+
+#?(:clj
+   (comment
+     (wm/create-workspace {} "new")
+     ))
+
 (defhandler focus-client [c]
-  (t/log! :info (str "Focusing client" (:client/window-title c)))
+  (t/log! {:data {:title (:client/window-title c)}} "Focusing client")
   (wm/focus-client c))
 
 (defhandler get-active-workspaces [] (api.workspaces/active-workspaces))

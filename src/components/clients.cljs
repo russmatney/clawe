@@ -21,7 +21,7 @@
   [{:keys [workspace clients skip-client?]}]
   (when (seq clients)
     ($ :div
-       {:class ["grid" "grid-flow-col"]}
+       {:class ["flex"]}
        (for [[i c] (cond->> clients
                      skip-client? (remove skip-client?)
                      true         (map-indexed vector))]
