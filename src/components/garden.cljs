@@ -227,8 +227,9 @@
                    {:class ["flex" "flex-col"]}
 
                    (when show-raw
-                     ($ components.debug/raw-metadata
-                        {:label "Raw body" :no-sort true} body))
+                     ($ components.debug/raw-data
+                        {:label "Raw body" :no-sort true
+                         :data  body}))
                    ($ org-body-text (assoc opts :item item))))
 
               (when (and (not (seq body)) (seq body-string))
@@ -239,9 +240,9 @@
                              :text body-string))))))
 
          (when show-raw
-           ($ components.debug/raw-metadata
-              {:label "Raw org item"}
-              (dissoc item :org/items)))
+           ($ components.debug/raw-data
+              {:label "Raw org item"
+               :data  (dissoc item :org/items)}))
 
          (when (seq items)
            ($ :div

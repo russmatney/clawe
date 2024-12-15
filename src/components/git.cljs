@@ -126,7 +126,7 @@
                 {:class ["pt-2" "whitespace-pre-line" "font-mono"]}
                 (:commit/body commit))
 
-             ($ components.debug/raw-metadata commit))))))
+             ($ components.debug/raw-data {:data commit}))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; commit list

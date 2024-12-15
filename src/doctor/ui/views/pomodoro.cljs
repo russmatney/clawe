@@ -107,7 +107,7 @@
                    "text-city-green-200"
                    "font-mono"]}
 
-          ($ debug/raw-metadata {:label "state" :data p-state})
+          ($ debug/raw-data {:label "state" :data p-state})
 
           ;; TODO pull a component out of this
           ;; TODO genericize this thresholds thing

@@ -27,7 +27,7 @@
        "bg-yo-blue-500"]}
      text))
 
-(defui actions-cell [item]
+(defui actions-cell [{:keys [item]}]
   ($ components.actions/actions-popup
      {:actions (handlers/->actions item)}))
 
@@ -51,7 +51,7 @@
                         ($ :span
                            {:class ["font-nes"]}
                            (count group))
-                        ($ components.debug/raw-metadata
+                        ($ components.debug/raw-data
                            {:label (-> group first :org/name)
                             :data  (first group)})])))}) )
 
@@ -83,8 +83,8 @@
                         "bg-yo-blue-500"]}
                       ($ components.garden/text-with-links (:org/name note))
                       ($ components.garden/org-body note))})
-               ($ components.debug/raw-metadata {:label "raw"} note)
-               ($ actions-cell note)])))}))
+               ($ components.debug/raw-data {:label "raw" :data note})
+               ($ actions-cell {:item note})])))}))
 
 (defn garden-file-table-def [entities]
   (let [notes (->> entities
@@ -102,8 +102,8 @@
                    :anchor-comp  (:org/short-path note)
                    :popover-comp [components.garden/full-note note]})
                (:org/name note)
-               ($ components.debug/raw-metadata {:label "raw"} note)
-               ($ actions-cell note)])))}))
+               ($ components.debug/raw-data {:label "raw" :data note})
+               ($ actions-cell {:item note})])))}))
 
 ;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ;; wallpaper/screenshots
@@ -131,7 +131,7 @@
                             (:wallpaper/used-count wp)
                             (some-> wp :wallpaper/last-time-set
                                     (t/new-duration :millis) t/instant str)
-                            ($ components.debug/raw-metadata {:label "raw" :data wp})])))})))
+                            ($ components.debug/raw-data {:label "raw" :data wp})])))})))
 
 (defn screenshot-table-def [entities]
   (let [screenshots (->> entities (filter (comp #{:type/screenshot
@@ -145,8 +145,8 @@
                           [($ components.screenshot/cluster-single nil scr)
                            (-> scr :name)
                            (-> scr :event/timestamp (t/new-duration :millis) t/instant str)
-                           ($ components.debug/raw-metadata {:label "raw" :data scr})
-                           ($ actions-cell scr)])))}))
+                           ($ components.debug/raw-data {:label "raw" :data scr})
+                           ($ actions-cell {:item scr})])))}))
 
 (comment
   (->>
@@ -167,11 +167,11 @@
 ;;                    (sort-by :lichess.game/created-at)
 ;;                    (reverse)
 ;;                    (map (fn [{:lichess.game/keys [] :as game}]
-;;                           [($ components.chess/cluster-single nil game)
+;;                           [($ components.chess/cluster-single {:item game})
 ;;                            (-> game :lichess.game/opening-name)
 ;;                            (some-> game :lichess.game/created-at (t/new-duration :millis) t/instant str)
-;;                            ($ components.debug/raw-metadata {:label "raw"} game)
-;;                            ($ actions-cell game)])))}))
+;;                            ($ components.debug/raw-data {:label "raw" :data game})
+;;                            ($ actions-cell {:item game})])))}))
 
 ;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ;; repos/commits
@@ -190,8 +190,8 @@
                            [(-> repo :repo/short-path)
                             (let [commits (ui.db/commits-for-repo conn repo)]
                               (count commits))
-                            ($ components.debug/raw-metadata {:label "raw"} repo)
-                            ($ actions-cell repo)])))})))
+                            ($ components.debug/raw-data {:label "raw" :data repo})
+                            ($ actions-cell {:item repo})])))})))
 
 (defn commit-table-def
   ([commits] (commit-table-def nil commits))
@@ -213,8 +213,8 @@
                               ($ components.git/added-removed commit)
                               (if repo (:repo/short-path repo)
                                   (:commit/directory commit))
-                              ($ components.debug/raw-metadata {:label "raw" :data commit})
-                              ($ actions-cell commit)]))))})))
+                              ($ components.debug/raw-data {:label "raw" :data commit})
+                              ($ actions-cell {:item commit})]))))})))
 
 (defn summary-table-def [entities]
   (let [ents-by-doctor-type (->> entities (group-by :doctor/type))]
@@ -247,8 +247,8 @@
       :rows    (->> entities
                     (map (fn [ent]
                            (concat
-                             [($ components.debug/raw-metadata {:label "raw" :data ent})
-                              ($ actions-cell ent)]
+                             [($ components.debug/raw-data {:label "raw" :data ent})
+                              ($ actions-cell {:item ent})]
                              (->> headers
                                   (map (fn [h]
                                          (str (get ent h)))))))))})))

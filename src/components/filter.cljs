@@ -65,7 +65,7 @@
 
              ($ :span
                 {:class ["pl-4" "font-mono" "text-city-blue-400"]}
-                ($ debug/raw-metadata
+                ($ debug/raw-data
                    {:label "raw opts"
                     ;; limiting our selection here b/c opts is quite huge
                     ;; (and has full components in it)
@@ -76,7 +76,7 @@
 
              ($ :span
                 {:class ["pl-4" "font-mono" "text-city-blue-400"]}
-                ($ debug/raw-metadata
+                ($ debug/raw-data
                    {:label "raw items"
                     :data  (->> items (take 10)
                                 (map (fn [x] (update x :org/items (fn [its] (take 2 its))))))}))
@@ -274,8 +274,7 @@
                 (let [meta {:group-by-key    group-by-key
                             :sort-groups-key sort-groups-key
                             :active-filters  active-filters}]
-                  ($ debug/raw-metadata {:label "Metadata"}
-                     meta)))
+                  ($ debug/raw-data {:label "Raw" :data meta})))
 
              ($ :div
                 {:class ["pl-4"]}

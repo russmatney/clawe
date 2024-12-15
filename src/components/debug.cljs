@@ -1,5 +1,6 @@
 (ns components.debug
   (:require
+   [taoensso.telemere :as log]
    [uix.core :as uix :refer [$ defui]]
 
    [components.floating :as floating]
@@ -24,7 +25,7 @@
   (colls-last {:some-v 5 :some-coll [5]}))
 
 
-(defui colorized-metadata
+(defui colorized-data
   [{:keys [exclude-key level data] :as opts}]
   (let [level       (or level 0)
         exclude-key (or exclude-key #{})]
@@ -32,23 +33,25 @@
       (map? data)
       (cond->> data
         (not (:no-sort opts)) map-key-sort
-        true                  (map #(colorized-metadata (assoc opts :level (inc level) :data %))))
+        true                  (map #(colorized-data (assoc opts :level (inc level) :data %))))
 
       :else
       (let [[k v] data]
         (when-not (exclude-key k)
-          ^{:key k}
           ($ :div.font-mono
-             {:class ["text-slate-800" (str "px-" (* 2 level))]}
+             {:key   k
+              :class ["text-slate-400" (str "px-" (* 2 level))]}
              "["
-             ($ :span {:class ["text-city-pink-400"]} (str k))
+             ($ :span {:class ["text-city-pink-400"]}
+                (str k))
              " "
 
              (cond
                (and (map? v) (seq v))
                (cond->> v
                  (not (:no-sort opts)) map-key-sort
-                 true                  (map #(colorized-metadata (assoc opts :level (inc level) :data %))))
+                 true
+                 (map #(colorized-data (assoc opts :level (inc level) :data %))))
 
                (and (or (list? v)
                         (set? v)
@@ -59,7 +62,8 @@
                     (seq v))
                (->> v
                     (take 10)
-                    (map #(colorized-metadata (assoc opts :level (inc level) :data %))))
+                    (map #(colorized-data
+                            (assoc opts :level (inc level) :data %))))
 
                :else
                ($ :span {:class ["text-city-green-400" "max-w-xs"]}
@@ -73,10 +77,13 @@
 
              "] "))))))
 
+(comment
+  ($ colorized-data {:data {:some [12 22] :val {:with :k}}})
+  )
 
-(defui raw-metadata [opts]
+(defui raw-data [opts]
   (let [no-sort (:no-sort opts)
-        data    (:data opts opts)
+        data    (:data opts)
         label   (if (= false (:label opts)) nil (:label opts "Toggle raw metadata"))]
     ($ floating/popover
        {:hover true :click true
@@ -92,13 +99,13 @@
                     "border"
                     "border-city-blue-800"]}
            (when data
-             (cond->> data
-               (not (map? data)) (take 10)
-               (not no-sort)     map-key-sort
-               true
-               (map #(colorized-metadata (assoc opts :data %)))
-               true
-               (map-indexed
-                 (fn [i x]
-                   ;; space between items
-                   ($ :div {:key i :class ["pt-2"]} x))))))})))
+             (for [[i x]
+                   (cond->> data
+                     (not (map? data)) (take 10)
+                     (not no-sort)     map-key-sort
+                     true              (map #($ colorized-data (assoc opts :data %)))
+                     true              (map-indexed vector))]
+               (do
+                 ;; space between items
+                 ($ :div {:key i :class ["pt-2"]}
+                    x)))))})))

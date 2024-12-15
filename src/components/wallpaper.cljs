@@ -37,7 +37,7 @@
        (when used-count
          ($ :div {:class ["text-lg"]} used-count))
 
-       ($ components.debug/raw-metadata {:label "Raw" :data item})
+       ($ components.debug/raw-data {:label "Raw" :data item})
 
        ($ :div.my-3
           (for [ax (actions/->actions item)]

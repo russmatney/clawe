@@ -107,7 +107,7 @@
             :popover-comp ($ components.garden/full-note {:item item})})
 
         ;; raw note on hover
-        ($ components.debug/raw-metadata {:label "raw" :data item}))))
+        ($ components.debug/raw-data {:label "raw" :data item}))))
 
 (defui note-comp [opts]
   ($ :div
@@ -140,7 +140,7 @@
                         ($ components.actions/actions-list
                            {:actions (handlers/->actions note) :n 1})))
                  ($ components.garden/all-nested-tags-comp {:item note})
-                 ($ components.debug/raw-metadata
+                 ($ components.debug/raw-data
                     {:label (str (:org/name-string note))
                      :data  note})
                  ($ :span.font-nes

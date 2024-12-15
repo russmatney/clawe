@@ -123,12 +123,12 @@
 (defui level [{:keys [item]}]
   (let [level (:org/level item 0)
         level (if (#{:level/root} level) 0 level)]
-    ($ components.debug/raw-metadata
+    ($ components.debug/raw-data
        {:label
         ($ :div
            {:class ["whitespace-nowrap" "font-nes"]}
-           (->> (repeat level "*") (apply str)))}
-       item)))
+           (->> (repeat level "*") (apply str)))
+        :data item})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; status
@@ -375,7 +375,7 @@
           {:class ["inline-flex" "items-center" "col-span-4"]}
           ($ :div
              {:class ["text-slate-400" "pr-4"]}
-             ($ components.debug/raw-metadata
+             ($ components.debug/raw-data
                 {:label [:span
                          {:class ["text-slate-400"]}
                          ($ components.garden/status-icon {:item todo})]

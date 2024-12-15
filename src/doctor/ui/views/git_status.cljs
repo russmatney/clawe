@@ -51,7 +51,7 @@
 (defn repo-status-table-def []
   {:headers ["Repo" ":dirty?" ":needs-push?" ":needs-pull?" "Actions"]
    :->row   (fn [repo]
-              [($ components.debug/raw-metadata
+              [($ components.debug/raw-data
                   {:label (components.git/short-repo repo)
                    :data  repo})
 

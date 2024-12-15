@@ -18,7 +18,7 @@
 (defui chessground [{:keys [shapes autoShapes] :as opts}]
   (let [opts                (clj->js (dissoc opts :shapes :autoShapes))
         [cg-api set-cg-api] (uix/use-state nil)
-        ref                 (uix/use-ref)]
+        ref                 (uix/use-ref nil)]
 
     ;; set/destroy cg-api
     (uix/use-effect
@@ -341,7 +341,7 @@
 
        ($ :div
           {:class ["pt-4"]}
-          ($ components.debug/raw-metadata {:data game})))))
+          ($ components.debug/raw-data {:data game})))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

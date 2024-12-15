@@ -49,10 +49,10 @@
 
           ($ :div
              {:class ["ml-auto"]}
-             ($ debug/raw-metadata
-                (merge {:label "RAW"
-                        :data  (->> client (sort-by first))}
-                       opts))))
+             ($ debug/raw-data
+                (assoc opts
+                       :label "RAW"
+                       :data  (->> client (sort-by first))))))
 
        ($ :div
           {:class ["flex" "flex-row" "items-center"]}
@@ -100,7 +100,7 @@
                  (dir directory))
 
               (when session
-                ($ debug/raw-metadata
+                ($ debug/raw-data
                    {:label "Tmux Metadata" :data session}))
 
               ($ :div
@@ -117,14 +117,14 @@
 
               ($ :div
                  {:class ["ml-auto"]}
-                 ($ debug/raw-metadata
+                 ($ debug/raw-data
                     {:label "RAW" :data wsp}))))))))
 
 (defui topbar-metadata []
   (let [metadata (hooks.use-topbar/use-topbar-metadata)]
     ($ :span
        {:class ["text-slate-200"]}
-       ($ debug/raw-metadata
+       ($ debug/raw-data
           {:label "Topbar Metadata"
            :data  (some->> metadata (sort-by first))}))))
 
@@ -194,7 +194,7 @@
 
        ($ repo-git-status {:repo repo})
 
-       (debug/raw-metadata {:data repo}))))
+       ($ debug/raw-data {:data repo}))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
