@@ -61,13 +61,14 @@
          <)
        (sort-by :todo/queued-at dates.tick/sort-latest-first)))
 
-(defn queued [todo]
-  (let [queued-at (:todo/queued-at todo)]
-    (when queued-at
-      ($ :div
-         {:class ["text-slate-400" "font-mono"]}
-         (str "queued: "
-              (t/format "E h:mma" (dates.tick/add-tz (t/instant queued-at))))))))
+(defn queued [{:keys [item]}]
+  (let [todo item]
+    (let [queued-at (:todo/queued-at todo)]
+      (when queued-at
+        ($ :div
+           {:class ["text-slate-400" "font-mono"]}
+           (str "queued: "
+                (t/format "E h:mma" (dates.tick/add-tz (t/instant queued-at)))))))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -133,22 +134,22 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; status
 
-(defui status-plain [it]
-  (when (:org/status it)
+(defui status-plain [{:keys [item]}]
+  (when (:org/status item)
     ($ :span
        {:class ["ml-2" "whitespace-nowrap" "font-nes"
                 "cursor-pointer"
                 "text-slate-300"
                 "hover:opacity-50"]}
        (cond
-         (completed? it)   "[X]"
-         (skipped? it)     "SKIP"
-         (in-progress? it) "[-]"
-         (not-started? it) "[ ]"))))
+         (completed? item)   "[X]"
+         (skipped? item)     "SKIP"
+         (in-progress? item) "[-]"
+         (not-started? item) "[ ]"))))
 
-(defui status [it]
+(defui status [{:keys [item]}]
   (let [[hovering? set-hovering] (uix/use-state nil)]
-    (when (:org/status it)
+    (when (:org/status item)
       ($ :span
          {:class          ["ml-2" "whitespace-nowrap" "font-nes"
                            "cursor-pointer"
@@ -161,33 +162,33 @@
             ;; TODO refactor this logic into...something?
             ;; needs to support going from one state to another... maybe via a popup menu, with a default
             (handlers/todo-set-new-status
-              (dissoc it :actions/inferred)
+              (dissoc item :actions/inferred)
               (cond
-                (completed? it)   :status/not-started
-                (skipped? it)     :status/not-started
-                (in-progress? it) :status/done
-                (not-started? it) :status/in-progress)))}
+                (completed? item)   :status/not-started
+                (skipped? item)     :status/not-started
+                (in-progress? item) :status/done
+                (not-started? item) :status/in-progress)))}
          (cond
-           (and (completed? it) (not hovering?))   "[X]"
-           (and (completed? it) hovering?)         "[ ]"
-           (and (skipped? it) (not hovering?))     "SKIP"
-           (and (skipped? it) hovering?)           "[ ]"
-           (and (in-progress? it) (not hovering?)) "[-]"
-           (and (in-progress? it) hovering?)       "[X]"
-           (and (not-started? it) (not hovering?)) "[ ]"
-           (and (not-started? it) hovering?)       "[-]")))))
+           (and (completed? item) (not hovering?))   "[X]"
+           (and (completed? item) hovering?)         "[ ]"
+           (and (skipped? item) (not hovering?))     "SKIP"
+           (and (skipped? item) hovering?)           "[ ]"
+           (and (in-progress? item) (not hovering?)) "[-]"
+           (and (in-progress? item) hovering?)       "[X]"
+           (and (not-started? item) (not hovering?)) "[ ]"
+           (and (not-started? item) hovering?)       "[-]")))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; tags-list
 
 (defui tags-list
-  [it]
-  (when (seq (:org/tags it))
+  [{:keys [item]}]
+  (when (seq (:org/tags item))
     ($ :span
        {:class ["text-md" "font-mono"
                 "flex" "flex-row" "flex-wrap"]}
        ":"
-       (for [[i tag] (->> it :org/tags (map-indexed vector))]
+       (for [[i tag] (->> item :org/tags (map-indexed vector))]
          ($ :span
             {:key tag}
             ($ :span
@@ -195,7 +196,7 @@
                 (concat ["cursor-pointer" "hover:line-through"]
                         (colors/color-wheel-classes {:type :line :i (+ 2 i)}))
                 :on-click (fn [tag] (handlers/remove-tag
-                                      (dissoc it :actions/inferred)
+                                      (dissoc item :actions/inferred)
                                       tag))}
                tag)
             ":")))))
@@ -203,7 +204,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; content popover
 
-(defui content [item]
+(defui content [{:keys [item]}]
   ($ floating/popover
      {:hover true :click true
 
@@ -212,8 +213,8 @@
       ($ :div
          {:class ["grid" "grid-flow-col"]}
          ;; TODO show just this item's content
-         #_ [components.garden/org-body item]
-         ($ components.garden/full-note item))}))
+         #_ [components.garden/org-body {:item item}]
+         ($ components.garden/full-note {:item item}))}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; card
@@ -251,9 +252,9 @@
      ($ :div
         {:class ["flex" "flex-col" "pb-2"]}
 
-        ($ tags-list item)
+        ($ tags-list {:item item})
 
-        ($ queued item)
+        ($ queued {:item item})
 
         ;; name
         ($ :span
@@ -272,7 +273,7 @@
                " ago")))
 
         (when-not hide-parent-names?
-          ($ item/parent-names {:n 2} item)))
+          ($ item/parent-names {:n 2 :item item})))
 
      ;; bottom meta
      ($ :div
@@ -282,7 +283,7 @@
                  "mt-auto"
                  "pb-2"]}
 
-        ($ content item)
+        ($ content {:item item})
 
         ;; actions list
         ($ :span
@@ -327,12 +328,12 @@
                  ($ :div
                     {:class ["flex" "flex-row" "items-center"]}
 
-                    ($ status item)
-                    ($ item/db-id item)
-                    ($ item/id-hash item)
+                    ($ status {:item item})
+                    ($ item/db-id {:item item})
+                    ($ item/id-hash {:item item})
                     ($ :div {:class ["ml-auto"]}
-                       ($ tags-list item))
-                    ($ priority-label item))
+                       ($ tags-list {:item item}))
+                    ($ priority-label {:item item}))
 
                  ($ :div
                     {:class ["flex" "flex-row" "items-center" "px-3"]}
@@ -361,61 +362,63 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defui todo-row
-  [todo]
-  ($ :div
-     {:class ["grid" "grid-flow-col" "grid-cols-8"
-              "gap-4"
-              "border"
-              "border-slate-600"
-              "bg-slate-800"
-              "font-mono"
-              "p-4"]}
+  [{:keys [item]}]
+  (let [todo item]
+    ($ :div
+       {:class ["grid" "grid-flow-col" "grid-cols-8"
+                "gap-4"
+                "border"
+                "border-slate-600"
+                "bg-slate-800"
+                "font-mono"
+                "p-4"]}
 
-     ($ :div
-        {:class ["inline-flex" "items-center" "col-span-4"]}
-        ($ :div
-           {:class ["text-slate-400" "pr-4"]}
-           ($ components.debug/raw-metadata
-              {:label [:span
-                       {:class ["text-slate-400"]}
-                       (components.garden/status-icon todo)]} todo))
+       ($ :div
+          {:class ["inline-flex" "items-center" "col-span-4"]}
+          ($ :div
+             {:class ["text-slate-400" "pr-4"]}
+             ($ components.debug/raw-metadata
+                {:label [:span
+                         {:class ["text-slate-400"]}
+                         ($ components.garden/status-icon {:item todo})]
+                 :data  todo}))
 
-        ($ components.garden/text-with-links (:org/name todo)))
+          ($ components.garden/text-with-links {:text (:org/name todo)}))
 
-     ($ queued todo)
+       ($ queued {:item todo})
 
-     ($ :div
-        {:class ["justify-self-end"]}
-        ($ components.garden/tags-comp {:item todo}))
+       ($ :div
+          {:class ["justify-self-end"]}
+          ($ components.garden/tags-comp {:item todo}))
 
-     ($ :div
-        {:class ["justify-self-end"]}
-        ($ floating/popover
-           {:hover  true :click true
-            :offset 0
-            :anchor-comp
-            ($ :div
-               {:class ["cursor-pointer" "text-slate-400"
-                        ]}
-               (when (seq (:org/parent-name todo))
-                 ($ :div
-                    ($ components.garden/text-with-links
-                       (str
-                         (-> todo :org/parent-name)
-                         " :: "
-                         (:org/short-path todo))))))
-            :popover-comp
-            ($ :div
-               {:class ["p-4"
-                        "bg-slate-800"
-                        "border" "border-slate-900"]}
-               ($ components.garden/full-note todo))}))
+       ($ :div
+          {:class ["justify-self-end"]}
+          ($ floating/popover
+             {:hover  true :click true
+              :offset 0
+              :anchor-comp
+              ($ :div
+                 {:class ["cursor-pointer" "text-slate-400"
+                          ]}
+                 (when (seq (:org/parent-name todo))
+                   ($ :div
+                      ($ components.garden/text-with-links
+                         (str
+                           (-> todo :org/parent-name)
+                           " :: "
+                           (:org/short-path todo))))))
+              :popover-comp
+              ($ :div
+                 {:class ["p-4"
+                          "bg-slate-800"
+                          "border" "border-slate-900"]}
+                 ($ components.garden/full-note {:item todo}))}))
 
-     ($ :div
-        {:class ["justify-self-end" "col-span-2"]}
-        ($ components.actions/actions-list
-           {:actions (handlers/->actions todo)
-            :n       5}))))
+       ($ :div
+          {:class ["justify-self-end" "col-span-2"]}
+          ($ components.actions/actions-list
+             {:actions (handlers/->actions todo)
+              :n       5})))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

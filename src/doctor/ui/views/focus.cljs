@@ -76,68 +76,70 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; current item header
 
-(defui item-header [it]
+(defui item-header [{:keys [item]}]
   ($ :div
      {:class ["flex" "flex-col" "px-4"
               "text-city-green-400" "text-xl"]}
 
      ($ :div {:class ["pb-2" "flex" "flex-row"
                       "items-center" "justify-between"]}
-        ($ item/parent-names it)
+        ($ item/parent-names {:item item})
         ($ components.actions/actions-list
-           {:actions       (handlers/->actions it)
+           {:actions       (handlers/->actions item)
             :nowrap        true
             :hide-disabled true}))
 
      ($ :div {:class ["flex" "flex-row" "items-center"]}
-        ($ todo/level it)
-        ($ todo/status it)
-        ($ item/db-id it)
-        ($ item/id-hash it)
+        ($ todo/level {:item item})
+        ($ todo/status {:item item})
+        ($ item/db-id {:item item})
+        ($ item/id-hash {:item item})
         ($ :div {:class ["ml-auto"]}
-           ($ todo/tags-list it))
-        ($ todo/priority-label it))
+           ($ todo/tags-list {:item item}))
+        ($ todo/priority-label {:item item}))
 
      ($ :div {:class ["flex" "flex-row"]}
         ($ :span {:class ["font-nes"]}
-           (:org/name-string it)))))
+           (:org/name-string item)))))
 
-(defui item-body [it]
+(defui item-body [{:keys [item]}]
   ($ :div
      {:class ["text-xl" "p-4" "flex" "flex-col"]}
      ($ :div
         {:class ["text-yo-blue-200" "font-mono"]}
         ;; TODO include sub items + bodies
-        #_ ($ :pre (:org/body-string it))
-        ($ components.garden/org-body it))))
+        #_ ($ :pre (:org/body-string item))
+        ($ components.garden/org-body {:item item}))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; current stack
 
-(defui current-stack [todos]
+(defui current-stack [{:keys [todos]}]
   (when (seq todos)
     ($ :div
-       (for [[i c] (->> todos todo/sort-todos (map-indexed vector))]
+       (for [[i todo] (->> todos todo/sort-todos (map-indexed vector))]
          ($ :div
             {:class ["bg-city-blue-800"]
              :key   i}
             ($ :hr {:class ["border-city-blue-900" "pb-4"]})
-            ($ item-header c)
+            ($ item-header {:item todo})
             ($ todo/card-or-card-group
                {:filter-by
                 (comp not #{:status/skipped :status/done} :org/status)
-                :item c})
-            ($ item-body c))))))
+                :item todo})
+            ($ item-body {:item todo}))))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; main widget
 
-(defui widget [opts]
-  (let [todos (ui.db/current-todos (:conn opts))
-        todos (todo/infer-actions todos)]
+(defui widget [_opts]
+  (let [{:keys [data]} (hooks.use-db/use-query
+                         {:db->data (fn [db] (ui.db/current-todos db))})
+        todos          data
+        todos          (todo/infer-actions todos)]
     (if (seq todos)
-      ($ current-stack todos)
+      ($ current-stack {:todos todos})
       ($ :div
          {:class ["text-center" "my-36" "text-slate-200"]}
          ($ :div {:class ["font-nes"]} "No current task!")
