@@ -265,9 +265,10 @@
         [show-current? set-show-current] (uix/use-state false)
 
         {:keys [data]} (hooks.use-db/use-query
-                         {:q '[:find (pull ?e [*])
-                               :where
-                               [?e :doctor/type :type/repo]]})
+                         {:q  '[:find (pull ?e [*])
+                                :where
+                                [?e :doctor/type :type/repo]]
+                          :id :workspace-repos})
 
         repos (->> data
                    (sort git-status/dirty?)

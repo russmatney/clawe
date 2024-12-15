@@ -49,7 +49,7 @@
 #?(:cljs (defonce conn (d/create-conn schema)))
 
 #?(:cljs
-   (defn use-query [{:keys [q conn->result db->data]}]
+   (defn use-query [{:keys [q conn->result db->data id]}]
      (let [[result set-result] (uix/use-state nil)
            ->result            (cond
                                  db->data     (fn [] (db->data conn))
@@ -59,7 +59,10 @@
        (uix/use-effect
          (fn []
            (set-result (->result))
-           (d/listen! conn :todos (fn [_tx] (set-result (->result)))))
+           (if id
+             (d/listen! conn id (fn [_tx] (set-result (->result))))
+             (d/listen! conn (fn [_tx] (set-result (->result)))))
+           )
          [])
        {:data     result
         :loading? (nil? result)})))
