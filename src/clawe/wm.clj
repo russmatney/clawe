@@ -10,7 +10,9 @@
    [clawe.yabai :as clawe.yabai]
    [clawe.i3 :as clawe.i3]
    [clawe.client :as client]
+   [ralphie.emacs :as r.emacs]
    [ralphie.config :as r.config]
+   [ralphie.tmux :as r.tmux]
    [timer :as timer])
   (:import
    [clawe.awesome Awesome]
@@ -256,7 +258,12 @@
    (sys/start! `*wm*)
    (let [title (if (string? workspace-or-title)
                  workspace-or-title (:workspace/title workspace-or-title))]
-     (wm.protocol/-create-workspace *wm* opts title))))
+     (wm.protocol/-create-workspace *wm* opts title)
+
+     ;; ensure tmux and emacs sessions exist for this title
+     ;; perhaps we want to opt-in/out of these?
+     (r.tmux/ensure-session {:tmux/session-name title})
+     (r.emacs/ensure-workspace {:emacs/workspace-name title}))))
 
 (defn delete-workspace
   [workspace]

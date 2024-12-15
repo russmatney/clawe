@@ -32,6 +32,13 @@
   (-> ($ emacsclient --eval ~form)
       check))
 
+(defn ensure-workspace
+  [{:emacs/keys [workspace-name]}]
+  (fire (str "(russ/ensure-workspace \"" workspace-name "\")")))
+
+(comment
+  (ensure-workspace {:emacs/workspace-name "newnewwsp"}))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Open emacs client for passed workspace
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
