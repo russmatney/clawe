@@ -1,10 +1,13 @@
 (ns doctor.ui.views.focus
   (:require
    ["react-icons/fa6" :as FA]
+   [taoensso.telemere :as log]
    [uix.core :as uix :refer [$ defui]]
 
+   [util :as util]
    [doctor.ui.handlers :as handlers]
    [doctor.ui.db :as ui.db]
+   [doctor.ui.hooks.use-db :as hooks.use-db]
    [components.actions :as components.actions]
    [components.garden :as components.garden]
    [components.todo :as todo]
@@ -13,10 +16,16 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; current task (for topbar)
 
-(defui current-task [{:keys [conn]}]
-  (let [current-todos (ui.db/current-todos conn)
-        current-todos (todo/infer-actions {:no-popup true} current-todos)
-        [n set-n]     (uix/use-state 0)]
+(defui current-task [_opts]
+  (let [{:keys [data]} (hooks.use-db/use-query
+                         {:db->data (fn [db] (ui.db/current-todos db))})
+        current-todos  data
+        current-todos  (todo/infer-actions {:no-popup true} current-todos)
+        [n set-n]      (uix/use-state 0)]
+    (log/log! {:data {:current-todos (count current-todos)}} "current task rendering")
+    (uix/use-effect
+      (fn [] (set-n #(util/clamp % 0 (dec (count current-todos)))))
+      [n current-todos])
     (if-not (seq current-todos)
       ($ :span "--")
       (let [todos   (todo/sort-todos current-todos)
@@ -55,12 +64,12 @@
                    [{:action/label    "next"
                      :action/icon     FA/FaChevronUp
                      :action/disabled (>= n (dec ct))
-                     :action/on-click (fn [_] (set-n inc))
+                     :action/on-click (fn [_] (set-n (inc n)))
                      :action/priority 5}
                     {:action/label    "prev"
                      :action/icon     FA/FaChevronDown
                      :action/disabled (zero? n)
-                     :action/on-click (fn [_] (set-n dec))
+                     :action/on-click (fn [_] (set-n (dec n)))
                      :action/priority 5}])
                  (handlers/->actions current))}))))))
 

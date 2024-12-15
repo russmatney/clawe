@@ -159,3 +159,10 @@
 
     ;; some high val
     :else 1000))
+
+(defn clamp [x small large] (if (< x small) small (min x large)))
+
+(comment
+  (clamp -1 0 5)
+  (clamp 3 0 5)
+  (clamp 6 0 5))
