@@ -1,14 +1,18 @@
 (ns doctor.ui.views.workspaces
   (:require
    [clojure.string :as string]
+   [taoensso.telemere :as log]
    [uix.core :as uix :refer [$ defui]]
 
    [components.icons :as icons]
    [components.debug :as debug]
    [components.actions :as actions]
+   [components.clients :as clients]
    [doctor.ui.handlers :as handlers]
    [doctor.ui.hooks.use-workspaces :as hooks.use-workspaces]
-   [doctor.ui.hooks.use-topbar :as hooks.use-topbar]))
+   [doctor.ui.hooks.use-topbar :as hooks.use-topbar]
+   [doctor.ui.db :as ui.db]
+   [doctor.ui.hooks.use-db :as hooks.use-db]))
 
 (defn dir [s]
   (-> s
@@ -123,6 +127,28 @@
            :data  (some->> metadata (sort-by first))}))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; repo-comp
+
+(defui repo-comp
+  [{:keys [item index] :as _opts}]
+  (let [repo item]
+    ($ :div
+       {:class ["m-1" "p-4" "w-96"
+                "border" "rounded"
+                "border-city-blue-600"
+                "bg-yo-blue-700"
+                "text-slate-600"]}
+       ($ :div
+          {:class ["flex flex-row" "items-center"]}
+          ($ :div {:class ["font-nes"]}
+             (str "(" index ") " (:repo/name repo)))
+
+          ($ :span {:class ["ml-auto"]}
+             ($ actions/actions-list {:actions (handlers/->actions repo)})))
+
+       (debug/raw-metadata {:data repo})
+       )))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defui workspace-comp
@@ -154,6 +180,10 @@
              ($ actions/actions-list {:actions (handlers/->actions workspace)})))
 
        (when (seq clients)
+         ($ components.clients/client-icon-list
+            {:clients clients :workspace workspace}))
+
+       (when (seq clients)
          ($ :ul
             {:class ["truncate"]}
             (for [[i c] (->> clients (map-indexed vector))]
@@ -178,7 +208,21 @@
             (dir directory))))))
 
 (defui widget [_opts]
-  (let [{:keys [selected-workspaces active-workspaces]} (hooks.use-workspaces/use-workspaces)]
+  (let [{:keys [selected-workspaces active-workspaces]}
+        (hooks.use-workspaces/use-workspaces)
+
+        [show-current? set-show-current] (uix/use-state false)
+
+        {:keys [data]} (hooks.use-db/use-query
+                         {:q '[:find (pull ?e [*])
+                               :where
+                               [?e :doctor/type :type/repo]]})
+
+        repos data]
+    (log/log! {:data {:selected (count selected-workspaces)
+                      :active   (count active-workspaces)
+                      :repos    (count repos)}}
+              "workspaces widget rendering")
     ($ :div
        {:class ["p-4"]}
        ($ :div
@@ -187,6 +231,12 @@
              {:class ["font-nes" "text-2xl" "text-white" "pb-2"]}
              (str "Workspaces (" (count active-workspaces) ")"))
 
+          ($ actions/actions-list
+             {:actions
+              [{:action/on-click #(set-show-current not)
+                :action/label
+                (if show-current? "hide current" "show current")}]})
+
           ($ :div
              {:class ["ml-auto"]}
              ($ topbar-metadata)))
@@ -194,10 +244,19 @@
        ($ :div
           {:class ["flex" "flex-row" "pt-4"]}
           ($ :div
-             {:class ["flex" "flex-0" "flex-col" "flex-wrap" "justify-between"]}
+             {:class ["flex" "flex-0"
+                      (if show-current? "flex-col" "flex-row")
+                      "flex-wrap"
+                      "justify-center"
+                      ]}
              (for [[i it] (->> active-workspaces (map-indexed vector))]
-               ($ workspace-comp {:key i :workspace it})))
+               ($ workspace-comp {:key i :workspace it}))
 
-          ($ :div
-             {:class ["flex" "flex-1"]}
-             ($ active-workspace {:workspaces selected-workspaces}))))))
+             (for [[i it] (->> repos
+                               (map-indexed vector))]
+               ($ repo-comp {:key i :index i :item it})))
+
+          (when show-current?
+            ($ :div
+               {:class ["flex" "flex-1"]}
+               ($ active-workspace {:workspaces selected-workspaces})))))))

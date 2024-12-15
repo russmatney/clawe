@@ -45,12 +45,13 @@
 #?(:cljs
    (defn use-workspaces []
      (let [[workspaces set-workspaces] (uix/use-state [])
-           handle-resp                 (fn [active-wsps]
-                                         (t/log! :info "new wspc data")
-                                         (set-workspaces
-                                           (->> active-wsps
-                                                (w/distinct-by :workspace/title)
-                                                (sort-by :workspace/index))))]
+           handle-resp
+           (fn [active-wsps]
+             (t/log! {:data active-wsps} "new wspc data")
+             (set-workspaces
+               (->> active-wsps
+                    (w/distinct-by :workspace/title)
+                    (sort-by :workspace/index))))]
 
        (with-stream [] (workspaces-stream) handle-resp)
        (with-rpc [] (get-active-workspaces) handle-resp)

@@ -30,7 +30,6 @@
   )
 
 (defn push-updated-workspaces []
-
   (log/log! :debug "pushing to workspaces stream (updating topbar)!")
   (s/put! *workspaces-stream* (active-workspaces)))
 

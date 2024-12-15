@@ -7,6 +7,7 @@
    ["@heroicons/react/20/solid" :as HIMini]
 
    [components.actions :as components.actions]
+   [components.clients :as components.clients]
    ;; [components.charts :as charts]
    [components.colors :as colors]
    ;; [components.format :as format]
@@ -28,39 +29,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Icons
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defui bar-icon
-  [{:keys [color icon src
-           fallback-text
-           classes]}]
-  ($ :div
-     {:class (concat [color] classes)}
-     (cond
-       src   ($ :img {:class ["w-10"] :src src})
-       icon  ($ :div {:class ["text-3xl"]} ($ icon))
-       :else fallback-text)))
-
-(defui client-icon-list
-  [{:keys [workspace clients]}]
-  (when (seq clients)
-    ($ :div
-       {:class ["grid" "grid-flow-col"]}
-       (for [[i c] (->> clients (remove skip-bar-app?) (map-indexed vector))]
-         (let [c-name                       (some->> c :client/window-title (take 15) (apply str))
-               {:client/keys [focused]}     c
-               {:keys [color] :as icon-def} (icons/client->icon c workspace)]
-           ($ :div
-              {:class ["w-8"] :key i}
-              ($ bar-icon (-> icon-def
-                              (assoc
-                                :fallback-text c-name
-                                :color color
-                                :classes ["border-opacity-0"
-                                          (cond
-                                            focused "text-city-orange-400"
-                                            color   color
-                                            :else   "text-city-blue-400")])))))))))
-
 
 (defui workspace-cell
   [{:keys [topbar-state workspace is-last]}]
@@ -84,7 +52,11 @@
         :on-mouse-enter #(set-hovering true)
         :on-mouse-leave #(set-hovering false)}
 
-       ($ client-icon-list (assoc topbar-state :workspace workspace :clients clients))
+       ($ components.clients/client-icon-list
+          (assoc topbar-state
+                 :workspace workspace
+                 :clients clients
+                 :skip-client? skip-bar-app?))
 
        ;; number/index
        (when show-number

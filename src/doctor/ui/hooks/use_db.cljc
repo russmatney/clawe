@@ -6,11 +6,9 @@
        :cljs [
               [datascript.core :as d]
               [uix.core :as uix]
-              [reagent.core :as r]
 
               [db.schema :refer [schema]]
               [doctor.ui.hooks.plasma :refer [with-stream with-rpc]]
-              [doctor.ui.hooks.use-reaction :refer [use-reaction]]
               ])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -51,9 +49,10 @@
 #?(:cljs (defonce conn (d/create-conn schema)))
 
 #?(:cljs
-   (defn use-query [{:keys [q conn->result]}]
+   (defn use-query [{:keys [q conn->result db->data]}]
      (let [[result set-result] (uix/use-state nil)
            ->result            (cond
+                                 db->data     (fn [] (db->data conn))
                                  conn->result (fn [] (conn->result conn))
                                  q            (fn [] (->> (d/q q @conn) (map first))))]
        ;; run in use-effect?
@@ -79,31 +78,7 @@
                     (map #(d/entity @conn %))
                     (map :doctor/type)
                     frequencies
-                    (#(t/log! {:data %} "Received data"))))
-
-             ;; (->> datoms (take 2)
-             ;;      (map (fn [dt] [(:a dt) (:v dt)]))
-             ;;      (t/log! :info))
-
-             ;; (-> (d/empty-db schema)
-             ;;     (d/db-with datoms)
-             ;;     ((fn [db]
-             ;;        (->>
-             ;;          (d/datoms db :eavt)
-             ;;          (map :e)
-             ;;          (distinct)
-             ;;          (take 1)
-             ;;          (d/pull-many db '[*]))))
-             ;;     (->>
-             ;;       (map (fn [x]
-             ;;              (t/log!
-             ;;                :info
-             ;;                (->>
-             ;;                  x
-             ;;                  (take 3)
-             ;;                  (into {})))))
-             ;;       doall))
-             )]
+                    (#(t/log! {:data %} "Received data")))))]
 
        (with-stream [] (db-stream) handle-resp)
        (with-rpc [] (get-db) handle-resp)
