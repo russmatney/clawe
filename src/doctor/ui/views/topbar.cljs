@@ -5,6 +5,11 @@
    [uix.core :as uix :refer [$ defui]]
    [wing.core :as w]
    ["@heroicons/react/20/solid" :as HIMini]
+   ["react-icons/fa6" :as FA]
+   ;; ["react-icons/md" :as MD]
+   ;; ["react-icons/gi" :as GI]
+   ;; ["react-icons/go" :as GO]
+   ;; ["react-icons/io5" :as IO]
 
    [components.actions :as components.actions]
    [components.clients :as components.clients]
@@ -94,32 +99,26 @@
       (if (#{:bg/dark} background-mode)
         :bg/light :bg/dark))))
 
-(defui topbar-actions-list [{:keys [conn metadata]}]
+(defui topbar-actions-list [{:keys [metadata]}]
   ($ components.actions/actions-list
      {:actions
       (concat
-        (handlers/pomodoro-actions conn)
-        [{:action/on-click (fn [_]
-                             ;; TODO toggle mute
-                             )
-          ;; :action/comp     ($ (if (:microphone/muted metadata)
-          ;;                       fa/microphone-slash-solid fa/microphone-solid
-          ;;                       ))
-          }
+        [{;; TODO toggle mute
+          :action/on-click (fn [_])
+          :action/label    "toggle mute (not impled)"
+          :action/comp     ($ (if (:microphone/muted metadata)
+                                FA/FaMicrophoneSlash FA/FaMicrophone))}
 
          {:action/on-click (toggle-background-mode metadata)
-          :action/label    "toggle"
+          :action/label    "toggle light/dark"
           :action/comp
           (if (#{:bg/dark} (:topbar/background-mode metadata))
             ($ HIMini/SunIcon {:class ["w-6" "h-6"]})
-            ($ HIMini/MoonIcon {:class ["w-6" "h-6"]}))
-          }
+            ($ HIMini/MoonIcon {:class ["w-6" "h-6"]}))}
          ;; reload
-
          {:action/on-click (fn [_] (js/location.reload))
-          :action/label    "reload"
-          :action/comp     ($ HIMini/ArrowPathIcon {:class ["w-6" "h-6"]})
-          }])}))
+          :action/label    "reload tobpar"
+          :action/comp     ($ HIMini/ArrowPathIcon {:class ["w-6" "h-6"]})}])}))
 
 (defui clock-host-metadata [{:keys [time metadata] :as opts}]
   ($ :div

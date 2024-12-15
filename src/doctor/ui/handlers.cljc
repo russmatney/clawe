@@ -178,15 +178,14 @@
   :ok)
 
 #?(:cljs
-   (defn pomodoro-actions [conn]
-     (let [{:keys [current]} (ui.db/pomodoro-state conn)]
-       [(if current
-          {:action/label    "End"
-           :action/on-click #(pomodoro-end-current)
-           :action/icon     FA/FaStop}
-          {:action/label    "Start"
-           :action/on-click #(pomodoro-start-if-break)
-           :action/icon     FA/FaPlay})])))
+   (defn pomodoro-actions [{:keys [current]}]
+     [(if current
+        {:action/label    "End"
+         :action/on-click #(pomodoro-end-current)
+         :action/icon     FA/FaStop}
+        {:action/label    "Start"
+         :action/on-click #(pomodoro-start-if-break)
+         :action/icon     FA/FaPlay})]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; todos

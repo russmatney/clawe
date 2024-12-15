@@ -2,14 +2,15 @@
   (:require
    [uix.core :as uix :refer [$ defui]]
    [tick.core :as t]
-   ;; [taoensso.telemere :as log]
+   [taoensso.telemere :as log]
 
    [dates.tick :as dates]
    [doctor.ui.hooks.use-timer :refer [use-interval]]
    [doctor.ui.db :as ui.db]
-   ;; [doctor.ui.handlers :as handlers]
+   [doctor.ui.hooks.use-db :as hooks.use-db]
+   [doctor.ui.handlers :as handlers]
    [components.debug :as debug]
-   ;; [components.actions :as components.actions]
+   [components.actions :as components.actions]
    ))
 
 (def current-thresholds
@@ -29,11 +30,16 @@
     :active?   #(-> % dates/duration-since t/minutes (> 60))
     :too-long? true}])
 
-(defui bar [{:keys [conn]}]
-  (let [{:keys [current last]} (ui.db/pomodoro-state conn)
+(defui bar [_opts]
+  (let [{:keys [data]}         (hooks.use-db/use-query
+                                 {:db->data (fn [db] (ui.db/pomodoro-state db))})
+        p-state                data
+        {:keys [current last]} p-state
         _time                  (use-interval {:->value  t/zoned-date-time
                                               ;; every 30s
                                               :interval 30000})]
+    (log/log! {:data {:current (not (nil? current))
+                      :last    (not (nil? last))}} "pomo bar rendering")
     ($ :div
        {:class ["flex flex-row" "items-center" "justify-between" "whitespace-nowrap"]}
        ($ :div
@@ -45,23 +51,18 @@
             ($ :span
                "B: "
                (dates/human-time-since (:pomodoro/finished-at last)))))
-       #_ ($ components.actions/actions-list (handlers/pomodoro-actions conn)))))
+       ($ components.actions/actions-list {:actions (handlers/pomodoro-actions p-state)}))))
 
-(defui pomodoro-list [pomodoros]
+(defui pomodoro-list [{:keys [pomodoros]}]
   (let [pairs (->> pomodoros
                    (partition 2 1))]
     ($ :div
        (for [[p prev] pairs]
          ($ :div
             {:key   (-> p :db/id str)
-             :class ["flex flex-col" "font-nes"
+             :class ["flex flex-col"
                      "my-4" "pl-2"
                      "text-2xl" "whitespace-nowrap"]}
-            ($ :span
-               (when prev
-                 (str "Break: "
-                      (dates/human-time-since (:pomodoro/finished-at prev) (:pomodoro/started-at p)))))
-
             ($ :span
                (str
                  "Started: "
@@ -75,27 +76,38 @@
 
                "("
                (dates/human-time-since (:pomodoro/started-at p) (:pomodoro/finished-at p))
-               ")"))))))
+               ")")
 
-(defui widget [{:keys [conn] :as _opts}]
-  (let [
-        _time
+            ($ :span
+               (when prev
+                 (str "Break: "
+                      (dates/human-time-since (:pomodoro/finished-at prev) (:pomodoro/started-at p))))))))))
+
+(defui widget [_opts]
+  (let [_time
         (use-interval {:->value  t/zoned-date-time
                        :interval 30000})
-        {:keys [current last] :as p-state} (ui.db/pomodoro-state conn)
-        pomodoros                          (ui.db/pomodoros conn)]
-    ;; (println "time" time)
+        {:keys [data]}         (hooks.use-db/use-query
+                                 {:db->data (fn [db] (ui.db/pomodoro-state db))})
+        p-state                data
+        {:keys [current last]} p-state
+
+        {:keys [data]} (hooks.use-db/use-query
+                         {:db->data (fn [db] (ui.db/pomodoros db))})
+        pomodoros      data]
+    (log/log! {:data {:current (not (nil? current))
+                      :last    (not (nil? last))}} "pomo widget rendering")
 
     ($ :div
        {:class ["flex flex-col"]}
-       ;; ($ components.actions/actions-list (handlers/pomodoro-actions conn))
+       ($ components.actions/actions-list {:actions (handlers/pomodoro-actions p-state)})
        ($ :div
           {:class ["flex flex-row" "items-center" "justify-around"
                    "bg-city-blue-700"
                    "text-city-green-200"
                    "font-mono"]}
 
-          ($ debug/raw-metadata {:label "state"} p-state)
+          ($ debug/raw-metadata {:label "state" :data p-state})
 
           ;; TODO pull a component out of this
           ;; TODO genericize this thresholds thing
@@ -145,4 +157,4 @@
                  ($ :span
                     "Last: " (dates/human-time-since started-at finished-at))))))
 
-       ($ pomodoro-list pomodoros))))
+       ($ pomodoro-list {:pomodoros pomodoros}))))

@@ -4,7 +4,6 @@
    ["react-icons/md" :as MD]
    ["react-icons/gi" :as GI]
    ["react-icons/go" :as GO]
-   ["react-icons/io5" :as IO]
    [uix.core :as uix :refer [$ defui]]
 
    [doctor.ui.db :as ui.db]
