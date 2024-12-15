@@ -13,7 +13,7 @@
   (some->>
     (or (:repo/directory it)
         (:commit/directory it))
-    (re-seq #"([A-Za-z-]+/[A-Za-z-]+)$")
+    (re-seq #"([A-Za-z-.]+/[A-Za-z-.]+)$")
     first
     first))
 

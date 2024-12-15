@@ -45,11 +45,15 @@
         (let [url     (->url s)
               repo-id (when url (url->repo-id url))
               repo-id (or repo-id
-                          (re-get #"(?!com)?([a-zA-Z0-9_-[.]]+/[a-zA-Z0-9_-[.]]+)" s))]
+                          (some->>
+                            (re-seq #"(?!com)?([a-zA-Z0-9_-[.]]+/[a-zA-Z0-9_-[.]]+)" s)
+                            last last))]
           repo-id)))))
 (comment
+  (->repo-id "/Users/russ/kikito/tween.lua")
   (->repo-id "https://github.com/kikito/tween.lua")
   (->repo-id "https://github.com/kikito.user/tween.lua")
   (->repo-id "kikito/tween.lua")
   (->repo-id "kikito.blah/tween.lua")
+  (->repo-id "nonsense")
   )
