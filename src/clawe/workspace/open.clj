@@ -51,7 +51,10 @@
   (clawe.rules/return-clients-to-expected-workspaces)
   (clawe.rules/consolidate-workspaces)
   (clawe.rules/sort-workspace-indexes)
-  (clawe.doctor/update-topbar)
+  (try
+    (clawe.doctor/update-topbar)
+    (catch Exception _e
+      (println "update-topbar fail")))
   wsp)
 
 (comment
