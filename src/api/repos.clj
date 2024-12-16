@@ -185,19 +185,22 @@
   ;; this likely won't finish before the next status check runs
   ;; maybe we want to wait a tick?
   (r.git/fetch-via-tmux (:repo/directory repo))
-  (let [{:git/keys [dirty? needs-pull? needs-push?]}
-        (r.git/status (:repo/directory repo))
-        now    (dt/now)
-        update (cond-> {}
-                 ;; TODO hammock git status attributes
-                 dirty?            (assoc :repo/dirty-at now)
-                 (not dirty?)      (assoc :repo/clean-at now)
-                 needs-pull?       (assoc :repo/needs-pull-at now)
-                 (not needs-pull?) (assoc :repo/did-not-need-pull-at now)
-                 needs-push?       (assoc :repo/needs-push-at now)
-                 (not needs-push?) (assoc :repo/did-not-need-push-at now))]
-    (log/log! {:data (:repo/directory repo)} ["updated repo git status"])
-    (db/transact (merge repo update) {:verbose? true}))
+  (future
+    ;; wait a tick for the above tmux/fire to finish
+    (Thread/sleep 2000)
+    (let [{:git/keys [dirty? needs-pull? needs-push? last-fetch-timestamp]}
+          (r.git/status (:repo/directory repo))
+          now    (dt/now)
+          update (cond-> {:repo/last-fetch-timestamp last-fetch-timestamp}
+                   ;; TODO hammock git status attributes
+                   dirty?            (assoc :repo/dirty-at now)
+                   (not dirty?)      (assoc :repo/clean-at now)
+                   needs-pull?       (assoc :repo/needs-pull-at now)
+                   (not needs-pull?) (assoc :repo/did-not-need-pull-at now)
+                   needs-push?       (assoc :repo/needs-push-at now)
+                   (not needs-push?) (assoc :repo/did-not-need-push-at now))]
+      (log/log! {:data (:repo/directory repo)} ["updated repo git status"])
+      (db/transact (merge repo update) {:verbose? true})))
   :ok)
 
 

@@ -321,14 +321,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn last-fetch-timestamp [repo-path]
-  (some->
-    (bb/run-proc
-      {:error-message
-       (str "RALPHIE ERROR for " repo-path " in git/last-fetch-timestamp")}
-      ^{:dir (zsh/expand repo-path)}
-      ($ stat -c %Y .git/FETCH_HEAD))
-    first
-    Integer/parseInt))
+  (fs/last-modified-time
+    (str (zsh/expand repo-path) "/.git/FETCH_HEAD")))
 
 (comment
   (last-fetch-timestamp "~/russmatney/clawe")
@@ -348,10 +342,10 @@
         dirty?      (->> res (filter #(re-seq #"not staged for commit" %)) seq)
         needs-pull? (->> res (filter #(re-seq #"branch is behind" %)) seq)
         needs-push? (->> res (filter #(re-seq #"branch is ahead" %)) seq)]
-    {:git/dirty?      dirty?
-     :git/needs-pull? needs-pull?
-     :git/needs-push? needs-push?
-     ;; :git/last-fetch-timestamp (last-fetch-timestamp repo-path)
+    {:git/dirty?               dirty?
+     :git/needs-pull?          needs-pull?
+     :git/needs-push?          needs-push?
+     :git/last-fetch-timestamp (last-fetch-timestamp repo-path)
      }))
 
 (comment
