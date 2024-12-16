@@ -34,7 +34,9 @@
 
 (defn ensure-workspace
   [{:emacs/keys [workspace-name]}]
-  (fire (str "(russ/ensure-workspace \"" workspace-name "\")")))
+  (fire (str
+          "(unless (+workspace-exists-p \"" workspace-name "\")
+             (+workspace-new \"" workspace-name "\"))")))
 
 (comment
   (ensure-workspace {:emacs/workspace-name "newnewwsp"}))
