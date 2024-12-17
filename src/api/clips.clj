@@ -23,11 +23,14 @@
 
 (defn fname->clip [f]
   (when-let [fname (fs/file-name f)]
-    (let [time (str (fs/creation-time f))
-          t    (dates/parse-time-string time)]
+    (let [time        (str (fs/creation-time f))
+          t           (dates/parse-time-string time)
+          parent-name (-> f fs/parent fs/file-name)
+          ]
       {:file/full-path      f
        ;; TODO support this properly for clips (need parent game-dir)
-       :file/web-asset-path (str "/assets/clips/" fname)
+       :file/web-asset-path (str "/assets/game-clips/"
+                                 parent-name "/" fname)
        :name                fname
        :doctor/type         :type/clip
        :event/timestamp     t
