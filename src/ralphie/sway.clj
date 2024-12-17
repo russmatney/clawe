@@ -96,7 +96,7 @@
   [x] (flatten ((juxt :sway/nodes :sway/floating_nodes) x)))
 
 (defn all-nodes
-  "Returns all :i3/nodes and :i3/floating_nodes"
+  "Returns all :sway/nodes and :sway/floating_nodes"
   [] (->> (tree) (tree-seq flatten-nodes flatten-nodes)))
 
 (comment
@@ -159,6 +159,6 @@
       (swaymsg!
         (str
           "\""
-          "[con_id=" (:swayi3/id client) "] "
+          "[con_id=" (:sway/id client) "] "
           "move --no-auto-back-and-forth to workspace " wsp-name
           "\"")))))
