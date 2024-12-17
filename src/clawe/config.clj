@@ -112,14 +112,6 @@
   (sys/start! `*config*)
   (:common-urls @*config* []))
 
-(defn screenshots-dir []
-  (sys/start! `*config*)
-  (fs/file (str (fs/home) "/" (:screenshots-dir @*config*))))
-
-(defn clips-dir []
-  (sys/start! `*config*)
-  (fs/file (str (fs/home) "/" (:clips-dir @*config*))))
-
 (defn garden-dir []
   (sys/start! `*config*)
   (fs/file (str (fs/home) "/" (:garden-dir @*config*))))

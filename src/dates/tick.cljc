@@ -18,6 +18,7 @@
    "yyyy-MM-ddTHH:mm:ss"
    "yyyy-MM-dd HH:mm:ss"
    "yyyy-MM-dd_HH.mm.ss"
+   "yyyy-MM-dd_HH-mm"
    "yyyy-MM-dd E HH:mm"
    "yyyyMMdd:HHmmss"
    :iso-local-date-time])
@@ -115,7 +116,14 @@
   (parse-time-string "2023-04-04T21:11:15Z")
   (parse-time-string "2023-02-28_23.23.07")
   (parse-time-string "2023-03-17_19.26.15 ")
-  (parse-time-string "2024-12-17_11.18.37 AM"))
+  (parse-time-string "2024-12-17_11.18.37 AM")
+  (parse-time-string "2023-04-23_11.12.08 PM 1")
+  (parse-time-string "2023-04-23_11.12.08 PM 4")
+
+  (parse-time-string "2024-03-06_16-22")
+  (parse-time-string "hex-zoomed-in_2024-03-06_16-22")
+
+  )
 
 
 

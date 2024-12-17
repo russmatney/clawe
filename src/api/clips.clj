@@ -1,9 +1,9 @@
 (ns api.clips
   (:require
-   [clojure.string :as string]
    [babashka.fs :as fs]
+   [taoensso.telemere :as log]
 
-   [dates.tick :as dates.tick]
+   [dates.tick :as dates]
    [db.core :as db]
    [ralphie.config :as r.config]))
 
@@ -23,24 +23,15 @@
 
 (defn fname->clip [f]
   (when-let [fname (fs/file-name f)]
-    (let [time-string
-          (-> fname
-              (string/replace #"Kapture " "")
-              (string/replace #" \d{2}%" "")
-              (string/replace #" at " "_")
-              (string/replace #" " "_")
-              (string/replace #".gif" "")
-              (string/replace #".mp4" ""))
-          t (dates.tick/parse-time-string time-string)]
-
+    (let [time (str (fs/creation-time f))
+          t    (dates/parse-time-string time)]
       {:file/full-path      f
-       ;; NOTE this implies a symlink between the screenshots dir and the public assets dir
+       ;; TODO support this properly for clips (need parent game-dir)
        :file/web-asset-path (str "/assets/clips/" fname)
        :name                fname
        :doctor/type         :type/clip
        :event/timestamp     t
-       :clip/time           t
-       :clip/time-string    time-string})))
+       :clip/time           t})))
 
 (defn all-clips []
   (->> (local-clip-paths)
@@ -48,7 +39,9 @@
        (remove nil?)))
 
 (defn ingest-clips []
+  (log/log! {} "Ingesting game clips")
   (->> (all-clips)
+       (sort-by :event/timestamp dates/sort-latest-first)
        (take 200)
        (db/transact)))
 
@@ -57,3 +50,11 @@
 
 (defn ingest-clip [fname]
   (->> fname fname->clip (db/transact)))
+
+(comment
+  (->>
+    (all-clips)
+    (sort-by :event/timestamp dates/sort-latest-first)
+    (take 1)
+    )
+  )

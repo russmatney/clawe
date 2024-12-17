@@ -226,7 +226,6 @@
   (log/log! "*server* stopping")
   (.stop *server*))
 
-
 (defn restart []
   (if (sys/running? `*server*)
     (sys/restart! `*server*)

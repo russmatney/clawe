@@ -52,6 +52,7 @@
 (defn screenshot-file-paths []
   (->> (r.config/screenshots-dir)
        (fs/list-dir)
+       (filter (fn [f] (#{"png" "jpg"} (fs/extension f))))
        (map str)))
 
 (defn screenshots-sorted []

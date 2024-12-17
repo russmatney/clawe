@@ -19,6 +19,8 @@
               (string/replace #"_\d{2,4}x\d{2,4}_scrot_001" "")
               (string/replace #"_\d{2,4}x\d{2,4}_scrot_002" "")
               (string/replace #"_\d{2,4}x\d{2,4}_scrot" "")
+              (string/replace #"PM \d" "PM")
+              (string/replace #"AM \d" "AM")
               (string/replace #" at " "_")
               (string/replace #".png" "")
               (string/replace #".jpg" ""))]
@@ -38,8 +40,13 @@
 
 (defn ingest-screenshots []
   (->> (all-screenshots)
+       (sort-by :screenshot/time dates.tick/sort-latest-first)
        (take 200)
        (db/transact)))
+
+(comment
+  (ingest-screenshots)
+  )
 
 (defn ingest-screenshot [fname]
   (-> fname fname->screenshot (db/transact)))

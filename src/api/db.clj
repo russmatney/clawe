@@ -109,6 +109,22 @@
     (take n)
     (map :e)))
 
+(defn recent-screenshots->es
+  [n]
+  (->>
+    (db/datoms :avet :doctor/type :type/screenshot)
+    reverse
+    (take n)
+    (map :e)))
+
+(defn recent-clips->es
+  [n]
+  (->>
+    (db/datoms :avet :doctor/type :type/clip)
+    reverse
+    (take n)
+    (map :e)))
+
 (defn repos->es []
   (->>
     (db/datoms :avet :doctor/type :type/repo)
@@ -146,6 +162,8 @@
       (last-modified-files->es 200)
       (recent-wallpapers->es 20)
       (recent-events->es 300)
+      (recent-clips->es 10)
+      (recent-screenshots->es 10)
       (repos->es)
       (chess-games->es))
     distinct
@@ -163,7 +181,14 @@
                               :org/short-path])
     (filter (comp #{:type/note} :doctor/type))
     #_(sort-by :file/last-modified dt/sort-chrono)
-    (take 5)))
+    (take 5))
+
+  (->>
+    (recent-clips->es 10)
+    (mapcat #(d/datoms @db/*conn* :eavt %))
+    )
+
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; db stream and frontend data push
