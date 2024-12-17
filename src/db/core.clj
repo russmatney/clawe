@@ -300,9 +300,10 @@
 ;; cli
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; NOTE this was impled to test queries from the CLI
+;; it does not work yet, b/c datascript and other deps are not bb-compat
 (defn query-db
   "Query the datascript db"
-  ;; no args supported yet - but this is here to be tested from the cli
   ([] (query-db nil))
   ([args]
    (log/log! {:data {:args args}} "db.core/query-db called")
@@ -313,8 +314,7 @@
                 [?e :doctor/type ?type]
                 [(contains? #{:type/note :type/todo
                               ;; include other types?
-                              } ?type)]
-                ])
+                              } ?type)]])
        (take 3)))))
 
 (comment

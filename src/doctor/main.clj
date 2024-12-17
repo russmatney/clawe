@@ -8,13 +8,13 @@
    [refactor-nrepl.middleware]
 
    [doctor.server :as server]
-   [doctor.config :as config])
+   [doctor.config :as d.config])
   (:gen-class))
 
 (defsys ^:dynamic *nrepl*
   :closure
   (let [nrepl-val (atom nil)
-        port      (:nrepl/port config/*config*)]
+        port      (d.config/nrepl-port)]
     (log/log! :info ["Starting Doctor backend *nrepl*" {:port port}])
     (try
       (reset! nrepl-val
