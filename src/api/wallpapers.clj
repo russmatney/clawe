@@ -1,6 +1,7 @@
 (ns api.wallpapers
   (:require
    [babashka.fs :as fs]
+   [taoensso.telemere :as log]
 
    [ralphie.notify :as notify]
    [ralphie.wallpaper :as r.wallpaper]
@@ -69,8 +70,9 @@
   ([w] (set-wallpaper nil w))
   ([opts w]
    (notify/notify "Setting wallpaper" w)
+   (log/log! {:data w} "setting wallpaper")
    (mark-wp-set w opts)
-   (r.wallpaper/set-wallpaper (:file/full-path w))))
+   (r.wallpaper/set-wallpaper {:path (:file/full-path w)})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;

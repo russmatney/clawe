@@ -28,11 +28,8 @@
               ["react-icons/fa6" :as FA]
               ["react-icons/io5" :as IO]
               ["react-icons/ti" :as TI]
-              ;; ["react-icons/go" :as GO]
 
-              [components.icons :as components.icons]
               [components.colors :as colors]
-              [doctor.ui.db :as ui.db]
               [doctor.ui.hooks.use-workspaces :as hooks.use-workspaces]])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

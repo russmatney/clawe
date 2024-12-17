@@ -1,7 +1,6 @@
 (ns pages.db
   (:require
    [uix.core :as uix :refer [defui $]]
-   [taoensso.telemere :as log]
 
    [components.table :as components.table]
    [datascript.core :as d]

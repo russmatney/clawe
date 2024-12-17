@@ -3,8 +3,7 @@
    [tick.core :as t]
    [uix.core :as uix :refer [$ defui]]
 
-   [components.debug :as components.debug]
-   [doctor.ui.actions :as actions]))
+   [components.debug :as components.debug]))
 
 (defui wallpaper-comp
   [{:keys [item] :as _opts}]
@@ -37,13 +36,4 @@
        (when used-count
          ($ :div {:class ["text-lg"]} used-count))
 
-       ($ components.debug/raw-data {:label "Raw" :data item})
-
-       ($ :div.my-3
-          (for [ax (actions/->actions item)]
-            ($ :div
-               {:key      (:action/label ax)
-                :class    ["cursor-pointer"
-                           "hover:text-yo-blue-300"]
-                :on-click (:action/on-click ax)}
-               (:action/label ax)))))))
+       ($ components.debug/raw-data {:label "Raw" :data item}))))

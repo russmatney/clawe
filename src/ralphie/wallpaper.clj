@@ -23,6 +23,7 @@
   (wallpaper-file-paths))
 
 (defn set-wallpaper [{:keys [path]}]
+  (println "ralphie setting wallpaper" path)
   (if (r.config/osx?)
     (->
       (process/$ osascript -e
