@@ -40,3 +40,6 @@
   (->> (all-screenshots)
        (take 200)
        (db/transact)))
+
+(defn ingest-screenshot [fname]
+  (-> fname fname->screenshot (db/transact)))

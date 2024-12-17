@@ -5,7 +5,8 @@
    [tick.core :as t]
    [dates.tick :as dates.tick])
   (:import
-   [java.time ZonedDateTime]))
+   [java.time ZonedDateTime]
+   [java.io File]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; transact helpers
@@ -14,7 +15,8 @@
 (def converted-type-map
   {ZonedDateTime                    t/inst
    ;; convert lazy seqs into vecs
-   (type (->> (repeat 5) (take 3))) vec})
+   (type (->> (repeat 5) (take 3))) vec
+   File                             str})
 
 (defn convert-matching-types [map-tx]
   (->> map-tx

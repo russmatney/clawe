@@ -21,9 +21,9 @@
    [dates.transit-time-literals :as ttl]
    [db.core :as db]
    [db.listeners :as db.listeners]
-   [doctor.config :as doctor.config]
+   [doctor.config :as d.config]
    [doctor.api :as doctor.api]
-   [garden.watcher :as garden.watcher]
+   [doctor.watchers :as watchers]
    [ralphie.notify :as notify]))
 
 (log/set-min-level! :debug)
@@ -203,13 +203,16 @@
    ;; some of these should maybe be db/*conn* deps, not server deps
    ;; api.db/*tx->fe-db*
    ;; db.listeners/*garden->blog*
-   garden.watcher/*garden-watcher*
+   watchers/*garden-watcher*
+   watchers/*screenshot-watcher*
+   watchers/*clip-watcher*
    ;; this is also disabled in the impl
    db.listeners/*data-expander*
    db/*conn*
-   *plasma-server*]
+   *plasma-server*
+   d.config/*config*]
   :start
-  (let [port (:server/port doctor.config/*config*)]
+  (let [port (d.config/server-port)]
     (log/log! {:data {:port port}} "Starting *server*")
     (let [server (undertow/run-undertow
                    app {:port             port

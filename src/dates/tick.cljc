@@ -13,6 +13,7 @@
 
 (def datetime-formats-without-zone
   ["yyyy-MM-dd_h.mm.ss a"
+   "yyyy-MM-dd_h.mm.ss a"
    "yyyy-MM-dd-HHmmss"
    "yyyy-MM-ddTHH:mm:ss"
    "yyyy-MM-dd HH:mm:ss"
@@ -113,7 +114,9 @@
   (parse-time-string "2021-12-30T17:52:12Z")
   (parse-time-string "2023-04-04T21:11:15Z")
   (parse-time-string "2023-02-28_23.23.07")
-  (parse-time-string "2023-03-17_19.26.15 "))
+  (parse-time-string "2023-03-17_19.26.15 ")
+  (parse-time-string "2024-12-17_11.18.37 AM"))
+
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

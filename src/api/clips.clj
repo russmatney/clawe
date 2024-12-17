@@ -54,3 +54,6 @@
 
 (comment
   (ingest-clips))
+
+(defn ingest-clip [fname]
+  (->> fname fname->clip (db/transact)))

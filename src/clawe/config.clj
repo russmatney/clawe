@@ -33,7 +33,7 @@
                (read-config clawe-config-path)
                (assoc :is-mac (r.config/osx?))
                (assoc :home-dir (str (fs/home)))
-               (->> ;; i think this means local will overwrite global?
+               (->> ;; local should overwrite global
                  (merge (read-config clawe-local-config-path))))]
     (timer/print-since "parsed and returning clawe config")
     conf))
@@ -111,6 +111,18 @@
 (defn common-urls []
   (sys/start! `*config*)
   (:common-urls @*config* []))
+
+(defn screenshots-dir []
+  (sys/start! `*config*)
+  (fs/file (str (fs/home) "/" (:screenshots-dir @*config*))))
+
+(defn clips-dir []
+  (sys/start! `*config*)
+  (fs/file (str (fs/home) "/" (:clips-dir @*config*))))
+
+(defn garden-dir []
+  (sys/start! `*config*)
+  (fs/file (str (fs/home) "/" (:garden-dir @*config*))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; set/get current window manager
