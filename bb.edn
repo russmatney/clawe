@@ -113,10 +113,16 @@
   {:doc "Assess the local environment for any issues"
    :task
    (do
-     (shelll "systemctl --no-pager --user status doctor-be doctor-fe doctor-topbar")
-     (pp "TODO impl ensure local symlinks")
+     (when-not (is-mac?)
+       (shelll "systemctl --no-pager --user status doctor-be doctor-fe doctor-topbar"))
 
-     (pp "TODO impl ensure `clove` is installed"))}
+     (pp "TODO impl ensure `clove` is installed")
+
+     (pp "TODO impl ensure local symlinks")
+     (shelll "l public/assets")
+     (log/info "TODO add other css needs (chessground?)")
+     (shelll "l public/css")
+     )}
 
   dev-deps
   {:doc "Perform any install and build steps required for development"
@@ -124,11 +130,18 @@
    ;; build towards a dev-env doctor command
    (do
      ;; install yarn deps
-     (shelll "yarn install")
+     (shelll "npm install")
 
      ;; local symlinks
-     (log/info "TODO impl ensure local symlinks (eg: ln -s ~/Screenshots public/assets/screenshots)")
-     (shelll "l public/assets"))}
+     (log/info "TODO impl ensure local symlinks!")
+     (log/info "ln -s ~/Screenshots public/assets/screenshots")
+     (log/info "ln -s ~/Dropbox/wallpapers public/assets/wallpapers")
+     (log/info "ln -s ~/Dropbox/game-assets/game-clips public/assets/game-clips")
+     (shelll "ls public/assets")
+     (log/info "TODO add other css needs (chessground)")
+     (log/info "cp node_modules/chessground/assets/* public/css/.")
+     (shelll "ls public/css")
+     )}
 
   doctor-be {:doc "Run the doctor backend."
              :task
