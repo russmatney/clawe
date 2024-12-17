@@ -9,16 +9,15 @@
 
 (defn ->actions
   "NOTE these actions are tied to the component's dialog atom"
-  [{:keys [dialog-open?]} item]
-  (let [{:keys []} item]
-    (->>
-      [{:action/label    "js/alert"
-        :action/on-click #(js/alert item)}
-       {:action/label    "open dialog"
-        :action/on-click (fn [_] (reset! dialog-open? true))}]
-      (remove nil?))))
+  [{:keys [set-dialog-open]} item]
+  (->>
+    [{:action/label    "js/alert"
+      :action/on-click #(js/alert item)}
+     {:action/label    "open dialog"
+      :action/on-click (fn [_] (set-dialog-open true))}]
+    (remove nil?)))
 
-(defui img [{:keys [screenshot]}]
+(defui img [{screenshot :item}]
   (let [{:keys [file/web-asset-path]} screenshot
 
         ext (->> web-asset-path
@@ -30,7 +29,7 @@
       ($ :img {:src web-asset-path}))))
 
 (defui screenshot-dialog
-  [{:keys [open? on-close screenshot] :as opts}]
+  [{:keys [open? on-close] screenshot :item :as opts}]
   (let [{:keys [name file/full-path file/web-asset-path]} screenshot]
     ($ dialog/dialog
        {:open        open?
@@ -46,7 +45,7 @@
 
 
 (defui screenshot-comp
-  [{:keys [screenshot] :as opts}]
+  [{screenshot :item :as opts}]
   (let [{:keys [file/web-asset-path]}  screenshot
         [_hovering? set-hovering]      (uix/use-state false)
         [dialog-open? set-dialog-open] (uix/use-state false)]
@@ -71,7 +70,9 @@
                  :on-close (fn [_] (set-dialog-open false))))
 
        ($ :div
-          (for [ax (->actions {:dialog-open? dialog-open?} screenshot)]
+          (for [ax (->actions {:dialog-open?    dialog-open?
+                               :set-dialog-open set-dialog-open}
+                              screenshot)]
             ($ :div
                {:key      (:action/label ax)
                 :class    ["cursor-pointer"
@@ -80,7 +81,7 @@
                (:action/label ax)))))))
 
 (defui thumbnail
-  [{:keys [screenshot] :as opts}]
+  [{screenshot :item :as opts}]
   (let [{:keys [file/web-asset-path]}  screenshot
         [_hovering? set-hovering]      (uix/use-state false)
         [dialog-open? set-dialog-open] (uix/use-state false)]
@@ -94,14 +95,14 @@
 
        ($ screenshot-dialog
           {:open?    dialog-open?
-           :on-close (fn [_] (set-dialog-open false))}
-          screenshot))))
+           :on-close (fn [_] (set-dialog-open false))
+           :item     screenshot}))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; cluster
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defui cluster-single [{:keys [screenshot] :as opts}]
+(defui cluster-single [{screenshot :item :as opts}]
   ($ :div
      {:class ["m-2"]}
 
@@ -131,5 +132,5 @@
                           (sort-by :event/timestamp t/<)
                           (map-indexed vector))]
        ($ cluster-single (assoc opts
-                                :screenshot event
+                                :item event
                                 :key i)))))

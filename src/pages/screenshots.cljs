@@ -7,7 +7,7 @@
    [doctor.ui.db :as ui.db]))
 
 (defui page [_opts]
-  (let [items
+  (let [{items :data}
         (hooks.use-db/use-query
           {:db->data #(ui.db/events % {:n           30
                                        :event-types #{:type/screenshot
