@@ -333,18 +333,20 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn status [repo-path]
-  (let [res         (-> {:error-message
-                         (str "RALPHIE ERROR for " repo-path " in git/status")}
-                        (bb/run-proc
-                          ^{:dir (zsh/expand repo-path)}
-                          ($ git status))
-                        seq)
-        dirty?      (->> res (filter #(re-seq #"not staged for commit" %)) seq)
-        needs-pull? (->> res (filter #(re-seq #"branch is behind" %)) seq)
-        needs-push? (->> res (filter #(re-seq #"branch is ahead" %)) seq)]
+  (let [res                  (-> {:error-message
+                                  (str "RALPHIE ERROR for " repo-path " in git/status")}
+                                 (bb/run-proc
+                                   ^{:dir (zsh/expand repo-path)}
+                                   ($ git status))
+                                 seq)
+        dirty?               (->> res (filter #(re-seq #"not staged for commit" %)) seq)
+        needs-pull?          (->> res (filter #(re-seq #"branch is behind" %)) seq)
+        needs-push?          (->> res (filter #(re-seq #"branch is ahead" %)) seq)
+        needs-pull-and-push? (->> res (filter #(re-seq #"different commits each" %)) seq)
+        ]
     {:git/dirty?               dirty?
-     :git/needs-pull?          needs-pull?
-     :git/needs-push?          needs-push?
+     :git/needs-pull?          (or needs-pull? needs-pull-and-push?)
+     :git/needs-push?          (or needs-push? needs-pull-and-push?)
      :git/last-fetch-timestamp (last-fetch-timestamp repo-path)
      }))
 
