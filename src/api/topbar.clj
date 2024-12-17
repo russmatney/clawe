@@ -106,23 +106,40 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defsys ^:dynamic *topbar-metadata-stream*
-  :start (s/stream)
+  :start (s/stream 1)
   :stop (s/close! *topbar-metadata-stream*))
 
 (comment
   (sys/start! `*topbar-metadata-stream*))
 
+(def last-val (atom nil))
+
 (defn push-topbar-metadata []
-  (log/log! :debug "pushing to topbar stream")
-  (s/put! *topbar-metadata-stream* (build-topbar-metadata)))
+  (let [topbar-data (build-topbar-metadata)]
+    (when (= @last-val topbar-data)
+      (reset! last-val topbar-data)
+      (let [res (s/try-put! *topbar-metadata-stream* (build-topbar-metadata) 0)]
+        (if @res
+          (log/log! {:level :debug} "pushing topbar metadata")
+          (log/log! {:level :debug} "dropping topbar update"))
+        res))))
 
 (comment
   (->>
     (build-topbar-metadata)
     (sort-by :workspace/index)
     first)
+  (def st (s/sliding-stream 1 (s/stream)))
+  (s/put! st "hi")
+  (s/take! st)
 
-  (push-topbar-metadata))
+  (sys/start!)
+
+  (push-topbar-metadata)
+  (->>
+    (repeatedly push-topbar-metadata)
+    (take 5))
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; subscribe to i3

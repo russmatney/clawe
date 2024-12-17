@@ -20,9 +20,9 @@
 (defn route
   "Routes an api request."
   [{:keys [uri query-string] :as req}]
-  (log/log! {:level :debug
-             :data  {:uri uri :query-string query-string}}
-            ["Routing API req" (System/currentTimeMillis)])
+  (when-not (#{"/topbar/update"} uri)
+    (log/log! {:level :debug :data {:uri uri}}
+              "Routing API req"))
 
   (cond
     (string/starts-with? "/api/pomodoros" uri)

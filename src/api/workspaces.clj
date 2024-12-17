@@ -21,19 +21,32 @@
   (->> (active-workspaces) (filter :workspace/focused)))
 
 (defsys ^:dynamic *workspaces-stream*
-  :start (s/stream 1000)
+  :start (s/stream 1)
   :stop (s/close! *workspaces-stream*))
+
+(def last-val (atom nil))
 
 (comment
   (sys/start! `*workspaces-stream*)
-  (sys/restart! `*workspaces-stream*)
-  )
+  (sys/restart! `*workspaces-stream*))
 
 (defn push-updated-workspaces []
-  (log/log! :debug "pushing to workspaces stream (updating topbar)!")
-  (s/put! *workspaces-stream* (active-workspaces)))
+  (let [wsp-data (active-workspaces)]
+    ;; how expensive if this `=` check?
+    (when-not (= @last-val wsp-data)
+      (reset! last-val wsp-data)
+      (let [res (s/try-put! *workspaces-stream* (active-workspaces) 0)]
+        (if @res
+          (log/log! {:level :debug} "pushing updated workspaces")
+          (log/log! {:level :debug} "dropping workspace update"))
+        res))))
 
 (comment
-  (push-updated-workspaces))
+  (sys/start!)
+  (push-updated-workspaces)
+
+  (->>
+    (repeatedly push-updated-workspaces)
+    (take 5)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
