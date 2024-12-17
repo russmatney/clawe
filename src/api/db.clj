@@ -6,7 +6,8 @@
    [garden.core :as garden]
    [datascript.core :as d]
    [taoensso.telemere :as log]
-   [dates.tick :as dt]))
+   [dates.tick :as dt]
+   [dates.tick :as dates]))
 
 (defn prioritized-todos->es []
   (->>
@@ -112,18 +113,28 @@
 (defn recent-screenshots->es
   [n]
   (->>
-    (db/datoms :avet :doctor/type :type/screenshot)
-    reverse
-    (take n)
-    (map :e)))
+    (db/query
+      '[:find (pull ?e [:db/id :event/timestamp])
+        :where
+        [?e :doctor/type :type/screenshot]
+        [?e :event/timestamp ?time]])
+    (map first)
+    (sort-by :event/timestamp dates/sort-latest-first)
+    (map :db/id)
+    (take n)))
 
 (defn recent-clips->es
   [n]
   (->>
-    (db/datoms :avet :doctor/type :type/clip)
-    reverse
-    (take n)
-    (map :e)))
+    (db/query
+      '[:find (pull ?e [:db/id :event/timestamp])
+        :where
+        [?e :doctor/type :type/clip]
+        [?e :event/timestamp ?time]])
+    (map first)
+    (sort-by :event/timestamp dates/sort-latest-first)
+    (map :db/id)
+    (take n)))
 
 (defn repos->es []
   (->>

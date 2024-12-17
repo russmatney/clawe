@@ -44,7 +44,7 @@
 (defn ingest-clips []
   (log/log! {} "Ingesting game clips")
   (->> (all-clips)
-       (sort-by :event/timestamp dates/sort-latest-first)
+       (sort-by :event/timestamp dates/sort-chrono)
        (take 200)
        (db/transact)))
 
