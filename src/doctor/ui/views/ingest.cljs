@@ -56,19 +56,20 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defui ingest-buttons
-  [_opts]
-  ($ :div
-     {:class ["grid" "grid-cols-6"
-              "space-x-2"
-              "p-2"]}
-     (for [{:action/keys [label on-click]} (ingest-actions)]
-       ($ :button {:key      label
-                   :class    ["bg-slate-800"
-                              "p-4"
-                              "border"
-                              "border-slate-600"
-                              "rounded-xl"
-                              "font-mono"
-                              "text-white"]
-                   :on-click on-click}
-          label))))
+  [{:keys [actions]}]
+  (let [actions (or actions (ingest-actions))]
+    ($ :div
+       {:class ["grid" "grid-cols-6"
+                "space-x-2"
+                "p-2"]}
+       (for [{:action/keys [label on-click]} actions]
+         ($ :button {:key      label
+                     :class    ["bg-slate-800"
+                                "p-4"
+                                "border"
+                                "border-slate-600"
+                                "rounded-xl"
+                                "font-mono"
+                                "text-white"]
+                     :on-click on-click}
+            label)))))

@@ -7,8 +7,10 @@
 
    [garden.db :as garden.db]
    [clawe.config :as c.config]
+   [ralphie.config :as r.config]
    [api.screenshots :as api.screenshots]
-   [api.clips :as api.clips]))
+   [api.clips :as api.clips]
+   [clojure.string :as string]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; helpers
@@ -18,13 +20,15 @@
    {:keys [skip-actions exts matches]}]
   (when-not (skip-actions action)
     (let [path (str file)]
-      (and (exts (fs/extension file))
-           (->> matches
-                (filter (fn [[k reg]]
-                          (when (seq (re-seq reg path))
-                            (log/log! :debug ["File matches pattern" k])
-                            k)))
-                first)))))
+      (and
+        (not (string/includes? ".DS_Store" (str file)))
+        (exts (fs/extension file))
+        (->> matches
+             (filter (fn [[k reg]]
+                       (when (seq (re-seq reg path))
+                         (log/log! :debug ["File matches pattern" k])
+                         k)))
+             first)))))
 
 (defn on-file-event [event {:keys [ingest-file] :as rules}]
   (when (ingest-file? event rules)
@@ -63,7 +67,7 @@
    :skip-actions #{:delete}
    :ingest-file  api.screenshots/ingest-screenshot
    :matches      {:screenshots #"/Screenshots/"}
-   :->dir        c.config/screenshots-dir})
+   :->dir        (fn [] (fs/file (r.config/screenshots-dir)))})
 
 (defsys ^:dynamic *screenshot-watcher*
   :start
@@ -85,7 +89,7 @@
    :skip-actions #{:delete}
    :ingest-file  api.clips/ingest-clip
    :matches      {:clips #"/game-clips/"}
-   :->dir        c.config/clips-dir})
+   :->dir        (fn [] (fs/file (r.config/game-clips-dir)))})
 
 (defsys ^:dynamic *clip-watcher*
   :start
