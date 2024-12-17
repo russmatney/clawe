@@ -419,32 +419,33 @@ if it is busy."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn open-session
-  "Creates a session in a new alacritty window."
+  "Creates a session in a new terminal window."
   ([] (open-session {:tmux/session-name "ralphie-fallback" :tmux/directory "~"}))
   ([{:tmux/keys [session-name directory] :as inputs}]
    (let [directory (if directory
                      (r.sh/expand directory)
                      (config/home-dir))]
 
-     (notify/notify "opening tmux session via alacritty"
-                    inputs)
-
+     (notify/notify "opening tmux session via terminal" inputs)
 
      (let [
            proc
-           (if (config/osx?)
-             ($ open -na "/Applications/Alacritty.app" --args
-                --title ~session-name -e tmux "new-session" -A
-                ~(when directory "-c") ~(when directory directory)
-                -s ~session-name)
+           (cond (config/osx?)
+                 ($ open -na "/Applications/Alacritty.app" --args
+                    --title ~session-name -e tmux "new-session" -A
+                    ~(when directory "-c") ~(when directory directory)
+                    -s ~session-name)
 
-             ($ alacritty
-                --title ~session-name -e tmux "new-session" -A
-                ~(when directory "-c") ~(when directory directory)
-                -s ~session-name))]
+                 :else
+                 ($
+                   alacritty
+                   ;; footclient
+                   --title ~session-name -e tmux "new-session" -A
+                   ~(when directory "-c") ~(when directory directory)
+                   -s ~session-name))]
 
        ;; NOTE `check`ing or derefing this won't release until
-       ;; the alacritty window is closed. Not sure if there's a better
+       ;; the term window is closed. Not sure if there's a better
        ;; way to disown the process without skipping error handling
        (-> ^{:out :string}
            proc
@@ -453,7 +454,7 @@ if it is busy."
               proc))
            check
            ;; check ;; don't check! let the process return
-           ;; this process is not disowned, so created terminals (alacritty) may
+           ;; this process is not disowned, so created terminals (term) may
            ;; close when the daemon that launched it (skhd) is restarted
            )))))
 
