@@ -9,8 +9,8 @@
 
 (defui page [_opts]
   (let [n     150
-        items (hooks.use-db/use-query
-                {:db->data (fn [db] (ui.db/wallpapers db {:n n}))})]
+        items (:data (hooks.use-db/use-query
+                       {:db->data (fn [db] (ui.db/wallpapers db {:n n}))}))]
     ($ :div
        ($ :button {:class ["bg-slate-800"
                            "p-4"
