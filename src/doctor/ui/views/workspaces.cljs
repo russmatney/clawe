@@ -206,7 +206,7 @@
 
         {:keys [data]}
         (hooks.use-db/use-query
-          {:db->data (fn [conn] (ui.db/repo-for-workspace conn workspace))})
+          {:db->data (fn [db] (ui.db/repo-for-workspace db workspace))})
         repo data]
     ($ :div
        {:class ["m-1" "p-4" "w-96"

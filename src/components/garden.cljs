@@ -72,15 +72,6 @@
   (let [all-tags (all-nested-tags item)]
     ($ tags-list all-tags)))
 
-(defn all-tags [{:keys [conn]} _item]
-  []
-  #_(println "all-tags called")
-  #_(println
-      #_(ui.db/garden-tags conn))
-  #_(->>
-      (ui.db/garden-tags conn)
-      (take 3)))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; name/line
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

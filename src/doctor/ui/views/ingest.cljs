@@ -2,9 +2,10 @@
   (:require
    [uix.core :as uix :refer [$ defui]]
 
+   [components.actions :as components.actions]
    [doctor.ui.handlers :as handlers]
-   [doctor.ui.db :as ui.db]
-   [components.actions :as components.actions]))
+   [doctor.ui.hooks.use-db :as hooks.use-db]
+   [doctor.ui.db :as ui.db]))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -35,20 +36,20 @@
 ;; Commit ingestion
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn commit-ingest-actions [conn]
-  (let [repos (ui.db/repos conn)]
-    (->> repos
-         (map (fn [repo]
-                {:action/label (:repo/short-path repo)
-                 :action/on-click
-                 (fn [_] (handlers/ingest-commits-for-repo
-                           (dissoc repo :actions/inferred)))}))
-         (sort-by :action/label))))
+(defn commit-ingest-actions [repos]
+  (->> repos
+       (map (fn [repo]
+              {:action/label (:repo/short-path repo)
+               :action/on-click
+               (fn [_] (handlers/ingest-commits-for-repo
+                         (dissoc repo :actions/inferred)))}))
+       (sort-by :action/label)))
 
-(defui commit-ingest-buttons [{:keys [conn]}]
-  ($ :div
-     ($ components.actions/actions-list {:actions
-                                         (commit-ingest-actions conn)})))
+(defui commit-ingest-buttons []
+  (let [repos (-> (hooks.use-db/use-query {:db->data ui.db/repos}) :data)]
+    ($ :div
+       ($ components.actions/actions-list {:actions
+                                           (commit-ingest-actions repos)}))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ingest buttons

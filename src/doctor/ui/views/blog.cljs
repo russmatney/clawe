@@ -13,7 +13,8 @@
    [components.note :as components.note]
    [dates.tick :as dates.tick]
    [doctor.ui.hooks.use-blog :as use-blog]
-   [doctor.ui.handlers :as handlers]))
+   [doctor.ui.handlers :as handlers]
+   [doctor.ui.hooks.use-db :as hooks.use-db]))
 
 (def icon nil)
 
@@ -286,7 +287,9 @@
         {:keys [root-notes]} blog-data
 
         ;; TODO merge/use db notes here, drop use-blog-data
-        ;; root-notes (ui.db/root-notes (:conn opts) {:join-children true})
+        ;; root-notes
+        ;; (hooks.use-db/use-query
+        ;;   {:db->data (fn [db] (ui.db/root-notes db {:join-children true}))})
 
         [sort-published-first set-sort-published-first] (uix/use-state nil)
         [sort-published-last set-sort-published-last]   (uix/use-state nil)

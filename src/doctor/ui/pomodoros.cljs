@@ -1,9 +1,10 @@
 (ns doctor.ui.pomodoros
   (:require
-   [doctor.ui.localstorage :as localstorage]
    [clojure.edn :as edn]
    [time-literals.read-write :as time-literals.read-write]
-   [tick.core :as t]))
+   [tick.core :as t]
+
+   [doctor.ui.localstorage :as localstorage]))
 
 (defn edn-read [x]
   (edn/read-string

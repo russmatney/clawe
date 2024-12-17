@@ -119,9 +119,9 @@
     (when (= @last-val topbar-data)
       (reset! last-val topbar-data)
       (let [res (s/try-put! *topbar-metadata-stream* (build-topbar-metadata) 0)]
-        (if @res
-          (log/log! {:level :debug} "pushing topbar metadata")
-          (log/log! {:level :debug} "dropping topbar update"))
+        ;; (if @res
+        ;;   (log/log! {:level :debug} "pushing topbar metadata")
+        ;;   (log/log! {:level :debug} "dropping topbar update"))
         res))))
 
 (comment

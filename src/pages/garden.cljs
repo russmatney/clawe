@@ -3,10 +3,14 @@
    [uix.core :as uix :refer [defui $]]
 
    [components.garden :as components.garden]
-   [doctor.ui.db :as ui.db]))
+   [doctor.ui.db :as ui.db]
+   [doctor.ui.hooks.use-db :as hooks.use-db]))
 
-(defui page [{:keys [conn]}]
-  (let [items                   (ui.db/garden-notes conn {:n 500})
+(defui page [_opts]
+  (let [items
+        (hooks.use-db/use-query
+          {:db->data
+           (fn [db] (ui.db/garden-notes db {:n 500}))})
         [selected set-selected] (uix/use-state (first items)) ]
     ($ :div
        {:class ["flex" "flex-col" "flex-wrap"

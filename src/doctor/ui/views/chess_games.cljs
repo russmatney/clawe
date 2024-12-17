@@ -5,14 +5,15 @@
    [components.chess :as components.chess]
    [components.actions :as components.actions]
    [doctor.ui.handlers :as handlers]
-   [doctor.ui.db :as ui.db]))
+   [doctor.ui.db :as ui.db]
+   [doctor.ui.hooks.use-db :as hooks.use-db]))
 
 (defn actions []
   [{:action/label    "Ingest lichess games"
     :action/on-click (fn [_] (handlers/ingest-lichess-games))}])
 
-(defui widget [opts]
-  (let [games (ui.db/chess-games (:conn opts))]
+(defui widget [_opts]
+  (let [games (:data (hooks.use-db/use-query {:db->data ui.db/chess-games}))]
     ($ :div
        {:class ["flex" "flex-col" "w-full"]}
 

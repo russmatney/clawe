@@ -7,9 +7,7 @@
    [components.filter-defs :as filter-defs]
    [components.events :as components.events]
    [doctor.ui.db :as ui.db]
-   ))
-
-(def icon nil)
+   [doctor.ui.hooks.use-db :as hooks.use-db]))
 
 
 (defn presets []
@@ -20,16 +18,23 @@
     :default     true}})
 
 (defui widget [opts]
-  (let [today  (t/today)
-        events (ui.db/events
-                 (:conn opts)
-                 {:filter-by
-                  #(some-> % :event/timestamp t/date (= today))})
+  (let [today (t/today)
+        events
+        (:data
+         (hooks.use-db/use-query
+           {:db->data
+            (fn [db]
+              (ui.db/events db {:filter-by
+                                #(some-> % :event/timestamp t/date (= today))}))}))
 
-        notes (ui.db/garden-notes
-                (:conn opts)
-                {:filter-by
-                 #(some-> % :file/last-modified t/date (= today))})
+        notes
+        (:data
+         (hooks.use-db/use-query
+           {:db->data
+            (fn [db]
+              (ui.db/garden-notes db
+                                  {:filter-by
+                                   #(some-> % :file/last-modified t/date (= today))}))}))
 
         filter-data
         (components.filter/use-filter

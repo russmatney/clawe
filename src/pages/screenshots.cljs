@@ -9,9 +9,9 @@
 (defui page [_opts]
   (let [items
         (hooks.use-db/use-query
-          {:conn->result #(ui.db/events % {:n           30
-                                           :event-types #{:type/screenshot
-                                                          :type/clip}})})]
+          {:db->data #(ui.db/events % {:n           30
+                                       :event-types #{:type/screenshot
+                                                      :type/clip}})})]
     ($ :div
        {:class ["flex" "flex-row" "flex-wrap"
                 "overflow-hidden"

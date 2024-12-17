@@ -15,6 +15,7 @@
    [components.git :as components.git]
 
    [doctor.ui.db :as ui.db]
+   [doctor.ui.hooks.use-db :as hooks.use-db]
    [doctor.ui.handlers :as handlers]
    [components.actions :as components.actions]
    [util :as util]))
@@ -155,31 +156,37 @@
 
   )
 
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; ;; lichess
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; lichess
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; (defn lichess-game-table-def [entities]
-;;   (let [games (->> entities (filter (comp #{:type/lichess-game} :doctor/type)))]
-;;     {:headers ["" "Opening" "Created at" "Raw" "Actions"]
-;;      :n       5
-;;      :rows    (->> games
-;;                    (sort-by :lichess.game/created-at)
-;;                    (reverse)
-;;                    (map (fn [{:lichess.game/keys [] :as game}]
-;;                           [($ components.chess/cluster-single {:item game})
-;;                            (-> game :lichess.game/opening-name)
-;;                            (some-> game :lichess.game/created-at (t/new-duration :millis) t/instant str)
-;;                            ($ components.debug/raw-data {:label "raw" :data game})
-;;                            ($ actions-cell {:item game})])))}))
+(defn lichess-game-table-def [entities]
+  (let [games (->> entities (filter (comp #{:type/lichess-game} :doctor/type)))]
+    {:headers ["" "Opening" "Created at" "Raw" "Actions"]
+     :n       5
+     :rows    (->> games
+                   (sort-by :lichess.game/created-at)
+                   (reverse)
+                   (map (fn [{:lichess.game/keys [] :as game}]
+                          [($ components.chess/cluster-single {:game game})
+                           (-> game :lichess.game/opening-name)
+                           (some-> game :lichess.game/created-at (t/new-duration :millis) t/instant str)
+                           ($ components.debug/raw-data {:label "raw" :data game})
+                           ($ actions-cell {:item game})])))}))
 
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; ;; repos/commits
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; repos/commits
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defui repo-commit-count [{:keys [repo]}]
+  (let [{:keys [data]}
+        (hooks.use-db/use-query
+          {:db->data (fn [db] (ui.db/commits-for-repo db repo))})]
+    ($ :span (count data))))
 
 (defn repo-table-def
   ([repos] (repo-table-def nil repos))
-  ([{:keys [conn]} repos]
+  ([_opts repos]
    (let [repos (->> repos (filter (comp #{:type/repo} :doctor/type)))]
      {:headers ["Repo" "Commits (in db)" "Raw" "Actions"]
       :n       5
@@ -188,33 +195,30 @@
                     (reverse)
                     (map (fn [repo]
                            [(-> repo :repo/short-path)
-                            (let [commits (ui.db/commits-for-repo conn repo)]
-                              (count commits))
+                            ($ repo-commit-count {:repo repo})
                             ($ components.debug/raw-data {:label "raw" :data repo})
                             ($ actions-cell {:item repo})])))})))
 
 (defn commit-table-def
   ([commits] (commit-table-def nil commits))
-  ([{:keys [conn]} commits]
+  ([_opts commits]
    (let [commits (->> commits (filter (comp #{:type/commit} :doctor/type)))]
      {:headers ["Hash" "Subject" "Added/Removed" "Repo" "Raw" "Actions"]
       :n       5
       :rows    (->> commits
                     (sort-by (comp dates.tick/parse-time-string :commit/author-date) t/>)
                     (map (fn [commit]
-                           (let [repo (ui.db/repo-for-commit conn commit)]
-                             [($ components.git/short-hash-link commit repo)
-                              (if (seq (:commit/body commit))
-                                ($ floating/popover
-                                   {:hover        true :click true
-                                    :anchor-comp  (:commit/subject commit)
-                                    :popover-comp [basic-text-popover (:commit/full-message commit)]})
-                                (:commit/subject commit))
-                              ($ components.git/added-removed commit)
-                              (if repo (:repo/short-path repo)
-                                  (:commit/directory commit))
-                              ($ components.debug/raw-data {:label "raw" :data commit})
-                              ($ actions-cell {:item commit})]))))})))
+                           [($ components.git/short-hash-link {:commit commit})
+                            (if (seq (:commit/body commit))
+                              ($ floating/popover
+                                 {:hover        true :click true
+                                  :anchor-comp  (:commit/subject commit)
+                                  :popover-comp [basic-text-popover (:commit/full-message commit)]})
+                              (:commit/subject commit))
+                            ($ components.git/added-removed commit)
+                            (:commit/directory commit)
+                            ($ components.debug/raw-data {:label "raw" :data commit})
+                            ($ actions-cell {:item commit})])))})))
 
 (defn summary-table-def [entities]
   (let [ents-by-doctor-type (->> entities (group-by :doctor/type))]
@@ -265,7 +269,7 @@
    (garden-file-table-def entities)
    (wallpaper-table-def opts entities)
    (screenshot-table-def entities)
-   ;; (lichess-game-table-def entities)
+   (lichess-game-table-def entities)
    (repo-table-def opts entities)
    (commit-table-def opts entities)
    ])
@@ -284,8 +288,8 @@
      (#{:type/screenshot :type/clip} doctor-type)
      (screenshot-table-def entities)
 
-     ;; (#{:type/lichess-game} doctor-type)
-     ;; (lichess-game-table-def entities)
+     (#{:type/lichess-game} doctor-type)
+     (lichess-game-table-def entities)
 
      (#{:type/repo} doctor-type)
      (repo-table-def opts entities)

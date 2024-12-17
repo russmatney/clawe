@@ -144,15 +144,14 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; root view
 
-(defui view [{:keys [conn] :as opts}]
-  (let [route-data     (some->> route-defs
-                                (filter (comp #{(-> opts :route :data :name)} :page-name)) first)
+(defui view [opts]
+  (let [route-data
+        (some->> route-defs
+                 (filter (comp #{(-> opts :route :data :name)} :page-name)) first)
         {:keys [comp]} route-data
-
-        opts (assoc opts
-                    :conn conn
-                    :route-defs route-defs
-                    :route-data route-data)]
+        opts           (assoc opts
+                              :route-defs route-defs
+                              :route-data route-data)]
     (if comp
       (if (:comp-only route-data)
         ($ comp opts)
@@ -163,13 +162,11 @@
 ;; Bootstrap
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; app
-
 (defui app []
   ($ error-boundary {:on-error js/console.error}
-     (let [route          (use-reaction current-route)
-           {:keys [conn]} (hooks.use-db/use-db)]
-       ($ view {:route route :conn conn}))))
+     (let [route (use-reaction current-route)
+           _     (hooks.use-db/use-db)]
+       ($ view {:route route}))))
 
 (defonce root-el
   (uix.dom/create-root

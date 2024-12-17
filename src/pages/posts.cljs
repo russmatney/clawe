@@ -1,10 +1,12 @@
 (ns pages.posts
   (:require
-   [uix.core :as uix :refer [$ defui]]
    [clojure.string :as string]
+   [taoensso.telemere :as log]
+   [uix.core :as uix :refer [$ defui]]
 
    [components.garden :as components.garden]
    [components.format :as components.format]
+   [doctor.ui.hooks.use-db :as hooks.use-db]
    [doctor.ui.db :as ui.db]))
 
 (defui post-link
@@ -36,12 +38,14 @@
   ((if (contains? s val)
      disj conj) s val))
 
-(defui page [{:keys [conn]}]
-  (let [selected-item-name nil
-        ;; TODO restore
-        ;; (router/use-route-parameters [:query :item-name])
-        items              (->> (ui.db/garden-notes conn {:n 500})
+(defui page [_opts]
+  (let [{:keys [data]}     (->> (hooks.use-db/use-query
+                                  {:db->data (fn [db] (ui.db/garden-notes db {:n 500}))}))
+        items              (->> data
                                 (filter (comp #{:level/root} :org/level)))
+        ;; TODO restore
+        selected-item-name nil
+        ;; (router/use-route-parameters [:query :item-name])
         default-selection  (cond->> items
                              selected-item-name
                              (filter (comp #{selected-item-name} :org/name))

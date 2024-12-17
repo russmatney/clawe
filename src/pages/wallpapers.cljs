@@ -3,12 +3,14 @@
    [uix.core :as uix :refer [defui $]]
 
    [doctor.ui.db :as ui.db]
-   [pages.db.tables :as db.tables]
-   [doctor.ui.handlers :as handlers]))
+   [doctor.ui.hooks.use-db :as hooks.use-db]
+   [doctor.ui.handlers :as handlers]
+   [pages.db.tables :as db.tables]))
 
-(defui page [{:keys [conn]}]
+(defui page [_opts]
   (let [n     150
-        items (ui.db/wallpapers conn {:n n})]
+        items (hooks.use-db/use-query
+                {:db->data (fn [db] (ui.db/wallpapers db {:n n}))})]
     ($ :div
        ($ :button {:class ["bg-slate-800"
                            "p-4"

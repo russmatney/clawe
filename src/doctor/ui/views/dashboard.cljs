@@ -28,7 +28,8 @@
    [doctor.ui.views.workspaces :as workspaces]
    [doctor.ui.hooks.use-workspaces :as hooks.use-workspaces]
    [doctor.ui.handlers :as handlers]
-   [doctor.ui.localstorage :as localstorage]))
+   [doctor.ui.localstorage :as localstorage]
+   [doctor.ui.hooks.use-db :as hooks.use-db]))
 
 (defui widget-bar
   [{:keys [comp label opts actions icon w-class bar]}]
@@ -172,8 +173,9 @@
                           :icon  FA/FaCalendar
                           :opts  opts
                           :comp
-                          (fn [opts]
-                            (let [recent-events (ui.db/events (:conn opts))
+                          (fn [_opts]
+                            (let [recent-events
+                                  (-> (hooks.use-db/use-query {:db->data ui.db/events}) :data)
                                   filter-data
                                   (components.filter/use-filter
                                     (assoc filter-defs/fg-config

@@ -36,9 +36,9 @@
     (when-not (= @last-val wsp-data)
       (reset! last-val wsp-data)
       (let [res (s/try-put! *workspaces-stream* (active-workspaces) 0)]
-        (if @res
-          (log/log! {:level :debug} "pushing updated workspaces")
-          (log/log! {:level :debug} "dropping workspace update"))
+        ;; (if @res
+        ;;   (log/log! {:level :debug} "pushing updated workspaces")
+        ;;   (log/log! {:level :debug} "dropping workspace update"))
         res))))
 
 (comment

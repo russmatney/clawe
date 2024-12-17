@@ -1,36 +1,34 @@
 (ns pages.db
   (:require
    [uix.core :as uix :refer [defui $]]
+   [taoensso.telemere :as log]
 
-   [datascript.core :as d]
    [components.table :as components.table]
+   [datascript.core :as d]
+   [doctor.ui.views.ingest :as ingest]
+   [doctor.ui.hooks.use-db :as hooks.use-db]
    [pages.db.tables :as tables]
-   [doctor.ui.views.ingest :as ingest]))
+   ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; db by :doctor/type
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn ents-with-doctor-type [conn]
-  (when conn
+(defn ents-with-doctor-type [db]
+  (when db
     (->> (d/q '[:find (pull ?e [*])
                 :where
                 [?e :doctor/type _]]
-              @conn)
+              @db)
          (map first))))
-
-(comment
-  (declare conn)
-  (->>
-    conn
-    ents-with-doctor-type))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; event page
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defui page [{:keys [conn] :as opts}]
-  (let [ents       (ents-with-doctor-type conn)
+(defui page [opts]
+  (let [ents       (:data
+                    (hooks.use-db/use-query {:db->data ents-with-doctor-type}))
         table-defs (tables/all-table-defs opts ents)]
     ($ :div
        {:class ["grid"
@@ -43,5 +41,5 @@
 
        (for [[i table-def] (->> table-defs (map-indexed vector))]
          ($ :div
-            {:class ["p-2"] :key i }
+            {:class ["p-2"] :key i}
             ($ components.table/table table-def))))))

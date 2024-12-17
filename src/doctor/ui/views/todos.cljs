@@ -163,9 +163,9 @@
 ;; main widget
 
 (defui widget [opts]
-  (let [{:keys [data loading?]}
+  (let [{:keys [data]}
         (hooks.use-db/use-query
-          {:conn->result
+          {:db->data
            #(ui.db/list-todos % {:join-children? true :skip-subtasks? true})})
         todos                                   data
         [only-incomplete set-only-incomplete]   (uix/use-state (:only-incomplete opts))

@@ -1,6 +1,7 @@
 (ns pages.journal
   (:require
    [uix.core :as uix :refer [$ defui]]
+
    [components.garden :as components.garden]
    [doctor.ui.db :as ui.db]
    [doctor.ui.hooks.use-db :as hooks.use-db]
@@ -10,8 +11,7 @@
 (defn use-recent-garden-notes []
   (let [[notes set-notes] (uix/use-state nil)
         {:keys [data]}    (hooks.use-db/use-query
-                            {:conn->result #(->> (ui.db/garden-files %) (take 3))})
-
+                            {:db->data #(->> (ui.db/garden-files %) (take 3))})
         recent-file-paths data]
     (with-rpc [data]
       (when recent-file-paths

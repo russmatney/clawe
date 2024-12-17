@@ -5,6 +5,7 @@
    [components.todo :as components.todo]
    [components.filter :as components.filter]
    [components.filter-defs :as filter-defs]
+   [doctor.ui.hooks.use-db :as hooks.use-db]
    [doctor.ui.db :as ui.db]
    [doctor.ui.views.ingest :as ingest]))
 
@@ -12,8 +13,11 @@
 ;; page
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defui page [{:keys [conn]}]
-  (let [todos                   (ui.db/list-todos conn {:n 1000})
+(defui page [_opts]
+  (let [todos
+        (-> (hooks.use-db/use-query
+              {:db->data (fn [db] (ui.db/list-todos db {:n 1000}))})
+            :data)
         [selected set-selected] (uix/use-state (first todos))
         {:keys [filtered-items filter-grouper]
          :as   filter-data}
