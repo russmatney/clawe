@@ -115,7 +115,7 @@
 
 (defn garden-dir []
   (sys/start! `*config*)
-  (fs/file (str (fs/home) "/" (:garden-dir @*config*))))
+  (fs/file (str (fs/home) "/" (:garden-dir @*config* "todo"))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; set/get current window manager

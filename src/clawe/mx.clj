@@ -277,10 +277,9 @@ hi there
 
 (defn open-new-wsp-with-emacs [w]
   (workspace.open/open-new-workspace w)
-  ;; (future (Thread/sleep 1000))
 
-  ;; TODO race-case, these sometimes fire too early
   (client.create/create-client "emacs")
+  ;; TODO term gets created in current wsp (not new one)
   (client.create/create-client "terminal")
   )
 
