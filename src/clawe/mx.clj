@@ -277,15 +277,9 @@ hi there
 
 (defn open-new-wsp-with-emacs [w]
   (workspace.open/open-new-workspace w)
+  ;; (future (Thread/sleep 1000))
 
-  ;; future so this doesn't block
-  ;; disabled for now, not used so much lately
-  ;; (future
-  ;;   ;; invoke clawe-mx to warm up the mx-cache for this workspace
-  ;;   ;; maybe want an option to NOT open rofi in this case
-  ;;   (mx {:wsp w}))
-
-  ;; TODO may need to handle a race-case, or pass in new wsp info to avoid it
+  ;; TODO race-case, these sometimes fire too early
   (client.create/create-client "emacs")
   (client.create/create-client "terminal")
   )
