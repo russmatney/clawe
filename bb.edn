@@ -193,6 +193,10 @@
                         (shelll "launchctl load /Users/russ/Library/LaunchAgents/com.clawe.doctor-fe.plist")))
   doctor-restart-fe (run 'restart-doctor-fe)
 
+  restart-doctor-clients (do (run 'restart-doctor-topbar)
+                             (run 'restart-doctor-dashboard))
+  doctor-restart-clients (run 'restart-doctor-clients)
+
   restart-doctor-topbar (do
                           (when-not (is-mac?)
                             (shelll "systemctl --user restart doctor-topbar"))

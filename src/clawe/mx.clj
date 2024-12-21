@@ -247,7 +247,7 @@ hi there
                       (mx {:wsp wsp})
 
                       ;; TODO may need to handle a race-case, or pass in new wsp info to avoid it
-                      (client.create/create-client "terminal"))}
+                      (client.create/create-client "terminal" {:current-workspace wsp}))}
    {:rofi/label     "Open Workspace and emacs"
     :rofi/on-select (fn [_]
                       (workspace.open/open-new-workspace wsp)
@@ -257,7 +257,7 @@ hi there
                       (mx {:wsp wsp})
 
                       ;; TODO may need to handle a race-case, or pass in new wsp info to avoid it
-                      (client.create/create-client "emacs"))}
+                      (client.create/create-client "emacs" {:current-workspace wsp}))}
    {:rofi/label     "Open Workspace"
     :rofi/on-select (fn [_]
                       (workspace.open/open-new-workspace wsp)
@@ -278,10 +278,8 @@ hi there
 (defn open-new-wsp-with-emacs [w]
   (workspace.open/open-new-workspace w)
 
-  (client.create/create-client "emacs")
-  ;; TODO term gets created in current wsp (not new one)
-  (client.create/create-client "terminal")
-  )
+  (client.create/create-client "emacs" {:current-workspace w})
+  (client.create/create-client "terminal" {:current-workspace w}))
 
 (defn test-fn [key]
   (if-let [wm (wm/key->workspace key)]

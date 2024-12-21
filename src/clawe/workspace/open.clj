@@ -38,15 +38,9 @@
         nil))))
 
 (defn open-new-workspace
-  "Creates a new tag and focuses it, and run the workspace's on-create hook."
+  "Creates a new workspace and focuses it"
   [wsp]
   (wm/open-new-workspace wsp)
-
-  ;; TODO open clients for workspace
-  ;; could be clients with matching workspace titles, or some other matching rule
-  ;; (client.create/create-client "emacs")
-  ;; (client.create/create-client "terminal")
-  ;; (clawe.rules/clean-up-workspaces) ;; deletes empty workspace immediately after creating it
 
   (clawe.rules/return-clients-to-expected-workspaces)
   (clawe.rules/consolidate-workspaces)
