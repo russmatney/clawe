@@ -19,8 +19,8 @@
    [doctor.ui.hooks.use-workspaces :as hooks.use-workspaces]
    [doctor.ui.handlers :as handlers]
    [doctor.ui.views.pomodoro :as pomodoro]
-   ;; [doctor.ui.views.git-status :as git-status]
-   [doctor.ui.views.focus :as focus]))
+   [doctor.ui.views.focus :as focus]
+   [clawe.workspace :as workspace]))
 
 (defn skip-bar-app? [client]
   (or
@@ -76,13 +76,29 @@
             ($ components.actions/actions-list {:actions (handlers/->actions workspace) :n 2}))))))
 
 (defui workspace-list [{:keys [topbar-state workspaces]}]
-  ($ :div
-     {:class ["flex" "flex-row" "h-full" "place-self-start"]}
-     (for [[i it] (->> workspaces (map-indexed vector))]
-       ($ workspace-cell {:key          i
-                          :topbar-state topbar-state
-                          :workspace    it
-                          :is-last      (= i (- (count workspaces) 1))}))))
+  (let [is-scratchpad?
+        ;; could consider including active/hidden/etc here or on icon color
+        (fn [client] (#{:hide/scratchpad} (:hide/type client)))
+        workspaces-1 (map (fn [wsp]
+                            (update wsp :workspace/clients
+                                    #(->> % (remove is-scratchpad?))))
+                          workspaces)
+        scratchpads  (->> workspaces (mapcat :workspace/clients)
+                          (filter is-scratchpad?))]
+    ($ :div
+       {:class ["flex" "flex-row" "h-full" "place-self-start"]}
+       ($ workspace-cell
+          {:key          :scratchpads
+           :topbar-state topbar-state
+           :workspace    {:workspace/clients scratchpads
+                          :workspace/index   "s"}})
+       ($ :div {:class ["w-2"]})
+       (for [[i it] (->> workspaces-1 (map-indexed vector))]
+         ($ workspace-cell {:key          i
+                            :topbar-state topbar-state
+                            :workspace    it
+                            :is-last      (= i (- (count workspaces) 1))}))
+       )))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Clock/host/metadata
@@ -207,10 +223,5 @@
           ($ :div
              {:class ["overflow-scroll"]}
              ($ focus/current-task opts))
-
-          ;; TODO impl a quick toggle for topbar feats
-          ;; ($ :div
-          ;;    {:class ["overflow-scroll"]}
-          ;;    ($ git-status/bar opts))
 
           ($ clock-host-metadata (assoc opts :topbar-state topbar-state :metadata metadata))))))
