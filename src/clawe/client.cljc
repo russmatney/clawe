@@ -6,6 +6,21 @@
    [malli.core :as m]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; helpers
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn is-bar-app? [client]
+  (or
+    (-> client :client/key #{"topbar"})
+    (-> client :client/window-title #{"tauri-doctor-topbar"})))
+
+(defn is-scratchpad? [client]
+  (or
+    (-> client :hide/type #{:hide/scratchpad})
+    ;; TODO switch to a non-yabai specific flag here
+    (-> client :yabai.window/scratchpad #{""} not)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; schema
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

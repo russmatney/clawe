@@ -108,40 +108,42 @@
 ;; clean up workspaces
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn is-bar-app? [client]
-  (-> client :client/window-title #{"tauri-doctor-topbar"}))
-
 (defn clean-workspaces
   "Closes workspaces with 0 clients or nil titles."
   ([] (clean-workspaces nil))
   ([last]
    (notify/notify {:subject "Removing empty or title-less workspaces"})
    (let [wsps           (wm/active-workspaces {:include-clients true})
-         many-to-delete (->> wsps
-                             (filter (fn [wsp]
-                                       (or
-                                         (-> wsp :workspace/title nil?)
-                                         (->> wsp :workspace/clients
-                                              (remove is-bar-app?)
-                                              seq empty?)))))
-         it             (some-> many-to-delete first)]
+         many-to-delete (->> wsps (filter (fn [wsp]
+                                            (and
+                                              ;; never delete
+                                              (not (-> wsp :workspace/title
+                                                       #{"journal" "dotfiles"}))
+                                              (or
+                                                (-> wsp :workspace/title nil?)
+                                                (->> wsp :workspace/clients
+                                                     (remove client/is-bar-app?)
+                                                     (remove client/is-scratchpad?)
+                                                     seq empty?))))))
+
+         wsp (some-> many-to-delete first)]
      (cond
        (and (= 1 (count wsps))
             (seq many-to-delete))
        (notify/notify "Refusing to delete last workspace")
 
-       (and (not (nil? it)) (= last it))
+       (and (not (nil? wsp)) (= last wsp))
        (notify/notify "Error deleting workspaces")
 
-       it
+       wsp
        (try
-         (println "Deleting workspace" (workspace/strip it))
-         (wm/delete-workspace it)
+         (println "Deleting workspace" (workspace/strip wsp))
+         (wm/delete-workspace wsp)
          (notify/notify {:notify/subject "Deleted Workspace"
-                         :notify/body    (:workspace/title it "no-title")})
+                         :notify/body    (:workspace/title wsp "no-title")})
 
          ;; call again until there are none left?
-         (clean-workspaces it)
+         (clean-workspaces wsp)
          (catch Exception e e
                 (notify/notify {:notify/subject "Error deleting workspace"
                                 :notify/body    e})))
@@ -156,7 +158,8 @@
   ([] (return-clients-to-expected-workspaces nil))
   ([opts]
    (let [clients    (->> (wm/active-clients)
-                         (remove (comp #{"topbar"} :client/key)))
+                         (remove client/is-bar-app?)
+                         (remove client/is-scratchpad?))
          workspaces (wm/active-workspaces {:prefetched-clients clients})
 
          ;; TODO consider branching for opt-in :scratchpads here (vs creating on-the-fly workspaces)

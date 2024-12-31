@@ -20,7 +20,7 @@
    [doctor.ui.handlers :as handlers]
    [doctor.ui.views.pomodoro :as pomodoro]
    [doctor.ui.views.focus :as focus]
-   [clawe.workspace :as workspace]))
+   [clawe.client :as client]))
 
 (defn skip-bar-app? [client]
   (or
@@ -76,15 +76,12 @@
             ($ components.actions/actions-list {:actions (handlers/->actions workspace) :n 2}))))))
 
 (defui workspace-list [{:keys [topbar-state workspaces]}]
-  (let [is-scratchpad?
-        ;; could consider including active/hidden/etc here or on icon color
-        (fn [client] (#{:hide/scratchpad} (:hide/type client)))
-        workspaces-1 (map (fn [wsp]
+  (let [workspaces-1 (map (fn [wsp]
                             (update wsp :workspace/clients
-                                    #(->> % (remove is-scratchpad?))))
+                                    #(->> % (remove client/is-scratchpad?))))
                           workspaces)
         scratchpads  (->> workspaces (mapcat :workspace/clients)
-                          (filter is-scratchpad?))]
+                          (filter client/is-scratchpad?))]
     ($ :div
        {:class ["flex" "flex-row" "h-full" "place-self-start"]}
        ($ workspace-cell
