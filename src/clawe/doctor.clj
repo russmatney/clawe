@@ -25,6 +25,14 @@
 (defn refresh-git-status []
   (slurp (str (clawe.config/doctor-base-url) "/git/refresh")))
 
+;; ingest
+
+(defn ingest-file [{:keys [path]}]
+  ;; TODO url-encode the path?
+  (slurp (str (clawe.config/doctor-base-url) "/ingest?file=" path)))
+
+;; blog
+
 (defn rebuild-blog
   ([] (rebuild-blog nil))
   ([_] (slurp (str (clawe.config/doctor-base-url) "/blog/rebuild"))))
@@ -40,6 +48,8 @@
 (defn restart-blog-systems
   ([] (restart-blog-systems nil))
   ([_] (slurp (str (clawe.config/doctor-base-url) "/blog/restart-systems"))))
+
+;; clawe
 
 (defn clawe-mx
   ([] (clawe-mx))

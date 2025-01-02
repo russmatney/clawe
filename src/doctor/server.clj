@@ -203,7 +203,6 @@
    ;; some of these should maybe be db/*conn* deps, not server deps
    ;; api.db/*tx->fe-db*
    ;; db.listeners/*garden->blog*
-   watchers/*garden-watcher*
    watchers/*screenshot-watcher*
    watchers/*clip-watcher*
    ;; this is also disabled in the impl

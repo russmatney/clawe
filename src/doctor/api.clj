@@ -1,20 +1,21 @@
 (ns doctor.api
   (:require
    [taoensso.telemere :as log]
+   [clojure.string :as string]
 
-   [api.workspaces :as workspaces]
-   [api.topbar :as topbar]
-   [api.todos :as todos]
    [api.blog :as blog]
+   [api.clips :as clips]
    [api.pomodoros :as pomodoros]
    [api.repos :as repos]
    [api.screenshots :as screenshots]
-   [api.clips :as clips]
-
-   [clawe.restart :as clawe.restart]
+   [api.topbar :as topbar]
+   [api.todos :as todos]
+   [api.workspaces :as workspaces]
    [clawe.mx :as clawe.mx]
+   [clawe.restart :as clawe.restart]
    [clawe.toggle :as clawe.toggle]
-   [clojure.string :as string]))
+   [doctor.ingest :as ingest]
+   ))
 
 
 (defn route
@@ -75,6 +76,25 @@
     (do
       (todos/reingest-todos)
       {:status 200 :body "updated todos"})
+
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;; ingest
+
+    (= uri "/ingest")
+    (cond
+      (string/starts-with? query-string "file=")
+      (do
+        (ingest/attempt-ingest
+          ;; NOTE not ideal - should parse the query string with a lib
+          {:path (string/replace query-string "file=" "")})
+        {:status 200 :body "attempting ingestion"} )
+
+      :else
+      (do
+        (log/log! {:level :warn
+                   :data  {:query-string query-string}}
+                  "Unsupported ingest input")
+        {:status 400 :body "unhandled/unsupported query-string"}))
 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ;; blog
