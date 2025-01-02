@@ -34,6 +34,12 @@
                  :garden #"/todo/garden/"
                  :basic  #"/todo/icebox.org"}})
 
+(def repo-todos-rules
+  ;; TODO super broad! could get better treatment
+  {:exts        #{"org"}
+   :ingest-file garden.db/sync-and-purge-for-path
+   :matches     {:todo #".org"}})
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn attempt-ingest [{:keys [path]}]
@@ -46,4 +52,11 @@
     (ingest-file? {:file path} garden-rules)
     (do
       (log/log! {} "ingesting garden file")
-      ((:ingest-file garden-rules) path))))
+      ((:ingest-file garden-rules) path))
+
+    (ingest-file? {:file path} repo-todos-rules)
+    (do
+      (log/log! {} "ingesting repo todos file")
+      ((:ingest-file repo-todos-rules) path))
+
+    ))
