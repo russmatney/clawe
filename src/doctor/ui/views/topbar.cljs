@@ -32,7 +32,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defui workspace-cell
-  [{:keys [topbar-state workspace is-last]}]
+  [{:keys [topbar-state workspace is-last small-icons?]}]
   (let [{:workspace/keys [index clients focused]}
         workspace
         urgent                   false
@@ -57,7 +57,8 @@
           (assoc topbar-state
                  :workspace workspace
                  :clients clients
-                 :skip-client? skip-bar-app?))
+                 :skip-client? skip-bar-app?
+                 :small-icons? small-icons?))
 
        ;; number/index
        (when show-number
@@ -88,7 +89,8 @@
           {:key          :scratchpads
            :topbar-state topbar-state
            :workspace    {:workspace/clients scratchpads
-                          :workspace/index   "s"}})
+                          :workspace/index   "s"}
+           :small-icons? true})
        ($ :div {:class ["w-2"]})
        (for [[i it] (->> workspaces-1 (map-indexed vector))]
          ($ workspace-cell {:key          i
