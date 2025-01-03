@@ -322,7 +322,7 @@ hi there
 (comment
   (add-neil-dep {:repo-id "teknql/wing"}))
 
-(defn rofi-neil-suggestions []
+(defn rofi-clipboard-and-browser-suggestions []
   (concat
     (->> (clipboard/values)
          (map (fn [v]
@@ -379,7 +379,7 @@ hi there
                                   (notify/notify "Created wsp: " repo-id))
                                 (f arg))))))))
 
-       (rofi-neil-suggestions)
+       (rofi-clipboard-and-browser-suggestions)
 
        ;; TODO show only common but unopen workspaces (clawe, dotfiles, dino)
        (common-wsps-mem))

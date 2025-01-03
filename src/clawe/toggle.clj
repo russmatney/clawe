@@ -173,9 +173,7 @@
           action (-> key (determine-toggle-action opts))]
       (timer/print-since "clawe.toggle/toggle action determined")
       (execute-toggle-action action (merge args opts))
-      (timer/print-since "clawe.toggle/toggle action executed")))
-
-  (clawe.doctor/update-topbar))
+      (timer/print-since "clawe.toggle/toggle action executed"))))
 
 (comment
   (toggle {:client/key "web"}))

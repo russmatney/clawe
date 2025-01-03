@@ -33,6 +33,7 @@
 (defn values []
   (->> (get-all)
        vals
+       (remove nil?)
        (map string/trim)
        (remove empty?)))
 

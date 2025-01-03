@@ -13,7 +13,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; helpers
 
-(defn ingest-file?
+(defn should-ingest-file?
   [{:keys [action file]}
    {:keys [skip-actions exts matches]}]
   (when-not (skip-actions action)
@@ -29,7 +29,7 @@
              first)))))
 
 (defn on-file-event [event {:keys [ingest-file] :as rules}]
-  (when (ingest-file? event rules)
+  (when (should-ingest-file? event rules)
     (log/log! {:data {:file (str (fs/file-name (:file event)))}} "Syncing file")
     (ingest-file (:file event))))
 
