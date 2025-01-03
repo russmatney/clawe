@@ -9,6 +9,7 @@ tmp/
 .clj-kondo/babashka
 .clj-kondo/metosin
 log/
+logs/
 
 awesome/**/.luacheckcache
 awesome/.luacheckcache

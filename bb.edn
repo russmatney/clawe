@@ -65,7 +65,7 @@
              label name
              cmd   (str clove-exec " create-window"
                         " --title " title " --label " label " --url " url
-                        " --transparent"
+                        (when (:transparent opts) " --transparent")
                         (when (:decorations opts) " --decorations"))]
          (pp (str "Running clove app: " cmd))
          (shelll {:dir       (str (home-dir) "/russmatney/clawe")
@@ -154,11 +154,13 @@
 
   ;; TODO dry up doctor-tauri with a more fully-featured api support (like quickblog)
   topbar    {:doc  "Run the doctor topbar via tauri. Consumed from systemd service."
-             :task (run-doctor-tauri-app "topbar")}
+             :task (run-doctor-tauri-app {:transparent true} "topbar")}
   dashboard {:doc  "Run the doctor dashboard via tauri."
-             :task (run-doctor-tauri-app {:decorations true} "dashboard")}
+             :task (run-doctor-tauri-app {:decorations true
+                                          :transparent true} "dashboard")}
   focus     {:doc  "Run the doctor focus via tauri."
-             :task (run-doctor-tauri-app {:decorations true} "focus")}
+             :task (run-doctor-tauri-app {:decorations true
+                                          :transparent true} "focus")}
 
   restart-doctor (do
                    (log "Restarting doctor backend and frontend")
