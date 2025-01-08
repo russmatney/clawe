@@ -3,6 +3,8 @@
    [taoensso.telemere :as log]
    [systemic.core :as sys :refer [defsys]]
    [datascript.core :as d]
+   [clojure.set :as set]
+   [org-crud.markdown :as org-crud.markdown]
 
    [blog.publish :as blog.publish]
    [blog.db :as blog.db]
@@ -127,18 +129,43 @@
   (let [txed-ents (->> tx :tx-data (map :e) (into #{})
                        (d/pull-many @db/*conn* '[*]))
 
-        published-notes (->> txed-ents
-                             (filter (comp blog.db/published-id? :org/id)))]
+        to-publish (->> txed-ents
+                        (filter (comp #{:type/note} :doctor/type))
+                        (filter (comp seq
+                                      (fn [tags] (set/union #{"published"
+                                                              "post"}
+                                                            tags))
+                                      :org/tags))
+                        (filter (comp #{0} :org/level-int))
+                        )
 
-    (when (seq published-notes)
-      (log/log! :info ["rerendering edited notes!"
-                       (->> txed-ents (map :org/name-string))])
-      (->> published-notes (map blog.db/update-db-note) doall)
-      (->> published-notes
-           ;; NOTE CAREFUL! this is an easy way to accidentally publish notes!
-           ;; publish-note also guards against it
-           (map (comp blog.publish/publish-note :org/source-file))
-           doall))))
+        ;; published-notes (->> txed-ents
+        ;;                      (filter (comp blog.db/published-id? :org/id)))
+        ]
+
+    (when (seq to-publish)
+      (log/log! {:data {:to-publish (count to-publish)
+                        :ents       txed-ents}}
+                "TX had notes to publish")
+
+      ;; TODO some org-crud -> markdown + blog config handling
+      ;; probably lives in a blog.* namespace
+      ;; need config for blog dir, path to .md within blog dir, etc
+      ;; (org-crud.markdown/item->md-lines org-item)
+
+      )
+
+    ;; (when (seq published-notes)
+    ;;   (log/log! :info ["rerendering edited notes!"
+    ;;                    (->> txed-ents (map :org/name-string))])
+    ;;   (->> published-notes (map blog.db/update-db-note) doall)
+    ;;   (->> published-notes
+    ;;        ;; NOTE CAREFUL! this is an easy way to accidentally publish notes!
+    ;;        ;; publish-note also guards against it
+    ;;        (map (comp blog.publish/publish-note :org/source-file))
+    ;;        doall))
+    )
+  )
 
 (defsys ^:dynamic *garden->blog*
   :start
