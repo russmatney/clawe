@@ -11,7 +11,12 @@
    [loom.io :refer [view]]
    [util :as util]
    [clojure.string :as string]
-   [babashka.fs :as fs]))
+   [babashka.fs :as fs]
+
+   [next.jdbc :as jdbc]
+
+
+   [org-crud.api :as org-crud.api]))
 
 (comment
   (repl/sync-libs!))
@@ -149,3 +154,109 @@
              (:idx f)
              )))
     doall))
+
+(defn ->uuid [str-uuid]
+  (-> str-uuid
+      (string/replace "\"" "")
+      util/ensure-uuid)
+  )
+
+(defn ->file [str-uuid]
+  (-> str-uuid (string/replace "\"" ""))
+  )
+
+
+(def db-spec
+  {:dbtype "sqlite"
+   :dbname "/home/russ/.config/emacs/.local/cache/org-roam.db"})
+
+ (defn link-data []
+   (jdbc/execute! db-spec ["SELECT * FROM links"]))
+
+(def node-data
+  (delay
+    (->>
+      (jdbc/execute! db-spec ["SELECT * FROM nodes"])
+      (map (fn [node]
+             (-> node
+                 (update :nodes/id ->uuid)
+                 (update :nodes/file ->file))))
+      (map (fn [node]
+             [(:nodes/id node) node]))
+      (into {}))))
+
+(defn links-by-x-count [link-type]
+  (->>
+    (jdbc/execute! db-spec ["SELECT * FROM links"])
+    (filter (comp #{"\"id\""} :links/type))
+    (map (fn [link] (-> link (update link-type ->uuid))))
+    (map link-type)
+    frequencies
+    (sort-by second >)))
+
+(comment
+  (->> (link-data)
+       (map :links/type)
+       (into #{}))
+
+  (->> (link-data)
+       (filter (comp #{"\"org\""} :links/type)))
+
+  (defn single-x-data [link-type]
+    (->>
+      (link-data)
+      (filter (comp #{"\"id\""} :links/type))
+      (map (fn [link]
+             (-> link (update link-type ->uuid))))
+      (map link-type)
+      frequencies
+      (filter (comp #{1} second))
+      (map first)
+      ))
+
+  (single-x-data :links/source)
+  (single-x-data :links/dest)
+
+  (->>
+    (single-x-data :links/source)
+    (map (fn [id]
+           (get @node-data id)))
+    ;; (take 4)
+    (map (fn [node]
+           (println "node" node)
+           (->
+             (org-crud.api/path->nested-item (:nodes/file node))
+             (org-crud.api/update! {:org/tags "singlesource"}))
+           ))
+    doall)
+
+  (->>
+    (single-x-data :links/dest)
+    (map (fn [id]
+           (get @node-data id)))
+    ;; (take 4)
+    (map (fn [node]
+           (println "node" node)
+           (->
+             (org-crud.api/path->nested-item (:nodes/file node))
+             (org-crud.api/update! {:org/tags "singledest"}))
+           ))
+    doall)
+
+  (links-by-x-count :links/source)
+  (links-by-x-count :links/dest)
+
+  (->>
+    (links-by-x-count :links/dest)
+    (map (fn [[id ct]] [ct (get @node-data id)]))
+
+    (take 100)
+    (map (fn [[_ct node]]
+           (->
+             (org-crud.api/path->nested-item (:nodes/file node))
+             (org-crud.api/update! {:org/tags "topdest"}))
+           ))
+    doall
+    )
+
+  )
