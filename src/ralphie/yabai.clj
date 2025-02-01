@@ -201,17 +201,37 @@
    [:yabai.window/has-border boolean?]
    [:yabai.window/can-resize boolean?]])
 
+(def minimal-wm-fields
+  (string/join
+    " " ["id"
+         "app"
+         "has-focus"
+         "space"
+         "is-sticky"
+         "title"
+         "is-floating"]))
+
 ;; TODO does this have a format-string/read-edn style?
 ;; TODO refactor to use these malli schemas
-(defn query-windows []
-  (try
-    (->
-      ^{:out :string}
-      (process/$ yabai -m query --windows)
-      process/check
-      :out
-      (json/parse-string (fn [k] (keyword "yabai.window" k))))
-    (catch Exception _e nil)))
+(defn query-windows
+  ([] (query-windows nil))
+  ([{:keys [fields]}]
+   (println "yabai query-windows start")
+   (let [fields (if (nil? fields) nil minimal-wm-fields)
+         windows
+         (try
+           (->
+             ^{:out :string}
+             (process/$ yabai -m query --windows ~fields)
+             process/check
+             :out
+             (json/parse-string (fn [k] (keyword "yabai.window" k))))
+           (catch Exception e
+             (println "yabai query-windows exception" e)
+             nil))]
+     (println "yabai query-windows found dows" windows)
+     windows
+     )))
 
 (comment
   (query-windows)

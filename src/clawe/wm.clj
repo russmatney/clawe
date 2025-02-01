@@ -137,6 +137,7 @@
 (defn current-workspaces
   ([] (current-workspaces nil))
   ([opts]
+   (timer/print-since "current-workspaces start")
    (sys/start! `*wm*)
    (->>
      (wm.protocol/-current-workspaces *wm* opts)
@@ -148,6 +149,7 @@
 (defn current-workspace
   ([] (current-workspace nil))
   ([opts]
+   (timer/print-since "current-workspace start")
    (sys/start! `*wm*)
    (some->> (current-workspaces opts) first)))
 
@@ -203,7 +205,11 @@
 (defn active-clients
   ([] (active-clients nil))
   ([opts]
+   (timer/print-since "clawe.wm/active-clients started")
+
    (sys/start! `*wm*)
+
+   (timer/print-since "*wm* started")
    (->>
      (wm.protocol/-active-clients *wm* opts)
      (map merge-with-client-def))))
