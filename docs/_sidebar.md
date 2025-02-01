@@ -1,0 +1,3 @@
+* [Home](/)
+* [Changelog](/changelog)
+
