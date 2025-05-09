@@ -8,18 +8,18 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Prepare java
-        uses: actions/setup-java@v4.5.0
+        uses: actions/setup-java@v4.7.1
         with:
           distribution: 'zulu'
           java-version: '16'
 
       - name: Install clojure tools
-        uses: DeLaGuardo/setup-clojure@12.1
+        uses: DeLaGuardo/setup-clojure@13.2
         with:
-          cli: 1.12.0.1488
+          cli: 1.12.0.1530
 
       - name: Cache dependencies
-        uses: actions/cache@v4.1.2
+        uses: actions/cache@v4.2.3
         env:
           cache-name: cache-clj
         with:
