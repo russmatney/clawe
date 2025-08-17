@@ -1,11 +1,10 @@
 (ns api.clips
   (:require
    [babashka.fs :as fs]
-   [taoensso.telemere :as log]
-
    [dates.tick :as dates]
    [db.core :as db]
-   [ralphie.config :as r.config]))
+   [ralphie.config :as r.config]
+   [taoensso.telemere :as log]))
 
 (defn local-clip-paths []
   (let [dir (r.config/game-clips-dir)]

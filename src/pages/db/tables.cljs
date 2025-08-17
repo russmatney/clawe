@@ -1,23 +1,20 @@
 (ns pages.db.tables
   (:require
-   [dates.tick :as dates.tick]
-   [tick.core :as t]
-   [uix.core :as uix :refer [defui $]]
-
-   [components.table :as components.table]
-   [components.floating :as floating]
-   [components.debug :as components.debug]
-
-   [components.garden :as components.garden]
-   [components.wallpaper :as components.wallpaper]
-   [components.chess :as components.chess]
-   [components.screenshot :as components.screenshot]
-   [components.git :as components.git]
-
-   [doctor.ui.db :as ui.db]
-   [doctor.ui.hooks.use-db :as hooks.use-db]
-   [doctor.ui.handlers :as handlers]
    [components.actions :as components.actions]
+   [components.chess :as components.chess]
+   [components.debug :as components.debug]
+   [components.floating :as floating]
+   [components.garden :as components.garden]
+   [components.git :as components.git]
+   [components.screenshot :as components.screenshot]
+   [components.table :as components.table]
+   [components.wallpaper :as components.wallpaper]
+   [dates.tick :as dates.tick]
+   [doctor.ui.db :as ui.db]
+   [doctor.ui.handlers :as handlers]
+   [doctor.ui.hooks.use-db :as hooks.use-db]
+   [tick.core :as t]
+   [uix.core :as uix :refer [$ defui]]
    [util :as util]))
 
 (defui basic-text-popover [text]

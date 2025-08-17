@@ -21,12 +21,12 @@
         ref                 (uix/use-ref nil)]
 
     ;; set/destroy cg-api
-    (uix/use-effect
-      (fn []
-        (when (and (not cg-api) ref)
-          (set-cg-api (Chessground. ref opts)))
-        #(when cg-api (.destroy cg-api)))
-      [cg-api])
+    ;; (uix/use-effect
+    ;;   (fn []
+    ;;     (when (and (not cg-api) ref)
+    ;;       (set-cg-api (Chessground. ref opts)))
+    ;;     #(when cg-api (.destroy cg-api)))
+    ;;   [cg-api])
 
     ;; set config once api is set
     (uix/use-effect

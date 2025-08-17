@@ -1,9 +1,10 @@
 (ns clawe.client.create
-  (:require [clojure.string :as string]
-            [babashka.process :as process]
-            [clawe.config :as clawe.config]
-            [ralphie.notify :as notify]
-            [clawe.wm :as wm]))
+  (:require
+   [babashka.process :as process]
+   [clawe.config :as clawe.config]
+   [clawe.wm :as wm]
+   [clojure.string :as string]
+   [ralphie.notify :as notify]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; create client
