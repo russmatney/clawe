@@ -29,6 +29,7 @@
    [pages.garden :as pages.garden]
    [pages.posts :as pages.posts]
    [pages.journal :as pages.journal]
+   [pages.dotfiles :as pages.dotfiles]
 
    [doctor.ui.hooks.use-db :as hooks.use-db]
    [doctor.ui.hooks.use-reaction :refer [use-reaction]]
@@ -53,25 +54,26 @@
 (def route-defs
   [
    {:route "/" :page-name :page/home :label "Home" :comp views.dashboard/widget :icon FA/FaHouse}
-   {:route "/dashboard" :page-name :page/dashboard :label "Dashboard" :comp views.dashboard/widget :icon MD/MdDashboard}
-   {:route "/focus" :page-name :page/focus :label "Focus" :comp views.focus/widget :hide-header true :icon FA/FaCheck}
-   {:route "/todos" :page-name :page/todos :label "Todos" :comp views.todos/widget :icon FA/FaCheckDouble}
    {:route "/blog" :page-name :page/blog :label "Blog" :comp views.blog/widget :hide-header true :icon FA/FaNewspaper}
-   {:route "/today" :page-name :page/today :label "Today" :comp views.today/widget :icon FA/FaCalendar}
-   {:route "/wallpapers" :page-name :page/wallpapers :label "Wallpapers" :comp pages.wallpapers/page :icon FA/FaPaintRoller}
-   {:route "/events" :page-name :page/events :label "Events" :comp pages.events/page :icon FA/FaCalendar}
-   {:route "/pomodoros" :page-name :page/pomodoros :label "Pomodoros" :comp views.pomodoro/widget :icon GI/GiTomato}
-   {:route "/git-status" :page-name :page/git-status :label "Git-Status" :comp views.git-status/widget :icon FA/FaGithub}
-   {:route "/commits" :page-name :page/commits :label "Commits" :comp views.commits/widget :icon GO/GoGitCommit}
-   {:route "/db" :page-name :page/db :label "DB" :comp pages.db/page :icon FA/FaDatabase}
-   {:route "/screenshots" :page-name :page/screenshots :label "Screenshots" :comp pages.screenshots/page :icon FA/FaDesktop}
-   {:route "/garden" :page-name :page/garden :label "Garden" :comp pages.garden/page :icon FA/FaSeedling}
-   {:route "/posts" :page-name :page/posts :label "Posts" :comp pages.posts/page :icon FA/FaLeaf}
-   {:route "/workspaces" :page-name :page/workspaces :label "Workspaces" :comp views.workspaces/widget :icon MD/MdDashboard}
-   {:route "/journal" :page-name :page/journal :label "Journal" :comp pages.journal/page :icon IO/IoJournal}
    {:route "/chess-games" :page-name :page/chess :label "Chess Games" :comp views.chess-games/widget :icon FA/FaChessKnight}
+   {:route "/commits" :page-name :page/commits :label "Commits" :comp views.commits/widget :icon GO/GoGitCommit}
+   {:route "/dashboard" :page-name :page/dashboard :label "Dashboard" :comp views.dashboard/widget :icon MD/MdDashboard}
+   {:route "/db" :page-name :page/db :label "DB" :comp pages.db/page :icon FA/FaDatabase}
+   {:route "/dotfiles" :page-name :page/dotfiles :label "Dotfiles" :comp pages.dotfiles/page :icon IO/IoJournal}
+   {:route "/events" :page-name :page/events :label "Events" :comp pages.events/page :icon FA/FaCalendar}
+   {:route "/focus" :page-name :page/focus :label "Focus" :comp views.focus/widget :hide-header true :icon FA/FaCheck}
+   {:route "/garden" :page-name :page/garden :label "Garden" :comp pages.garden/page :icon FA/FaSeedling}
+   {:route "/git-status" :page-name :page/git-status :label "Git-Status" :comp views.git-status/widget :icon FA/FaGithub}
+   {:route "/journal" :page-name :page/journal :label "Journal" :comp pages.journal/page :icon IO/IoJournal}
+   {:route "/pomodoros" :page-name :page/pomodoros :label "Pomodoros" :comp views.pomodoro/widget :icon GI/GiTomato}
+   {:route "/posts" :page-name :page/posts :label "Posts" :comp pages.posts/page :icon FA/FaLeaf}
+   {:route "/screenshots" :page-name :page/screenshots :label "Screenshots" :comp pages.screenshots/page :icon FA/FaDesktop}
+   {:route "/todos" :page-name :page/todos :label "Todos" :comp views.todos/widget :icon FA/FaCheckDouble}
+   {:route "/today" :page-name :page/today :label "Today" :comp views.today/widget :icon FA/FaCalendar}
    {:route "/topbar" :page-name :page/topbar :label "Top Bar" :comp views.topbar/widget :comp-only true}
    {:route "/topbar-bg" :page-name :page/topbar-bg :label "Top Bar BG" :comp views.topbar/widget :icon FA/FaRegWindowMinimize}
+   {:route "/wallpapers" :page-name :page/wallpapers :label "Wallpapers" :comp pages.wallpapers/page :icon FA/FaPaintRoller}
+   {:route "/workspaces" :page-name :page/workspaces :label "Workspaces" :comp views.workspaces/widget :icon MD/MdDashboard}
    ]
   )
 

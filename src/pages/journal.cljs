@@ -46,9 +46,7 @@
 
             ($ components.garden/org-file (assoc opts :item note))))
 
-       ;; TODO add a workspace comp
        ($ views.workspaces/workspace-card (assoc opts :workspace journal-workspace))
-
 
        ;; TODO add an active-app lists
 
