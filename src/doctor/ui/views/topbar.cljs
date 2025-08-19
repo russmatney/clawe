@@ -139,9 +139,7 @@
   ($ :div
      {:class ["flex" "flex-row" "justify-end" "items-center"]}
 
-     ($ :div
-        {:class ["overflow-scroll"]}
-        ($ pomodoro/bar opts))
+     ($ pomodoro/bar opts)
 
      ($ topbar-actions-list (assoc opts :metadata metadata))
 
