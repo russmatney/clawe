@@ -8,11 +8,20 @@
 (defn hc-raw! [msg]
   "fires hyprctl, returns the output"
   (let [cmd (str "hyprctl " msg)]
-    (-> (process/process {:cmd cmd :out :string})
-        (process/check)
-        :out)))
+    (println cmd)
+    (-> (process/process
+          {:cmd cmd :out :string})
+        process/check
+        :out
+        )))
 
 (comment
+  (-> (process/process
+        {:cmd "hyprctl" :out :string})
+      process/check
+      :out
+      )
+  (hc-raw! "")
   (hc-raw! "--help")
   )
 
@@ -181,3 +190,8 @@ You can exit it with ESCAPE"
 (defn list-workspace-rules []
   "Lists all workspace rules"
   (hc! "workspacerules"))
+
+
+(comment
+  (list-workspaces)
+  )

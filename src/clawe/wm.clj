@@ -7,9 +7,10 @@
    [clawe.awesome :as clawe.awesome]
    [clawe.config :as clawe.config]
    [clawe.wm.protocol :as wm.protocol]
-   [clawe.yabai :as clawe.yabai]
+   [clawe.hyprland :as clawe.hyprland]
    [clawe.i3 :as clawe.i3]
    [clawe.sway :as clawe.sway]
+   [clawe.yabai :as clawe.yabai]
    [clawe.client :as client]
    [ralphie.emacs :as r.emacs]
    [ralphie.config :as r.config]
@@ -19,7 +20,9 @@
    [clawe.awesome Awesome]
    [clawe.yabai Yabai]
    [clawe.i3 I3]
-   [clawe.sway Sway]))
+   [clawe.sway Sway]
+   [clawe.hyprland Hyprland]
+   ))
 
 
 (timer/print-since "clawe.wm ns loading")
@@ -34,12 +37,15 @@
   :start
   (let [wm (clawe.config/get-wm)]
     (cond
-      (= wm :wm/sway)    (Sway.)
-      (= wm :wm/i3)      (I3.)
-      (= wm :wm/yabai)   (Yabai.)
-      (= wm :wm/awesome) (Awesome.)
+      (= wm :wm/sway)     (Sway.)
+      (= wm :wm/i3)       (I3.)
+      (= wm :wm/yabai)    (Yabai.)
+      (= wm :wm/awesome)  (Awesome.)
+      (= wm :wm/hyprland) (Hyprland.)
       :else
-      (if (r.config/osx?) (Yabai.) (I3.)))))
+      (do
+        #_(notify/notify "unknown window manager!")
+        (if (r.config/osx?) (Yabai.) (I3.))))))
 
 (defn reload-wm []
   (when (sys/running? `*wm*)
