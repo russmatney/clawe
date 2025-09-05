@@ -28,7 +28,7 @@ will instead provide a useful CLI for doing some wm things.
 
 --
 
-I'm putting together an overview of this whole project [[https://russmatney.com/note/clawe_overview_video.html][on my blog]].
+I'm putting together an overview of this whole project [[https://danger.russmatney.com/note/clawe_overview_video.html][on my blog]].
 
 A stream covering the motivation and showing some of the namespaces is available
 [[https://www.twitch.tv/videos/1805970411?t=2h59m42s][on twitch]].
@@ -49,7 +49,7 @@ Alien #2: The claw chooses who will go and who will stay.
 Woody: This is ludicrous.
 #+end_quote
 
-For more on Clawe beyond the below readme, check out the [[https://russmatney.com/note/clawe.html][clawe garden file]] on my blog.
+For more on Clawe beyond the below readme, check out the [[https://danger.russmatney.com/note/clawe.html][clawe garden file]] on my blog.
 
 * Clawe is a clojure-centric window-manager, uh, -manager
 It is named after the shape of your hand while trying to nail some of these key
