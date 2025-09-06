@@ -83,7 +83,7 @@
 
 (defn issue-dispatch [dispatcher args]
   " <dispatcher> [args] → Issue a dispatch to call a keybind dispatcher with arguments"
-  (hc! (str "dispatch " dispatcher " " args)))
+  (hc-raw! (str "dispatch " dispatcher " " args)))
 
 (defn get-option [opt]
   "<option> - Gets the config option status (values)"
@@ -195,3 +195,56 @@ You can exit it with ESCAPE"
 (comment
   (list-workspaces)
   )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; workspaces
+
+(defn current-wsp-id []
+  (:hypr/id (get-active-workspace)))
+
+(defn create-workspace [{:keys [name]}]
+  (issue-dispatch "workspace" "emptyn") ;; next empty wsp
+  (issue-dispatch "renameworkspace" (str (current-wsp-id) " " name)))
+
+(defn focus-workspace [{:keys [id]}]
+  (issue-dispatch "workspace" id))
+
+(defn get-workspace [{:keys [name]}]
+  (->>
+    (list-workspaces)
+    (filter (comp #{name} :hypr/name))
+    first))
+
+(comment
+  (list-workspaces)
+  (get-workspace {:name "journal"})
+  (create-workspace {:name "dino"})
+  (focus-workspace {:id 1}))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; clients
+
+(defn get-client [{:keys [class]}]
+  (->>
+    (list-clients)
+    (filter (comp #{class} string/lower-case :hypr/class))
+    first))
+
+(defn focus-client [{:keys [hypr/pid]}]
+  (issue-dispatch "focuswindow" (str "pid:" pid)))
+
+(defn close-client [{:keys [hypr/pid]}]
+  (issue-dispatch "closewindow" (str "pid:" pid)))
+
+(defn move-client-to-workspace [{:keys [hypr/pid]} {:keys [hypr/id]}]
+  ;; NOTE only works for numbered (read: non-dynamic/named) workspaces
+  (issue-dispatch "movetoworkspacesilent" (str id ",pid:" pid)))
+
+(comment
+  (list-clients)
+  (get-client {:class "alacritty"})
+  (focus-client (get-client {:class "alacritty"}))
+  (move-client-to-workspace
+    (get-client {:class "alacritty"})
+    ;; does NOT work for negative wsp ids
+    {:hypr/id -1337}))
