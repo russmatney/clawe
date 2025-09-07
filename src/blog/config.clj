@@ -35,7 +35,9 @@
 
 (def blog-edn (blog-content-config))
 
-(defn ->config [] (aero/read-config blog-edn))
+(defn ->config []
+  nil
+  #_(aero/read-config blog-edn))
 
 (defsys ^:dynamic *config* :start
   (log/log! :info "[BLOG-CONFIG]: Restarting *config*")

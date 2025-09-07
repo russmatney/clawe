@@ -278,8 +278,9 @@ hi there
 (defn open-new-wsp-with-emacs [w]
   (workspace.open/open-new-workspace w)
 
-  (client.create/create-client "emacs" {:current-workspace w})
-  (client.create/create-client "terminal" {:current-workspace w}))
+  ;; (client.create/create-client "emacs" {:current-workspace w})
+  (client.create/create-client "terminal" {:current-workspace w})
+  )
 
 (defn test-fn [key]
   (if-let [wm (wm/key->workspace key)]

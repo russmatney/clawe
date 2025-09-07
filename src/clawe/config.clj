@@ -155,16 +155,21 @@
 ;; workspace-defs
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn workspace-defs []
-  (sys/start! `*config*)
-  (:workspace/defs @*config* {}))
+(defn workspace-defs
+  ([] (workspace-defs nil))
+  ([_opts]
+   (sys/start! `*config*)
+   (let [defs (:workspace/defs @*config* {})]
+     defs)))
 
-(defn workspace-defs-with-titles []
-  (sys/start! `*config*)
-  (->> (:workspace/defs @*config* {})
-       (map (fn [[k def]]
-              [k (assoc def :workspace/title k)]))
-       (into {})))
+(defn workspace-defs-with-titles
+  ([] (workspace-defs-with-titles nil))
+  ([_opts]
+   (sys/start! `*config*)
+   (->> (:workspace/defs @*config* {})
+        (map (fn [[k def]]
+               [k (assoc def :workspace/title k)]))
+        (into {}))))
 
 (defn workspace-def [workspace-title]
   ((workspace-defs) workspace-title))
