@@ -12,7 +12,7 @@
    [timer :as timer]))
 
 
-(timer/print-since "clawe.config ns loading")
+;; (timer/print-since "clawe.config ns loading")
 
 
 (def clawe-config-path ".config/clawe/clawe.edn")
@@ -36,12 +36,12 @@
                (assoc :home-dir (str (fs/home)))
                (->> ;; local should overwrite global
                  (merge (read-config clawe-local-config-path))))]
-    (timer/print-since "parsed and returning clawe config")
+    ;; (timer/print-since "parsed and returning clawe config")
     conf))
 
 (defsys ^:dynamic *config*
   :start
-  (timer/print-since "starting clawe.config system")
+  ;; (timer/print-since "starting clawe.config system")
   (atom (->config)))
 
 (declare write-config)

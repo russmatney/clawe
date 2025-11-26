@@ -11,4 +11,4 @@
      (reset! last-t now)
      (println "|" (when old-last (- now old-last)) "\t|" (- now @start-t) "\t|" line))))
 
-(print-since "timer ns loaded")
+;; (print-since "timer ns loaded")
