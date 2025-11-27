@@ -5,8 +5,7 @@
  :deps
  {teknql/systemic                    {:git/sha "db3facbabdbb949ee0c1bf54a7e24bf82b44465a"
                                       :git/url "https://github.com/teknql/systemic"}
-  wing/wing                          {:git/sha "dce19ab8897dc4fbd98ac8ec3b0995a54a2f17bb"
-                                      :git/url "https://github.com/teknql/wing"}
+  wing/wing                          {:mvn/version "0.1.4"}
   aero/aero                          {:mvn/version "1.1.6"}
   babashka/babashka                  {:mvn/version "1.12.200"}
   babashka/babashka.pods             {:mvn/version "0.2.0"}

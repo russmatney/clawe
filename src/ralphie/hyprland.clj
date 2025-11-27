@@ -26,7 +26,7 @@
   )
 
 (defn hc! [msg]
-  "fires hyprctl, returns json"
+  "fires hyprctl, returns edn"
   (-> (hc-raw! (str "-j " msg))
       (json/parse-string
         (fn [k] (keyword "hypr" k)))))

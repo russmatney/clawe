@@ -8,8 +8,9 @@
 
          teknql/systemic {:git/sha "2c0be3a90884f998a61f2a8174cff3c5a15a30bf"
                           :git/url "https://github.com/teknql/systemic"}
-         wing/wing       {:git/sha "dce19ab8897dc4fbd98ac8ec3b0995a54a2f17bb"
-                          :git/url "https://github.com/teknql/wing"}
+         wing/wing       {:mvn/version "0.1.4"}
+         ;; wing/wing       {:git/sha "dce19ab8897dc4fbd98ac8ec3b0995a54a2f17bb"
+         ;;                  :git/url "https://github.com/teknql/wing"}
 
          ;; found these in specmonstah's bb.edn: https://github.com/reifyhealth/specmonstah/blob/develop/bb.edn
          org.clojure/core.specs.alpha {:mvn/version "0.2.62"}
