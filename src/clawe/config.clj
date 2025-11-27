@@ -131,10 +131,12 @@
   {:org.babashka/cli {}}
   (sys/start! `*config*)
   (let [val        (cond
-                     (#{"i3" :i3 :wm/i3} wm)                :wm/i3
-                     (#{"sway" :sway :wm/sway} wm)          :wm/sway
-                     (#{"awesome" :awesome :wm/awesome} wm) :wm/awesome
-                     (#{"yabai" :yabai :wm/yabai} wm)       :wm/yabai)
+                     (#{"i3" :i3 :wm/i3} wm)                   :wm/i3
+                     (#{"sway" :sway :wm/sway} wm)             :wm/sway
+                     (#{"awesome" :awesome :wm/awesome} wm)    :wm/awesome
+                     (#{"yabai" :yabai :wm/yabai} wm)          :wm/yabai
+                     (#{"hyprland" :hyprland :wm/hyprland} wm) :wm/hyprland
+                     )
         current-wm (get-wm)]
     (when-not val
       (println :warn ["Unhandled set-wm val" wm]))
