@@ -290,7 +290,12 @@
 ;; needs-push?
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn needs-push? [repo-path]
+(defn needs-push?
+  "TODO refactor to handle non-main branches
+  Maybe just compare to the upstream? Needs more nuance.
+
+  Works great if you're only on one branch!"
+  [repo-path]
   (-> {:error-message
        (str "RALPHIE ERROR for " repo-path " in git/needs-push?")}
       (bb/run-proc
