@@ -5,8 +5,9 @@
    [babashka.process :as process]
    ))
 
-(defn hc-raw! [msg]
+(defn hc-raw!
   "fires hyprctl, returns the output"
+  [msg]
   (let [cmd (str "hyprctl " msg)]
     (println cmd)
     (-> (process/process
@@ -25,8 +26,9 @@
   (hc-raw! "--help")
   )
 
-(defn hc! [msg]
+(defn hc!
   "fires hyprctl, returns edn"
+  [msg]
   (-> (hc-raw! (str "-j " msg))
       (json/parse-string
         (fn [k] (keyword "hypr" k)))))
@@ -37,68 +39,84 @@
   (hc-raw! "-j workspaces")
   (hc-raw! "help"))
 
-(defn version []
+(defn version
   "Prints the hyprland version, meaning flags, commit and branch of build."
+  []
   (hc! "version"))
 
-(defn get-active-window []
+(defn get-active-window
   "Gets the active window name and its properties"
+  []
   (hc! "activewindow"))
 
-(defn get-active-workspace []
+(defn get-active-workspace
   "Gets the active workspace and its properties"
+  []
   (hc! "activeworkspace"))
 
-(defn get-animations []
+(defn get-animations
   "Gets the current config'd info about animations and beziers"
+  []
   (hc! "animations"))
 
-(defn list-binds []
+(defn list-binds
   "Lists all registered binds"
+  []
   (hc! "binds"))
 
-(defn list-clients []
+(defn list-clients
   "Lists all windows with their properties"
+  []
   (hc! "clients"))
 
-(defn list-config-errors []
+(defn list-config-errors
   "Lists all current config parsing errors"
+  []
   (hc! "configerrors"))
 
-(defn get-cursor-pos []
+(defn get-cursor-pos
   "Gets the current cursor position in global layout coordinates"
+  []
   (hc! "cursorpos"))
 
-(defn list-decorations [window-regex]
+(defn list-decorations
   "<window_regex> - Lists all decorations and their info"
+  [window-regex]
   (hc! (str "decorations " window-regex)))
 
-(defn list-devices []
+(defn list-devices
   "Lists all connected keyboards and mice"
+  []
   (hc! "devices"))
 
-(defn dismiss-notify [amount]
+(defn dismiss-notify
   "[amount] - Dismisses all or up to AMOUNT notifications"
+  [amount]
   (hc! (str "dismissnotify " amount)))
 
-(defn issue-dispatch [dispatcher args]
+(defn issue-dispatch
   " <dispatcher> [args] → Issue a dispatch to call a keybind dispatcher with arguments"
+  [dispatcher args]
   (hc-raw! (str "dispatch " dispatcher " " args)))
 
-(defn get-option [opt]
+(defn get-option
   "<option> - Gets the config option status (values)"
-  (hc! "getoption " opt))
+  [opt]
+  (hc! (str "getoption " opt)))
 
-(defn list-global-shortcuts []
+(defn list-global-shortcuts
   "Lists all global shortcuts"
+  []
   (hc! "globalshortcuts"))
 
-(defn issue-hyprpaper [args]
+(defn issue-hyprpaper
   "... - Issue a hyprpaper request"
+  [args]
   (hc! (str "hyprpaper " args)))
 
-(defn issue-hyprsunset [args]
+(defn issue-hyprsunset
   "... - Issue a hyprsunset request"
+  [args]
   (hc! (str "hyprsunset " args)))
 
 (defn list-instances []
@@ -154,8 +172,9 @@ You can exit it with ESCAPE"
 (comment
   (reload))
 
-(defn rolling-log []
+(defn rolling-log
   "Prints tail of the log. Also supports -f/--follow option"
+  []
   (-> (hc-raw! "rollinglog")
       (string/split #"\n")))
 
@@ -222,7 +241,6 @@ You can exit it with ESCAPE"
     first))
 
 (comment
-  (string/strip-right "special:" "special:web")
   (->>
     (list-workspaces)
     (map :hypr/name))
@@ -263,8 +281,17 @@ You can exit it with ESCAPE"
 ;; floating
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn set-floating []
-  (issue-dispatch "setfloating" nil))
+(defn set-floating
+  ([] (issue-dispatch "setfloating" nil))
+  ([float?]
+   (if float?
+     (issue-dispatch "setfloating" nil)
+     (do
+       (issue-dispatch "setfloating" nil)
+       (issue-dispatch "togglefloating" nil)))))
+
+(defn toggle-floating
+  [] (issue-dispatch "togglefloating" nil))
 
 (defn center-client []
   (issue-dispatch "centerwindow" "1"))
