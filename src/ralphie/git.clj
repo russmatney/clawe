@@ -44,6 +44,7 @@
        (mapcat (fn [home-dir]
                  (-> (str "~/" home-dir "/*/.git")
                      zsh/expand
+                     ;; BUG this breaks if there are spaces in dir names
                      (string/split #" "))))
        ;; remove failed expansions
        (remove (fn [path] (string/includes? path "/*/")))))
@@ -321,8 +322,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn last-fetch-timestamp [repo-path]
-  (fs/last-modified-time
-    (str (zsh/expand repo-path) "/.git/FETCH_HEAD")))
+  (let [fetch-head-path
+        (str (zsh/expand repo-path) "/.git/FETCH_HEAD")]
+    (when (fs/exists? fetch-head-path)
+      (fs/last-modified-time fetch-head-path))))
 
 (comment
   (last-fetch-timestamp "~/russmatney/clawe")

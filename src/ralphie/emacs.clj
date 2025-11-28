@@ -106,7 +106,8 @@
            (or (some wsp [:emacs.open/workspace
                           :workspace/title :org/name :clawe.defs/name])
                "ralphie-fallback")
-           initial-file (some wsp [:emacs.open/file :emacs.open/directory])
+           initial-file (some wsp [:emacs.open/file :emacs.open/directory
+                                   :workspace/initial-file])
            initial-file (determine-initial-file initial-file)
            elisp-hook   (:emacs.open/elisp-hook wsp)
            eval-str     (str
@@ -116,6 +117,7 @@
                           (when wsp-name
                             (str " (russ/open-workspace \"" wsp-name "\") "))
                           (when initial-file
+                            ;; TODO consider a 'daily file' pattern here, even searching to find one
                             (str " (find-file \"" initial-file "\") " " "))
                           (when elisp-hook elisp-hook)
                           " )")]

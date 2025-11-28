@@ -5,6 +5,9 @@
    [babashka.process :as process]
    ))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; raw helpers
+
 (defn hc-raw!
   "fires hyprctl, returns the output"
   [msg]
@@ -33,26 +36,71 @@
       (json/parse-string
         (fn [k] (keyword "hypr" k)))))
 
+(defn issue-dispatch
+  " <dispatcher> [args] → Issue a dispatch to call a keybind dispatcher with arguments"
+  [dispatcher args]
+  (hc-raw! (str "dispatch " dispatcher " " args)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; models
+
+(defn ->workspace [wsp]
+  (assoc wsp
+         :special? (string/includes? (:hypr/name wsp) "special:")))
+
+(defn ->client [cli]
+  (assoc cli
+         :workspace-name (-> cli :hypr/workspace :hypr/name)
+         :workspace-id (-> cli :hypr/workspace :hypr/id)))
 
 (comment
   (hc! "workspaces")
   (hc-raw! "-j workspaces")
   (hc-raw! "help"))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; public api
+
 (defn version
   "Prints the hyprland version, meaning flags, commit and branch of build."
   []
   (hc! "version"))
 
+(defn notify
+  "... - Sends a notification using the built-in Hyprland notification system"
+  [args]
+  (hc-raw! (str "notify 5 5000 0 " args)))
+
+(comment
+  (notify "hi"))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; clients/windows
+
 (defn get-active-window
   "Gets the active window name and its properties"
   []
-  (hc! "activewindow"))
+  (->client
+    (hc! "activewindow")))
+
+(defn list-clients
+  "Lists all windows with their properties"
+  []
+  (->>
+    (hc! "clients")
+    (map ->client)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; workspaces
 
 (defn get-active-workspace
   "Gets the active workspace and its properties"
   []
-  (hc! "activeworkspace"))
+  (->workspace
+    (hc! "activeworkspace")))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; other stuff
 
 (defn get-animations
   "Gets the current config'd info about animations and beziers"
@@ -63,11 +111,6 @@
   "Lists all registered binds"
   []
   (hc! "binds"))
-
-(defn list-clients
-  "Lists all windows with their properties"
-  []
-  (hc! "clients"))
 
 (defn list-config-errors
   "Lists all current config parsing errors"
@@ -94,11 +137,6 @@
   [amount]
   (hc! (str "dismissnotify " amount)))
 
-(defn issue-dispatch
-  " <dispatcher> [args] → Issue a dispatch to call a keybind dispatcher with arguments"
-  [dispatcher args]
-  (hc-raw! (str "dispatch " dispatcher " " args)))
-
 (defn get-option
   "<option> - Gets the config option status (values)"
   [opt]
@@ -119,38 +157,41 @@
   [args]
   (hc! (str "hyprsunset " args)))
 
-(defn list-instances []
+(defn list-instances
   "Lists all running instances of Hyprland with their info"
+  []
   (hc! "instances"))
 
-(defn issue-keyword [name value]
+(defn issue-keyword
   " <name> <value> → Issue a keyword to call a config keyword dynamically"
+  [name value]
   (hc! (str "keyword " name " " value)))
 
-(defn issue-kill-mode []
+(defn issue-kill-mode
   "Issue a kill to get into a kill mode, where you can kill an app by clicking on it.
-You can exit it with ESCAPE"
+  You can exit it with ESCAPE"
+  []
   (hc! "kill"))
 
-(defn list-layers []
+(defn list-layers
   "Lists all the surface layers"
+  []
   (hc! "layers"))
 
-(defn list-layouts []
+(defn list-layouts
   "Lists all layouts available (including plugin'd ones)"
+  []
   (hc! "layouts"))
 
-(defn list-monitors []
+(defn list-monitors
   "Lists active outputs with their properties"
+  []
   (hc! "monitors"))
 
-(defn list-monitors-all []
+(defn list-monitors-all
   "List all outputs with their properties, both active and inactive"
+  []
   (hc! "monitors all"))
-
-(defn notify [args]
-  "... - Sends a notification using the built-in Hyprland notification system"
-  (hc-raw! (str "notify 5 5000 0 " args)))
 
 (comment
   (notify "\n\nwhat up \n\n\nfrom deep in HYPRLAND!!!\n\n"))
@@ -201,10 +242,6 @@ You can exit it with ESCAPE"
 (defn get-system-info []
   "Get system info"
   (hc-raw! "systeminfo"))
-
-(defn ->workspace [wsp]
-  (assoc wsp
-         :hypr/is-special (string/includes? (:hypr/name wsp) "special:")))
 
 (defn list-workspaces []
   "Lists all workspaces with their properties"
