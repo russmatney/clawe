@@ -68,11 +68,31 @@
 
 (defn notify
   "... - Sends a notification using the built-in Hyprland notification system"
-  [args]
-  (hc-raw! (str "notify 5 5000 0 " args)))
+  ([msg] (notify msg nil))
+  ([msg {:keys [] :as opts}]
+   (let [icon  (-> opts ((some-fn :icon :level))
+                   ((fn [icon]
+                      (cond
+                        (nil? icon)           5
+                        (#{:warning 0} icon)  0
+                        (#{:info 1} icon)     1
+                        (#{:hint 2} icon)     2
+                        (#{:error 3} icon)    3
+                        (#{:confused 4} icon) 4
+                        (#{:ok 5} icon)       5
+                        (#{:none 6} icon)     6))))
+         color (:color opts icon)]
+     (hc-raw! (str "notify " icon " 5000 " color " " msg)))))
 
 (comment
-  (notify "hi"))
+  (notify "hi")
+  (notify "hi" {:level :ok})
+  (notify "hi" {:level :warning})
+  (notify "hi" {:level :info})
+  (notify "hi" {:level :hint})
+  (notify "hi" {:level :error})
+  (notify "hi" {:level :confused})
+  (notify "hi" {:level :none}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; clients/windows
