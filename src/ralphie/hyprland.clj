@@ -81,8 +81,9 @@
                         (#{:confused 4} icon) 4
                         (#{:ok 5} icon)       5
                         (#{:none 6} icon)     6))))
-         color (:color opts icon)]
-     (hc-raw! (str "notify " icon " 5000 " color " " msg)))))
+         color (:color opts icon)
+         til   (:til opts 5000)]
+     (hc-raw! (str "notify " icon " " til " " color " " msg)))))
 
 (comment
   (notify "hi")

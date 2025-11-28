@@ -162,7 +162,7 @@
   ([_opts]
    (sys/start! `*config*)
    (let [defs (:workspace/defs @*config* {})]
-     defs)))
+     (->> defs (map (fn [[k def]] [k (assoc def :workspace/name k)]))))))
 
 (defn workspace-defs-with-titles
   ([] (workspace-defs-with-titles nil))

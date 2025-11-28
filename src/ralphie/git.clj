@@ -165,10 +165,18 @@
 (defn dir-is-repo?
   "Returns true if the passed path is a git repo"
   [repo-path]
-  (fs/exists? (str (zsh/expand repo-path) "/.git")))
+  (->
+    repo-path
+    (string/replace "~" (str (fs/home)))
+    (str "/.git")
+    fs/exists?))
 
 (comment
-  (dir-is-repo? "hi"))
+  (dir-is-repo? "hi")
+  (dir-is-repo? "~/russmatney")
+  (dir-is-repo? "~/dotfiles")
+  (dir-is-repo? "~/russmatney/clawe")
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; fetch
@@ -322,8 +330,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn last-fetch-timestamp [repo-path]
-  (let [fetch-head-path
-        (str (zsh/expand repo-path) "/.git/FETCH_HEAD")]
+  (let [fetch-head-path (str (zsh/expand repo-path) "/.git/FETCH_HEAD")]
     (when (fs/exists? fetch-head-path)
       (fs/last-modified-time fetch-head-path))))
 
@@ -345,8 +352,7 @@
         dirty?               (->> res (filter #(re-seq #"not staged for commit" %)) seq)
         needs-pull?          (->> res (filter #(re-seq #"branch is behind" %)) seq)
         needs-push?          (->> res (filter #(re-seq #"branch is ahead" %)) seq)
-        needs-pull-and-push? (->> res (filter #(re-seq #"different commits each" %)) seq)
-        ]
+        needs-pull-and-push? (->> res (filter #(re-seq #"different commits each" %)) seq)]
     {:git/dirty?               dirty?
      :git/needs-pull?          (or needs-pull? needs-pull-and-push?)
      :git/needs-push?          (or needs-push? needs-pull-and-push?)
