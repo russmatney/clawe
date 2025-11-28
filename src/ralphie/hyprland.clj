@@ -183,9 +183,13 @@ You can exit it with ESCAPE"
   "Get system info"
   (hc-raw! "systeminfo"))
 
+(defn ->workspace [wsp]
+  (assoc wsp
+         :hypr/is-special (string/includes? (:hypr/name wsp) "special:")))
+
 (defn list-workspaces []
   "Lists all workspaces with their properties"
-  (hc! "workspaces"))
+  (->> (hc! "workspaces") (map ->workspace)))
 
 (defn list-workspace-rules []
   "Lists all workspace rules"
@@ -212,12 +216,18 @@ You can exit it with ESCAPE"
 (defn get-workspace [{:keys [name]}]
   (->>
     (list-workspaces)
-    (filter (comp #{name} :hypr/name))
+    (filter
+      (comp #{name (str "special:" name)}
+            :hypr/name))
     first))
 
 (comment
-  (list-workspaces)
-  (get-workspace {:name "journal"})
+  (string/strip-right "special:" "special:web")
+  (->>
+    (list-workspaces)
+    (map :hypr/name))
+  (get-workspace {:name "journalemacs"})
+  (get-workspace {:name "clawe"})
   (create-workspace {:name "dino"})
   (focus-workspace {:id 1}))
 
@@ -248,3 +258,39 @@ You can exit it with ESCAPE"
     (get-client {:class "alacritty"})
     ;; does NOT work for negative wsp ids
     {:hypr/id -1337}))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; resize client
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn resize-client
+  "Resize the focused window.
+  :x and :y are strings - number of pixels \"300\", or a % \"50%\".
+  Set :relative? to switch relative to the current window.
+  "
+  [{:keys [relative? x y]}]
+  (issue-dispatch "resizeactive"
+                  (str (when-not relative? "exact")
+                       " " x " " y)))
+(comment
+  (resize-client {:relative? false
+                  :x         "70%"
+                  :y         "50%"}))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; move client
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn move-client
+  "Move the focused window.
+  :x and :y are strings - number of pixels \"300\", or a % \"50%\".
+  Set :relative? to switch relative to the current window.
+  "
+  [{:keys [relative? x y]}]
+  (issue-dispatch "moveactive"
+                  (str (when-not relative? "exact")
+                       " " x " " y)))
+(comment
+  (move-client {:relative? false
+                :x         "800"
+                :y         "200"}))
