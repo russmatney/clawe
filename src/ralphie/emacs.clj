@@ -111,7 +111,7 @@
            initial-file        (determine-initial-file initial-file)
            elisp-hook          (:emacs.open/elisp-hook wsp)
            eval-str            (str
-                                 "(progn "
+                                 "'(progn "
                                  ;; TODO refactor russ/open-workspace to support initial-file
                                  ;; so that we don't open the readme when the workspace is already open
                                  (when wsp-name
@@ -120,10 +120,15 @@
                                    ;; TODO consider a 'daily file' pattern here, even searching to find one
                                    (str " (find-file \"" initial-file "\") " " "))
                                  (when elisp-hook elisp-hook)
-                                 " )")
+                                 ")'")
            ignore-dead-server? (:emacs.open/ignore-dead-server? wsp false)
            wayland?            (:emacs.open/wayland? wsp true) ;; defaulting to wayland!
-           display-str         (when-not wayland? "--display=:0")]
+           display-str         (if wayland? nil "--display=:0")
+           open-str
+           (str "emacsclient --no-wait --create-frame "
+                " -F '((name . \"" wsp-name "\"))' "
+                display-str
+                " --eval " eval-str)]
 
        (when (and (not (emacs-server-running?)) (not ignore-dead-server?))
          (notify {:notify/subject "Initializing Emacs Server, initializing."
@@ -132,11 +137,11 @@
          (notify {:notify/subject "Started Emacs Server"
                   :notify/id      "init-emacs-server"}))
 
-       (-> ($ emacsclient --no-wait --create-frame
-              -F ~(str "((name . \"" wsp-name "\"))")
-              ~display-str
-              --eval ~eval-str)
-           check))
+       (->
+         (process/process {:cmd open-str
+                           ;; :pre-start-fn (fn [{:keys [cmd]}] (println cmd))
+                           })
+         check))
      ;; TODO proper clawe error log
      (catch Exception e
        (notify/notify "emacs/open error" (str e))
