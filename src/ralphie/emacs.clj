@@ -107,7 +107,7 @@
                           :workspace/title :org/name :clawe.defs/name])
                "ralphie-fallback")
            initial-file        (some wsp [:emacs.open/file :emacs.open/directory
-                                          :workspace/initial-file])
+                                          :workspace/initial-file :workspace/directory])
            initial-file        (determine-initial-file initial-file)
            elisp-hook          (:emacs.open/elisp-hook wsp)
            eval-str            (str
@@ -118,6 +118,7 @@
                                    (str " (russ/open-workspace \"" wsp-name "\") "))
                                  (when initial-file
                                    ;; TODO consider a 'daily file' pattern here, even searching to find one
+                                   ;; TODO only find file if the workspace is new?
                                    (str " (find-file \"" initial-file "\") " " "))
                                  (when elisp-hook elisp-hook)
                                  ")'")
@@ -137,11 +138,9 @@
          (notify {:notify/subject "Started Emacs Server"
                   :notify/id      "init-emacs-server"}))
 
-       (->
-         (process/process {:cmd open-str
-                           ;; :pre-start-fn (fn [{:keys [cmd]}] (println cmd))
-                           })
-         check))
+       (-> (process/process {:cmd          open-str
+                             :pre-start-fn (fn [{:keys [cmd]}] (println cmd))})
+           check))
      ;; TODO proper clawe error log
      (catch Exception e
        (notify/notify "emacs/open error" (str e))
