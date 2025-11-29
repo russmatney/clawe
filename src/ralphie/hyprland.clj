@@ -19,6 +19,9 @@
         :out
         )))
 
+;; TODO support batching... via some magic
+;; hyprctl --batch "keyword general:border_size 2 ; keyword general:gaps_out 20"
+
 (comment
   (-> (process/process
         {:cmd "hyprctl" :out :string})
@@ -40,6 +43,38 @@
   " <dispatcher> [args] → Issue a dispatch to call a keybind dispatcher with arguments"
   [dispatcher args]
   (hc-raw! (str "dispatch " dispatcher " " args)))
+
+(defn issue-plugin
+  "... - Issue a plugin request"
+  [args]
+  (hc! (str "plugin " args)))
+
+(defn issue-keyword
+  " <name> <value> → Issue a keyword to call a config keyword dynamically"
+  [name value]
+  (hc-raw! (str "keyword " name " " value)))
+
+(defn issue-hyprpaper
+  "... - Issue a hyprpaper request"
+  [args]
+  (hc! (str "hyprpaper " args)))
+
+(defn issue-hyprsunset
+  "... - Issue a hyprsunset request"
+  [args]
+  (hc! (str "hyprsunset " args)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; reload
+
+(defn reload
+  " [config-only] → Issue a reload to force reload the config. Pass 'config-only' to disable monitor reload"
+  ([] (reload false))
+  ([config-only]
+   (hc-raw! (str "reload " (when config-only "config-only")))))
+
+(comment
+  (reload))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; models
@@ -95,6 +130,12 @@
   (notify "hi" {:level :confused})
   (notify "hi" {:level :none}))
 
+(defn dismiss-notify
+  "[amount] - Dismisses all or up to AMOUNT notifications"
+  [amount]
+  (hc! (str "dismissnotify " amount)))
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; clients/windows
 
@@ -111,14 +152,94 @@
     (hc! "clients")
     (map ->client)))
 
+(defn set-prop
+  "... - Sets a window property"
+  [args]
+  (hc-raw! (str "setprop " args)))
+
+(defn add-tag-to-current [tag]
+  (issue-dispatch "tagwindow" (str "+" tag)))
+(defn remove-tag-from-current [tag]
+  (issue-dispatch "tagwindow" (str "-- -" tag)))
+
+(defn get-current-tags []
+  (into #{} (:hypr/tags (get-active-window))))
+
+(comment
+  (get-current-tags)
+  (add-tag-to-current "yoooo")
+  (remove-tag-from-current "yoooo")
+  )
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; workspaces
 
 (defn get-active-workspace
   "Gets the active workspace and its properties"
   []
-  (->workspace
-    (hc! "activeworkspace")))
+  (->workspace (hc! "activeworkspace")))
+
+(defn list-workspaces
+  "Lists all workspaces with their properties"
+  []
+  (->> (hc! "workspaces") (map ->workspace)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; monitors
+
+(defn list-monitors
+  "Lists active outputs with their properties"
+  []
+  (hc! "monitors"))
+
+(defn list-monitors-all
+  "List all outputs with their properties, both active and inactive"
+  []
+  (hc! "monitors all"))
+
+(comment
+  (notify "\n\nwhat up \n\n\nfrom deep in HYPRLAND!!!\n\n"))
+
+(defn output
+  "... - Allows you to add and remove fake outputs to your preferred backend"
+  [args]
+  (hc! (str "output " args)))
+
+(defn list-devices
+  "Lists all connected keyboards and mice"
+  []
+  (hc! "devices"))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; binds/keyboard
+
+(defn list-binds
+  "Lists all registered binds"
+  []
+  (hc! "binds"))
+
+(defn list-global-shortcuts
+  "Lists all global shortcuts"
+  []
+  (hc! "globalshortcuts"))
+
+(defn switch-xkb-layout
+  "Sets the xkb layout index for a keyboard"
+  [idx]
+  (hc! (str "switchxkblayout " idx)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; cursor
+
+(defn get-cursor-pos
+  "Gets the current cursor position in global layout coordinates"
+  []
+  (hc! "cursorpos"))
+
+(defn set-cursor
+  "<theme> <size> - Sets the cursor theme and reloads the cursor manager"
+  [theme size]
+  (hc! (str "setcursor " theme " " size)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; other stuff
@@ -128,65 +249,30 @@
   []
   (hc! "animations"))
 
-(defn list-binds
-  "Lists all registered binds"
-  []
-  (hc! "binds"))
+(defn list-decorations
+  "<window_regex> - Lists all decorations and their info"
+  [window-regex]
+  (hc! (str "decorations " window-regex)))
 
 (defn list-config-errors
   "Lists all current config parsing errors"
   []
   (hc! "configerrors"))
 
-(defn get-cursor-pos
-  "Gets the current cursor position in global layout coordinates"
-  []
-  (hc! "cursorpos"))
-
-(defn list-decorations
-  "<window_regex> - Lists all decorations and their info"
-  [window-regex]
-  (hc! (str "decorations " window-regex)))
-
-(defn list-devices
-  "Lists all connected keyboards and mice"
-  []
-  (hc! "devices"))
-
-(defn dismiss-notify
-  "[amount] - Dismisses all or up to AMOUNT notifications"
-  [amount]
-  (hc! (str "dismissnotify " amount)))
+(defn set-error
+  "<color> <message...> - Sets the hyprctl error string. Color has the same format as in colors in config. Will reset when Hyprland's config is reloaded"
+  [color message]
+  (hc! (str "seterror " color " " message)))
 
 (defn get-option
   "<option> - Gets the config option status (values)"
   [opt]
   (hc! (str "getoption " opt)))
 
-(defn list-global-shortcuts
-  "Lists all global shortcuts"
-  []
-  (hc! "globalshortcuts"))
-
-(defn issue-hyprpaper
-  "... - Issue a hyprpaper request"
-  [args]
-  (hc! (str "hyprpaper " args)))
-
-(defn issue-hyprsunset
-  "... - Issue a hyprsunset request"
-  [args]
-  (hc! (str "hyprsunset " args)))
-
 (defn list-instances
   "Lists all running instances of Hyprland with their info"
   []
   (hc! "instances"))
-
-(defn issue-keyword
-  " <name> <value> → Issue a keyword to call a config keyword dynamically"
-  [name value]
-  (hc! (str "keyword " name " " value)))
 
 (defn issue-kill-mode
   "Issue a kill to get into a kill mode, where you can kill an app by clicking on it.
@@ -204,74 +290,26 @@
   []
   (hc! "layouts"))
 
-(defn list-monitors
-  "Lists active outputs with their properties"
-  []
-  (hc! "monitors"))
-
-(defn list-monitors-all
-  "List all outputs with their properties, both active and inactive"
-  []
-  (hc! "monitors all"))
-
-(comment
-  (notify "\n\nwhat up \n\n\nfrom deep in HYPRLAND!!!\n\n"))
-
-(defn output [args]
-  "... - Allows you to add and remove fake outputs to your preferred backend"
-  (hc! (str "output " args)))
-
-(defn issue-plugin [args]
-  "... - Issue a plugin request"
-  (hc! (str "plugin " args)))
-
-(defn reload
-  " [config-only] → Issue a reload to force reload the config. Pass 'config-only' to disable monitor reload"
-  ([] (reload false))
-  ([config-only]
-   (hc-raw! (str "reload " (when config-only "config-only")))))
-
-(comment
-  (reload))
-
 (defn rolling-log
   "Prints tail of the log. Also supports -f/--follow option"
   []
   (-> (hc-raw! "rollinglog")
       (string/split #"\n")))
 
-(defn set-cursor [theme size]
-  "<theme> <size> - Sets the cursor theme and reloads the cursor manager"
-  (hc! (str "setcursor " theme " " size)))
-
-(defn set-error [color message]
-  "<color> <message...> - Sets the hyprctl error string. Color has the same format as in colors in config. Will reset when Hyprland's config is reloaded"
-  (hc! (str "seterror " color " " message)))
-
-(defn set-prop [args]
-  "... - Sets a window property"
-  (hc! (str "setprop" args)))
-
-(defn get-splash []
+(defn get-splash
   "Get the current splash"
+  []
   (hc! "splash"))
 
-(defn switch-xkb-layout [idx]
-  "Sets the xkb layout index for a keyboard"
-  (hc! (str "switchxkblayout " idx)))
-
-(defn get-system-info []
+(defn get-system-info
   "Get system info"
+  []
   (hc-raw! "systeminfo"))
 
-(defn list-workspaces []
-  "Lists all workspaces with their properties"
-  (->> (hc! "workspaces") (map ->workspace)))
-
-(defn list-workspace-rules []
+(defn list-workspace-rules
   "Lists all workspace rules"
+  []
   (hc! "workspacerules"))
-
 
 (comment
   (list-workspaces)
