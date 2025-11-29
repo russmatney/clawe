@@ -101,28 +101,29 @@
   ([] (open nil))
   ([wsp]
    (try
-     (let [wsp          (or wsp {})
+     (let [wsp                 (or wsp {})
+           ignore-dead-server? (:emacs.open/ignore-dead-server? wsp false)
            wsp-name
            (or (some wsp [:emacs.open/workspace
                           :workspace/title :org/name :clawe.defs/name])
                "ralphie-fallback")
-           initial-file (some wsp [:emacs.open/file :emacs.open/directory
-                                   :workspace/initial-file])
-           initial-file (determine-initial-file initial-file)
-           elisp-hook   (:emacs.open/elisp-hook wsp)
-           eval-str     (str
-                          "(progn "
-                          ;; TODO refactor russ/open-workspace to support initial-file
-                          ;; so that we don't open the readme when the workspace is already open
-                          (when wsp-name
-                            (str " (russ/open-workspace \"" wsp-name "\") "))
-                          (when initial-file
-                            ;; TODO consider a 'daily file' pattern here, even searching to find one
-                            (str " (find-file \"" initial-file "\") " " "))
-                          (when elisp-hook elisp-hook)
-                          " )")]
+           initial-file        (some wsp [:emacs.open/file :emacs.open/directory
+                                          :workspace/initial-file])
+           initial-file        (determine-initial-file initial-file)
+           elisp-hook          (:emacs.open/elisp-hook wsp)
+           eval-str            (str
+                                 "(progn "
+                                 ;; TODO refactor russ/open-workspace to support initial-file
+                                 ;; so that we don't open the readme when the workspace is already open
+                                 (when wsp-name
+                                   (str " (russ/open-workspace \"" wsp-name "\") "))
+                                 (when initial-file
+                                   ;; TODO consider a 'daily file' pattern here, even searching to find one
+                                   (str " (find-file \"" initial-file "\") " " "))
+                                 (when elisp-hook elisp-hook)
+                                 " )")]
 
-       (when-not (emacs-server-running?)
+       (when (and (not (emacs-server-running?)) (not ignore-dead-server?))
          (notify {:notify/subject "Initializing Emacs Server, initializing."
                   :notify/id      "init-emacs-server"})
          (initialize-emacs-server)
