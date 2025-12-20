@@ -81,12 +81,13 @@
 
 (defn ->workspace [wsp]
   (assoc wsp
-         :special? (string/includes? (:hypr/name wsp) "special:")))
+         :special? (when (:hypr/name wsp)
+                     (string/includes? (:hypr/name wsp) "special:"))))
 
 (defn ->client [cli]
   (assoc cli
-         :workspace-name (-> cli :hypr/workspace :hypr/name)
-         :workspace-id (-> cli :hypr/workspace :hypr/id)))
+         :workspace-name (some-> cli :hypr/workspace :hypr/name)
+         :workspace-id (some-> cli :hypr/workspace :hypr/id)))
 
 (comment
   (hc! "workspaces")
@@ -105,7 +106,8 @@
   "... - Sends a notification using the built-in Hyprland notification system"
   ([msg] (notify msg nil))
   ([msg {:keys [] :as opts}]
-   (let [icon  (-> opts ((some-fn :icon :level))
+   (let [msg   (-> msg (string/replace #"-" ""))
+         icon  (-> opts ((some-fn :icon :level))
                    ((fn [icon]
                       (cond
                         (nil? icon)           5
@@ -122,6 +124,7 @@
 
 (comment
   (notify "hi")
+  (notify "hi (friend) -") ;; apparently can't handle `-` in messages
   (notify "hi" {:level :ok})
   (notify "hi" {:level :warning})
   (notify "hi" {:level :info})
